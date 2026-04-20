@@ -12,7 +12,20 @@ export async function POST(req: Request) {
         if (!session) return new Response("Unauthorized", { status: 401 });
 
         const { messages } = await req.json();
-        const lastMessage = messages[messages.length - 1].content;
+        const lastMsgObj = messages?.[messages.length - 1];
+        
+        let lastMessage = "";
+        if (lastMsgObj) {
+            if (typeof lastMsgObj.content === "string") {
+                lastMessage = lastMsgObj.content;
+            } else if (Array.isArray(lastMsgObj.content)) {
+                // Handle multi-modal content types properly
+                lastMessage = lastMsgObj.content
+                    .filter((c: any) => c.type === "text")
+                    .map((c: any) => c.text)
+                    .join(" ");
+            }
+        }
         const userId = session.user.id;
 
         const ctx = await getCloudflareContext({ async: true });

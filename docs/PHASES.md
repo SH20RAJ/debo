@@ -34,22 +34,22 @@ This document meticulously tracks the execution phases, architectural decisions,
   - [x] Handle error states with strictly accessible Toast notifications from Shadcn.
 - [x] Construct the Journal Entry historical viewer and timeline UI.
 
-## ⚪ Phase 3: AI & The Edge Layer
+## 🟢 Phase 3: AI & The Edge Layer
 **Goal:** Offload heavy computational vector mathematics over to Cloudflare to guarantee Next.js remains wildly performant.
 - [ ] Abstract Next.js AI processing logic over to a dedicated Cloudflare Worker (`/agent-worker`).
-- [ ] Integrate Workers AI bindings specifically for `@cf/baai/bge-large-en-v1.5` text embeddings.
+- [x] Integrate Workers AI bindings specifically for `@cf/baai/bge-large-en-v1.5` text embeddings.
 - [ ] Configure asynchronous Vectorize sequence: 
   - [ ] On journal save event -> send payload to queue -> encode to vectors.
-  - [ ] Store vectors in Cloudflare Vectorize index.
+  - [x] Store vectors in Cloudflare Vectorize index.
   - [ ] Map `vectorizeId` back to the NeonDB row via a background callback.
-- [ ] Implement Semantic Query Logic: Convert user plain-text chat queries into embeddings for cosine similarity searching against past journals.
+- [x] Implement Semantic Query Logic: Convert user plain-text chat queries into embeddings for cosine similarity searching against past journals.
 
-## ⚪ Phase 4: Chat Interface & Companionship
+## 🟢 Phase 4: Chat Interface & Companionship
 **Goal:** Launch the intelligent sidekick module that genuinely understands user telemetry.
-- [ ] Install and configure `assistant-ui` chat suite.
-- [ ] Integrate `mem0` library directly into the background processing pipeline to formulate raw "life facts" (e.g. "User feels drained after team meetings", "User adopted a dog").
-- [ ] Construct Agent System Prompts: Dynamically inject `mem0` foundational life facts as a system prompt prefix anytime the chat interface mounts.
-- [ ] Create generative conversational endpoints with native streaming UI support (`ai` SDK `streamText`).
+- [x] Install and configure `assistant-ui` chat suite.
+- [x] Integrate `mem0` library directly into the background processing pipeline to formulate raw "life facts" (e.g. "User feels drained after team meetings", "User adopted a dog").
+- [x] Construct Agent System Prompts: Dynamically inject `mem0` foundational life facts as a system prompt prefix anytime the chat interface mounts.
+- [x] Create generative conversational endpoints with native streaming UI support (`ai` SDK `streamText`).
 
 ## ⚪ Phase 5: Bring Your Own Key (BYOK) & App Connectors
 **Goal:** Achieve extensive app integration capabilities and empower users to own their models.
