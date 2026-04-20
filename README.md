@@ -1,47 +1,59 @@
-# OpenNext Starter
+# Debo
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+**The intelligent AI companion and journaling application that actively understands your life.**
+
+Debo is not just a journal—it's a living, memory-optimized system powered by the edge. Built with extreme minimalism on the surface, its backend integrates with your world using 130+ connectors and sophisticated AI protocols.
+
+## Capabilities
+
+*   **Clean Journaling**: Distraction free, pure minimalist interface using Shadcn UI.
+*   **RAG & AI Search**: Ask your journal anything. Debo remembers and retrieves exactly what you need via Cloudflare Vectorize.
+*   **Mem0 Integration**: A dynamic memory layer that silently learns your preferences, relationships, and routines as you write.
+*   **130+ App Connectors**: Plug in Gmail, Notion, Google Calendar, and more to contextualize your entries.
+*   **Bring Your Own Key (BYOK)**: Use our default models (Cloudflare Workers AI) at no extra cost, or plug in your own API keys for OpenAI, Anthropic, or local Ollama servers.
+*   **MCP Support**: Add external tools by providing MCP server URLs, and export your Debo data via the native Debo MCP server.
+
+## Tech Stack
+*   **Frontend**: Next.js App Router, React, TailwindCSS v4, Shadcn UI
+*   **Auth**: Better-Auth
+*   **Database**: Neon DB (Serverless Postgres)
+*   **Edge & AI**: Cloudflare Workers, Workers AI, Vectorize, R2 (managed via Wrangler)
+*   **AI Interfaces**: `assistant-ui`, `mem0`, `@modelcontextprotocol/sdk`
 
 ## Getting Started
 
-Read the documentation at https://opennext.js.org/cloudflare.
+### Prerequisites
+*   Node.js & `bun`
+*   A Cloudflare account
+*   A NeonDB connection string
 
-## Develop
+### Setup
 
-Run the Next.js development server:
+1. **Install dependencies**
+   ```bash
+   bun install
+   ```
 
-```bash
-npm run dev
-# or similar package manager command
-```
+2. **Environment Configuration**
+   Copy `.env.example` to `.env` and fill out your Neon DB credentials and Better-Auth secrets.
+   
+3. **Cloudflare Setup**
+   Ensure Wrangler is authenticated:
+   ```bash
+   bunx wrangler login
+   ```
+   *Provision your vector index and R2 bucket according to the setup guides in `/docs`.*
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. **Run Locally**
+   ```bash
+   bun run dev
+   ```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Documentation
+Discover the full architecture, plans, and technical specifications in the `/docs` directory.
+- [PRD](./docs/PRD.md)
+- [System Architecture](./docs/ARCHITECTURE.md)
+- [Integration System](./docs/CONNECTORS_AND_AI.md)
 
-## Preview
-
-Preview the application locally on the Cloudflare runtime:
-
-```bash
-npm run preview
-# or similar package manager command
-```
-
-## Deploy
-
-Deploy the application to Cloudflare:
-
-```bash
-npm run deploy
-# or similar package manager command
-```
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## License
+MIT License.
