@@ -58,6 +58,7 @@ Debo is not just a journal—it's a living, memory-optimized system powered by t
 
 ## Documentation
 Discover the full architecture, plans, and technical specifications in the `/docs` directory.
+- [Phases & Roadmap](./docs/PHASES.md)
 - [PRD](./docs/PRD.md)
 - [System Architecture](./docs/ARCHITECTURE.md)
 - [Integration System](./docs/CONNECTORS_AND_AI.md)
