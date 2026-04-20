@@ -1,5 +1,12 @@
 # Debo
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org/)
+[![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare)](https://workers.cloudflare.com/)
+[![Better Auth](https://img.shields.io/badge/Better_Auth-Security-blue)](https://better-auth.com/)
+
+<img src="./public/og-image.png" alt="Debo AI Companion" width="100%" />
+
 **The intelligent AI companion and journaling application that actively understands your life.**
 
 Debo is not just a journal—it's a living, memory-optimized system powered by the edge. Built with extreme minimalism on the surface, its backend integrates with your world using 130+ connectors and sophisticated AI protocols.
