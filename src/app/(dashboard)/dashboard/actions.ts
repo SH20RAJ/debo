@@ -6,6 +6,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { eq, desc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 export async function getJournals() {
     const session = await auth.api.getSession({ headers: await headers() });
@@ -40,7 +41,24 @@ export async function saveJournal(content: string, id?: string) {
         throw new Error("Content cannot be empty");
     }
 
-    let journalId = id;
+    let journalId = id || crypto.randomUUID();
+    
+    // Generate Embedding via Cloudflare AI
+    let vectorizeId: string | null = null;
+    let values: number[] = [];
+    let env: CloudflareEnv | null = null;
+    
+    try {
+        const ctx = await getCloudflareContext({ async: true });
+        env = ctx.env as CloudflareEnv;
+        if (env.AI && env.VECTOR_INDEX) {
+            const result = await env.AI.run('@cf/baai/bge-large-en-v1.5', { text: [content] });
+            values = (result as any).data[0];
+            vectorizeId = crypto.randomUUID();
+        }
+    } catch (err) {
+        console.warn("Cloudflare AI/Vectorize not available or failed:", err);
+    }
 
     if (id) {
         // Update
@@ -49,16 +67,45 @@ export async function saveJournal(content: string, id?: string) {
         
         await db.update(journals).set({
             content,
+            vectorizeId: vectorizeId || existing.vectorizeId,
             updatedAt: new Date()
         }).where(eq(journals.id, id));
+        
+        if (values.length > 0 && vectorizeId && env?.VECTOR_INDEX) {
+            try {
+                await env.VECTOR_INDEX.insert([
+                    {
+                        id: vectorizeId,
+                        values,
+                        metadata: { userId: session.user.id, journalId }
+                    }
+                ]);
+                if (existing.vectorizeId) {
+                    await env.VECTOR_INDEX.deleteByIds([existing.vectorizeId]);
+                }
+            } catch(e) { console.error("Vectorize update error:", e); }
+        }
+        
     } else {
         // Insert
-        journalId = crypto.randomUUID();
         await db.insert(journals).values({
             id: journalId,
             userId: session.user.id,
             content,
+            vectorizeId
         });
+        
+        if (values.length > 0 && vectorizeId && env?.VECTOR_INDEX) {
+            try {
+                await env.VECTOR_INDEX.insert([
+                    {
+                        id: vectorizeId,
+                        values,
+                        metadata: { userId: session.user.id, journalId }
+                    }
+                ]);
+            } catch(e) { console.error("Vectorize insert error:", e); }
+        }
     }
 
     revalidatePath("/dashboard");
