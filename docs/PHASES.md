@@ -26,8 +26,8 @@ This document meticulously tracks the execution phases, architectural decisions,
 **Goal:** Front-facing interaction, user acquisition, and initial journal ingestion pipeline.
 - [x] Build Landing Page relying strictly on Server Components for layout rules.
 - [x] Construct isolated Client Component interactive containers (Hero, Animations).
-- [ ] Implement Auth UI (`/login`, `/signup`) utilizing Better-Auth flows.
-- [ ] Build Protected Dashboard Route (`(dashboard)/`).
+- [x] Implement Auth UI (`/login`, `/signup`) utilizing Better-Auth flows.
+- [x] Build Protected Dashboard Route (`(dashboard)/`).
 - [ ] Create the Minimalist Markdown Journal Editor UI:
   - [ ] Implement robust markdown parsing logic.
   - [ ] Build autosave abstraction logic connecting to Neon DB.

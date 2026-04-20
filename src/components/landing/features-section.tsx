@@ -3,7 +3,7 @@ import { Brain, CloudLightning, DatabaseZap, Lock } from "lucide-react";
 const features = [
   {
     name: "AI Life Companion",
-    description: "Your daily journaling feeds directly into an intelligent AI model that contextualizes your life, dreams, and goals.",
+    description: "Your daily journaling feeds directly into an intelligent AI model that contextualizes your life, dreams, and goals perfectly.",
     icon: Brain,
   },
   {
@@ -25,27 +25,35 @@ const features = [
 
 export function FeaturesSection() {
   return (
-    <section id="features" className="container mx-auto px-4 py-24 sm:py-32">
-      <div className="mx-auto max-w-2xl text-center">
-        <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Everything you need to remember…</h2>
-        <p className="mt-6 text-lg leading-8 text-muted-foreground">
-          Debo combines minimalist journaling with bleeding&#8209;edge memory systems to act as your ultimate copilot.
+    <section id="features" className="container mx-auto px-4 py-24 sm:py-32 bg-background">
+      <div className="mx-auto max-w-2xl text-center mb-16">
+        <h2 className="text-3xl font-bold tracking-tight sm:text-4xl text-foreground">
+          Everything you need to remember
+        </h2>
+        <p className="mt-4 text-lg text-muted-foreground text-balance">
+          Debo combines extremely minimalist journaling with cutting-edge memory systems.
         </p>
       </div>
-      <div className="mx-auto mt-16 max-w-5xl sm:mt-20 lg:mt-24">
-        <dl className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-10 lg:max-w-none lg:grid-cols-2 lg:gap-y-16">
+      
+      <div className="mx-auto max-w-5xl">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
           {features.map((feature) => (
-            <div key={feature.name} className="relative pl-16 group hover:bg-muted/50 p-6 rounded-2xl transition-colors">
-              <dt className="text-base font-semibold leading-7">
-                <div className="absolute left-6 top-6 flex h-10 w-10 items-center justify-center rounded-lg bg-primary group-hover:scale-105 transition-transform motion-reduce:transform-none">
-                  <feature.icon className="h-6 w-6 text-primary-foreground" aria-hidden="true" />
+            <div 
+              key={feature.name} 
+              className="p-6 rounded-lg border bg-card text-card-foreground shadow-sm"
+            >
+              <div className="flex items-center gap-x-3 mb-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-md border bg-muted">
+                  <feature.icon className="h-5 w-5 text-foreground" aria-hidden="true" />
                 </div>
-                {feature.name}
-              </dt>
-              <dd className="mt-2 text-base leading-7 text-muted-foreground">{feature.description}</dd>
+                <h3 className="text-lg font-semibold text-foreground">{feature.name}</h3>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {feature.description}
+              </p>
             </div>
           ))}
-        </dl>
+        </div>
       </div>
     </section>
   );

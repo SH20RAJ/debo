@@ -1,26 +1,32 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme-toggle";
+
+import { Badge } from "@/components/ui/badge";
 
 export function Navbar() {
   return (
-    <header className="sticky top-0 z-50 w-full border-b backdrop-blur-md bg-background/80 supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b bg-background">
       <div className="container mx-auto px-4 h-14 flex items-center justify-between">
-        <Link href="/" className="flex items-center space-x-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md">
-          <span className="font-bold sm:inline-block">Debo</span>
+        <Link href="/" className="flex items-center space-x-2 font-bold tracking-tight text-foreground">
+          Debo
+          <Badge variant="secondary" className="ml-2 text-[10px] px-1.5 h-4 leading-none rounded-full">
+            Beta
+          </Badge>
         </Link>
         <nav className="flex items-center space-x-4">
-          <Link href="/features" className="text-sm font-medium transition-colors hover:text-foreground/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md">
+          <Link href="/features" className="hidden sm:block text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Features
           </Link>
-          <Link href="/privacy" className="text-sm font-medium transition-colors hover:text-foreground/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md">
-            Privacy
-          </Link>
-          <Button variant="secondary" size="sm" asChild>
-            <Link href="/login" className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">Log in</Link>
-          </Button>
-          <Button size="sm" asChild>
-            <Link href="/signup" className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">Sign up</Link>
-          </Button>
+          <div className="flex items-center gap-2 border-l border-border pl-4">
+            <ThemeToggle />
+            <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
+              <Link href="/login">Log in</Link>
+            </Button>
+            <Button size="sm" asChild>
+              <Link href="/signup">Sign up</Link>
+            </Button>
+          </div>
         </nav>
       </div>
     </header>
