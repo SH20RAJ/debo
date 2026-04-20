@@ -32,7 +32,7 @@ export function HeroSection() {
             disabled={isGettingStarted}
             asChild
           >
-            <Link href="/signup">
+            <Link href="/join">
                 {isGettingStarted ? "Loading..." : "Get Started Now"}
                 <ArrowRight className="ml-2 w-4 h-4" />
             </Link>

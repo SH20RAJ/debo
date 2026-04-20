@@ -20,11 +20,8 @@ export function Navbar() {
           </Link>
           <div className="flex items-center gap-2 border-l border-border pl-4">
             <ThemeToggle />
-            <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
-              <Link href="/login">Log in</Link>
-            </Button>
             <Button size="sm" asChild>
-              <Link href="/signup">Sign up</Link>
+              <Link href="/join">Get Started</Link>
             </Button>
           </div>
         </nav>
