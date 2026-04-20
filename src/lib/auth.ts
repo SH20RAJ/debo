@@ -8,6 +8,7 @@ export const auth = betterAuth({
         provider: "pg",
         schema: schema
     }),
+    baseURL: process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
     socialProviders: {
         google: {
             clientId: process.env.GOOGLE_CLIENT_ID as string,

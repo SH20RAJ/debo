@@ -10,8 +10,8 @@ This document meticulously tracks the execution phases, architectural decisions,
   - [x] Setup `better-auth` and `better-auth/adapters/drizzle`.
   - [x] Configure `@neondatabase/serverless` connection pool.
   - [x] Build Drizzle ORM schema for users, sessions, and journal entries.
-- [ ] Initialize Cloudflare Infrastructure:
-  - [ ] Configure `wrangler.toml` for environmental bindings.
+- [x] Initialize Cloudflare Infrastructure:
+  - [x] Configure `wrangler.toml` (wrangler.jsonc) for environmental bindings.
   - [ ] Provision local resources (Vectorize, AI) and execute typegen integrations.
 
 ## 🟢 Phase 1.5: Open Source Standards
@@ -22,17 +22,17 @@ This document meticulously tracks the execution phases, architectural decisions,
 - [x] Configure Next.js Application Metadata in `src/app/layout.tsx`.
 - [x] Export `opengraph-image.png` utilizing File-based metadata routing.
 
-## 🟡 Phase 2: Core MVP (User Experience)
+## 🟢 Phase 2: Core MVP (User Experience)
 **Goal:** Front-facing interaction, user acquisition, and initial journal ingestion pipeline.
 - [x] Build Landing Page relying strictly on Server Components for layout rules.
 - [x] Construct isolated Client Component interactive containers (Hero, Animations).
 - [x] Implement Auth UI (`/login`, `/signup`) utilizing Better-Auth flows.
 - [x] Build Protected Dashboard Route (`(dashboard)/`).
-- [ ] Create the Minimalist Markdown Journal Editor UI:
-  - [ ] Implement robust markdown parsing logic.
-  - [ ] Build autosave abstraction logic connecting to Neon DB.
-  - [ ] Handle error states with strictly accessible Toast notifications from Shadcn.
-- [ ] Construct the Journal Entry historical viewer and timeline UI.
+- [x] Create the Minimalist Markdown Journal Editor UI:
+  - [x] Implement robust markdown parsing logic.
+  - [x] Build autosave abstraction logic connecting to Neon DB.
+  - [x] Handle error states with strictly accessible Toast notifications from Shadcn.
+- [x] Construct the Journal Entry historical viewer and timeline UI.
 
 ## ⚪ Phase 3: AI & The Edge Layer
 **Goal:** Offload heavy computational vector mathematics over to Cloudflare to guarantee Next.js remains wildly performant.

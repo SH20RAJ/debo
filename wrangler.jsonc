@@ -32,6 +32,15 @@
 			"service": "debo"
 		}
 	],
+	"ai": {
+		"binding": "AI"
+	},
+	"vectorize": [
+		{
+			"binding": "VECTOR_INDEX",
+			"index_name": "debo-index"
+		}
+	],
 	"observability": {
 		"enabled": true
 	},
