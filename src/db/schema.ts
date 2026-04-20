@@ -63,3 +63,4 @@ export const userPreferences = pgTable("user_preference", {
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+

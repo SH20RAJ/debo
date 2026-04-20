@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { BookOpen, Settings, LayoutDashboard, BrainCircuit } from "lucide-react"
+import { BookOpen, Settings, LayoutDashboard, BrainCircuit, MessageSquareText } from "lucide-react"
 
 import {
   Sidebar,
@@ -41,6 +41,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <Link href="/dashboard">
                     <LayoutDashboard />
                     <span>Dashboard</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={pathname === "/dashboard/companion"}>
+                  <Link href="/dashboard/companion">
+                    <MessageSquareText />
+                    <span>Companion</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
