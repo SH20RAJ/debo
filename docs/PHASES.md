@@ -36,12 +36,12 @@ This document meticulously tracks the execution phases, architectural decisions,
 
 ## 🟢 Phase 3: AI & The Edge Layer
 **Goal:** Offload heavy computational vector mathematics over to Cloudflare to guarantee Next.js remains wildly performant.
-- [ ] Abstract Next.js AI processing logic over to a dedicated Cloudflare Worker (`/agent-worker`).
+- [x] Abstract Next.js AI processing logic over to a dedicated Cloudflare Worker (`/agent-worker`).
 - [x] Integrate Workers AI bindings specifically for `@cf/baai/bge-large-en-v1.5` text embeddings.
-- [ ] Configure asynchronous Vectorize sequence: 
-  - [ ] On journal save event -> send payload to queue -> encode to vectors.
+- [x] Configure asynchronous Vectorize sequence: 
+  - [x] On journal save event -> send payload to queue -> encode to vectors.
   - [x] Store vectors in Cloudflare Vectorize index.
-  - [ ] Map `vectorizeId` back to the NeonDB row via a background callback.
+  - [x] Map `vectorizeId` back to the NeonDB row via a background callback.
 - [x] Implement Semantic Query Logic: Convert user plain-text chat queries into embeddings for cosine similarity searching against past journals.
 
 ## 🟢 Phase 4: Chat Interface & Companionship
