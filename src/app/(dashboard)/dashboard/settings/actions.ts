@@ -7,6 +7,7 @@ import { headers } from "next/headers";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { encrypt, decrypt } from "@/lib/encryption";
+import { nango } from "@/lib/nango";
 
 export async function getUserPreferences() {
     const session = await auth.api.getSession({ headers: await headers() });
@@ -72,4 +73,33 @@ export async function saveUserPreferences(data: {
 
     revalidatePath("/dashboard/settings");
     return true;
+}
+
+export async function getNangoConnections() {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session) throw new Error("Unauthorized");
+
+    try {
+        if (!process.env.NANGO_SECRET_KEY) return [];
+        
+        const connections = await nango.listConnections(session.user.id);
+        return connections;
+    } catch (error) {
+        console.error("Failed to list Nango connections:", error);
+        return [];
+    }
+}
+
+export async function deleteNangoConnection(providerConfigKey: string) {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session) throw new Error("Unauthorized");
+
+    try {
+        await nango.deleteConnection(providerConfigKey, session.user.id);
+        revalidatePath("/dashboard/settings");
+        return true;
+    } catch (error) {
+        console.error("Failed to delete Nango connection:", error);
+        return false;
+    }
 }

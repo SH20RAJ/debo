@@ -1,8 +1,11 @@
-import { getUserPreferences } from "./actions";
+import { getUserPreferences, getNangoConnections } from "./actions";
 import { SettingsForm } from "@/components/dashboard/settings-form";
 
 export default async function SettingsPage() {
-    const preferences = await getUserPreferences();
+    const [preferences, connections] = await Promise.all([
+        getUserPreferences(),
+        getNangoConnections()
+    ]);
 
     return (
         <div className="max-w-4xl mx-auto space-y-8">
@@ -14,7 +17,11 @@ export default async function SettingsPage() {
             <div className="grid gap-6 md:grid-cols-2">
                 {/* BYOK Section */}
                 <div className="md:col-span-2">
-                    <SettingsForm initialData={preferences} />
+                    <SettingsForm 
+                        initialData={preferences} 
+                        connections={connections} 
+                        userId={session.user.id}
+                    />
                 </div>
             </div>
         </div>
