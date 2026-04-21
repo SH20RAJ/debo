@@ -6,15 +6,13 @@ import { saveJournal } from "@/app/(dashboard)/dashboard/actions";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Save, ArrowLeft, Loader2, Eye, Edit3 } from "lucide-react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { Save, ArrowLeft, Loader2 } from "lucide-react";
+import BlockEditor from "./block-editor";
 
 export function JournalEditor({ initialContent = "", initialId = "" }: { initialContent?: string, initialId?: string }) {
     const [content, setContent] = useState(initialContent);
     const [id, setId] = useState(initialId);
     const [isSaving, setIsSaving] = useState(false);
-    const [isPreview, setIsPreview] = useState(false);
     const router = useRouter();
     const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -65,13 +63,7 @@ export function JournalEditor({ initialContent = "", initialId = "" }: { initial
                         {isSaving && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
                         {isSaving ? "Saving..." : "Saved"}
                     </div>
-                    <Button variant="outline" size="sm" onClick={() => setIsPreview(!isPreview)}>
-                        {isPreview ? (
-                            <><Edit3 className="h-4 w-4 mr-2" /> Edit</>
-                        ) : (
-                            <><Eye className="h-4 w-4 mr-2" /> Preview</>
-                        )}
-                    </Button>
+
                     <Button size="sm" onClick={() => handleSave(content, id)} disabled={isSaving}>
                         <Save className="h-4 w-4 mr-2" />
                         Save Now
@@ -80,20 +72,10 @@ export function JournalEditor({ initialContent = "", initialId = "" }: { initial
             </div>
 
             <div className="min-h-[500px] border rounded-xl bg-card p-6 md:p-8 shadow-sm">
-                {isPreview ? (
-                    <div className="prose prose-neutral dark:prose-invert max-w-none">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                            {content || "*No content yet...*"}
-                        </ReactMarkdown>
-                    </div>
-                ) : (
-                    <TextareaAutosize
-                        value={content}
-                        onChange={(e) => setContent(e.target.value)}
-                        placeholder="What's on your mind? (Markdown supported)"
-                        className="w-full resize-none bg-transparent text-lg focus:outline-none placeholder:text-muted-foreground/60 min-h-[400px]"
-                    />
-                )}
+                <BlockEditor 
+                    initialContent={content} 
+                    onChange={(markdown) => setContent(markdown)} 
+                />
             </div>
         </div>
     );

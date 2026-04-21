@@ -1,0 +1,45 @@
+import React, { useState, useEffect } from "react";
+import { EditorRoot, EditorContent, type JSONContent, handleCommandNavigation } from "novel";
+import { defaultExtensions } from "./extensions";
+import { slashCommand, suggestionItems, renderItems } from "./slash-command";
+
+const extensions = [...defaultExtensions, slashCommand.configure({
+  suggestion: {
+    items: ({ query }: { query: string }) => {
+      return suggestionItems.filter((item) =>
+        item.title.toLowerCase().startsWith(query.toLowerCase()) ||
+        item.searchTerms?.some((term) => term.startsWith(query.toLowerCase()))
+      ).slice(0, 10);
+    },
+    render: renderItems,
+  }
+})];
+
+interface BlockEditorProps {
+  initialContent?: string;
+  onChange: (markdown: string) => void;
+}
+
+export default function BlockEditor({ initialContent, onChange }: BlockEditorProps) {
+  // Novel handles the initial conversion if provided as content
+  return (
+    <EditorRoot>
+      <EditorContent
+        initialContent={initialContent as any}
+        extensions={extensions as any}
+        editorProps={{
+          handleDOMEvents: {
+            keydown: (_view, event) => handleCommandNavigation(event),
+          },
+          attributes: {
+            class: `prose prose-lg dark:prose-invert focus:outline-none max-w-full min-h-[400px]`,
+          },
+        }}
+        onUpdate={({ editor }) => {
+          const markdown = editor.storage.markdown.getMarkdown();
+          onChange(markdown);
+        }}
+      />
+    </EditorRoot>
+  );
+}

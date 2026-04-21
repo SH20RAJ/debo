@@ -1,12 +1,14 @@
 "use client";
 
-import { useChatRuntime } from "@assistant-ui/react-ai-sdk";
+import { useChatRuntime, AssistantChatTransport } from "@assistant-ui/react-ai-sdk";
 import { AssistantRuntimeProvider } from "@assistant-ui/react";
 import { Thread } from "@/components/assistant-ui/thread";
 
 export function ChatCompanion() {
     const runtime = useChatRuntime({
-        api: "/api/chat",
+        transport: new AssistantChatTransport({
+            api: "/api/chat",
+        }),
     });
 
     return (

@@ -7,11 +7,11 @@ import { headers } from "next/headers";
 import { inArray, eq, and } from "drizzle-orm";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
-export async function searchJournals(query: string, limit: number = 5) {
+export async function searchJournals(query: string = "", limit: number = 5) {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session) throw new Error("Unauthorized");
 
-    if (!query.trim()) {
+    if (!query || typeof query !== "string" || !query.trim()) {
         return [];
     }
 
