@@ -5,11 +5,16 @@ import { searchJournals } from "../../(dashboard)/dashboard/search-actions";
 import { MemoryClient } from "mem0ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { createAnthropic } from "@ai-sdk/anthropic";
-import { streamText } from "ai";
+import { createOllama } from "ollama-ai-provider";
+import { streamText, tool } from "ai";
+import { z } from "zod";
 import { decrypt } from "@/lib/encryption";
 import { db } from "@/db";
 import { userPreferences } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { getCalendarEvents, getRecentEmails } from "@/lib/integrations";
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
 
 export const runtime = "edge";
 
@@ -107,6 +112,16 @@ Guidelines:
             } catch (e) {
                 console.error("Failed to initialize Anthropic, falling back to Cloudflare:", e);
             }
+        } else if (prefs?.activeProvider === "ollama") {
+            try {
+                const ollama = createOllama({
+                    baseURL: prefs.ollamaUrl || "http://localhost:11434/api",
+                });
+                model = ollama("llama3.1"); // Default to llama3.1 for Ollama
+                provider = "ollama";
+            } catch (e) {
+                console.error("Failed to initialize Ollama, falling back to Cloudflare:", e);
+            }
         }
 
         // 4. Inference
@@ -145,11 +160,59 @@ Guidelines:
                 }
             });
         } else {
+            // Prepare Tools
+            const tools: any = {
+                getCalendarEvents: tool({
+                    description: "Get the user's upcoming calendar events from Google Calendar.",
+                    parameters: z.object({}),
+                    execute: async () => {
+                        return await getCalendarEvents(userId);
+                    },
+                }),
+                getRecentEmails: tool({
+                    description: "Get the user's most recent emails from Gmail.",
+                    parameters: z.object({}),
+                    execute: async () => {
+                        return await getRecentEmails(userId);
+                    },
+                }),
+            };
+
+            // Ingress MCP Tools
+            if (prefs?.mcpUrl) {
+                try {
+                    const transport = new SSEClientTransport(new URL(prefs.mcpUrl));
+                    const client = new Client(
+                        { name: "debo-client", version: "1.0.0" },
+                        { capabilities: {} }
+                    );
+                    await client.connect(transport);
+                    const mcpTools = await client.listTools();
+                    
+                    for (const mcpTool of mcpTools.tools) {
+                        tools[mcpTool.name] = tool({
+                            description: mcpTool.description || "",
+                            parameters: z.any(), // MCP uses JSON Schema, mapping to Zod is hard, so we use any
+                            execute: async (args) => {
+                                const result = await client.callTool({
+                                    name: mcpTool.name,
+                                    arguments: args
+                                });
+                                return result;
+                            }
+                        });
+                    }
+                } catch (e) {
+                    console.error("Failed to connect to MCP server:", e);
+                }
+            }
+
             // Use Vercel AI SDK for BYOK providers
             const result = await streamText({
                 model,
                 system: systemPrompt,
                 messages,
+                tools,
             });
 
             return result.toTextStreamResponse();

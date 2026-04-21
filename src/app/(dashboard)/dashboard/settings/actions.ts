@@ -33,6 +33,7 @@ export async function saveUserPreferences(data: {
     openaiKey?: string, 
     anthropicKey?: string,
     ollamaUrl?: string,
+    mcpUrl?: string,
     activeProvider?: string 
 }) {
     const session = await auth.api.getSession({ headers: await headers() });
@@ -50,6 +51,7 @@ export async function saveUserPreferences(data: {
     const updateData: any = {
         activeProvider: data.activeProvider || "cloudflare",
         ollamaUrl: data.ollamaUrl || null,
+        mcpUrl: data.mcpUrl || null,
         updatedAt: new Date()
     };
 

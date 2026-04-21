@@ -21,6 +21,7 @@ export function SettingsForm({
         openaiKey?: string | null, 
         anthropicKey?: string | null,
         ollamaUrl?: string | null,
+        mcpUrl?: string | null,
         activeProvider?: string | null 
     } | null,
     connections?: any[],
@@ -29,6 +30,7 @@ export function SettingsForm({
     const [openaiKey, setOpenaiKey] = useState(initialData?.openaiKey || "");
     const [anthropicKey, setAnthropicKey] = useState(initialData?.anthropicKey || "");
     const [ollamaUrl, setOllamaUrl] = useState(initialData?.ollamaUrl || "http://localhost:11434");
+    const [mcpUrl, setMcpUrl] = useState(initialData?.mcpUrl || "");
     const [activeProvider, setActiveProvider] = useState(initialData?.activeProvider || "cloudflare");
     const [isSaving, setIsSaving] = useState(false);
     const [isConnecting, setIsConnecting] = useState<string | null>(null);
@@ -42,6 +44,7 @@ export function SettingsForm({
                 openaiKey, 
                 anthropicKey, 
                 ollamaUrl, 
+                mcpUrl,
                 activeProvider 
             });
             toast.success("Settings saved successfully.");
@@ -160,6 +163,17 @@ export function SettingsForm({
                                 onChange={(e) => setOllamaUrl(e.target.value)}
                             />
                             <p className="text-xs text-muted-foreground">Point to your local Llama-3 or Mistral instance.</p>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="mcpUrl">MCP Server URL (SSE)</Label>
+                            <Input
+                                id="mcpUrl"
+                                placeholder="http://localhost:3001/sse"
+                                value={mcpUrl}
+                                onChange={(e) => setMcpUrl(e.target.value)}
+                            />
+                            <p className="text-xs text-muted-foreground">Connect to a private Model Context Protocol server.</p>
                         </div>
                     </div>
                 </CardContent>

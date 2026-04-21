@@ -60,6 +60,7 @@ export const userPreferences = pgTable("user_preference", {
     openaiKey: text("openai_key"),
     anthropicKey: text("anthropic_key"),
     ollamaUrl: text("ollama_url"),
+    mcpUrl: text("mcp_url"),
     activeProvider: text("active_provider").default("cloudflare"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),

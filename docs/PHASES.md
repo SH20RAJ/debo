@@ -51,16 +51,16 @@ This document meticulously tracks the execution phases, architectural decisions,
 - [x] Construct Agent System Prompts: Dynamically inject `mem0` foundational life facts as a system prompt prefix anytime the chat interface mounts.
 - [x] Create generative conversational endpoints with native streaming UI support (`ai` SDK `streamText`).
 
-## ⚪ Phase 5: Bring Your Own Key (BYOK) & App Connectors
+## 🟢 Phase 5: Bring Your Own Key (BYOK) & App Connectors
 **Goal:** Achieve extensive app integration capabilities and empower users to own their models.
-- [ ] Construct Dashboard BYOK Settings Panel.
-- [ ] Security Layer: Safely encrypt and securely store BYOK keys within DB `preferences`.
-- [ ] Dynamic AI Router: Update AI logic to selectively initialize Vercel AI SDK wrappers (Anthropic, OpenAI, local Ollama) over Cloudflare defaults if user keys are queried from DB.
-- [ ] Deploy Web Connectors via Nango:
-  - [ ] Spin up Nango instance for OAuth token management tracking.
-  - [ ] Bind Google Calendar, Gmail, and Notion API connectors.
-  - [ ] Wire these Web APIs strictly as *Tools* within the AI chat generation parameters.
-- [ ] Implement Model Context Protocol (MCP) Ingress/Egress:
-  - [ ] **Ingress Tools**: Create UI for pasting standard SSE URLs for external/private MCP servers, parsing them securely using `@modelcontextprotocol/sdk`.
-  - [ ] Build an ingress pipeline dynamically granting the `assistant-ui` chat interface access to these custom MCP tool definitions.
-  - [ ] **Egress API**: Establish Debo Egress API (`/api/mcp`) so external instances (cursor, claude desktop) can autonomously utilize the user's journal as a native Tool/Resource provider.
+- [x] Construct Dashboard BYOK Settings Panel.
+- [x] Security Layer: Safely encrypt and securely store BYOK keys within DB `preferences`.
+- [x] Dynamic AI Router: Update AI logic to selectively initialize Vercel AI SDK wrappers (Anthropic, OpenAI, local Ollama) over Cloudflare defaults if user keys are queried from DB.
+- [x] Deploy Web Connectors via Nango:
+  - [x] Spin up Nango instance for OAuth token management tracking.
+  - [x] Bind Google Calendar, Gmail, and Notion API connectors.
+  - [x] Wire these Web APIs strictly as *Tools* within the AI chat generation parameters.
+- [x] Implement Model Context Protocol (MCP) Ingress/Egress:
+  - [x] **Ingress Tools**: Create UI for pasting standard SSE URLs for external/private MCP servers, parsing them securely using `@modelcontextprotocol/sdk`.
+  - [x] Build an ingress pipeline dynamically granting the `assistant-ui` chat interface access to these custom MCP tool definitions.
+  - [x] **Egress API**: Establish Debo Egress API (`/api/mcp`) so external instances (cursor, claude desktop) can autonomously utilize the user's journal as a native Tool/Resource provider.
