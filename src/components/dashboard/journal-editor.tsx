@@ -52,26 +52,26 @@ export function JournalEditor({ initialContent = "", initialId = "" }: { initial
     }, [content, id, handleSave, initialContent]);
 
     return (
-        <div className="max-w-3xl mx-auto space-y-6">
-            <div className="flex items-center justify-between">
-                <Button variant="ghost" size="sm" onClick={() => router.push("/dashboard")} className="text-muted-foreground">
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Back
+        <div className="max-w-3xl mx-auto space-y-12">
+            <div className="flex items-center justify-between sticky top-0 bg-background/80 backdrop-blur-md z-10 py-4 -mx-4 px-4">
+                <Button variant="ghost" size="sm" onClick={() => router.push("/dashboard")} className="text-muted-foreground hover:bg-transparent hover:text-foreground transition-colors group">
+                    <ArrowLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+                    Archive
                 </Button>
-                <div className="flex items-center space-x-2">
-                    <div className="text-xs text-muted-foreground mr-4 flex items-center">
-                        {isSaving && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
-                        {isSaving ? "Saving..." : "Saved"}
+                <div className="flex items-center space-x-4">
+                    <div className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-bold flex items-center">
+                        {isSaving && <Loader2 className="h-3 w-3 mr-2 animate-spin text-primary" />}
+                        {isSaving ? "Syncing" : "All changes saved"}
                     </div>
 
-                    <Button size="sm" onClick={() => handleSave(content, id)} disabled={isSaving}>
+                    <Button variant="outline" size="sm" onClick={() => handleSave(content, id)} disabled={isSaving} className="rounded-full px-4 hover:bg-primary hover:text-primary-foreground transition-all duration-300">
                         <Save className="h-4 w-4 mr-2" />
-                        Save Now
+                        Save
                     </Button>
                 </div>
             </div>
 
-            <div className="min-h-[500px] border rounded-xl bg-card p-6 md:p-8 shadow-sm">
+            <div className="min-h-[600px] animate-in fade-in slide-in-from-bottom-2 duration-1000">
                 <BlockEditor 
                     initialContent={content} 
                     onChange={(markdown) => setContent(markdown)} 

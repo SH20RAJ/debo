@@ -32,7 +32,7 @@ export default function BlockEditor({ initialContent, onChange }: BlockEditorPro
             keydown: (_view, event) => handleCommandNavigation(event),
           },
           attributes: {
-            class: `prose prose-lg dark:prose-invert focus:outline-none max-w-full min-h-[400px]`,
+            class: `prose prose-lg dark:prose-invert focus:outline-none max-w-full min-h-[500px] prose-headings:font-semibold prose-p:text-foreground/90 selection:bg-primary/20`,
           },
         }}
         onUpdate={({ editor }) => {

@@ -14,14 +14,16 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset className="bg-background">
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b border-border/50 px-4 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-          <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
+      <SidebarInset className="bg-background flex flex-col h-screen overflow-hidden">
+        <header className="flex h-14 shrink-0 items-center gap-2 px-6 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+          <div className="flex items-center gap-2">
+            <SidebarTrigger className="-ml-1 text-muted-foreground hover:text-foreground transition-colors" />
           </div>
         </header>
-        <main className="flex-1 p-6 md:p-8">
-          {children}
+        <main className="flex-1 overflow-y-auto px-6 py-4 md:px-10 md:py-8 animate-in fade-in duration-500">
+          <div className="max-w-5xl mx-auto h-full">
+            {children}
+          </div>
         </main>
       </SidebarInset>
     </SidebarProvider>

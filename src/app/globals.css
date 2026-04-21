@@ -125,8 +125,24 @@
 	}
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "cv11", "ss01";
+    font-variant-ligatures: discretionary-ligatures;
 	}
   html {
-    @apply font-sans;
+    @apply font-sans scroll-smooth;
 	}
+
+  ::selection {
+    @apply bg-primary/15 text-foreground;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/10 rounded-full hover:bg-muted-foreground/20 transition-colors;
+  }
 }
