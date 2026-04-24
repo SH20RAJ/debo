@@ -81,14 +81,9 @@ Guidelines:
 
         if (!env.AI) return new Response("Cloudflare AI binding missing", { status: 500 });
 
-        let prefs;
-        try {
-            prefs = await db.query.userPreferences.findFirst({
-                where: eq(userPreferences.userId, session.user.id),
-            });
-        } catch (e) {
-            console.error("Database error in getUserPreferences (likely missing columns):", e);
-        }
+        const prefs = await db.query.userPreferences.findFirst({
+            where: eq(userPreferences.userId, userId),
+        });
 
         let provider = "cloudflare";
         let model: any = null;

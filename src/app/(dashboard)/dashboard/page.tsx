@@ -8,10 +8,10 @@ export default async function DashboardPage() {
   const journals = await getJournals();
 
   return (
-    <div className="space-y-12 pb-10">
+    <div className="flex-1 w-full max-w-5xl mx-auto px-6 py-4 md:px-10 md:py-8 space-y-12 pb-20 animate-in fade-in duration-500">
       <div className="flex items-end justify-between border-b pb-6 border-border/40">
         <div className="space-y-1">
-          <h1 className="text-4xl font-semibold tracking-tight tracking-tighter">Journal</h1>
+          <h1 className="text-4xl font-semibold tracking-tight">Journal</h1>
           <p className="text-muted-foreground text-lg">Your repository of thoughts and experiences.</p>
         </div>
         <Link href="/dashboard/journal/new">

@@ -12,7 +12,7 @@ export function ChatCompanion() {
     });
 
     return (
-        <div className="h-[calc(100vh-12rem)] flex flex-col border rounded-xl bg-card shadow-sm overflow-hidden">
+        <div className="flex-1 flex flex-col w-full h-full bg-background overflow-hidden">
             <AssistantRuntimeProvider runtime={runtime}>
                 <Thread />
             </AssistantRuntimeProvider>

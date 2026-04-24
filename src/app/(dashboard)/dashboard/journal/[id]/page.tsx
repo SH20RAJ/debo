@@ -22,7 +22,7 @@ export default async function JournalPage({ params }: { params: Promise<{ id: st
     }
 
     return (
-        <div className="max-w-4xl mx-auto py-8">
+        <div className="flex-1 w-full max-w-4xl mx-auto px-6 py-4 md:px-10 md:py-8 animate-in fade-in duration-500">
             <JournalEditor initialContent={initialContent} initialId={initialId} />
         </div>
     );
