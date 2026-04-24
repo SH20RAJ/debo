@@ -64,3 +64,14 @@ This document meticulously tracks the execution phases, architectural decisions,
   - [x] **Ingress Tools**: Create UI for pasting standard SSE URLs for external/private MCP servers, parsing them securely using `@modelcontextprotocol/sdk`.
   - [x] Build an ingress pipeline dynamically granting the `assistant-ui` chat interface access to these custom MCP tool definitions.
   - [x] **Egress API**: Establish Debo Egress API (`/api/mcp`) so external instances (cursor, claude desktop) can autonomously utilize the user's journal as a native Tool/Resource provider.
+
+## ⚪ Phase 6: Real-time Voice Companion (LiveKit)
+**Goal:** Transform Debo into a multimodal voice companion using LiveKit for sub-100ms latency interactions.
+- [ ] Initialize LiveKit Cloud project and configure environment bindings (`LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`).
+- [ ] Implement `VoiceCompanion` client component utilizing `@livekit/components-react`.
+- [ ] Build the **LiveKit Agent Worker**:
+  - [ ] Configure `VoicePipelineAgent` with STT (Deepgram) and TTS (Cartesia).
+  - [ ] Connect Agent to `mem0` and `Vectorize` context layers.
+  - [ ] Enable Tool-use for the voice agent (Calendar, Notion).
+- [ ] Deploy LiveKit SIP for inbound telephony ("Call your Journal").
+
