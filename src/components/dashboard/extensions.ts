@@ -90,7 +90,6 @@ export const defaultExtensions = [
       width: 4,
     },
     // Ensure no duplication if StarterKit version changes
-    history: true,
   }),
   tiptapImage,
   tiptapLink,

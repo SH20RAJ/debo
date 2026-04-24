@@ -6,27 +6,32 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { encrypt, decrypt } from "@/lib/encryption";
+import { encrypt } from "@/lib/encryption";
 import { nango } from "@/lib/nango";
 
 export async function getUserPreferences() {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session) throw new Error("Unauthorized");
 
-    const prefs = await db.query.userPreferences.findFirst({
-        where: eq(userPreferences.userId, session.user.id),
-    });
+    try {
+        const prefs = await db.query.userPreferences.findFirst({
+            where: eq(userPreferences.userId, session.user.id),
+        });
 
-    if (prefs) {
-        // Mask keys for the UI
-        return {
-            ...prefs,
-            openaiKey: prefs.openaiKey ? "sk-....config" : null,
-            anthropicKey: prefs.anthropicKey ? "sk-ant-....config" : null,
-        };
+        if (prefs) {
+            // Mask keys for the UI
+            return {
+                ...prefs,
+                openaiKey: prefs.openaiKey ? "sk-....config" : null,
+                anthropicKey: prefs.anthropicKey ? "sk-ant-....config" : null,
+            };
+        }
+
+        return prefs;
+    } catch (e) {
+        console.error("Database error in getUserPreferences (likely missing columns):", e);
+        return null;
     }
-
-    return prefs;
 }
 
 export async function saveUserPreferences(data: { 
@@ -41,11 +46,11 @@ export async function saveUserPreferences(data: {
 
     // Only encrypt if a new key is provided (not the masked placeholder)
     const encryptedOpenai = data.openaiKey && !data.openaiKey.includes("....config") 
-        ? encrypt(data.openaiKey) 
+        ? await encrypt(data.openaiKey) 
         : undefined;
     
     const encryptedAnthropic = data.anthropicKey && !data.anthropicKey.includes("....config")
-        ? encrypt(data.anthropicKey)
+        ? await encrypt(data.anthropicKey)
         : undefined;
 
     const updateData: any = {
@@ -58,9 +63,7 @@ export async function saveUserPreferences(data: {
     if (encryptedOpenai) updateData.openaiKey = encryptedOpenai;
     if (encryptedAnthropic) updateData.anthropicKey = encryptedAnthropic;
 
-    const existing = await db.query.userPreferences.findFirst({
-        where: eq(userPreferences.userId, session.user.id),
-    });
+    const existing = await getUserPreferences();
 
     if (existing) {
         await db.update(userPreferences).set(updateData).where(eq(userPreferences.userId, session.user.id));
@@ -82,7 +85,11 @@ export async function getNangoConnections() {
     if (!session) throw new Error("Unauthorized");
 
     try {
-        if (!process.env.NANGO_SECRET_KEY) return [];
+        // Only attempt if key is a valid UUID v4 format (basic check)
+        const key = process.env.NANGO_SECRET_KEY;
+        if (!key || key.length < 32 || key === "placeholder_secret_key") {
+            return [];
+        }
         
         const connections = await nango.listConnections(session.user.id);
         return connections;

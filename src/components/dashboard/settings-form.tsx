@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { KeyRound, ShieldCheck, Loader2, Link2, ExternalLink, Link2Off } from "lucide-react";
-import { Nango } from "@nangohq/frontend";
+import Nango from "@nangohq/frontend";
 import { deleteNangoConnection } from "@/app/(dashboard)/dashboard/settings/actions";
 import { useRouter } from "next/navigation";
 

@@ -271,8 +271,12 @@ export const renderItems = () => {
       return component?.ref?.onKeyDown(props);
     },
     onExit: () => {
-      popup?.[0].destroy();
-      component?.destroy();
+      if (popup?.[0]) {
+        popup[0].destroy();
+      }
+      if (component) {
+        component.destroy();
+      }
     },
   };
 };

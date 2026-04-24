@@ -31,7 +31,6 @@ export async function POST(req: Request) {
             if (typeof lastMsgObj.content === "string") {
                 lastMessage = lastMsgObj.content;
             } else if (Array.isArray(lastMsgObj.content)) {
-                // Handle multi-modal content types properly
                 lastMessage = lastMsgObj.content
                     .filter((c: any) => c.type === "text")
                     .map((c: any) => c.text)
@@ -43,7 +42,6 @@ export async function POST(req: Request) {
         const ctx = await getCloudflareContext({ async: true });
         const env = ctx.env as any;
 
-        // 1. Asynchronously save interaction to memory to progressively build facts
         if (env.MEM0_API_KEY) {
             const mem0 = new MemoryClient({ apiKey: env.MEM0_API_KEY, host: "https://api.mem0.ai" });
             ctx.ctx.waitUntil(
@@ -52,16 +50,13 @@ export async function POST(req: Request) {
             );
         }
 
-        // 2. Build Intelligent Context
         let context = "";
         try {
-            // A. Fetch Semantic Vectorize Journals
             const relevantJournals = await searchJournals(lastMessage, 4);
             if (relevantJournals.length > 0) {
                 context += "From Past Entries:\n" + relevantJournals.map(j => `- ${j.content}`).join("\n");
             }
 
-            // B. Fetch Distilled Mem0 Facts
             if (env.MEM0_API_KEY) {
                 const mem0 = new MemoryClient({ apiKey: env.MEM0_API_KEY, host: "https://api.mem0.ai" });
                 const memories = await mem0.search(lastMessage, { filters: { user_id: userId } });
@@ -86,17 +81,21 @@ Guidelines:
 
         if (!env.AI) return new Response("Cloudflare AI binding missing", { status: 500 });
 
-        // 3. Dynamic Model Selection
-        const prefs = await db.query.userPreferences.findFirst({
-            where: eq(userPreferences.userId, userId),
-        });
+        let prefs;
+        try {
+            prefs = await db.query.userPreferences.findFirst({
+                where: eq(userPreferences.userId, session.user.id),
+            });
+        } catch (e) {
+            console.error("Database error in getUserPreferences (likely missing columns):", e);
+        }
 
         let provider = "cloudflare";
         let model: any = null;
 
         if (prefs?.activeProvider === "openai" && prefs.openaiKey) {
             try {
-                const key = decrypt(prefs.openaiKey);
+                const key = await decrypt(prefs.openaiKey);
                 const openaiProvider = createOpenAI({ apiKey: key });
                 model = openaiProvider("gpt-4o");
                 provider = "openai";
@@ -105,7 +104,7 @@ Guidelines:
             }
         } else if (prefs?.activeProvider === "anthropic" && prefs.anthropicKey) {
             try {
-                const key = decrypt(prefs.anthropicKey);
+                const key = await decrypt(prefs.anthropicKey);
                 const anthropicProvider = createAnthropic({ apiKey: key });
                 model = anthropicProvider("claude-3-5-sonnet-20240620");
                 provider = "anthropic";
@@ -117,14 +116,13 @@ Guidelines:
                 const ollama = createOllama({
                     baseURL: prefs.ollamaUrl || "http://localhost:11434/api",
                 });
-                model = ollama("llama3.1"); // Default to llama3.1 for Ollama
+                model = ollama("llama3.1");
                 provider = "ollama";
             } catch (e) {
                 console.error("Failed to initialize Ollama, falling back to Cloudflare:", e);
             }
         }
 
-        // 4. Inference
         if (provider === "cloudflare") {
             const aiResponse = await env.AI.run("@cf/meta/llama-3.1-8b-instruct", {
                 messages: [{ role: "system", content: systemPrompt }, ...messages],
@@ -160,7 +158,6 @@ Guidelines:
                 }
             });
         } else {
-            // Prepare Tools
             const tools: any = {
                 getCalendarEvents: tool({
                     description: "Get the user's upcoming calendar events from Google Calendar.",
@@ -168,17 +165,16 @@ Guidelines:
                     execute: async () => {
                         return await getCalendarEvents(userId);
                     },
-                }),
+                } as any),
                 getRecentEmails: tool({
                     description: "Get the user's most recent emails from Gmail.",
                     parameters: z.object({}),
                     execute: async () => {
                         return await getRecentEmails(userId);
                     },
-                }),
+                } as any),
             };
 
-            // Ingress MCP Tools
             if (prefs?.mcpUrl) {
                 try {
                     const transport = new SSEClientTransport(new URL(prefs.mcpUrl));
@@ -192,22 +188,21 @@ Guidelines:
                     for (const mcpTool of mcpTools.tools) {
                         tools[mcpTool.name] = tool({
                             description: mcpTool.description || "",
-                            parameters: z.any(), // MCP uses JSON Schema, mapping to Zod is hard, so we use any
-                            execute: async (args) => {
-                                const result = await client.callTool({
+                            parameters: z.record(z.string(), z.any()),
+                            execute: async (args: any) => {
+                                const result = await (client as any).callTool({
                                     name: mcpTool.name,
                                     arguments: args
                                 });
                                 return result;
                             }
-                        });
+                        } as any);
                     }
                 } catch (e) {
                     console.error("Failed to connect to MCP server:", e);
                 }
             }
 
-            // Use Vercel AI SDK for BYOK providers
             const result = await streamText({
                 model,
                 system: systemPrompt,
