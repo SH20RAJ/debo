@@ -23,7 +23,7 @@ export async function POST(req: Request) {
         const session = await auth.api.getSession({ headers: await headers() });
         if (!session) return new Response("Unauthorized", { status: 401 });
 
-        const { messages } = await req.json() as { messages: any[] };
+        const { messages, chatId } = await req.json() as { messages: any[], chatId?: string };
         const userId = session.user.id;
 
         const lastMsgObj = messages?.[messages.length - 1];
@@ -39,22 +39,26 @@ export async function POST(req: Request) {
             }
         }
 
-        const ctx = await getCloudflareContext({ async: true });
-        const env = ctx.env as any;
+        const ctx = await getCloudflareContext({ async: true }).catch(() => null);
+        const env = (ctx?.env || process.env) as any;
 
-        // Background: Add to Mem0
-        if (lastMessage.trim() && (env.MEM0_API_KEY || process.env.MEM0_API_KEY)) {
+        if (lastMessage.trim() && (env.MEM0_API_KEY)) {
             const mem0 = new MemoryClient({ 
-                apiKey: env.MEM0_API_KEY || process.env.MEM0_API_KEY, 
+                apiKey: env.MEM0_API_KEY, 
                 host: "https://api.mem0.ai" 
             });
-            ctx.ctx.waitUntil(
+            if (ctx?.ctx?.waitUntil) {
+                ctx.ctx.waitUntil(
+                    mem0.add([{ role: "user", content: lastMessage }], { userId })
+                    .catch(e => console.error("Mem0 Add error:", e))
+                );
+            } else {
+                // Fallback for non-cloudflare environments
                 mem0.add([{ role: "user", content: lastMessage }], { userId })
-                .catch(e => console.error("Mem0 Add error:", e))
-            );
+                    .catch(e => console.error("Mem0 Add error:", e));
+            }
         }
 
-        // Context retrieval
         let context = "";
         try {
             const relevantJournals = await searchJournals(lastMessage, 4);
@@ -62,10 +66,10 @@ export async function POST(req: Request) {
                 context += "From Past Entries:\n" + relevantJournals.map(j => `- ${j.content}`).join("\n");
             }
 
-            const mem0Key = env.MEM0_API_KEY || process.env.MEM0_API_KEY;
+            const mem0Key = env.MEM0_API_KEY;
             if (lastMessage.trim() && mem0Key) {
                 const mem0 = new MemoryClient({ apiKey: mem0Key, host: "https://api.mem0.ai" });
-                const memories = await mem0.search(lastMessage, { filters: { user_id: userId } });
+                const memories = await mem0.search(lastMessage, { filters: { userId: userId } });
                 if (memories && memories.results && memories.results.length > 0) {
                     context += "\n\nFacts about user:\n" + memories.results.map((m: any) => `- ${m.memory}`).join("\n");
                 }
@@ -86,13 +90,10 @@ Be concise, empathetic, and refer to past entries if relevant.`;
 
         let model: any = null;
 
-        // 1. Check User-Configured Provider
+        // 1. User Provider
         if (prefs?.activeProvider && prefs.activeProvider !== "cloudflare") {
             const providerConfig = await db.query.aiProviders.findFirst({
-                where: and(
-                    eq(aiProviders.userId, userId),
-                    eq(aiProviders.providerId, prefs.activeProvider)
-                )
+                where: and(eq(aiProviders.userId, userId), eq(aiProviders.providerId, prefs.activeProvider))
             });
 
             if (providerConfig?.apiKey) {
@@ -102,8 +103,8 @@ Be concise, empathetic, and refer to past entries if relevant.`;
                         model = createAnthropic({ apiKey: key })("claude-3-5-sonnet-20240620");
                     } else {
                         model = createOpenAI({ 
-                            apiKey: key,
-                            baseURL: providerConfig.baseUrl || undefined
+                            apiKey: key, 
+                            baseURL: providerConfig.baseUrl || undefined,
                         })(prefs.activeProvider === "openai" ? "gpt-4o" : "gpt-4o"); 
                     }
                 } catch (e) {
@@ -112,89 +113,32 @@ Be concise, empathetic, and refer to past entries if relevant.`;
             }
         }
 
-        // 2. Fallback to System OpenAI (NVIDIA)
+        // 2. System Default (Cloudflare AI Gateway)
         if (!model) {
             const systemApiKey = env.OPENAI_API_KEY || process.env.OPENAI_API_KEY;
             if (systemApiKey) {
-                model = createOpenAI({
+                // EXTREMELY IMPORTANT: Use a custom fetch to force standard OpenAI format and headers
+                // This prevents the SDK from auto-detecting 'cloudflare' and trying to hit /responses
+                const systemOpenAI = createOpenAI({
                     apiKey: systemApiKey,
-                    baseURL: env.OPENAI_BASE_URL || process.env.OPENAI_BASE_URL || "https://integrate.api.nvidia.com/v1"
-                })(env.OPENAI_MODEL || process.env.OPENAI_MODEL || "meta/llama-3.1-70b-instruct");
+                    baseURL: env.OPENAI_BASE_URL || process.env.OPENAI_BASE_URL || "https://gateway.ai.cloudflare.com/v1/091539408595ba99a0ef106d42391d5b/default/compat",
+                    headers: {
+                        'cf-aig-authorization': `Bearer ${systemApiKey}`
+                    },
+                });
+                model = systemOpenAI(env.OPENAI_MODEL || process.env.OPENAI_MODEL || "workers-ai/@cf/meta/llama-3.3-70b-instruct-fp8-fast");
             }
         }
 
-        // 3. Last Resort: Cloudflare Workers AI
         if (!model) {
             if (!env.AI) return new Response("No AI provider available", { status: 500 });
-            
             const aiResponse = await env.AI.run("@cf/meta/llama-3.1-8b-instruct", {
                 messages: [{ role: "system", content: systemPrompt }, ...messages],
                 stream: true
             });
-
-            const stream = new ReadableStream({
-                async start(controller) {
-                    const reader = (aiResponse as any).getReader();
-                    const decoder = new TextDecoder();
-                    while (true) {
-                        const { done, value } = await reader.read();
-                        if (done) break;
-                        const chunk = decoder.decode(value);
-                        const lines = chunk.split('\n').filter(l => l.startsWith('data: ') && !l.includes('[DONE]'));
-                        for (const line of lines) {
-                            try {
-                                const data = JSON.parse(line.replace('data: ', ''));
-                                if (data.response) {
-                                    controller.enqueue(new TextEncoder().encode(`0:${JSON.stringify(data.response)}\n`));
-                                }
-                            } catch(e) {}
-                        }
-                    }
-                    controller.close();
-                }
-            });
-
-            return new Response(stream, {
-                headers: { 
-                    "Content-Type": "text/x-unknown",
-                    "x-vercel-ai-data-stream": "v1"
-                }
-            });
+            return new Response(aiResponse as any);
         }
 
-        // Standard Vercel AI SDK streaming for OpenAI/Anthropic/NVIDIA
-        const tools: any = {
-            getCalendarEvents: tool({
-                description: "Get upcoming calendar events.",
-                parameters: z.object({}),
-                execute: async () => await getCalendarEvents(userId),
-            } as any),
-            getRecentEmails: tool({
-                description: "Get recent emails.",
-                parameters: z.object({}),
-                execute: async () => await getRecentEmails(userId),
-            } as any),
-        };
-
-        if (prefs?.mcpUrl) {
-            try {
-                const transport = new SSEClientTransport(new URL(prefs.mcpUrl));
-                const client = new Client({ name: "debo", version: "1.0.0" }, { capabilities: {} });
-                await client.connect(transport);
-                const mcpTools = await client.listTools();
-                for (const mcpTool of mcpTools.tools) {
-                    tools[mcpTool.name] = tool({
-                        description: mcpTool.description || "",
-                        parameters: z.record(z.string(), z.any()),
-                        execute: async (args: any) => await (client as any).callTool({ name: mcpTool.name, arguments: args })
-                    } as any);
-                }
-            } catch (e) {
-                console.error("MCP connection failed:", e);
-            }
-        }
-
-        // Normalize messages to prevent schema errors with some providers
         const normalizedMessages = messages.map(m => ({
             role: m.role,
             content: typeof m.content === 'string' ? m.content : 
@@ -206,10 +150,27 @@ Be concise, empathetic, and refer to past entries if relevant.`;
             model,
             system: systemPrompt,
             messages: normalizedMessages,
-            tools,
+            tools: {
+                getCalendarEvents: tool({
+                    description: "Get upcoming calendar events.",
+                    parameters: z.object({}),
+                    execute: async () => await getCalendarEvents(userId),
+                } as any),
+                getRecentEmails: tool({
+                    description: "Get recent emails.",
+                    parameters: z.object({}),
+                    execute: async () => await getRecentEmails(userId),
+                } as any),
+            }
         });
 
-        return result.toTextStreamResponse();
+        const response = result.toTextStreamResponse();
+        return new Response(response.body, {
+            headers: {
+                ...Object.fromEntries(response.headers.entries()),
+                "x-vercel-ai-data-stream": "v1",
+            },
+        });
 
     } catch (error) {
         console.error("Critical Chat Error:", error);

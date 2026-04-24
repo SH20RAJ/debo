@@ -78,4 +78,20 @@ export const aiProviders = pgTable("ai_provider", {
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const chats = pgTable("chat", {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull().references(() => user.id),
+    title: text("title"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const messages = pgTable("message", {
+    id: text("id").primaryKey(),
+    chatId: text("chat_id").notNull().references(() => chats.id),
+    role: text("role").notNull(), // 'user', 'assistant', 'system', 'tool'
+    content: text("content").notNull(), // JSON string for complex content
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 
