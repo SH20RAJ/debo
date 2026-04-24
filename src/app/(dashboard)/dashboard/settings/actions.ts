@@ -1,12 +1,12 @@
 "use server"
 
 import { db } from "@/db";
-import { userPreferences } from "@/db/schema";
+import { userPreferences, aiProviders } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { encrypt } from "@/lib/encryption";
+import { encrypt, decrypt } from "@/lib/encryption";
 import { nango } from "@/lib/nango";
 
 export async function getUserPreferences() {
@@ -19,7 +19,6 @@ export async function getUserPreferences() {
         });
 
         if (prefs) {
-            // Mask keys for the UI
             return {
                 ...prefs,
                 openaiKey: prefs.openaiKey ? "sk-....config" : null,
@@ -29,50 +28,65 @@ export async function getUserPreferences() {
 
         return prefs;
     } catch (e) {
-        console.error("Database error in getUserPreferences (likely missing columns):", e);
+        console.error("Database error in getUserPreferences:", e);
         return null;
     }
 }
 
-export async function saveUserPreferences(data: { 
-    openaiKey?: string, 
-    anthropicKey?: string,
-    ollamaUrl?: string,
-    mcpUrl?: string,
-    activeProvider?: string 
+export async function getAIProviders() {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session) throw new Error("Unauthorized");
+
+    const providers = await db.query.aiProviders.findMany({
+        where: eq(aiProviders.userId, session.user.id),
+    });
+
+    // Mask API keys
+    return providers.map(p => ({
+        ...p,
+        apiKey: p.apiKey ? "sk-....config" : null,
+    }));
+}
+
+export async function saveAIProvider(data: {
+    providerId: string,
+    providerName: string,
+    apiKey?: string,
+    baseUrl?: string,
+    isEnabled?: boolean
 }) {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session) throw new Error("Unauthorized");
 
-    // Only encrypt if a new key is provided (not the masked placeholder)
-    const encryptedOpenai = data.openaiKey && !data.openaiKey.includes("....config") 
-        ? await encrypt(data.openaiKey) 
-        : undefined;
-    
-    const encryptedAnthropic = data.anthropicKey && !data.anthropicKey.includes("....config")
-        ? await encrypt(data.anthropicKey)
+    const encryptedKey = data.apiKey && !data.apiKey.includes("....config")
+        ? await encrypt(data.apiKey)
         : undefined;
 
+    const existing = await db.query.aiProviders.findFirst({
+        where: and(
+            eq(aiProviders.userId, session.user.id),
+            eq(aiProviders.providerId, data.providerId)
+        )
+    });
+
     const updateData: any = {
-        activeProvider: data.activeProvider || "cloudflare",
-        ollamaUrl: data.ollamaUrl || null,
-        mcpUrl: data.mcpUrl || null,
+        providerName: data.providerName,
+        baseUrl: data.baseUrl || null,
+        isEnabled: data.isEnabled ?? true,
         updatedAt: new Date()
     };
 
-    if (encryptedOpenai) updateData.openaiKey = encryptedOpenai;
-    if (encryptedAnthropic) updateData.anthropicKey = encryptedAnthropic;
-
-    const existing = await getUserPreferences();
+    if (encryptedKey) updateData.apiKey = encryptedKey;
 
     if (existing) {
-        await db.update(userPreferences).set(updateData).where(eq(userPreferences.userId, session.user.id));
+        await db.update(aiProviders).set(updateData).where(eq(aiProviders.id, existing.id));
     } else {
-        await db.insert(userPreferences).values({
+        await db.insert(aiProviders).values({
+            id: crypto.randomUUID(),
             userId: session.user.id,
+            providerId: data.providerId,
             ...updateData,
-            openaiKey: encryptedOpenai || null,
-            anthropicKey: encryptedAnthropic || null,
+            apiKey: encryptedKey || null,
         });
     }
 
@@ -80,12 +94,25 @@ export async function saveUserPreferences(data: {
     return true;
 }
 
+export async function setActiveProvider(providerId: string) {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session) throw new Error("Unauthorized");
+
+    await db.update(userPreferences)
+        .set({ activeProvider: providerId, updatedAt: new Date() })
+        .where(eq(userPreferences.userId, session.user.id));
+
+    revalidatePath("/dashboard/settings");
+    return true;
+}
+
+// ... Keep existing Nango actions ...
+
 export async function getNangoConnections() {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session) throw new Error("Unauthorized");
 
     try {
-        // Only attempt if key is a valid UUID v4 format (basic check)
         const key = process.env.NANGO_SECRET_KEY;
         if (!key || key.length < 32 || key === "placeholder_secret_key") {
             return [];

@@ -66,4 +66,16 @@ export const userPreferences = pgTable("user_preference", {
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const aiProviders = pgTable("ai_provider", {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull().references(() => user.id),
+    providerId: text("provider_id").notNull(), // slug: 'openai', 'anthropic', 'custom-1'
+    providerName: text("provider_name").notNull(),
+    apiKey: text("api_key"), // Encrypted
+    baseUrl: text("base_url"),
+    isEnabled: boolean("is_enabled").default(true).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 

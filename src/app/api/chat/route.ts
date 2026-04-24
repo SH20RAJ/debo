@@ -10,8 +10,8 @@ import { streamText, tool } from "ai";
 import { z } from "zod";
 import { decrypt } from "@/lib/encryption";
 import { db } from "@/db";
-import { userPreferences } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { userPreferences, aiProviders } from "@/db/schema";
+import { eq, and } from "drizzle-orm";
 import { getCalendarEvents, getRecentEmails } from "@/lib/integrations";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
@@ -79,8 +79,6 @@ Guidelines:
 - Be concise.
 - You are their partner in growth.`;
 
-        if (!env.AI) return new Response("Cloudflare AI binding missing", { status: 500 });
-
         const prefs = await db.query.userPreferences.findFirst({
             where: eq(userPreferences.userId, userId),
         });
@@ -88,37 +86,40 @@ Guidelines:
         let provider = "cloudflare";
         let model: any = null;
 
-        if (prefs?.activeProvider === "openai" && prefs.openaiKey) {
-            try {
-                const key = await decrypt(prefs.openaiKey);
-                const openaiProvider = createOpenAI({ apiKey: key });
-                model = openaiProvider("gpt-4o");
-                provider = "openai";
-            } catch (e) {
-                console.error("Failed to initialize OpenAI, falling back to Cloudflare:", e);
-            }
-        } else if (prefs?.activeProvider === "anthropic" && prefs.anthropicKey) {
-            try {
-                const key = await decrypt(prefs.anthropicKey);
-                const anthropicProvider = createAnthropic({ apiKey: key });
-                model = anthropicProvider("claude-3-5-sonnet-20240620");
-                provider = "anthropic";
-            } catch (e) {
-                console.error("Failed to initialize Anthropic, falling back to Cloudflare:", e);
-            }
-        } else if (prefs?.activeProvider === "ollama") {
-            try {
-                const ollama = createOllama({
-                    baseURL: prefs.ollamaUrl || "http://localhost:11434/api",
-                });
-                model = ollama("llama3.1");
-                provider = "ollama";
-            } catch (e) {
-                console.error("Failed to initialize Ollama, falling back to Cloudflare:", e);
+        if (prefs?.activeProvider && prefs.activeProvider !== "cloudflare") {
+            const providerConfig = await db.query.aiProviders.findFirst({
+                where: and(
+                    eq(aiProviders.userId, userId),
+                    eq(aiProviders.providerId, prefs.activeProvider)
+                )
+            });
+
+            if (providerConfig?.apiKey) {
+                try {
+                    const key = await decrypt(providerConfig.apiKey);
+                    
+                    if (prefs.activeProvider === "anthropic") {
+                        const anthropicProvider = createAnthropic({ apiKey: key });
+                        model = anthropicProvider("claude-3-5-sonnet-20240620");
+                        provider = "anthropic";
+                    } else {
+                        // All others are OpenAI compatible
+                        const openaiProvider = createOpenAI({ 
+                            apiKey: key,
+                            baseURL: providerConfig.baseUrl || undefined
+                        });
+                        model = openaiProvider(prefs.activeProvider === "openai" ? "gpt-4o" : "gpt-4o"); 
+                        provider = prefs.activeProvider;
+                    }
+                } catch (e) {
+                    console.error(`Failed to initialize ${prefs.activeProvider}, falling back:`, e);
+                }
             }
         }
 
-        if (provider === "cloudflare") {
+        if (provider === "cloudflare" && !env.OPENAI_API_KEY && !process.env.OPENAI_API_KEY) {
+            if (!env.AI) return new Response("Cloudflare AI binding missing", { status: 500 });
+            
             const aiResponse = await env.AI.run("@cf/meta/llama-3.1-8b-instruct", {
                 messages: [{ role: "system", content: systemPrompt }, ...messages],
                 stream: true
@@ -153,6 +154,15 @@ Guidelines:
                 }
             });
         } else {
+            // Use selected provider or fallback to System OpenAI (NVIDIA)
+            if (!model) {
+                const systemOpenAI = createOpenAI({
+                    apiKey: env.OPENAI_API_KEY || process.env.OPENAI_API_KEY,
+                    baseURL: env.OPENAI_BASE_URL || process.env.OPENAI_BASE_URL || "https://integrate.api.nvidia.com/v1"
+                });
+                model = systemOpenAI(env.OPENAI_MODEL || process.env.OPENAI_MODEL || "meta/llama3-70b-instruct");
+            }
+
             const tools: any = {
                 getCalendarEvents: tool({
                     description: "Get the user's upcoming calendar events from Google Calendar.",
@@ -209,6 +219,7 @@ Guidelines:
         }
 
     } catch (error) {
+        console.error("Chat API Error:", error);
         return new Response(JSON.stringify({ error: "Internal Server Error" }), { status: 500 });
     }
 }
