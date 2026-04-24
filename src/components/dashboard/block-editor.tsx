@@ -27,6 +27,7 @@ export default function BlockEditor({ initialContent, onChange }: BlockEditorPro
       <EditorContent
         initialContent={initialContent as any}
         extensions={extensions as any}
+        immediatelyRender={false}
         editorProps={{
           handleDOMEvents: {
             keydown: (_view, event) => handleCommandNavigation(event),
@@ -36,8 +37,10 @@ export default function BlockEditor({ initialContent, onChange }: BlockEditorPro
           },
         }}
         onUpdate={({ editor }) => {
-          const markdown = editor.storage.markdown.getMarkdown();
-          onChange(markdown);
+          const markdown = editor.storage.markdown?.getMarkdown();
+          if (markdown) {
+            onChange(markdown);
+          }
         }}
       />
     </EditorRoot>

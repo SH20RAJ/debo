@@ -9,6 +9,7 @@ import { TaskList } from "@tiptap/extension-task-list";
 import Typography from "@tiptap/extension-typography";
 import { common, createLowlight } from "lowlight";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
+import { Markdown } from "tiptap-markdown";
 
 const lowlight = createLowlight(common);
 
@@ -88,6 +89,8 @@ export const defaultExtensions = [
       color: "#DBEAFE",
       width: 4,
     },
+    // Ensure no duplication if StarterKit version changes
+    history: true,
   }),
   tiptapImage,
   tiptapLink,
@@ -100,5 +103,13 @@ export const defaultExtensions = [
   CodeBlockLowlight.configure({
     lowlight,
     defaultLanguage: "markdown",
+  }),
+  Markdown.configure({
+    html: false,
+    tightLists: true,
+    tightListClass: "tight",
+    bulletListMarker: "-",
+    linkify: false,
+    breaks: false,
   }),
 ];
