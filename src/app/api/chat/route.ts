@@ -10,8 +10,8 @@ import { streamText, tool } from "ai";
 import { z } from "zod";
 import { decrypt } from "@/lib/encryption";
 import { db } from "@/db";
-import { userPreferences, aiProviders } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { userPreferences, aiProviders, journals } from "@/db/schema";
+import { eq, and, desc as drizzleDesc } from "drizzle-orm";
 import { getCalendarEvents, getRecentEmails } from "@/lib/integrations";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
@@ -160,6 +160,26 @@ Be concise, empathetic, and refer to past entries if relevant.`;
                     description: "Get recent emails.",
                     parameters: z.object({}),
                     execute: async () => await getRecentEmails(userId),
+                } as any),
+                searchJournalEntries: tool({
+                    description: "Search through past journal entries for relevant context.",
+                    parameters: z.object({
+                        query: z.string().describe("The search query"),
+                    }),
+                    execute: async ({ query }: { query: string }) => await searchJournals(query, 5),
+                } as any),
+                getLatestJournals: tool({
+                    description: "Get the most recent journal entries.",
+                    parameters: z.object({
+                        limit: z.number().optional().default(5),
+                    }),
+                    execute: async ({ limit }: { limit?: number }) => {
+                        return await db.query.journals.findMany({
+                            where: eq(journals.userId, userId),
+                            orderBy: [drizzleDesc(journals.createdAt)],
+                            limit: limit || 5,
+                        });
+                    },
                 } as any),
             }
         });

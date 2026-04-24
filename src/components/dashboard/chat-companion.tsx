@@ -5,6 +5,9 @@ import { AssistantRuntimeProvider, type ThreadHistoryAdapter } from "@assistant-
 import { Thread } from "@/components/assistant-ui/thread";
 import { useChatsStore } from "@/lib/chats-store";
 import { useEffect, useMemo } from "react";
+import { CalendarToolUI, EmailToolUI, JournalToolUI, JournalSearchToolUI } from "@/components/assistant-ui/tool-ui";
+import { Button } from "@/components/ui/button";
+import { PlusIcon } from "lucide-react";
 
 export function ChatCompanion() {
     const { activeChatId, setActiveChatId, fetchChats } = useChatsStore();
@@ -57,8 +60,23 @@ export function ChatCompanion() {
     });
 
     return (
-        <div className="flex-1 flex flex-col w-full h-full bg-background overflow-hidden">
+        <div className="flex-1 flex flex-col w-full h-full bg-background overflow-hidden relative">
+            <div className="absolute top-4 right-4 z-20">
+                <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="gap-2 rounded-full shadow-sm"
+                    onClick={() => setActiveChatId(null)}
+                >
+                    <PlusIcon className="h-4 w-4" />
+                    New Chat
+                </Button>
+            </div>
             <AssistantRuntimeProvider runtime={runtime}>
+                <CalendarToolUI />
+                <EmailToolUI />
+                <JournalToolUI />
+                <JournalSearchToolUI />
                 <Thread />
             </AssistantRuntimeProvider>
         </div>
