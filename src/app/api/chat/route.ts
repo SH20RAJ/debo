@@ -160,7 +160,7 @@ Guidelines:
                     apiKey: env.OPENAI_API_KEY || process.env.OPENAI_API_KEY,
                     baseURL: env.OPENAI_BASE_URL || process.env.OPENAI_BASE_URL || "https://integrate.api.nvidia.com/v1"
                 });
-                model = systemOpenAI(env.OPENAI_MODEL || process.env.OPENAI_MODEL || "meta/llama3-70b-instruct");
+                model = systemOpenAI(env.OPENAI_MODEL || process.env.OPENAI_MODEL || "meta/llama-3.1-70b-instruct");
             }
 
             const tools: any = {
