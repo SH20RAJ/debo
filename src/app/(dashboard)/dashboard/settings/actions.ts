@@ -106,6 +106,34 @@ export async function setActiveProvider(providerId: string) {
     return true;
 }
 
+export async function saveUserPreferences(data: { 
+    mcpUrl?: string, 
+    activeProvider?: string 
+}) {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session) throw new Error("Unauthorized");
+
+    const updateData: any = {
+        activeProvider: data.activeProvider || "cloudflare",
+        mcpUrl: data.mcpUrl || null,
+        updatedAt: new Date()
+    };
+
+    const existing = await getUserPreferences();
+
+    if (existing) {
+        await db.update(userPreferences).set(updateData).where(eq(userPreferences.userId, session.user.id));
+    } else {
+        await db.insert(userPreferences).values({
+            userId: session.user.id,
+            ...updateData,
+        });
+    }
+
+    revalidatePath("/dashboard/settings");
+    return true;
+}
+
 // ... Keep existing Nango actions ...
 
 export async function getNangoConnections() {
