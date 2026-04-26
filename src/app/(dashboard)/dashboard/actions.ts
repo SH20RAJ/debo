@@ -4,17 +4,17 @@ import { db } from "@/db";
 import { journals } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, asc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
-export async function getJournals() {
+export async function getJournals(sortOrder: "asc" | "desc" = "desc") {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session) throw new Error("Unauthorized");
 
     return await db.query.journals.findMany({
         where: eq(journals.userId, session.user.id),
-        orderBy: [desc(journals.createdAt)]
+        orderBy: [sortOrder === "desc" ? desc(journals.createdAt) : asc(journals.createdAt)]
     });
 }
 

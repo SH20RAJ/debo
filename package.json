@@ -64,6 +64,7 @@
 		"embla-carousel-react": "^8.6.0",
 		"input-otp": "^1.4.2",
 		"livekit-client": "^2.18.6",
+		"livekit-server-sdk": "^2.15.1",
 		"lodash.debounce": "^4.0.8",
 		"lowlight": "^3.3.0",
 		"lucide-react": "^1.8.0",

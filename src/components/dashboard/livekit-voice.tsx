@@ -2,18 +2,15 @@
 
 import { useEffect, useState } from "react";
 import {
-  ControlBar,
+  LiveKitRoom,
   RoomAudioRenderer,
-  SessionProvider,
-  useSession,
-  useAgent,
   BarVisualizer,
+  useVoiceAssistant,
 } from "@livekit/components-react";
-import { TokenSource } from "livekit-client";
 import "@livekit/components-styles";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Mic } from "lucide-react";
+import { Mic, MicOff } from "lucide-react";
 
 export function LiveKitVoiceAgent() {
   const [token, setToken] = useState<string | null>(null);
@@ -22,19 +19,20 @@ export function LiveKitVoiceAgent() {
   const startSession = async () => {
     setIsConnecting(true);
     try {
-      // In a real app, you would fetch this from your backend:
-      // const res = await fetch("/api/livekit/token");
-      // const data = await res.json();
-      // setToken(data.token);
-      
-      // For now, using sandbox if no custom endpoint is defined
-      const sandboxSource = TokenSource.sandboxTokenServer("my-debo-agent");
-      setToken(sandboxSource as any); // Using any to bypass strict type here for dummy
+      const res = await fetch("/api/livekit/token");
+      const data = await res.json();
+      if (data.token) {
+        setToken(data.token);
+      }
     } catch (e) {
       console.error(e);
     } finally {
       setIsConnecting(false);
     }
+  };
+
+  const endSession = () => {
+    setToken(null);
   };
 
   if (!token) {
@@ -53,54 +51,43 @@ export function LiveKitVoiceAgent() {
     );
   }
 
-  // TokenSource logic for actual implementation
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2"><Mic className="h-5 w-5" /> Voice Agent Active</CardTitle>
+        <Button variant="ghost" size="icon" onClick={endSession}><MicOff className="h-4 w-4 text-destructive" /></Button>
       </CardHeader>
       <CardContent>
-        {/* We use a string token or TokenSource depending on implementation */}
-        <SessionProvider token={typeof token === "string" ? token : undefined}>
+        <LiveKitRoom
+          serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL || "wss://daksha-fuq54ytc.livekit.cloud"}
+          token={token}
+          connect={true}
+          audio={true}
+          video={false}
+        >
           <VoiceClient />
-        </SessionProvider>
+        </LiveKitRoom>
       </CardContent>
     </Card>
   );
 }
 
 function VoiceClient() {
-  const session = useSession({ agentName: "debo-agent" } as any);
-  
-  useEffect(() => {
-    session.start();
-    return () => {
-      session.end();
-    };
-  }, [session]);
+  const { state, audioTrack } = useVoiceAssistant();
 
   return (
     <div className="flex flex-col items-center space-y-6 p-4">
-      <AgentVisuals />
-      <ControlBar controls={{ microphone: true, camera: false, screenShare: false }} />
+      <div className="flex flex-col items-center justify-center space-y-4 h-32 w-full bg-muted rounded-lg">
+        <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
+          Agent State: {state || "WAITING"}
+        </p>
+        {audioTrack && (
+          <div className="w-48 h-12 flex justify-center">
+            <BarVisualizer trackRef={audioTrack} barCount={5} className="h-full" />
+          </div>
+        )}
+      </div>
       <RoomAudioRenderer />
-    </div>
-  );
-}
-
-function AgentVisuals() {
-  const agent = useAgent();
-  
-  return (
-    <div className="flex flex-col items-center justify-center space-y-4 h-32 w-full bg-muted rounded-lg">
-      <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
-        Agent State: {agent.state || "WAITING"}
-      </p>
-      {agent.canListen && agent.microphoneTrack && (
-        <div className="w-48 h-12 flex justify-center">
-          <BarVisualizer track={agent.microphoneTrack} state={agent.state} barCount={5} />
-        </div>
-      )}
     </div>
   );
 }
