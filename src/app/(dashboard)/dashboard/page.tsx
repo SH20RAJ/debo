@@ -5,6 +5,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { LiveKitVoiceAgent } from "@/components/dashboard/overview/livekit-voice";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Intelligence Overview",
+  description: "A comprehensive look at your thoughts, memories, and synced intelligence.",
+};
 
 export default function DashboardPage() {
   return (

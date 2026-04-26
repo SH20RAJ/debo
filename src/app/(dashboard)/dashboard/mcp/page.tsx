@@ -7,6 +7,12 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { rotateMCPKey, getMCPConfig } from "./actions";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "MCP Gateway",
+  description: "Securely link your personal intelligence to external AI apps.",
+};
 
 export default function MCPPage() {
   const [config, setConfig] = useState<any>(null);

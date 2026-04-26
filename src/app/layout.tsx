@@ -18,24 +18,29 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
 	metadataBase: new URL("https://debo.app"),
 	title: {
-		default: "Debo | AI Life Companion",
+		default: "Debo | The AI that Remembers",
 		template: "%s | Debo",
 	},
-	description: "Debo transforms simple text entries into an intelligent, context-aware AI companion using your daily journals and 130+ app connections.",
-	keywords: ["Journal", "AI", "Companion", "Next.js", "Cloudflare", "Mem0"],
-	authors: [{ name: "Debo Contributors" }],
+	description: "Debo is your intelligent second brain. It remembers everything you forget and builds a living intelligence network from your thoughts.",
+	keywords: ["Second Brain", "AI Memory", "Journaling", "Personal Intelligence", "Privacy"],
+	authors: [{ name: "Debo Intelligence" }],
 	creator: "Debo",
+	icons: {
+		icon: "/logo.png",
+		shortcut: "/logo.png",
+		apple: "/logo.png",
+	},
 	openGraph: {
-		title: "Debo | AI Life Companion",
-		description: "Your intelligent, context-aware AI companion.",
+		title: "Debo | The AI that Remembers",
+		description: "The memory OS for thinkers. Sync your thoughts into one private intelligence network.",
 		url: "https://debo.app",
 		siteName: "Debo",
 		images: [
 			{
-				url: "/og-image.png",
-				width: 1200,
-				height: 630,
-				alt: "Debo - AI Life Companion",
+				url: "/logo.png",
+				width: 512,
+				height: 512,
+				alt: "Debo Logo",
 			},
 		],
 		locale: "en_US",
@@ -43,9 +48,9 @@ export const metadata: Metadata = {
 	},
 	twitter: {
 		card: "summary_large_image",
-		title: "Debo | AI Life Companion",
-		description: "Your intelligent, context-aware AI companion.",
-		images: ["/og-image.png"],
+		title: "Debo | The AI that Remembers",
+		description: "The memory OS for thinkers.",
+		images: ["/logo.png"],
 		creator: "@debo_app",
 	},
 	robots: {
@@ -69,7 +74,7 @@ export default function RootLayout({
 	return (
 		<html lang="en" suppressHydrationWarning>
 			<head>
-				<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+				<link rel="icon" href="/logo.png" />
 				<script
 					type="application/ld+json"
 					dangerouslySetInnerHTML={{
@@ -77,12 +82,12 @@ export default function RootLayout({
 							"@context": "https://schema.org",
 							"@type": "SoftwareApplication",
 							name: "Debo",
-							description: "AI-powered life companion and journaling intelligence.",
+							description: "AI-powered memory OS and second brain.",
 							applicationCategory: "Productivity",
 							operatingSystem: "Web",
 							author: {
 								"@type": "Organization",
-								name: "Debo",
+								name: "Debo Intelligence",
 							},
 							offers: {
 								"@type": "Offer",

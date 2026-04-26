@@ -1,6 +1,12 @@
 import { searchJournals } from "../search-actions";
 import { getJournals, getJournalsCount } from "../actions";
 import { JournalListManager } from "@/components/dashboard/journal/journal-list-manager";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Memory Archive",
+  description: "Search and review your entire personal intelligence history.",
+};
 
 export default async function JournalsPage(props: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>

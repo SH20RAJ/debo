@@ -3,6 +3,12 @@ import { SettingsForm } from "@/components/dashboard/settings/settings-form";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Configuration",
+  description: "Manage your AI providers and personal preferences.",
+};
 
 export default async function SettingsPage() {
     const session = await auth.api.getSession({ headers: await headers() });

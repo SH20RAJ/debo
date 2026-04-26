@@ -32,6 +32,7 @@ import {
   SidebarGroupContent,
 } from "@/components/ui/sidebar"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -43,8 +44,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     <Sidebar variant="inset" collapsible="icon" {...props}>
       <SidebarHeader className="h-14 border-b/50 flex items-center px-4">
         <Link href="/dashboard" className="flex items-center gap-3 font-bold w-full overflow-hidden whitespace-nowrap">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20">
-            <BrainCircuit className="h-5 w-5" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-transparent overflow-hidden shrink-0">
+            <Image 
+                src="/logo.png" 
+                alt="Debo Logo" 
+                width={32} 
+                height={32} 
+                className="object-contain"
+            />
           </div>
           <span className="tracking-tight text-lg group-data-[collapsible=icon]:hidden">
             Debo <span className="text-[10px] text-muted-foreground font-medium uppercase ml-1">v1.1</span>

@@ -12,6 +12,12 @@ import "@livekit/components-styles";
 import { Button } from "@/components/ui/button";
 import { Mic, MicOff, PhoneOff, Loader2, Sparkles, Bot } from "lucide-react";
 import { toast } from "sonner";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Voice Intelligence",
+  description: "Talk directly to your second brain in real-time.",
+};
 
 export default function AgentPage() {
   const [token, setToken] = useState<string | null>(null);
