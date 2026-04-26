@@ -15,12 +15,7 @@ export default async function SettingsPage() {
     ]);
 
     return (
-        <div className="flex-1 w-full max-w-5xl mx-auto px-6 py-8 md:px-10 md:py-12 space-y-12 animate-in fade-in slide-in-from-bottom-2 duration-500">
-            <div className="space-y-4">
-                <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">Settings</h1>
-                <p className="text-muted-foreground text-lg max-w-2xl">Manage your AI providers, integrations, and global preferences.</p>
-            </div>
-
+        <div className="flex-1 w-full max-w-7xl mx-auto px-6 py-8 md:px-10 md:py-12 space-y-12 animate-in fade-in slide-in-from-bottom-2 duration-500">
             <SettingsForm 
                 initialData={preferences} 
                 connections={connections} 

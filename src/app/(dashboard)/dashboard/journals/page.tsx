@@ -23,20 +23,7 @@ export default async function JournalsPage(props: {
   }
 
   return (
-    <div className="flex-1 w-full max-w-5xl mx-auto px-6 py-8 md:px-10 md:py-12 space-y-12 animate-in fade-in slide-in-from-bottom-2 duration-500">
-      <div className="space-y-4">
-        <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold mb-2">
-          Library
-        </div>
-        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight flex items-center gap-3">
-          <BookOpen className="h-10 w-10 text-muted-foreground" />
-          Journals
-        </h1>
-        <p className="text-muted-foreground text-lg max-w-2xl">
-          Manage, search, and review your historical intelligence context.
-        </p>
-      </div>
-
+    <div className="flex-1 w-full max-w-7xl mx-auto px-6 py-8 md:px-10 md:py-12 space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
       <JournalListManager 
         journals={journals} 
         initialQuery={query}

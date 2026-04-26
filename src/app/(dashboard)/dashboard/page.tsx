@@ -16,29 +16,8 @@ export default async function DashboardPage() {
   ).length;
 
   return (
-    <div className="flex-1 w-full max-w-6xl mx-auto px-6 py-8 md:px-10 md:py-12 space-y-12 pb-20 animate-in fade-in slide-in-from-bottom-2 duration-500">
+    <div className="flex-1 w-full max-w-7xl mx-auto px-6 py-8 md:px-10 md:py-12 space-y-12 pb-20 animate-in fade-in slide-in-from-bottom-2 duration-500">
       
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-6 border-b pb-8">
-        <div className="space-y-4">
-          <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold mb-2">
-            Overview
-          </div>
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">
-            Your Repository
-          </h1>
-          <p className="text-muted-foreground text-lg max-w-xl">
-            A comprehensive overview of your thoughts, synced context, and life telemetry.
-          </p>
-        </div>
-        <Link href="/dashboard/journal/new">
-          <Button size="lg" className="rounded-full px-6">
-            <PlusCircle className="mr-2 h-5 w-5" />
-            New Entry
-          </Button>
-        </Link>
-      </div>
-
       {/* Bento Grid Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         
