@@ -13,9 +13,18 @@ export async function rotateMCPKey() {
 
     const newKey = `debo_${crypto.randomBytes(24).toString("hex")}`;
 
-    await db.update(userPreferences)
-        .set({ mcpKey: newKey })
-        .where(eq(userPreferences.userId, session.user.id));
+    await db.insert(userPreferences)
+        .values({ 
+            userId: session.user.id,
+            mcpKey: newKey 
+        })
+        .onConflictDoUpdate({
+            target: userPreferences.userId,
+            set: { 
+                mcpKey: newKey, 
+                updatedAt: new Date() 
+            }
+        });
 
     return newKey;
 }
