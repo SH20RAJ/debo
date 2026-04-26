@@ -44,12 +44,17 @@ This document meticulously tracks the execution phases, architectural decisions,
   - [x] Map `vectorizeId` back to the NeonDB row via a background callback.
 - [x] Implement Semantic Query Logic: Convert user plain-text chat queries into embeddings for cosine similarity searching against past journals.
 
-## 🟢 Phase 4: Chat Interface & Companionship
-**Goal:** Launch the intelligent sidekick module that genuinely understands user telemetry.
-- [x] Install and configure `assistant-ui` chat suite.
-- [x] Integrate `mem0` library directly into the background processing pipeline to formulate raw "life facts" (e.g. "User feels drained after team meetings", "User adopted a dog").
-- [x] Construct Agent System Prompts: Dynamically inject `mem0` foundational life facts as a system prompt prefix anytime the chat interface mounts.
-- [x] Create generative conversational endpoints with native streaming UI support (`ai` SDK `streamText`).
+## 🟢 Phase 4: Voice Companion & MCP Integration (LiveKit)
+**Goal:** Launch the intelligent sidekick module using LiveKit for sub-100ms latency voice interactions and expose Debo via MCP.
+- [x] Remove legacy text-based `assistant-ui` chat interface.
+- [ ] Initialize LiveKit Cloud project and configure environment bindings (`LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`).
+- [ ] Implement `VoiceCompanion` client component utilizing `@livekit/components-react`.
+- [ ] Build the **LiveKit Agent Worker** (`livekit-agents` in Python/Node):
+  - [ ] Configure `VoicePipelineAgent` with STT (Deepgram/OpenAI) and TTS (Cartesia/ElevenLabs).
+  - [ ] Connect Agent to `mem0` and `Vectorize` context layers.
+  - [ ] **Context7 Integration**: Equip the Voice Agent with the Context7 MCP server as a tool, allowing the agent to answer highly technical questions by reading live documentation.
+- [ ] Create the **Debo MCP Server Page** (`/dashboard/mcp`):
+  - [ ] Provide connection instructions and SSE endpoints so users can connect their Cursor IDE or Claude Desktop to Debo.
 
 ## 🟢 Phase 5: Bring Your Own Key (BYOK) & App Connectors
 **Goal:** Achieve extensive app integration capabilities and empower users to own their models.
@@ -59,19 +64,4 @@ This document meticulously tracks the execution phases, architectural decisions,
 - [x] Deploy Web Connectors via Nango:
   - [x] Spin up Nango instance for OAuth token management tracking.
   - [x] Bind Google Calendar, Gmail, and Notion API connectors.
-  - [x] Wire these Web APIs strictly as *Tools* within the AI chat generation parameters.
-- [x] Implement Model Context Protocol (MCP) Ingress/Egress:
-  - [x] **Ingress Tools**: Create UI for pasting standard SSE URLs for external/private MCP servers, parsing them securely using `@modelcontextprotocol/sdk`.
-  - [x] Build an ingress pipeline dynamically granting the `assistant-ui` chat interface access to these custom MCP tool definitions.
-  - [x] **Egress API**: Establish Debo Egress API (`/api/mcp`) so external instances (cursor, claude desktop) can autonomously utilize the user's journal as a native Tool/Resource provider.
-
-## ⚪ Phase 6: Real-time Voice Companion (LiveKit)
-**Goal:** Transform Debo into a multimodal voice companion using LiveKit for sub-100ms latency interactions.
-- [ ] Initialize LiveKit Cloud project and configure environment bindings (`LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`).
-- [ ] Implement `VoiceCompanion` client component utilizing `@livekit/components-react`.
-- [ ] Build the **LiveKit Agent Worker**:
-  - [ ] Configure `VoicePipelineAgent` with STT (Deepgram) and TTS (Cartesia).
-  - [ ] Connect Agent to `mem0` and `Vectorize` context layers.
-  - [ ] Enable Tool-use for the voice agent (Calendar, Notion).
-- [ ] Deploy LiveKit SIP for inbound telephony ("Call your Journal").
-
+  - [x] Wire these Web APIs strictly as *Tools* within the AI generation parameters.

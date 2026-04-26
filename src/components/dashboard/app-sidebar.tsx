@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { BookOpen, Settings, LayoutDashboard, BrainCircuit, MessageSquareText } from "lucide-react"
+import { BookOpen, Settings, LayoutDashboard, BrainCircuit, Network } from "lucide-react"
 
 import {
   Sidebar,
@@ -19,15 +19,8 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { ThemeToggle } from "@/components/theme-toggle"
 
-import { useChatsStore } from "@/lib/chats-store"
-
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
-  const { chats, fetchChats, setActiveChatId, activeChatId } = useChatsStore()
-
-  React.useEffect(() => {
-    fetchChats()
-  }, [fetchChats])
 
   return (
     <Sidebar {...props}>
@@ -52,10 +45,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={pathname === "/dashboard/companion"}>
-                  <Link href="/dashboard/companion" onClick={() => setActiveChatId(null)}>
-                    <MessageSquareText />
-                    <span>Companion</span>
+                <SidebarMenuButton asChild isActive={pathname === "/dashboard/mcp"}>
+                  <Link href="/dashboard/mcp">
+                    <Network />
+                    <span>MCP Integration</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -79,29 +72,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <div className="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Recent Chats
-            </div>
-            <SidebarMenu>
-              {chats.map((chat) => (
-                <SidebarMenuItem key={chat.id}>
-                  <SidebarMenuButton 
-                    asChild 
-                    isActive={activeChatId === chat.id}
-                    onClick={() => setActiveChatId(chat.id)}
-                  >
-                    <Link href="/dashboard/companion">
-                      <MessageSquareText className="h-4 w-4" />
-                      <span className="truncate">{chat.title || "Untitled Chat"}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+
       </SidebarContent>
       <SidebarFooter className="border-t border-border/50 p-4">
         <div className="flex items-center justify-between w-full">
