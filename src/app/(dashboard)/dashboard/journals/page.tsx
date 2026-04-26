@@ -1,7 +1,6 @@
 import { searchJournals } from "../search-actions";
-import { getJournals } from "../actions";
+import { getJournals, getJournalsCount } from "../actions";
 import { JournalListManager } from "@/components/dashboard/journal/journal-list-manager";
-import { BookOpen } from "lucide-react";
 
 export default async function JournalsPage(props: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
@@ -9,17 +8,22 @@ export default async function JournalsPage(props: {
   const searchParams = await props.searchParams;
   const query = typeof searchParams.q === 'string' ? searchParams.q : '';
   const sort = typeof searchParams.sort === 'string' && searchParams.sort === 'asc' ? 'asc' : 'desc';
+  const page = typeof searchParams.page === 'string' ? parseInt(searchParams.page) : 1;
+  const limit = 9; // Grid of 3x3
+  const offset = (page - 1) * limit;
 
   let journals = [];
+  let totalCount = 0;
 
   if (query) {
-    // If semantic search is active, use searchJournals.
-    // Note: semantic search sorts by relevance, but we can respect chron sort if asked, 
-    // but typically users want relevance for search. We'll pass it as is.
-    journals = await searchJournals(query, 20); // Fetch up to 20 relevant journals
+    // Note: searchJournals currently doesn't support pagination in its signature
+    // We'll fetch 20 for now as it did before.
+    journals = await searchJournals(query, 20); 
+    totalCount = journals.length;
   } else {
-    // Standard chronological fetch
-    journals = await getJournals(sort);
+    // Standard chronological fetch with pagination
+    journals = await getJournals(sort, limit, offset);
+    totalCount = await getJournalsCount();
   }
 
   return (
@@ -28,6 +32,9 @@ export default async function JournalsPage(props: {
         journals={journals} 
         initialQuery={query}
         initialSort={sort}
+        totalCount={totalCount}
+        currentPage={page}
+        pageSize={limit}
       />
     </div>
   );

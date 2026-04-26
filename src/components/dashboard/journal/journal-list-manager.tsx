@@ -25,6 +25,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 interface JournalProps {
   id: string;
@@ -34,10 +43,20 @@ interface JournalProps {
   updatedAt: string | Date;
 }
 
-export function JournalListManager({ journals, initialQuery, initialSort }: { 
+export function JournalListManager({ 
+  journals, 
+  initialQuery, 
+  initialSort,
+  totalCount = 0,
+  currentPage = 1,
+  pageSize = 9
+}: { 
   journals: JournalProps[], 
   initialQuery: string, 
-  initialSort: string 
+  initialSort: string,
+  totalCount?: number,
+  currentPage?: number,
+  pageSize?: number
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -48,8 +67,10 @@ export function JournalListManager({ journals, initialQuery, initialSort }: {
   const [sort, setSort] = useState(initialSort);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
 
+  const totalPages = Math.ceil(totalCount / pageSize);
+
   // Use a stable callback for navigation to avoid unnecessary re-renders
-  const updateUrl = useCallback((newQuery: string, newSort: string) => {
+  const updateUrl = useCallback((newQuery: string, newSort: string, newPage: number = 1) => {
     const params = new URLSearchParams(searchParams.toString());
     
     if (newQuery) {
@@ -58,13 +79,19 @@ export function JournalListManager({ journals, initialQuery, initialSort }: {
       params.delete("q");
     }
     params.set("sort", newSort);
+    
+    if (newPage > 1) {
+      params.set("page", newPage.toString());
+    } else {
+      params.delete("page");
+    }
 
     const newUrl = `${pathname}?${params.toString()}`;
     
     // Only push if the URL has actually changed
     if (newUrl !== `${pathname}?${searchParams.toString()}`) {
       startTransition(() => {
-        router.push(newUrl, { scroll: false });
+        router.push(newUrl, { scroll: true });
       });
     }
   }, [pathname, router, searchParams]);
@@ -75,7 +102,7 @@ export function JournalListManager({ journals, initialQuery, initialSort }: {
     if (query === initialQuery && sort === initialSort) return;
 
     const timer = setTimeout(() => {
-      updateUrl(query, sort);
+      updateUrl(query, sort, 1); // Reset to page 1 on new search
     }, 400);
 
     return () => clearTimeout(timer);
@@ -117,7 +144,7 @@ export function JournalListManager({ journals, initialQuery, initialSort }: {
         <div className="flex items-center gap-3 w-full md:w-auto px-2 md:px-0">
           <Select value={sort} onValueChange={(val) => {
             setSort(val);
-            updateUrl(query, val);
+            updateUrl(query, val, 1);
           }}>
             <SelectTrigger className="h-11 rounded-2xl bg-muted/50 border-none w-full md:w-[160px]">
               <div className="flex items-center gap-2">
@@ -234,6 +261,73 @@ export function JournalListManager({ journals, initialQuery, initialSort }: {
 
       </div>
       
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="pt-8 pb-12 border-t border-border/40">
+          <Pagination>
+            <PaginationContent>
+              {currentPage > 1 && (
+                <PaginationItem>
+                  <PaginationPrevious 
+                    href="#" 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      updateUrl(query, sort, currentPage - 1);
+                    }} 
+                  />
+                </PaginationItem>
+              )}
+              
+              {Array.from({ length: totalPages }).map((_, i) => {
+                const page = i + 1;
+                if (
+                  page === 1 || 
+                  page === totalPages || 
+                  (page >= currentPage - 1 && page <= currentPage + 1)
+                ) {
+                  return (
+                    <PaginationItem key={page}>
+                      <PaginationLink 
+                        href="#" 
+                        isActive={currentPage === page}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          updateUrl(query, sort, page);
+                        }}
+                      >
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  );
+                }
+                
+                if (page === currentPage - 2 || page === currentPage + 2) {
+                  return (
+                    <PaginationItem key={page}>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  );
+                }
+                
+                return null;
+              })}
+
+              {currentPage < totalPages && (
+                <PaginationItem>
+                  <PaginationNext 
+                    href="#" 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      updateUrl(query, sort, currentPage + 1);
+                    }} 
+                  />
+                </PaginationItem>
+              )}
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
+
       {/* Mobile Floating Action Button */}
       <div className="fixed bottom-8 right-8 sm:hidden z-20">
         <Link href="/dashboard/journal/new">

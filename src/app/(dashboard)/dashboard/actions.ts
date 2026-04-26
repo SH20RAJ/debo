@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { journals } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { eq, desc, asc, and } from "drizzle-orm";
+import { eq, desc, asc, and, count } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { cache } from "react";
@@ -16,18 +16,35 @@ const journalSchema = z.object({
   id: z.string().uuid().optional()
 });
 
-export const getJournals = cache(async (sortOrder: "asc" | "desc" = "desc") => {
+export const getJournals = cache(async (sortOrder: "asc" | "desc" = "desc", limit: number = 10, offset: number = 0) => {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session) return [];
 
     try {
         return await db.query.journals.findMany({
             where: eq(journals.userId, session.user.id),
-            orderBy: [sortOrder === "desc" ? desc(journals.createdAt) : asc(journals.createdAt)]
+            orderBy: [sortOrder === "desc" ? desc(journals.createdAt) : asc(journals.createdAt)],
+            limit,
+            offset
         });
     } catch (error) {
         console.error("Failed to fetch journals:", error);
         return [];
+    }
+});
+
+export const getJournalsCount = cache(async () => {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session) return 0;
+
+    try {
+        const [result] = await db.select({ value: count() })
+            .from(journals)
+            .where(eq(journals.userId, session.user.id));
+        return result.value;
+    } catch (error) {
+        console.error("Failed to count journals:", error);
+        return 0;
     }
 });
 
