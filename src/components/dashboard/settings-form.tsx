@@ -5,11 +5,12 @@ import { getNangoConnections, deleteNangoConnection } from "@/app/(dashboard)/da
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { KeyRound, ShieldCheck, Link2, ExternalLink, Link2Off, Loader2, Sparkles, Box } from "lucide-react";
+import { KeyRound, ShieldCheck, Link2, ExternalLink, Link2Off, Loader2, Sparkles, Box, Mic } from "lucide-react";
 import Nango from "@nangohq/frontend";
 import { useRouter } from "next/navigation";
 import { PROVIDERS } from "@/config/providers";
 import { ProviderCard } from "./provider-card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export function SettingsForm({ 
     initialData, 
@@ -66,18 +67,29 @@ export function SettingsForm({
     };
 
     return (
-        <div className="space-y-12">
-            {/* AI Providers Section */}
-            <section className="space-y-6">
-                <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                        <h2 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
-                            <Sparkles className="h-6 w-6 text-primary" />
-                            AI Model Providers
-                        </h2>
-                        <p className="text-muted-foreground">Enable and configure the intelligence that powers your companion.</p>
-                    </div>
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <Tabs defaultValue="ai" className="w-full space-y-6">
+                <div className="flex justify-center md:justify-start">
+                    <TabsList className="bg-background/50 backdrop-blur-xl border border-border/10 p-1 shadow-sm">
+                        <TabsTrigger value="ai" className="gap-2 rounded-md">
+                            <Sparkles className="h-4 w-4" /> AI Providers
+                        </TabsTrigger>
+                        <TabsTrigger value="integrations" className="gap-2 rounded-md">
+                            <Box className="h-4 w-4" /> Integrations
+                        </TabsTrigger>
+                        <TabsTrigger value="voice" className="gap-2 rounded-md">
+                            <Mic className="h-4 w-4" /> Voice Settings
+                        </TabsTrigger>
+                    </TabsList>
                 </div>
+
+                <TabsContent value="ai" className="space-y-6 mt-0">
+                    <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                            <h2 className="text-2xl font-bold tracking-tight">AI Model Providers</h2>
+                            <p className="text-muted-foreground">Enable and configure the intelligence that powers your companion.</p>
+                        </div>
+                    </div>
 
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     {PROVIDERS.map((provider) => (
@@ -89,17 +101,13 @@ export function SettingsForm({
                         />
                     ))}
                 </div>
-            </section>
+                </TabsContent>
 
-            {/* Integrations Section */}
-            <section className="space-y-6 pt-6 border-t">
-                <div className="space-y-1">
-                    <h2 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
-                        <Box className="h-6 w-6 text-primary" />
-                        Integrations & Telemetry
-                    </h2>
-                    <p className="text-muted-foreground">Sync your life data from external apps to give Debo context.</p>
-                </div>
+                <TabsContent value="integrations" className="space-y-6 mt-0">
+                    <div className="space-y-1">
+                        <h2 className="text-2xl font-bold tracking-tight">Integrations & Telemetry</h2>
+                        <p className="text-muted-foreground">Sync your life data from external apps to give Debo context.</p>
+                    </div>
 
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {[
@@ -163,9 +171,30 @@ export function SettingsForm({
                         );
                     })}
                 </div>
-            </section>
+                </TabsContent>
 
-            <div className="flex items-center justify-center pt-10 border-t">
+                <TabsContent value="voice" className="space-y-6 mt-0">
+                    <div className="space-y-1">
+                        <h2 className="text-2xl font-bold tracking-tight">Voice Agent Settings</h2>
+                        <p className="text-muted-foreground">Configure LiveKit connection and voice preferences.</p>
+                    </div>
+                    
+                    <Card className="border-border/10 bg-background/40 backdrop-blur-xl shadow-md overflow-hidden relative group">
+                        <div className="absolute -right-20 -top-20 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+                        <CardHeader>
+                            <CardTitle>LiveKit Configuration</CardTitle>
+                            <CardDescription>Currently under construction in Phase 4.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-sm text-muted-foreground">
+                                Settings for STT (Deepgram), TTS (Cartesia), and SIP telephony will be available here soon.
+                            </p>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+            </Tabs>
+
+            <div className="flex items-center justify-center pt-8">
                 <div className="flex items-center text-sm text-muted-foreground bg-secondary/30 px-4 py-2 rounded-full border border-border/50">
                     <ShieldCheck className="h-4 w-4 mr-2 text-emerald-500" />
                     All API keys are encrypted with AES-256-GCM before storage.

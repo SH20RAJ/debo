@@ -23,8 +23,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
 
   return (
-    <Sidebar {...props}>
-      <SidebarHeader className="h-16 border-b border-border/50 flex items-center justify-center px-4">
+    <Sidebar {...props} className="border-r border-border/10">
+      <SidebarHeader className="h-16 border-b border-border/10 flex items-center justify-center px-4 bg-background/50 backdrop-blur-xl">
         <Link href="/dashboard" className="flex items-center gap-2 font-semibold w-full">
           <BrainCircuit className="h-6 w-6 text-primary" />
           <span className="tracking-tight text-xl font-bold bg-gradient-to-br from-foreground to-muted-foreground bg-clip-text text-transparent">
@@ -74,7 +74,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
 
       </SidebarContent>
-      <SidebarFooter className="border-t border-border/50 p-4">
+      <SidebarFooter className="border-t border-border/10 p-4 bg-background/50 backdrop-blur-xl">
         <div className="flex items-center justify-between w-full">
           <ThemeToggle />
           <span className="text-xs text-muted-foreground font-medium">Free edge tier</span>
