@@ -36,6 +36,39 @@ export default function MCPPage() {
             <MCPClient />
           </CardContent>
         </Card>
+
+        {/* MCP Tools List */}
+        <Card className="md:col-span-2 border-primary/20 bg-primary/5">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl flex items-center gap-2">
+              <Network className="h-5 w-5 text-primary" />
+              Exposed Tools
+            </CardTitle>
+            <CardDescription>
+              These tools are automatically available to any connected AI client (Cursor, Claude Desktop, etc.) over the local SSE connection.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-4 md:grid-cols-2">
+            <div className="bg-background border rounded-xl p-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <code className="text-sm font-bold text-primary">add_mem0_fact</code>
+                <span className="text-xs bg-muted px-2 py-1 rounded-md font-medium">Mutation</span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Allows the agent to write new facts or memories into your intelligent context via Mem0.
+              </p>
+            </div>
+            <div className="bg-background border rounded-xl p-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <code className="text-sm font-bold text-emerald-500">search_mem0_facts</code>
+                <span className="text-xs bg-muted px-2 py-1 rounded-md font-medium">Query</span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Allows the agent to semantically search your existing intelligence context to answer questions.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

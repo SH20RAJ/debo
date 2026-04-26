@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { Search, SortDesc, SortAsc, CalendarIcon, FileText } from "lucide-react";
+import { Search, SortDesc, SortAsc, CalendarIcon, FileText, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
@@ -53,14 +54,22 @@ export function JournalListManager({ journals, initialQuery, initialSort }: {
     <div className="space-y-6">
       {/* Controls */}
       <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-        <div className="relative w-full sm:max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input 
-            placeholder="Search journals semantically..." 
-            className="pl-9"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
+        <div className="relative w-full sm:max-w-sm flex items-center gap-3">
+          <div className="relative w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input 
+              placeholder="Search journals semantically..." 
+              className="pl-9 pr-4"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </div>
+          {query && (
+            <Badge variant="secondary" className="flex-shrink-0 animate-in fade-in zoom-in-95 bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
+              <Sparkles className="h-3 w-3 mr-1" />
+              Vector Search
+            </Badge>
+          )}
         </div>
         <div className="w-full sm:w-auto">
           <Select value={sort} onValueChange={setSort}>
