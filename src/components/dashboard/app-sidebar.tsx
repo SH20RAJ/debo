@@ -15,7 +15,8 @@ import {
   User,
   LogOut,
   ChevronRight,
-  Sparkles
+  Sparkles,
+  Database
 } from "lucide-react"
 
 import {
@@ -107,6 +108,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <Link href="/dashboard/mcp">
                     <Network className="h-4 w-4" />
                     <span>Link External Apps</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  asChild 
+                  isActive={pathname === "/dashboard/memories"}
+                  tooltip="Facts"
+                >
+                  <Link href="/dashboard/memories">
+                    <Database className="h-4 w-4" />
+                    <span>Memory OS</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

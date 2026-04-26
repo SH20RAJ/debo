@@ -8,10 +8,18 @@ import { eq, and, gte, lte, desc, ilike, sql } from "drizzle-orm";
 import crypto from "crypto";
 import { nango } from "@/lib/nango";
 
-// Initialize Mem0 client
-const mem0 = new Mem0({
-  apiKey: process.env.MEM0_API_KEY || "dummy",
-});
+// Helper to get specialized client
+async function getMem0ForUser(userId: string) {
+    const pref = await db.query.userPreferences.findFirst({
+        where: eq(userPreferences.userId, userId)
+    });
+    
+    return new Mem0({
+        apiKey: pref?.mem0Key || process.env.MEM0_API_KEY || "dummy",
+        // @ts-ignore
+        host: pref?.mem0Url || undefined
+    });
+}
 
 const server = new Server({
   name: "debo-mcp-server",
@@ -165,13 +173,15 @@ server.setRequestHandler(CallToolRequestSchema, async (request, extra) => {
 
     case "add_memory": {
       const { fact } = args as { fact: string };
-      const result = await mem0.add([{ role: "user", content: fact }], { user_id: userId });
+      const mem0User = await getMem0ForUser(userId);
+      const result = await mem0User.add([{ role: "user", content: fact }], { user_id: userId });
       return { content: [{ type: "text", text: `Memory stored successfully: ${JSON.stringify(result)}` }] };
     }
 
     case "search_memories": {
       const { query } = args as { query: string };
-      const result = await mem0.search(query, { user_id: userId } as any);
+      const mem0User = await getMem0ForUser(userId);
+      const result = await mem0User.search(query, { user_id: userId } as any);
       return { content: [{ type: "text", text: JSON.stringify(result) }] };
     }
 
