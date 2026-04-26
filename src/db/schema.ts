@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, index } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
 	id: text("id").primaryKey(),
@@ -53,7 +53,10 @@ export const journals = pgTable("journal", {
     vectorizeId: text("vectorize_id"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (table) => ({
+    userIdIdx: index("journal_user_id_idx").on(table.userId),
+    createdAtIdx: index("journal_created_at_idx").on(table.createdAt),
+}));
 
 export const userPreferences = pgTable("user_preference", {
     userId: text("user_id").primaryKey().references(() => user.id),
@@ -85,7 +88,9 @@ export const chats = pgTable("chat", {
     title: text("title"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (table) => ({
+    userIdIdx: index("chat_user_id_idx").on(table.userId),
+}));
 
 export const messages = pgTable("message", {
     id: text("id").primaryKey(),
@@ -93,6 +98,9 @@ export const messages = pgTable("message", {
     role: text("role").notNull(), // 'user', 'assistant', 'system', 'tool'
     content: text("content").notNull(), // JSON string for complex content
     createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+}, (table) => ({
+    chatIdIdx: index("message_chat_id_idx").on(table.chatId),
+    createdAtIdx: index("message_created_at_idx").on(table.createdAt),
+}));
 
 

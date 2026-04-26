@@ -15,6 +15,13 @@
       "when": 1777229843302,
       "tag": "0001_daily_psylocke",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1777230247036,
+      "tag": "0002_parallel_shadowcat",
+      "breakpoints": true
     }
   ]
 }
