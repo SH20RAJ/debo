@@ -163,6 +163,21 @@ export default function MCPPage() {
                 name="search_memories"
                 desc="Semantic retrieval of stored intelligence context."
             />
+            <ToolCard 
+                icon={<Network className="h-5 w-5 text-cyan-500" />}
+                name="list_my_connections"
+                desc="See all active app integrations like GitHub or Calendar."
+            />
+            <ToolCard 
+                icon={<Zap className="h-5 w-5 text-orange-500" />}
+                name="run_action"
+                desc="Execute any API call (GET, POST, etc.) on your connected apps."
+            />
+            <ToolCard 
+                icon={<Terminal className="h-5 w-5 text-slate-500" />}
+                name="get_integration_guide"
+                desc="Fetch documentation hints for specific app APIs."
+            />
         </div>
       </div>
 

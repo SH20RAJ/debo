@@ -6,6 +6,7 @@ import { db } from "@/db";
 import { journals, userPreferences } from "@/db/schema";
 import { eq, and, gte, lte, desc, ilike, sql } from "drizzle-orm";
 import crypto from "crypto";
+import { nango } from "@/lib/nango";
 
 // Initialize Mem0 client
 const mem0 = new Mem0({
@@ -14,7 +15,7 @@ const mem0 = new Mem0({
 
 const server = new Server({
   name: "debo-mcp-server",
-  version: "1.1.0",
+  version: "1.2.0",
 }, {
   capabilities: {
     tools: {}
@@ -46,6 +47,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         inputSchema: {
           type: "object",
           properties: {
+            title: { type: "string", description: "Optional title for the entry." },
             content: { type: "string", description: "The content of the journal entry (markdown supported)." }
           },
           required: ["content"]
@@ -85,6 +87,40 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           },
           required: ["query"]
         }
+      },
+      {
+        name: "list_my_connections",
+        description: "List all currently connected third-party integrations (e.g., google-calendar, github, etc.) for the current user.",
+        inputSchema: {
+          type: "object",
+          properties: {}
+        }
+      },
+      {
+        name: "run_action",
+        description: "Perform an API action (GET, POST, etc.) on a connected integration. This allows calling any endpoint of the connected service (Calendar, GitHub, Mail, etc.).",
+        inputSchema: {
+          type: "object",
+          properties: {
+            providerConfigKey: { type: "string", description: "The integration unique key (e.g., 'google-calendar', 'github', 'google-mail')." },
+            method: { type: "string", enum: ["GET", "POST", "PUT", "DELETE", "PATCH"], description: "HTTP method to use." },
+            endpoint: { type: "string", description: "The API endpoint path (e.g., '/primary/events' or '/user/repos')." },
+            params: { type: "object", description: "Query parameters for the request." },
+            data: { type: "object", description: "JSON body for POST/PUT/PATCH requests." }
+          },
+          required: ["providerConfigKey", "method", "endpoint"]
+        }
+      },
+      {
+        name: "get_integration_guide",
+        description: "Get documentation hints for a specific integration to understand available endpoints and payload structures.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            providerConfigKey: { type: "string", description: "The integration unique key." }
+          },
+          required: ["providerConfigKey"]
+        }
       }
     ]
   };
@@ -99,11 +135,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request, extra) => {
 
   switch (name) {
     case "create_journal": {
-      const { content } = args as { content: string };
+      const { content, title } = args as { content: string, title?: string };
       const id = crypto.randomUUID();
       await db.insert(journals).values({
         id,
         userId,
+        title: title || null,
         content,
       });
       return { content: [{ type: "text", text: `Journal entry created with ID: ${id}` }] };
@@ -138,6 +175,40 @@ server.setRequestHandler(CallToolRequestSchema, async (request, extra) => {
       return { content: [{ type: "text", text: JSON.stringify(result) }] };
     }
 
+    case "list_my_connections": {
+        const connections = await nango.listConnections(userId);
+        return { content: [{ type: "text", text: JSON.stringify(connections) }] };
+    }
+
+    case "run_action": {
+        const { providerConfigKey, method, endpoint, params, data } = args as any;
+        const response = await nango.proxy({
+            method,
+            endpoint,
+            providerConfigKey,
+            connectionId: userId,
+            params,
+            data
+        });
+        return { content: [{ type: "text", text: JSON.stringify(response.data) }] };
+    }
+
+    case "get_integration_guide": {
+        const { providerConfigKey } = args as { providerConfigKey: string };
+        const guides: Record<string, string> = {
+            "google-calendar": "Base URL: https://www.googleapis.com/calendar/v3. Common endpoints: /primary/events (GET to list, POST to create). Refer to Google Calendar API v3 docs.",
+            "github": "Base URL: https://api.github.com. Common endpoints: /user/repos (GET), /repos/{owner}/{repo}/issues (POST). Refer to GitHub REST API docs.",
+            "google-mail": "Base URL: https://www.googleapis.com/gmail/v1/users/me. Common endpoints: /messages (GET), /messages/send (POST). Refer to Gmail API v1 docs.",
+            "slack": "Base URL: https://slack.com/api. Common endpoints: /chat.postMessage (POST). Refer to Slack Web API docs."
+        };
+        return { 
+            content: [{ 
+                type: "text", 
+                text: guides[providerConfigKey] || `Integration ${providerConfigKey} uses standard REST API structure. Refer to the provider's official developer documentation for endpoints and payload requirements.` 
+            }] 
+        };
+    }
+
     default:
       throw new Error(`Unknown tool: ${name}`);
   }
@@ -158,6 +229,6 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ 
     status: "active", 
     message: "Debo MCP Server is running. Use POST with Bearer token for tool access.",
-    version: "1.1.0"
+    version: "1.2.0"
   });
 }
