@@ -8,6 +8,7 @@ import remarkGfm from "remark-gfm";
 
 type JournalProps = {
   id: string;
+  title?: string | null;
   content: string;
   createdAt: Date;
   updatedAt: Date;

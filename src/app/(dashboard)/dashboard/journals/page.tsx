@@ -1,5 +1,5 @@
-import { searchJournals } from "../search-actions";
-import { getJournals, getJournalsCount } from "../actions";
+import { searchJournals } from "@/actions/search";
+import { getJournals, getJournalsCount } from "@/actions/journals";
 import { JournalListManager } from "@/components/dashboard/journal/journal-list-manager";
 import { Metadata } from "next";
 

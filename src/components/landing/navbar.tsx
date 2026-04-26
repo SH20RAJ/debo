@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
-
 import Image from "next/image";
-...
+
+export function Navbar() {
   return (
     <header className="fixed top-0 z-50 w-full bg-background/50 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useTransition, useCallback } from "react";
+import { useState, useEffect, useTransition, useCallback, Suspense } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Search, SortDesc, SortAsc, CalendarIcon, FileText, Sparkles, Trash2, Plus, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { deleteJournal } from "@/app/(dashboard)/dashboard/actions";
+import { deleteJournal } from "@/actions/journals";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -34,6 +34,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface JournalProps {
   id: string;
@@ -69,26 +70,13 @@ export function JournalListManager({
 
   const totalPages = Math.ceil(totalCount / pageSize);
 
-  // Use a stable callback for navigation to avoid unnecessary re-renders
   const updateUrl = useCallback((newQuery: string, newSort: string, newPage: number = 1) => {
     const params = new URLSearchParams(searchParams.toString());
-    
-    if (newQuery) {
-      params.set("q", newQuery);
-    } else {
-      params.delete("q");
-    }
+    if (newQuery) params.set("q", newQuery); else params.delete("q");
     params.set("sort", newSort);
-    
-    if (newPage > 1) {
-      params.set("page", newPage.toString());
-    } else {
-      params.delete("page");
-    }
+    if (newPage > 1) params.set("page", newPage.toString()); else params.delete("page");
 
     const newUrl = `${pathname}?${params.toString()}`;
-    
-    // Only push if the URL has actually changed
     if (newUrl !== `${pathname}?${searchParams.toString()}`) {
       startTransition(() => {
         router.push(newUrl, { scroll: true });
@@ -96,23 +84,21 @@ export function JournalListManager({
     }
   }, [pathname, router, searchParams]);
 
-  // Debounce search query updates
   useEffect(() => {
-    // Skip on initial mount if values match
     if (query === initialQuery && sort === initialSort) return;
-
-    const timer = setTimeout(() => {
-      updateUrl(query, sort, 1); // Reset to page 1 on new search
-    }, 400);
-
+    const timer = setTimeout(() => updateUrl(query, sort, 1), 400);
     return () => clearTimeout(timer);
   }, [query, sort, initialQuery, initialSort, updateUrl]);
 
   const handleDelete = async (id: string) => {
     setIsDeleting(id);
     try {
-      await deleteJournal(id);
-      toast.success("Entry deleted successfully");
+      const result = await deleteJournal(id);
+      if (result.success) {
+        toast.success("Entry deleted successfully");
+      } else {
+        toast.error(result.error || "Failed to delete entry");
+      }
     } catch (error) {
       toast.error("Failed to delete entry");
     } finally {
@@ -169,96 +155,20 @@ export function JournalListManager({
 
       {/* Results Section */}
       <div className={`transition-all duration-500 ${isPending ? "opacity-40 grayscale" : "opacity-100"}`}>
-        
         {journals.length === 0 ? (
-          <div className="border border-dashed rounded-3xl p-16 flex flex-col items-center justify-center text-center space-y-6 mt-12 bg-muted/10">
-            <div className="h-20 w-20 bg-muted rounded-full flex items-center justify-center shadow-inner">
-              <FileText className="h-10 w-10 text-muted-foreground" />
-            </div>
-            <div className="space-y-2">
-              <h3 className="text-2xl font-bold tracking-tight text-foreground">No entries found</h3>
-              <p className="text-muted-foreground max-w-sm">
-                {query ? "Try searching for something else or check your spelling." : "Start capturing your thoughts by creating your first entry."}
-              </p>
-            </div>
-            {!query && (
-                <Link href="/dashboard/journal/new">
-                    <Button size="lg" className="rounded-2xl px-8">Create New Entry</Button>
-                </Link>
-            )}
-          </div>
+          <EmptyState query={query} />
         ) : (
           <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
             {journals.map((journal) => (
-              <Card key={journal.id} className="group border-none bg-muted/30 hover:bg-muted/50 transition-all duration-300 relative overflow-hidden rounded-3xl shadow-sm">
-                <CardContent className="p-0">
-                  <div className="p-6 pb-20">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground/50 uppercase tracking-widest">
-                            <CalendarIcon className="h-3.5 w-3.5" />
-                            {format(new Date(journal.createdAt), "MMM d, yyyy")}
-                        </div>
-                        
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    className="h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/10 hover:text-destructive"
-                                    onClick={(e) => e.stopPropagation()}
-                                >
-                                    {isDeleting === journal.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                                </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent className="rounded-3xl">
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>Delete journal entry?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        This cannot be undone. It will be gone forever.
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel className="rounded-2xl">Cancel</AlertDialogCancel>
-                                    <AlertDialogAction 
-                                        onClick={() => handleDelete(journal.id)}
-                                        className="bg-destructive hover:bg-destructive/90 rounded-2xl"
-                                    >
-                                        Delete
-                                    </AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-                    </div>
-
-                    <Link href={`/dashboard/journal/${journal.id}`}>
-                        <div className="space-y-3">
-                            {journal.title && (
-                                <h3 className="text-xl font-bold tracking-tight text-foreground line-clamp-1 group-hover:text-primary transition-colors">
-                                    {journal.title}
-                                </h3>
-                            )}
-                            <div className="prose prose-sm dark:prose-invert max-w-none line-clamp-4 text-foreground/70 leading-relaxed font-medium">
-                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                    {journal.content}
-                                </ReactMarkdown>
-                            </div>
-                        </div>
-                    </Link>
-                  </div>
-
-                  {/* Bottom Fade and Link Area */}
-                  <Link href={`/dashboard/journal/${journal.id}`}>
-                      <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-muted/40 to-transparent pointer-events-none" />
-                      <div className="absolute bottom-4 right-6 text-[10px] font-bold uppercase tracking-widest text-primary opacity-0 group-hover:opacity-100 transition-all translate-y-1 group-hover:translate-y-0">
-                          Open Entry →
-                      </div>
-                  </Link>
-                </CardContent>
-              </Card>
+              <JournalCard 
+                key={journal.id} 
+                journal={journal} 
+                isDeleting={isDeleting === journal.id} 
+                onDelete={handleDelete} 
+              />
             ))}
           </div>
         )}
-
       </div>
       
       {/* Pagination */}
@@ -268,59 +178,28 @@ export function JournalListManager({
             <PaginationContent>
               {currentPage > 1 && (
                 <PaginationItem>
-                  <PaginationPrevious 
-                    href="#" 
-                    onClick={(e) => {
-                      e.preventDefault();
-                      updateUrl(query, sort, currentPage - 1);
-                    }} 
-                  />
+                  <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); updateUrl(query, sort, currentPage - 1); }} />
                 </PaginationItem>
               )}
-              
               {Array.from({ length: totalPages }).map((_, i) => {
                 const page = i + 1;
-                if (
-                  page === 1 || 
-                  page === totalPages || 
-                  (page >= currentPage - 1 && page <= currentPage + 1)
-                ) {
+                if (page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)) {
                   return (
                     <PaginationItem key={page}>
-                      <PaginationLink 
-                        href="#" 
-                        isActive={currentPage === page}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          updateUrl(query, sort, page);
-                        }}
-                      >
+                      <PaginationLink href="#" isActive={currentPage === page} onClick={(e) => { e.preventDefault(); updateUrl(query, sort, page); }}>
                         {page}
                       </PaginationLink>
                     </PaginationItem>
                   );
                 }
-                
                 if (page === currentPage - 2 || page === currentPage + 2) {
-                  return (
-                    <PaginationItem key={page}>
-                      <PaginationEllipsis />
-                    </PaginationItem>
-                  );
+                  return <PaginationItem key={page}><PaginationEllipsis /></PaginationItem>;
                 }
-                
                 return null;
               })}
-
               {currentPage < totalPages && (
                 <PaginationItem>
-                  <PaginationNext 
-                    href="#" 
-                    onClick={(e) => {
-                      e.preventDefault();
-                      updateUrl(query, sort, currentPage + 1);
-                    }} 
-                  />
+                  <PaginationNext href="#" onClick={(e) => { e.preventDefault(); updateUrl(query, sort, currentPage + 1); }} />
                 </PaginationItem>
               )}
             </PaginationContent>
@@ -338,4 +217,72 @@ export function JournalListManager({
       </div>
     </div>
   );
+}
+
+function JournalCard({ journal, isDeleting, onDelete }: { journal: JournalProps, isDeleting: boolean, onDelete: (id: string) => void }) {
+    return (
+        <Card className="group border-none bg-muted/30 hover:bg-muted/50 transition-all duration-300 relative overflow-hidden rounded-3xl shadow-sm">
+            <CardContent className="p-0">
+                <div className="p-6 pb-20">
+                <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground/50 uppercase tracking-widest">
+                        <CalendarIcon className="h-3.5 w-3.5" />
+                        {format(new Date(journal.createdAt), "MMM d, yyyy")}
+                    </div>
+                    
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/10 hover:text-destructive"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent className="rounded-3xl">
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Delete journal entry?</AlertDialogTitle>
+                                <AlertDialogDescription>This cannot be undone. It will be gone forever.</AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel className="rounded-2xl">Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => onDelete(journal.id)} className="bg-destructive hover:bg-destructive/90 rounded-2xl">Delete</AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </div>
+
+                <Link href={`/dashboard/journal/${journal.id}`}>
+                    <div className="space-y-3">
+                        {journal.title && <h3 className="text-xl font-bold tracking-tight text-foreground line-clamp-1 group-hover:text-primary transition-colors">{journal.title}</h3>}
+                        <div className="prose prose-sm dark:prose-invert max-w-none line-clamp-4 text-foreground/70 leading-relaxed font-medium">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{journal.content}</ReactMarkdown>
+                        </div>
+                    </div>
+                </Link>
+                </div>
+                <Link href={`/dashboard/journal/${journal.id}`}>
+                    <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-muted/40 to-transparent pointer-events-none" />
+                    <div className="absolute bottom-4 right-6 text-[10px] font-bold uppercase tracking-widest text-primary opacity-0 group-hover:opacity-100 transition-all translate-y-1 group-hover:translate-y-0">Open Entry →</div>
+                </Link>
+            </CardContent>
+        </Card>
+    );
+}
+
+function EmptyState({ query }: { query: string }) {
+    return (
+        <div className="border border-dashed rounded-3xl p-16 flex flex-col items-center justify-center text-center space-y-6 mt-12 bg-muted/10">
+            <div className="h-20 w-20 bg-muted rounded-full flex items-center justify-center shadow-inner">
+                <FileText className="h-10 w-10 text-muted-foreground" />
+            </div>
+            <div className="space-y-2">
+                <h3 className="text-2xl font-bold tracking-tight text-foreground">No entries found</h3>
+                <p className="text-muted-foreground max-w-sm">{query ? "Try searching for something else." : "Start capturing your thoughts by creating your first entry."}</p>
+            </div>
+            {!query && <Link href="/dashboard/journal/new"><Button size="lg" className="rounded-2xl px-8">Create New Entry</Button></Link>}
+        </div>
+    );
 }

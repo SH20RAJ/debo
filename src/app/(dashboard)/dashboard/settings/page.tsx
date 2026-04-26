@@ -1,4 +1,4 @@
-import { getUserPreferences, getNangoConnections, getAIProviders } from "./actions";
+import { getUserPreferences, getNangoConnections, getAIProviders } from "@/actions/settings";
 import { SettingsForm } from "@/components/dashboard/settings/settings-form";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";

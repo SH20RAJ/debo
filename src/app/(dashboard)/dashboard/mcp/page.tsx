@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Network, Key, RefreshCw, ShieldCheck, Terminal, CheckCircle2, Copy, Trash2, PlusCircle, Database, Search, Calendar, History } from "lucide-react";
+import { Network, Key, RefreshCw, ShieldCheck, Terminal, CheckCircle2, Copy, Trash2, PlusCircle, Database, Search, Calendar, History, Zap } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { rotateMCPKey, getMCPConfig } from "./actions";
+import { rotateMCPKey, getMCPConfig } from "@/actions/mcp";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Metadata } from "next";
 

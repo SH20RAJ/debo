@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { getNangoConnections, deleteNangoConnection } from "@/app/(dashboard)/dashboard/settings/actions";
+import { getNangoConnections, deleteNangoConnection } from "@/actions/settings";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";

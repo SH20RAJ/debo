@@ -1,4 +1,4 @@
-import { getJournal } from "@/app/(dashboard)/dashboard/actions";
+import { getJournal } from "@/actions/journals";
 import { JournalEditor } from "@/components/dashboard/journal/journal-editor";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";

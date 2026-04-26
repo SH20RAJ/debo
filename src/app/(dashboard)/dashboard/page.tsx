@@ -1,5 +1,5 @@
 import { Activity, Sparkles, Database } from "lucide-react";
-import { getJournals } from "./actions";
+import { getJournals } from "@/actions/journals";
 import { JournalTimeline } from "@/components/dashboard/journal/journal-timeline";
 import { Card, CardContent } from "@/components/ui/card";
 import { LiveKitVoiceAgent } from "@/components/dashboard/overview/livekit-voice";

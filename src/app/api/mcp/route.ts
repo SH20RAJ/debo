@@ -171,7 +171,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request, extra) => {
 
     case "search_memories": {
       const { query } = args as { query: string };
-      const result = await mem0.search(query, { user_id: userId });
+      const result = await mem0.search(query, { user_id: userId } as any);
       return { content: [{ type: "text", text: JSON.stringify(result) }] };
     }
 
@@ -220,7 +220,7 @@ export async function POST(req: NextRequest) {
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const response = await server.handleRequest(body, { userId });
+  const response = await (server as any).handleRequest(body, { userId });
   return NextResponse.json(response);
 }
 

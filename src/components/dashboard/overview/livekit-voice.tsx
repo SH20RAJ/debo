@@ -20,7 +20,7 @@ export function LiveKitVoiceAgent() {
     setIsConnecting(true);
     try {
       const res = await fetch("/api/livekit/token");
-      const data = await res.json();
+      const data = await res.json() as { token?: string };
       if (data.token) {
         setToken(data.token);
       }

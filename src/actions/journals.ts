@@ -1,0 +1,145 @@
+"use server"
+
+import { db } from "@/db";
+import { journals } from "@/db/schema";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { eq, desc, asc, and, count } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { cache } from "react";
+import { z } from "zod";
+
+const journalSchema = z.object({
+  title: z.string().max(200).optional(),
+  content: z.string().min(1, "Content cannot be empty").max(50000, "Entry too long"),
+  id: z.string().uuid().optional()
+});
+
+export const getJournals = cache(async (sortOrder: "asc" | "desc" = "desc", limit: number = 10, offset: number = 0) => {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session) return [];
+
+    try {
+        return await db.query.journals.findMany({
+            where: eq(journals.userId, session.user.id),
+            orderBy: [sortOrder === "desc" ? desc(journals.createdAt) : asc(journals.createdAt)],
+            limit,
+            offset
+        });
+    } catch (error) {
+        console.error("Failed to fetch journals:", error);
+        return [];
+    }
+});
+
+export const getJournalsCount = cache(async () => {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session) return 0;
+
+    try {
+        const [result] = await db.select({ value: count() })
+            .from(journals)
+            .where(eq(journals.userId, session.user.id));
+        return result.value;
+    } catch (error) {
+        console.error("Failed to count journals:", error);
+        return 0;
+    }
+});
+
+export const getJournal = cache(async (id: string) => {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session) return null;
+
+    try {
+        const journal = await db.query.journals.findFirst({
+            where: and(eq(journals.id, id), eq(journals.userId, session.user.id)),
+        });
+        return journal || null;
+    } catch (error) {
+        console.error("Failed to fetch journal:", error);
+        return null;
+    }
+});
+
+export async function saveJournal(rawContent: string, id?: string, title?: string) {
+    try {
+        const session = await auth.api.getSession({ headers: await headers() });
+        if (!session) return { success: false, error: "Unauthorized" };
+
+        // Validate input
+        const result = journalSchema.safeParse({ content: rawContent, id, title });
+        if (!result.success) {
+            return { success: false, error: result.error.issues[0].message };
+        }
+
+        const { content, title: validatedTitle } = result.data;
+        const journalId = id || crypto.randomUUID();
+        const userId = session.user.id;
+
+        if (id) {
+            // Check ownership
+            const existing = await getJournal(id);
+            if (!existing) return { success: false, error: "Entry not found or unauthorized" };
+            
+            await db.update(journals).set({
+                title: validatedTitle || null,
+                content,
+                updatedAt: new Date()
+            }).where(eq(journals.id, id));
+        } else {
+            // Insert new
+            await db.insert(journals).values({
+                id: journalId,
+                userId,
+                title: validatedTitle || null,
+                content,
+            });
+        }
+
+        // Offload AI/Vectorize processing to background queue
+        try {
+            const ctx = await getCloudflareContext({ async: true });
+            const env = ctx.env as any;
+            if (env.JOURNAL_QUEUE) {
+                await env.JOURNAL_QUEUE.send({
+                    type: "JOURNAL_UPDATED",
+                    journalId,
+                    userId,
+                    content
+                });
+            }
+        } catch (err) {
+            console.warn("Failed to queue journal for background processing:", err);
+        }
+
+        revalidatePath("/dashboard/journals");
+        revalidatePath(`/dashboard/journal/${journalId}`);
+        revalidatePath("/dashboard");
+        
+        return { success: true, data: journalId };
+    } catch (error) {
+        console.error("Save journal error:", error);
+        return { success: false, error: "An unexpected error occurred" };
+    }
+}
+
+export async function deleteJournal(id: string) {
+    try {
+        const session = await auth.api.getSession({ headers: await headers() });
+        if (!session) return { success: false, error: "Unauthorized" };
+
+        const existing = await getJournal(id);
+        if (!existing) return { success: false, error: "Entry not found or unauthorized" };
+
+        await db.delete(journals).where(eq(journals.id, id));
+
+        revalidatePath("/dashboard/journals");
+        revalidatePath("/dashboard");
+        return { success: true };
+    } catch (error) {
+        console.error("Delete journal error:", error);
+        return { success: false, error: "Failed to delete entry" };
+    }
+}

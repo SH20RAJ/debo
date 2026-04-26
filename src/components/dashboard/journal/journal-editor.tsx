@@ -1,12 +1,17 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { saveJournal } from "@/app/(dashboard)/dashboard/actions";
+import { saveJournal } from "@/actions/journals";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2, Cloud } from "lucide-react";
-import BlockEditor from "./block-editor";
+import dynamic from "next/dynamic";
+
+const BlockEditor = dynamic(() => import("./block-editor"), { 
+    ssr: false,
+    loading: () => <div className="h-[500px] w-full bg-muted/20 animate-pulse rounded-2xl" />
+});
 
 export function JournalEditor({ 
     initialContent = "", 
@@ -29,15 +34,21 @@ export function JournalEditor({
         if (!currentContent.trim()) return currentId;
         setIsSaving(true);
         try {
-            const newId = await saveJournal(currentContent, currentId || undefined, currentTitle || undefined);
-            if (!currentId && newId) {
-                setId(newId);
-                window.history.replaceState(null, "", `/dashboard/journal/${newId}`);
+            const result = await saveJournal(currentContent, currentId || undefined, currentTitle || undefined);
+            
+            if (result.success && result.data) {
+                const newId = result.data;
+                if (!currentId) {
+                    setId(newId);
+                    window.history.replaceState(null, "", `/dashboard/journal/${newId}`);
+                }
+                setLastSaved(new Date());
+                return newId;
+            } else {
+                toast.error(result.error || "Failed to sync changes.");
             }
-            setLastSaved(new Date());
-            return newId;
         } catch (error) {
-            toast.error("Failed to sync changes.");
+            toast.error("An unexpected error occurred.");
         } finally {
             setIsSaving(false);
         }

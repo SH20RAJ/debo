@@ -13,6 +13,12 @@ import { Button } from "@/components/ui/button";
 import { Mic, MicOff, PhoneOff, Loader2, Sparkles, Bot } from "lucide-react";
 import { toast } from "sonner";
 import { Metadata } from "next";
+import dynamic from "next/dynamic";
+
+const LiveKitRoomDynamic = dynamic(
+    () => import("@livekit/components-react").then((mod) => mod.LiveKitRoom),
+    { ssr: false }
+);
 
 export const metadata: Metadata = {
   title: "Voice Intelligence",
@@ -27,7 +33,7 @@ export default function AgentPage() {
     setIsConnecting(true);
     try {
       const res = await fetch("/api/livekit/token");
-      const data = await res.json();
+      const data = await res.json() as { token?: string };
       if (data.token) {
         setToken(data.token);
       } else {
@@ -86,7 +92,7 @@ export default function AgentPage() {
         </div>
       ) : (
         <div className="w-full h-full flex flex-col items-center">
-          <LiveKitRoom
+          <LiveKitRoomDynamic
             serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL || "wss://daksha-fuq54ytc.livekit.cloud"}
             token={token}
             connect={true}
@@ -102,7 +108,7 @@ export default function AgentPage() {
           >
             <AgentInterface onEnd={endSession} />
             <RoomAudioRenderer />
-          </LiveKitRoom>
+          </LiveKitRoomDynamic>
         </div>
       )}
     </div>

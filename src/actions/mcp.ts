@@ -5,7 +5,7 @@ import { userPreferences } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { eq } from "drizzle-orm";
-import { crypto } from "node:crypto";
+import crypto from "node:crypto";
 
 export async function rotateMCPKey() {
     const session = await auth.api.getSession({ headers: await headers() });
