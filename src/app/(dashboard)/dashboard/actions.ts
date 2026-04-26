@@ -81,3 +81,17 @@ export async function saveJournal(content: string, id?: string) {
     revalidatePath("/dashboard");
     return journalId;
 }
+
+export async function deleteJournal(id: string) {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session) throw new Error("Unauthorized");
+
+    const existing = await getJournal(id);
+    if (!existing) throw new Error("Not found");
+
+    await db.delete(journals).where(eq(journals.id, id));
+
+    revalidatePath("/dashboard/journals");
+    revalidatePath("/dashboard");
+    return { success: true };
+}
