@@ -67,10 +67,10 @@ export function SettingsForm({
     };
 
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="space-y-8">
             <Tabs defaultValue="ai" className="w-full space-y-6">
                 <div className="flex justify-center md:justify-start">
-                    <TabsList className="bg-background/50 backdrop-blur-xl border border-border/10 p-1 shadow-sm">
+                    <TabsList className="p-1">
                         <TabsTrigger value="ai" className="gap-2 rounded-md">
                             <Sparkles className="h-4 w-4" /> AI Providers
                         </TabsTrigger>
@@ -179,8 +179,7 @@ export function SettingsForm({
                         <p className="text-muted-foreground">Configure LiveKit connection and voice preferences.</p>
                     </div>
                     
-                    <Card className="border-border/10 bg-background/40 backdrop-blur-xl shadow-md overflow-hidden relative group">
-                        <div className="absolute -right-20 -top-20 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+                    <Card>
                         <CardHeader>
                             <CardTitle>LiveKit Configuration</CardTitle>
                             <CardDescription>Currently under construction in Phase 4.</CardDescription>
@@ -195,7 +194,7 @@ export function SettingsForm({
             </Tabs>
 
             <div className="flex items-center justify-center pt-8">
-                <div className="flex items-center text-sm text-muted-foreground bg-secondary/30 px-4 py-2 rounded-full border border-border/50">
+                <div className="flex items-center text-sm text-muted-foreground bg-muted px-4 py-2 rounded-full border border-border">
                     <ShieldCheck className="h-4 w-4 mr-2 text-emerald-500" />
                     All API keys are encrypted with AES-256-GCM before storage.
                 </div>
