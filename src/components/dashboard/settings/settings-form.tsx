@@ -9,7 +9,7 @@ import { KeyRound, ShieldCheck, Link2, ExternalLink, Link2Off, Loader2, Sparkles
 import Nango from "@nangohq/frontend";
 import { useRouter } from "next/navigation";
 import { PROVIDERS } from "@/config/providers";
-import { ProviderCard } from "./provider-card";
+import { ProviderCard } from "../overview/provider-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export function SettingsForm({ 

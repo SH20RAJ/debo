@@ -1,18 +1,18 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import TextareaAutosize from "react-textarea-autosize";
 import { saveJournal } from "@/app/(dashboard)/dashboard/actions";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Save, ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Cloud, CheckCloud } from "lucide-react";
 import BlockEditor from "./block-editor";
 
 export function JournalEditor({ initialContent = "", initialId = "" }: { initialContent?: string, initialId?: string }) {
     const [content, setContent] = useState(initialContent);
     const [id, setId] = useState(initialId);
     const [isSaving, setIsSaving] = useState(false);
+    const [lastSaved, setLastSaved] = useState<Date | null>(null);
     const router = useRouter();
     const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -25,9 +25,10 @@ export function JournalEditor({ initialContent = "", initialId = "" }: { initial
                 setId(newId);
                 window.history.replaceState(null, "", `/dashboard/journal/${newId}`);
             }
+            setLastSaved(new Date());
             return newId;
         } catch (error) {
-            toast.error("Failed to save journal. Please try again.");
+            toast.error("Failed to sync changes.");
         } finally {
             setIsSaving(false);
         }
@@ -36,7 +37,7 @@ export function JournalEditor({ initialContent = "", initialId = "" }: { initial
 
     // Autosave effect
     useEffect(() => {
-        if (content === initialContent && !id) return; // Don't autosave empty initial
+        if (content === initialContent && !id) return;
 
         if (timeoutRef.current) {
             clearTimeout(timeoutRef.current);
@@ -44,7 +45,7 @@ export function JournalEditor({ initialContent = "", initialId = "" }: { initial
 
         timeoutRef.current = setTimeout(() => {
             handleSave(content, id);
-        }, 1500);
+        }, 2000);
 
         return () => {
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -52,26 +53,38 @@ export function JournalEditor({ initialContent = "", initialId = "" }: { initial
     }, [content, id, handleSave, initialContent]);
 
     return (
-        <div className="max-w-3xl mx-auto space-y-12">
-            <div className="flex items-center justify-between sticky top-0 bg-background/80 backdrop-blur-md z-10 py-4 -mx-4 px-4">
-                <Button variant="ghost" size="sm" onClick={() => router.push("/dashboard")} className="text-muted-foreground hover:bg-transparent hover:text-foreground transition-colors group">
-                    <ArrowLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-                    Archive
+        <div className="w-full max-w-4xl mx-auto min-h-screen flex flex-col">
+            {/* Minimalist Top Bar */}
+            <div className="flex items-center justify-between py-6 px-4 md:px-0 sticky top-0 bg-background/50 backdrop-blur-sm z-10">
+                <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => router.push("/dashboard")} 
+                    className="text-muted-foreground hover:text-foreground transition-colors -ml-2"
+                >
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Back
                 </Button>
-                <div className="flex items-center space-x-4">
-                    <div className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-bold flex items-center">
-                        {isSaving && <Loader2 className="h-3 w-3 mr-2 animate-spin text-primary" />}
-                        {isSaving ? "Syncing" : "All changes saved"}
+                
+                <div className="flex items-center gap-4 text-xs font-medium text-muted-foreground/60">
+                    <div className="flex items-center gap-2">
+                        {isSaving ? (
+                            <>
+                                <Loader2 className="h-3.5 w-3.5 animate-spin text-primary/60" />
+                                <span>Syncing...</span>
+                            </>
+                        ) : (
+                            <>
+                                <Cloud className="h-3.5 w-3.5" />
+                                <span>{lastSaved ? `Synced at ${lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : 'Saved'}</span>
+                            </>
+                        )}
                     </div>
-
-                    <Button variant="outline" size="sm" onClick={() => handleSave(content, id)} disabled={isSaving} className="rounded-full px-4 hover:bg-primary hover:text-primary-foreground transition-all duration-300">
-                        <Save className="h-4 w-4 mr-2" />
-                        Save
-                    </Button>
                 </div>
             </div>
 
-            <div className="min-h-[600px] animate-in fade-in slide-in-from-bottom-2 duration-1000">
+            {/* Editor Area */}
+            <div className="flex-1 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out">
                 <BlockEditor 
                     initialContent={content} 
                     onChange={(markdown) => setContent(markdown)} 
