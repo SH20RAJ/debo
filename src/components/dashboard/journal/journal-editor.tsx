@@ -5,22 +5,31 @@ import { saveJournal } from "@/app/(dashboard)/dashboard/actions";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Loader2, Cloud, CheckCloud } from "lucide-react";
+import { ArrowLeft, Loader2, Cloud } from "lucide-react";
 import BlockEditor from "./block-editor";
 
-export function JournalEditor({ initialContent = "", initialId = "" }: { initialContent?: string, initialId?: string }) {
+export function JournalEditor({ 
+    initialContent = "", 
+    initialId = "", 
+    initialTitle = "" 
+}: { 
+    initialContent?: string, 
+    initialId?: string, 
+    initialTitle?: string 
+}) {
     const [content, setContent] = useState(initialContent);
+    const [title, setTitle] = useState(initialTitle);
     const [id, setId] = useState(initialId);
     const [isSaving, setIsSaving] = useState(false);
     const [lastSaved, setLastSaved] = useState<Date | null>(null);
     const router = useRouter();
     const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    const handleSave = useCallback(async (currentContent: string, currentId: string) => {
+    const handleSave = useCallback(async (currentContent: string, currentId: string, currentTitle: string) => {
         if (!currentContent.trim()) return currentId;
         setIsSaving(true);
         try {
-            const newId = await saveJournal(currentContent, currentId || undefined);
+            const newId = await saveJournal(currentContent, currentId || undefined, currentTitle || undefined);
             if (!currentId && newId) {
                 setId(newId);
                 window.history.replaceState(null, "", `/dashboard/journal/${newId}`);
@@ -37,20 +46,21 @@ export function JournalEditor({ initialContent = "", initialId = "" }: { initial
 
     // Autosave effect
     useEffect(() => {
-        if (content === initialContent && !id) return;
+        if (content === initialContent && title === initialTitle && id) return;
+        if (!content.trim() && !title.trim() && !id) return;
 
         if (timeoutRef.current) {
             clearTimeout(timeoutRef.current);
         }
 
         timeoutRef.current = setTimeout(() => {
-            handleSave(content, id);
+            handleSave(content, id, title);
         }, 2000);
 
         return () => {
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
         };
-    }, [content, id, handleSave, initialContent]);
+    }, [content, id, title, handleSave, initialContent, initialTitle]);
 
     return (
         <div className="w-full max-w-4xl mx-auto min-h-screen flex flex-col">
@@ -84,7 +94,15 @@ export function JournalEditor({ initialContent = "", initialId = "" }: { initial
             </div>
 
             {/* Editor Area */}
-            <div className="flex-1 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out">
+            <div className="flex-1 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out space-y-6">
+                <input
+                    type="text"
+                    placeholder="Untitled Entry"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className="w-full text-4xl font-extrabold tracking-tight bg-transparent border-none outline-none placeholder:text-muted-foreground/30 px-0"
+                />
+                
                 <BlockEditor 
                     initialContent={content} 
                     onChange={(markdown) => setContent(markdown)} 

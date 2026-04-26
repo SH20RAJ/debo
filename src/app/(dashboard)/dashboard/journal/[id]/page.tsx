@@ -7,6 +7,7 @@ export default async function JournalPage({ params }: { params: Promise<{ id: st
     const isNew = resolvedParams.id === "new";
     let initialContent = "";
     let initialId = "";
+    let initialTitle = "";
 
     if (!isNew) {
         try {
@@ -16,12 +17,13 @@ export default async function JournalPage({ params }: { params: Promise<{ id: st
             }
             initialContent = journal.content;
             initialId = journal.id;
+            initialTitle = journal.title || "";
         } catch (error) {
             notFound();
         }
     }
 
     return (
-        <JournalEditor initialContent={initialContent} initialId={initialId} />
+        <JournalEditor initialContent={initialContent} initialId={initialId} initialTitle={initialTitle} />
     );
 }

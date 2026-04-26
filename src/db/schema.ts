@@ -49,6 +49,7 @@ export const verification = pgTable("verification", {
 export const journals = pgTable("journal", {
     id: text("id").primaryKey(),
     userId: text("user_id").notNull().references(() => user.id),
+    title: text("title"),
     content: text("content").notNull(),
     vectorizeId: text("vectorize_id"),
     createdAt: timestamp("created_at").defaultNow().notNull(),

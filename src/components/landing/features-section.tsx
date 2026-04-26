@@ -1,58 +1,77 @@
-import { Brain, CloudLightning, DatabaseZap, Lock } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Brain, Network, Mic, Shield, History, Cpu } from "lucide-react";
 
-const features = [
+const EXPERIENCES = [
   {
-    name: "AI Life Companion",
-    description: "Your daily journaling feeds directly into an intelligent AI model that contextualizes your life, dreams, and goals perfectly.",
-    icon: Brain,
+    title: "Second Brain",
+    desc: "Write once, know forever. Debo connects your thoughts into a living network of intelligence.",
+    icon: <Brain className="h-6 w-6 text-blue-500" />,
+    color: "bg-blue-500/10"
   },
   {
-    name: "130+ Integrations",
-    description: "By connecting your Gmail, Calendar, and Notion securely, Debo understands not just what you felt, but what actually happened.",
-    icon: DatabaseZap,
+    title: "Memory Gateway",
+    desc: "Your context, anywhere. Bridge your journals into Cursor, Claude, or your local terminal.",
+    icon: <Network className="h-6 w-6 text-emerald-500" />,
+    color: "bg-emerald-500/10"
   },
   {
-    name: "Bring Your Own Key",
-    description: "Absolute freedom. Use our localized edge AI for free, or plug in your OpenAI, Anthropic, or Ollama endpoints securely.",
-    icon: Lock,
+    title: "Voice Intelligence",
+    desc: "Speak freely. Your AI companion listens and understands your life context in real-time.",
+    icon: <Mic className="h-6 w-6 text-purple-500" />,
+    color: "bg-purple-500/10"
   },
   {
-    name: "Edge Performance",
-    description: "Built on Cloudflare Workers and Vectorize—giving you instant RAG search no matter where you are in the world.",
-    icon: CloudLightning,
+    title: "Neural History",
+    desc: "A chronological timeline of your growth, semantically searchable by meaning, not just words.",
+    icon: <History className="h-6 w-6 text-amber-500" />,
+    color: "bg-amber-500/10"
   },
+  {
+    title: "Private by Design",
+    desc: "End-to-end encrypted intelligence. Your data is yours, encrypted on the edge.",
+    icon: <Shield className="h-6 w-6 text-rose-500" />,
+    color: "bg-rose-500/10"
+  },
+  {
+    title: "130+ Connections",
+    desc: "From GitHub to Google Calendar. Sync your digital life into one unified intelligence OS.",
+    icon: <Cpu className="h-6 w-6 text-cyan-500" />,
+    color: "bg-cyan-500/10"
+  }
 ];
 
 export function FeaturesSection() {
   return (
-    <section id="features" className="container mx-auto px-4 py-24 sm:py-32 bg-background">
-      <div className="mx-auto max-w-2xl text-center mb-16">
-        <h2 className="text-3xl font-bold tracking-tight sm:text-4xl text-foreground">
-          Everything you need to remember
-        </h2>
-        <p className="mt-4 text-lg text-muted-foreground text-balance">
-          Debo combines extremely minimalist journaling with cutting-edge memory systems.
-        </p>
-      </div>
-      
-      <div className="mx-auto max-w-5xl">
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
-          {features.map((feature) => (
-            <div 
-              key={feature.name} 
-              className="p-6 rounded-lg border bg-card text-card-foreground shadow-sm"
-            >
-              <div className="flex items-center gap-x-3 mb-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-md border bg-muted">
-                  <feature.icon className="h-5 w-5 text-foreground" aria-hidden="true" />
-                </div>
-                <h3 className="text-lg font-semibold text-foreground">{feature.name}</h3>
+    <section className="w-full max-w-7xl mx-auto px-6 py-24 md:py-32">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {EXPERIENCES.map((exp, i) => (
+          <Card key={i} className="group border-none bg-muted/20 hover:bg-muted/40 transition-all duration-500 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1">
+            <CardContent className="p-8 space-y-6">
+              <div className={`p-4 ${exp.color} w-fit rounded-2xl group-hover:scale-110 transition-transform duration-500`}>
+                {exp.icon}
               </div>
-              <p className="text-sm text-muted-foreground">
-                {feature.description}
-              </p>
-            </div>
-          ))}
+              <div className="space-y-3">
+                <h3 className="text-xl font-bold tracking-tight">{exp.title}</h3>
+                <p className="text-muted-foreground leading-relaxed font-medium">
+                  {exp.desc}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Philosophy Section */}
+      <div className="mt-32 text-center max-w-3xl mx-auto space-y-8 animate-in fade-in duration-1000">
+        <h2 className="text-3xl md:text-5xl font-extrabold tracking-tighter">
+            Not another app. <br />
+            <span className="text-primary italic">A new paradigm.</span>
+        </h2>
+        <p className="text-lg md:text-xl text-muted-foreground/60 leading-relaxed font-medium italic">
+            "Debo doesn't just store data. It builds a model of your mind. It remembers what you forget—and connects what you never could."
+        </p>
+        <div className="pt-8 flex justify-center">
+            <div className="h-px w-24 bg-border" />
         </div>
       </div>
     </section>

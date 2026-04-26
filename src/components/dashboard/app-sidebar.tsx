@@ -55,14 +55,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         {/* Quick Actions */}
         <SidebarGroup>
-          <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden">Repository</SidebarGroupLabel>
+          <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden">Brain</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton 
                   asChild 
                   isActive={pathname === "/dashboard"}
-                  tooltip="Overview"
+                  tooltip="Home"
                 >
                   <Link href="/dashboard">
                     <LayoutDashboard className="h-4 w-4" />
@@ -74,11 +74,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <SidebarMenuButton 
                   asChild 
                   isActive={pathname === "/dashboard/agent"}
-                  tooltip="Voice Agent"
+                  tooltip="Talk"
                 >
                   <Link href="/dashboard/agent">
                     <Mic className="h-4 w-4" />
-                    <span>Voice Intelligence</span>
+                    <span>Talk to Intelligence</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -88,18 +88,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
         {/* Intelligence Context */}
         <SidebarGroup>
-          <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden">Intelligence</SidebarGroupLabel>
+          <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden">Context</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton 
                   asChild 
                   isActive={pathname === "/dashboard/mcp"}
-                  tooltip="MCP Integration"
+                  tooltip="Gateway"
                 >
                   <Link href="/dashboard/mcp">
                     <Network className="h-4 w-4" />
-                    <span>MCP Gateway</span>
+                    <span>Link External Apps</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -107,11 +107,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <SidebarMenuButton 
                   asChild 
                   isActive={pathname === "/dashboard/journals"}
-                  tooltip="All Journals"
+                  tooltip="Archive"
                 >
                   <Link href="/dashboard/journals">
-                    <Library className="h-4 w-4" />
-                    <span>Historical Archive</span>
+                    <span>Memory Archive</span>
+                    <Library className="h-4 w-4 ml-auto" />
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -121,19 +121,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
         {/* Creation */}
         <SidebarGroup>
-          <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden">Workspace</SidebarGroupLabel>
+          <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden">New</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton 
                   asChild 
                   isActive={pathname === "/dashboard/journal/new"}
-                  className="bg-primary/5 hover:bg-primary/10 text-primary font-medium"
-                  tooltip="New Entry"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-lg shadow-primary/20"
+                  tooltip="Add Memory"
                 >
                   <Link href="/dashboard/journal/new">
                     <Plus className="h-4 w-4" />
-                    <span>New Entry</span>
+                    <span>Capture Thought</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

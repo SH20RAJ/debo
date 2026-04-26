@@ -29,7 +29,7 @@ export default function DashboardPage() {
       {/* Timeline Section */}
       <div className="space-y-8">
         <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-          Timeline
+          Your Timeline
           <div className="h-px bg-border/20 flex-1 ml-4" />
         </h2>
         <Suspense fallback={<TimelineSkeleton />}>
@@ -57,7 +57,7 @@ async function DashboardStats() {
                     </div>
                     <div>
                         <p className="text-5xl font-bold tracking-tighter">{totalEntries}</p>
-                        <p className="text-sm text-muted-foreground font-medium mt-1">Total Journal Entries</p>
+                        <p className="text-sm text-muted-foreground font-medium mt-1">Total Memories</p>
                     </div>
                 </CardContent>
             </Card>
@@ -69,7 +69,7 @@ async function DashboardStats() {
                     </div>
                     <div>
                         <p className="text-5xl font-bold tracking-tighter">{recentEntries}</p>
-                        <p className="text-sm text-muted-foreground font-medium mt-1">Entries This Week</p>
+                        <p className="text-sm text-muted-foreground font-medium mt-1">New This Week</p>
                     </div>
                 </CardContent>
             </Card>
@@ -80,8 +80,8 @@ async function DashboardStats() {
                         <Database className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                        <p className="text-5xl font-bold tracking-tighter">Synced</p>
-                        <p className="text-sm text-muted-foreground font-medium mt-1">Vector DB Status</p>
+                        <p className="text-5xl font-bold tracking-tighter">Live</p>
+                        <p className="text-sm text-muted-foreground font-medium mt-1">Sync Status</p>
                     </div>
                 </CardContent>
             </Card>

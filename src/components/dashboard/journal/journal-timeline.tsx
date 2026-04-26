@@ -48,13 +48,20 @@ export function JournalTimeline({ journals }: { journals: JournalProps[] }) {
           {/* Entry Card */}
           <Link href={`/dashboard/journal/${journal.id}`}>
             <div className="group border border-border/50 rounded-2xl p-6 hover:bg-muted/50 transition-all duration-300 block cursor-pointer">
-              <div className="prose prose-neutral dark:prose-invert max-w-none line-clamp-3 text-muted-foreground group-hover:text-foreground transition-colors duration-300">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {journal.content}
-                </ReactMarkdown>
+              <div className="space-y-3">
+                {journal.title && (
+                    <h4 className="text-lg font-bold tracking-tight text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+                        {journal.title}
+                    </h4>
+                )}
+                <div className="prose prose-neutral dark:prose-invert max-w-none line-clamp-3 text-muted-foreground group-hover:text-foreground transition-colors duration-300">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {journal.content}
+                    </ReactMarkdown>
+                </div>
               </div>
-              <div className="mt-6 flex items-center text-xs text-primary font-semibold tracking-wider uppercase opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all duration-300">
-                View Details <ChevronRight className="h-3.5 w-3.5 ml-1" />
+              <div className="mt-6 flex items-center text-[10px] text-primary font-bold tracking-widest uppercase opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all duration-300">
+                View Memory <ChevronRight className="h-3 w-3 ml-1" />
               </div>
             </div>
           </Link>

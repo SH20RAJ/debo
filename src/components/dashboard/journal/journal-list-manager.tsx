@@ -28,6 +28,7 @@ import {
 
 interface JournalProps {
   id: string;
+  title?: string | null;
   content: string;
   createdAt: string | Date;
   updatedAt: string | Date;
@@ -95,12 +96,12 @@ export function JournalListManager({ journals, initialQuery, initialSort }: {
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       {/* Search and Sort Header */}
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between sticky top-0 bg-background/80 backdrop-blur-md z-10 py-4 border-b">
+      <div className="flex flex-col md:flex-row gap-4 items-center justify-between sticky top-0 bg-background/80 backdrop-blur-md z-10 py-4 border-b px-2">
         <div className="relative w-full md:max-w-md flex items-center gap-3">
           <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input 
-              placeholder="Semantic search..." 
+              placeholder="Search journals..." 
               className="pl-9 pr-4 h-11 rounded-2xl bg-muted/50 border-none focus-visible:ring-1 focus-visible:ring-primary/20"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -113,7 +114,7 @@ export function JournalListManager({ journals, initialQuery, initialSort }: {
             </Badge>
           )}
         </div>
-        <div className="flex items-center gap-3 w-full md:w-auto">
+        <div className="flex items-center gap-3 w-full md:w-auto px-2 md:px-0">
           <Select value={sort} onValueChange={(val) => {
             setSort(val);
             updateUrl(query, val);
@@ -162,7 +163,7 @@ export function JournalListManager({ journals, initialQuery, initialSort }: {
         ) : (
           <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
             {journals.map((journal) => (
-              <Card key={journal.id} className="group border-none bg-muted/30 hover:bg-muted/50 transition-all duration-300 relative overflow-hidden rounded-3xl">
+              <Card key={journal.id} className="group border-none bg-muted/30 hover:bg-muted/50 transition-all duration-300 relative overflow-hidden rounded-3xl shadow-sm">
                 <CardContent className="p-0">
                   <div className="p-6 pb-20">
                     <div className="flex items-center justify-between mb-4">
@@ -184,9 +185,9 @@ export function JournalListManager({ journals, initialQuery, initialSort }: {
                             </AlertDialogTrigger>
                             <AlertDialogContent className="rounded-3xl">
                                 <AlertDialogHeader>
-                                    <AlertDialogTitle>Delete Journal Entry?</AlertDialogTitle>
+                                    <AlertDialogTitle>Delete journal entry?</AlertDialogTitle>
                                     <AlertDialogDescription>
-                                        This action cannot be undone. This will permanently delete the entry from your repository.
+                                        This cannot be undone. It will be gone forever.
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
@@ -203,19 +204,26 @@ export function JournalListManager({ journals, initialQuery, initialSort }: {
                     </div>
 
                     <Link href={`/dashboard/journal/${journal.id}`}>
-                        <div className="prose prose-sm dark:prose-invert max-w-none line-clamp-4 text-foreground/80 leading-relaxed font-medium">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                            {journal.content}
-                        </ReactMarkdown>
+                        <div className="space-y-3">
+                            {journal.title && (
+                                <h3 className="text-xl font-bold tracking-tight text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+                                    {journal.title}
+                                </h3>
+                            )}
+                            <div className="prose prose-sm dark:prose-invert max-w-none line-clamp-4 text-foreground/70 leading-relaxed font-medium">
+                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                    {journal.content}
+                                </ReactMarkdown>
+                            </div>
                         </div>
                     </Link>
                   </div>
 
                   {/* Bottom Fade and Link Area */}
                   <Link href={`/dashboard/journal/${journal.id}`}>
-                      <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-muted/20 to-transparent pointer-events-none" />
+                      <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-muted/40 to-transparent pointer-events-none" />
                       <div className="absolute bottom-4 right-6 text-[10px] font-bold uppercase tracking-widest text-primary opacity-0 group-hover:opacity-100 transition-all translate-y-1 group-hover:translate-y-0">
-                          Read Full Entry →
+                          Open Entry →
                       </div>
                   </Link>
                 </CardContent>
@@ -237,4 +245,3 @@ export function JournalListManager({ journals, initialQuery, initialSort }: {
     </div>
   );
 }
-

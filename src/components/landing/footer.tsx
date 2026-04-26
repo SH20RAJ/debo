@@ -2,53 +2,35 @@ import Link from "next/link";
 
 export function Footer() {
   return (
-    <footer className="border-t bg-muted/20">
-      <div className="container mx-auto px-4 pb-8 pt-16 sm:pt-24 lg:pt-32">
-        <div className="xl:grid xl:grid-cols-3 xl:gap-8">
-          <div className="space-y-8 xl:col-span-1">
-            <span className="text-2xl font-bold tracking-tight">Debo</span>
-            <p className="text-sm leading-6 text-muted-foreground max-w-xs">
-              The AI Companion that Remembers. Built for privacy, speed, and infinite context.
+    <footer className="w-full max-w-7xl mx-auto px-6 py-20 border-t/50">
+      <div className="flex flex-col md:flex-row justify-between items-start gap-12">
+        <div className="space-y-4">
+            <span className="text-2xl font-extrabold tracking-tight">Debo</span>
+            <p className="text-sm text-muted-foreground/60 max-w-xs font-medium">
+                The memory OS for thinkers. <br />
+                Built for privacy, speed, and intelligence.
             </p>
-          </div>
-          <div className="mt-16 grid grid-cols-2 gap-8 xl:col-span-2 xl:mt-0">
-            <div className="md:grid md:grid-cols-2 md:gap-8">
-              <div>
-                <h3 className="text-sm font-semibold leading-6">Product</h3>
-                <ul role="list" className="mt-6 space-y-4">
-                  <li>
-                    <Link href="/features" className="text-sm leading-6 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md">
-                      Features
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/integrations" className="text-sm leading-6 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md">
-                      Integrations
-                    </Link>
-                  </li>
+        </div>
+        <div className="flex gap-12">
+            <div className="space-y-4">
+                <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground/40">Platform</h4>
+                <ul className="space-y-2 text-sm font-medium text-muted-foreground">
+                    <li className="hover:text-foreground cursor-pointer transition-colors">Privacy</li>
+                    <li className="hover:text-foreground cursor-pointer transition-colors">Security</li>
                 </ul>
-              </div>
-              <div className="mt-10 md:mt-0">
-                <h3 className="text-sm font-semibold leading-6">Legal</h3>
-                <ul role="list" className="mt-6 space-y-4">
-                  <li>
-                    <Link href="/privacy" className="text-sm leading-6 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md">
-                      Privacy
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/terms" className="text-sm leading-6 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md">
-                      Terms
-                    </Link>
-                  </li>
-                </ul>
-              </div>
             </div>
-          </div>
+            <div className="space-y-4">
+                <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground/40">Connect</h4>
+                <ul className="space-y-2 text-sm font-medium text-muted-foreground">
+                    <li className="hover:text-foreground cursor-pointer transition-colors">Twitter</li>
+                    <li className="hover:text-foreground cursor-pointer transition-colors">GitHub</li>
+                </ul>
+            </div>
         </div>
-        <div className="mt-16 border-t pt-8 sm:mt-20 lg:mt-24">
-          <p className="text-xs leading-5 text-muted-foreground">&copy; 2026 Debo Contributors. MIT Licensed.</p>
-        </div>
+      </div>
+      <div className="mt-20 pt-8 border-t/50 flex flex-col md:flex-row justify-between gap-4 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/20">
+        <span>© 2026 DEBO INTELLIGENCE</span>
+        <span>Distributed Memory Architecture</span>
       </div>
     </footer>
   );

@@ -11,6 +11,7 @@ import { cache } from "react";
 import { z } from "zod";
 
 const journalSchema = z.object({
+  title: z.string().max(200).optional(),
   content: z.string().min(1, "Content cannot be empty").max(50000, "Entry too long"),
   id: z.string().uuid().optional()
 });
@@ -45,17 +46,17 @@ export const getJournal = cache(async (id: string) => {
     }
 });
 
-export async function saveJournal(rawContent: string, id?: string) {
+export async function saveJournal(rawContent: string, id?: string, title?: string) {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session) throw new Error("Unauthorized");
 
     // Validate input
-    const result = journalSchema.safeParse({ content: rawContent, id });
+    const result = journalSchema.safeParse({ content: rawContent, id, title });
     if (!result.success) {
         throw new Error(result.error.errors[0].message);
     }
 
-    const { content } = result.data;
+    const { content, title: validatedTitle } = result.data;
     const journalId = id || crypto.randomUUID();
     const userId = session.user.id;
 
@@ -65,6 +66,7 @@ export async function saveJournal(rawContent: string, id?: string) {
         if (!existing) throw new Error("Entry not found or unauthorized");
         
         await db.update(journals).set({
+            title: validatedTitle || null,
             content,
             updatedAt: new Date()
         }).where(eq(journals.id, id));
@@ -73,6 +75,7 @@ export async function saveJournal(rawContent: string, id?: string) {
         await db.insert(journals).values({
             id: journalId,
             userId,
+            title: validatedTitle || null,
             content,
         });
     }
