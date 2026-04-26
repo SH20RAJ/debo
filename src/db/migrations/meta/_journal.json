@@ -8,6 +8,13 @@
       "when": 1776772960272,
       "tag": "0000_faulty_tempest",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1777229843302,
+      "tag": "0001_daily_psylocke",
+      "breakpoints": true
     }
   ]
 }
