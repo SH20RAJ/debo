@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getJournals } from "@/actions/journals";
 import { JournalListContent } from "@/components/journal/journal-list-content";
+import { Metadata } from "next";
 
 export default async function JournalsPage() {
     const session = await auth.api.getSession({ headers: await headers() });
@@ -23,3 +24,8 @@ export default async function JournalsPage() {
         </div>
     );
 }
+
+export const metadata: Metadata = {
+    title: "Archive — Debo",
+    description: "Browse every journal entry in your personal archive.",
+};

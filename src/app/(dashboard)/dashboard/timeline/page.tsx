@@ -2,6 +2,8 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { Metadata } from "next";
+
 import { LifeTimeline } from "@/components/dashboard/life/life-timeline";
 import { Button } from "@/components/ui/button";
 import { getLifeTimeline, type TimelineGrouping } from "@/lib/life/timeline";
@@ -46,6 +48,11 @@ export default async function TimelinePage({
     </div>
   );
 }
+
+export const metadata: Metadata = {
+  title: "Timeline — Debo",
+  description: "View your journal entries organized by day, week, or month to surface patterns over time.",
+};
 
 function normalizeGrouping(value?: string): TimelineGrouping {
   if (value === "weekly" || value === "monthly") {

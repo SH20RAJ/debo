@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { Metadata } from "next";
 
 import { LifeInsights } from "@/components/dashboard/life/life-insights";
 import { Card, CardContent } from "@/components/ui/card";
@@ -62,6 +63,11 @@ export default async function InsightsPage() {
     </div>
   );
 }
+
+export const metadata: Metadata = {
+  title: "Insights — Debo",
+  description: "Analyze the strongest people, topics, and repeating patterns in your life.",
+};
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (

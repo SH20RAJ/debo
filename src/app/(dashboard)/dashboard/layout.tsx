@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
+import { Metadata } from "next";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -27,3 +28,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
     </SidebarProvider>
   );
 }
+
+export const metadata: Metadata = {
+  title: "Dashboard — Debo",
+  description: "Debo dashboard: explore insights, timeline, and your memory graph.",
+};

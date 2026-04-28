@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { Metadata } from "next";
 import { getLifeTimeline } from "@/lib/life/timeline";
 import { queryGraph, refreshMemoryGraph } from "@/lib/life/graph";
 import { LifeTimeline } from "@/components/dashboard/life/life-timeline";
@@ -113,6 +114,11 @@ export default async function DashboardPage() {
         </div>
     );
 }
+
+export const metadata: Metadata = {
+    title: "Dashboard — Debo",
+    description: "Your personal life intelligence dashboard: insights, timeline, and memory graph.",
+};
 
 function StatCard({
     icon,
