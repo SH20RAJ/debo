@@ -356,6 +356,17 @@ export async function queryGraph(question: string, userId: string) {
     insights.push(`The question is likely about ${entities.topics[0]}.`);
   }
 
+  const patterns = snapshot.nodes
+    .map(node => {
+      const meta = node.metadata ? safeParseJson(node.metadata) : {};
+      return {
+        entity: node.name,
+        count: (meta.mentions as number) || 1
+      };
+    })
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 8);
+
   return {
     nodes: scoredNodes.slice(0, 12),
     edges: snapshot.edges.slice(0, 20),
@@ -363,6 +374,7 @@ export async function queryGraph(question: string, userId: string) {
     topPeople,
     topTopics,
     topEmotions,
+    patterns,
   };
 }
 

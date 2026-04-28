@@ -40,7 +40,7 @@ export async function askLifeStream(messages: UIMessage[], userId: string) {
   const question = getLatestUserText(messages);
   const rag = question
     ? await buildRagContext(question, userId)
-    : { contextText: "", citations: [] };
+    : { contextText: "", citations: [], patterns: [] };
 
   const modelMessages = await convertToModelMessages(messages, {
     tools,
