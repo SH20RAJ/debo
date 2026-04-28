@@ -7,6 +7,8 @@
 
 Your life, understood by AI.
 
+Website: https://debo.life
+
 Debo is not a journal with a chat box. It is a life intelligence system: a private layer that learns from your writing, retrieves your history with citations, detects patterns across time, and turns memory into useful guidance.
 
 <img src="./public/og-image.png" alt="Debo" width="100%" />
