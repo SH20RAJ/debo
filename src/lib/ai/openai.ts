@@ -4,7 +4,7 @@ import { createOpenAI } from "@ai-sdk/openai";
 
 export const DEFAULT_CHAT_MODEL =
   "workers-ai/@cf/meta/llama-3.3-70b-instruct-fp8-fast";
-export const DEFAULT_EMBEDDING_MODEL = "text-embedding-3-large";
+export const DEFAULT_EMBEDDING_MODEL = "workers-ai/@cf/qwen/qwen3-embedding-0.6b";
 
 function readRequiredEnv(name: string) {
   const value = process.env[name];
@@ -21,14 +21,12 @@ export function getOpenAIClient() {
   return createOpenAI({
     baseURL: readRequiredEnv("OPENAI_BASE_URL"),
     apiKey: apiKey,
-    headers: {
-      "cf-aig-authorization": `Bearer ${apiKey}`,
-    },
   });
 }
 
 export function getChatModel() {
-  return getOpenAIClient()(process.env.OPENAI_MODEL || DEFAULT_CHAT_MODEL);
+  const modelId = process.env.OPENAI_MODEL || DEFAULT_CHAT_MODEL;
+  return getOpenAIClient().chat(modelId);
 }
 
 export function getEmbeddingModel() {
