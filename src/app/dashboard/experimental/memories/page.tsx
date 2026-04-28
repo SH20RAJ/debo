@@ -14,7 +14,7 @@ export default async function MemoriesPage(props: {
   const query = typeof searchParams.q === 'string' ? searchParams.q : '';
 
   const result = await getMemories(query);
-  const memories = result.success ? result.data : [];
+  const memories = result.success && result.data ? result.data : [];
 
   return (
     <div className="flex-1 w-full max-w-7xl mx-auto px-6 py-8 md:px-10 md:py-12 space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">

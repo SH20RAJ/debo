@@ -6,8 +6,6 @@ declare namespace Cloudflare {
 		mainModule: typeof import("./.open-next/worker");
 	}
 	interface Env {
-		VECTOR_INDEX: VectorizeIndex;
-		AI: Ai;
 		IMAGES: ImagesBinding;
 		ASSETS: Fetcher;
 		NEXTJS_ENV: string;

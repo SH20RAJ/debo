@@ -4,3 +4,7 @@ use https://github.com/corsairdev/corsair to add tools to mcp
 add livekit talk read all context7 docs\never use "use client";
  on page.tsx or layout.tsx
  
+ ---
+
+ remove useless from dashboard 
+ 

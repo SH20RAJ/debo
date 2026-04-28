@@ -2,7 +2,7 @@
 
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { searchVector } from "@/lib/vector/search";
+import { searchJournals as searchJournalCitations } from "@/lib/vector/search";
 
 export async function searchJournals(query: string = "", limit: number = 5) {
     const session = await auth.api.getSession({ headers: await headers() });
@@ -13,10 +13,9 @@ export async function searchJournals(query: string = "", limit: number = 5) {
     }
 
     try {
-        return await searchVector(query, session.user.id, limit);
+        return await searchJournalCitations(query, session.user.id, limit);
     } catch (error) {
         console.error("Search Action Error:", error);
         return [];
     }
 }
-

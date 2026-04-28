@@ -1,76 +1,143 @@
 "use client";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import type { UIMessage } from "ai";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+
 import { cn } from "@/lib/utils";
-import { ToolCallCard } from "./ToolCallCard";
 import { CitationCard } from "./CitationCard";
+import { ToolCallCard } from "./ToolCallCard";
+
+type MessagePart = UIMessage["parts"][number] & Record<string, any>;
 
 interface ChatMessageProps {
-  message: any;
+  message: UIMessage;
 }
 
 export function ChatMessage({ message }: ChatMessageProps) {
   const isUser = message.role === "user";
+  const text = getMessageText(message);
+  const citations = getCitations(message);
 
   return (
-    <div
+    <article
       className={cn(
-        "flex w-full mb-6 animate-in fade-in slide-in-from-bottom-2 duration-300",
+        "flex w-full animate-in fade-in slide-in-from-bottom-2 duration-300",
         isUser ? "justify-end" : "justify-start"
       )}
     >
       <div
         className={cn(
-          "max-w-[85%] rounded-2xl px-4 py-3 text-sm shadow-sm",
+          "max-w-[min(100%,48rem)]",
           isUser
-            ? "bg-primary text-primary-foreground rounded-tr-none"
-            : "bg-muted text-foreground rounded-tl-none border border-border"
+            ? "rounded-lg bg-primary px-4 py-3 text-primary-foreground"
+            : "space-y-4"
         )}
       >
         {isUser ? (
-          <div className="whitespace-pre-wrap">{message.content}</div>
+          <p className="whitespace-pre-wrap text-sm leading-6">{text}</p>
         ) : (
-          <div className="space-y-4">
-            {/* Tool Calls */}
-            {message.toolInvocations && message.toolInvocations.length > 0 && (
-              <div className="space-y-2 mb-4">
-                {message.toolInvocations.map((toolInvocation: any) => (
-                  <ToolCallCard
-                    key={toolInvocation.toolCallId}
-                    toolInvocation={toolInvocation}
-                  />
-                ))}
-              </div>
-            )}
+          <>
+            <div className="space-y-2">
+              {message.parts.filter(isToolPart).map((part) => (
+                <ToolCallCard key={part.toolCallId || part.type} part={part} />
+              ))}
+            </div>
 
-            {/* AI Text Content */}
-            {message.content && (
-              <div className="prose prose-sm dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-zinc-900 prose-pre:border prose-pre:border-zinc-800">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
-              </div>
-            )}
-
-            {/* Citations / Sources */}
-            {message.toolInvocations && 
-              message.toolInvocations.some((ti: any) => ti.state === 'result' && Array.isArray(ti.result) && ti.result.length > 0) && (
-              <div className="mt-4 pt-4 border-t border-border/50">
-                <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-2">Sources</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {message.toolInvocations
-                    .filter((ti: any) => ti.state === 'result' && Array.isArray(ti.result))
-                    .flatMap((ti: any) => ti.result)
-                    .slice(0, 4) // Limit to 4 citations
-                    .map((result: any, idx: number) => (
-                      <CitationCard key={idx} source={result} />
-                    ))}
+            {text && (
+              <div className="rounded-lg border border-border/70 bg-muted/20 px-4 py-3 shadow-sm">
+                <div className="prose prose-sm max-w-none dark:prose-invert prose-p:leading-7 prose-p:my-3 prose-ul:my-3 prose-ol:my-3 prose-li:my-1 prose-strong:text-foreground">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
                 </div>
               </div>
             )}
-          </div>
+
+            {citations.length > 0 && (
+              <section className="space-y-2">
+                <div className="flex items-center gap-2 text-xs font-medium uppercase text-muted-foreground">
+                  <span className="h-px w-8 bg-border" />
+                  Sources
+                </div>
+                <div className="grid gap-2 md:grid-cols-2">
+                  {citations.slice(0, 6).map((citation) => (
+                    <CitationCard
+                      key={`${citation.sourceType}:${citation.journalId || citation.id}`}
+                      source={citation}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+          </>
         )}
       </div>
-    </div>
+    </article>
+  );
+}
+
+function getMessageText(message: UIMessage) {
+  return message.parts
+    .filter((part) => part.type === "text")
+    .map((part) => part.text)
+    .join("");
+}
+
+function isToolPart(part: UIMessage["parts"][number]): part is MessagePart {
+  return part.type === "dynamic-tool" || part.type.startsWith("tool-");
+}
+
+function getCitations(message: UIMessage) {
+  const metadataCitations = citationArray(
+    (message.metadata as { citations?: unknown } | undefined)?.citations
+  );
+
+  const toolCitations = message.parts
+    .filter(isToolPart)
+    .flatMap((part) => citationArray(part.output || part.result));
+
+  const seen = new Set<string>();
+
+  return [...metadataCitations, ...toolCitations].filter((citation) => {
+    const key = `${citation.sourceType}:${citation.journalId || citation.id}`;
+
+    if (seen.has(key)) {
+      return false;
+    }
+
+    seen.add(key);
+    return true;
+  });
+}
+
+function citationArray(value: unknown) {
+  if (Array.isArray(value)) {
+    return value.filter(isCitation);
+  }
+
+  const citations = (value as { citations?: unknown } | undefined)?.citations;
+
+  if (Array.isArray(citations)) {
+    return citations.filter(isCitation);
+  }
+
+  return [];
+}
+
+function isCitation(value: unknown): value is {
+  id: string;
+  sourceType: "journal" | "memory";
+  content: string;
+  snippet?: string;
+  date?: string;
+  title?: string | null;
+  journalId?: string;
+  source?: string;
+} {
+  const citation = value as any;
+  return (
+    citation &&
+    typeof citation.id === "string" &&
+    (citation.sourceType === "journal" || citation.sourceType === "memory") &&
+    typeof citation.content === "string"
   );
 }

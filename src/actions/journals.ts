@@ -6,9 +6,9 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { eq, desc, asc, and, count } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { cache } from "react";
 import { z } from "zod";
+import { indexJournal, removeJournalFromIndex } from "@/lib/vector/search";
 
 const journalSchema = z.object({
   title: z.string().max(200).optional(),
@@ -98,20 +98,17 @@ export async function saveJournal(rawContent: string, id?: string, title?: strin
             });
         }
 
-        // Offload AI/Vectorize processing to background queue
+        // Keep vector indexing server-side so Qdrant credentials never reach the browser.
         try {
-            const ctx = await getCloudflareContext({ async: true });
-            const env = ctx.env as any;
-            if (env.JOURNAL_QUEUE) {
-                await env.JOURNAL_QUEUE.send({
-                    type: "JOURNAL_UPDATED",
-                    journalId,
-                    userId,
-                    content
-                });
+            const savedJournal = await db.query.journals.findFirst({
+                where: and(eq(journals.id, journalId), eq(journals.userId, userId)),
+            });
+
+            if (savedJournal) {
+                await indexJournal(savedJournal);
             }
         } catch (err) {
-            console.warn("Failed to queue journal for background processing:", err);
+            console.error("Failed to index journal in Qdrant:", err);
         }
 
         revalidatePath("/dashboard/journals");
@@ -134,6 +131,12 @@ export async function deleteJournal(id: string) {
         if (!existing) return { success: false, error: "Entry not found or unauthorized" };
 
         await db.delete(journals).where(eq(journals.id, id));
+
+        try {
+            await removeJournalFromIndex(id);
+        } catch (err) {
+            console.error("Failed to delete journal vector from Qdrant:", err);
+        }
 
         revalidatePath("/dashboard/journals");
         revalidatePath("/dashboard");

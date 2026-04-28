@@ -1,59 +1,102 @@
 "use client";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { Search, Brain, Calendar, Check, Loader2 } from "lucide-react";
+import { AlertTriangle, Brain, CalendarDays, Check, Loader2, Search } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 
 interface ToolCallCardProps {
-  toolInvocation: any;
+  part: Record<string, any>;
 }
 
-export function ToolCallCard({ toolInvocation }: ToolCallCardProps) {
-  const { toolName, state } = toolInvocation;
-  
-  const getToolIcon = () => {
-    switch (toolName) {
-      case "search_journals":
-        return <Search className="w-3.5 h-3.5" />;
-      case "get_memories":
-        return <Brain className="w-3.5 h-3.5" />;
-      case "get_recent_entries":
-        return <Calendar className="w-3.5 h-3.5" />;
-      default:
-        return <Search className="w-3.5 h-3.5" />;
-    }
-  };
+const toolConfig = {
+  search_journals: {
+    icon: Search,
+    active: "Searching journals...",
+    done: "Searched journals",
+  },
+  get_memories: {
+    icon: Brain,
+    active: "Accessing memories...",
+    done: "Accessed memories",
+  },
+  get_recent_entries: {
+    icon: CalendarDays,
+    active: "Fetching recent entries...",
+    done: "Fetched recent entries",
+  },
+};
 
-  const getToolLabel = () => {
-    switch (toolName) {
-      case "search_journals":
-        return state === "result" ? "Searched journals" : "Searching journals...";
-      case "get_memories":
-        return state === "result" ? "Accessed memories" : "Accessing memories...";
-      case "get_recent_entries":
-        return state === "result" ? "Fetched recent entries" : "Fetching recent entries...";
-      default:
-        return toolName;
-    }
+export function ToolCallCard({ part }: ToolCallCardProps) {
+  const toolName = getToolName(part);
+  const config = toolConfig[toolName as keyof typeof toolConfig] || {
+    icon: Search,
+    active: "Using tool...",
+    done: "Tool complete",
   };
+  const Icon = config.icon;
+  const isDone = part.state === "output-available" || part.state === "result";
+  const isError = part.state === "output-error";
+  const count = getOutputCount(part.output || part.result);
 
   return (
-    <div className={cn(
-      "flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all duration-200",
-      state === "result" 
-        ? "bg-background border-border text-muted-foreground" 
-        : "bg-primary/5 border-primary/20 text-primary animate-pulse"
-    )}>
-      <div className={cn(
-        "flex items-center justify-center w-5 h-5 rounded-full",
-        state === "result" ? "bg-muted text-muted-foreground" : "bg-primary/10 text-primary"
-      )}>
-        {state === "result" ? <Check className="w-3 h-3" /> : getToolIcon()}
-      </div>
-      <span>{getToolLabel()}</span>
-      {state === "call" && (
-        <Loader2 className="w-3 h-3 animate-spin ml-auto" />
+    <div
+      className={cn(
+        "flex min-h-10 items-center gap-2 rounded-lg border px-3 py-2 text-xs font-medium shadow-sm transition",
+        isDone &&
+          "border-border/70 bg-background text-muted-foreground",
+        isError &&
+          "border-destructive/30 bg-destructive/10 text-destructive",
+        !isDone &&
+          !isError &&
+          "border-primary/25 bg-primary/10 text-primary"
+      )}
+    >
+      <span
+        className={cn(
+          "flex size-6 shrink-0 items-center justify-center rounded-md",
+          isDone ? "bg-muted text-muted-foreground" : "bg-background/70"
+        )}
+      >
+        {isError ? (
+          <AlertTriangle className="size-3.5" />
+        ) : isDone ? (
+          <Check className="size-3.5" />
+        ) : (
+          <Icon className="size-3.5" />
+        )}
+      </span>
+      <span className="truncate">
+        {isError ? "Tool call failed" : isDone ? config.done : config.active}
+      </span>
+      {isDone && count > 0 && (
+        <span className="ml-auto rounded-md bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+          {count}
+        </span>
+      )}
+      {!isDone && !isError && (
+        <Loader2 className="ml-auto size-3.5 animate-spin" />
       )}
     </div>
   );
+}
+
+function getToolName(part: Record<string, any>) {
+  if (typeof part.toolName === "string") {
+    return part.toolName;
+  }
+
+  if (typeof part.type === "string" && part.type.startsWith("tool-")) {
+    return part.type.slice("tool-".length);
+  }
+
+  return "tool";
+}
+
+function getOutputCount(output: unknown) {
+  if (Array.isArray(output)) {
+    return output.length;
+  }
+
+  const citations = (output as { citations?: unknown } | undefined)?.citations;
+  return Array.isArray(citations) ? citations.length : 0;
 }

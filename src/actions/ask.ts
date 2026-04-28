@@ -1,15 +1,22 @@
 "use server";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
 import { askLifeStream } from "@/lib/ai/askLife";
+import type { UIMessage } from "ai";
+import { headers } from "next/headers";
 
-export async function askQuestionAction(messages: any[]) {
+export async function askQuestionAction(messages: UIMessage[]) {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session) throw new Error("Unauthorized");
 
-    const result = await askLifeStream(messages, session.user.id);
+    const { result, citations } = await askLifeStream(messages, session.user.id);
 
-    return result.toTextStreamResponse();
+    return result.toUIMessageStreamResponse({
+        originalMessages: messages,
+        messageMetadata: () => ({ citations }),
+        onError: (error) => {
+            console.error("Ask stream error:", error);
+            return "Debo ran into a problem while thinking through that.";
+        },
+    });
 }

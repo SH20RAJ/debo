@@ -51,7 +51,6 @@ export const journals = pgTable("journal", {
     userId: text("user_id").notNull().references(() => user.id),
     title: text("title"),
     content: text("content").notNull(),
-    vectorizeId: text("vectorize_id"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => ({
@@ -105,5 +104,4 @@ export const messages = pgTable("message", {
     chatIdIdx: index("message_chat_id_idx").on(table.chatId),
     createdAtIdx: index("message_created_at_idx").on(table.createdAt),
 }));
-
 

@@ -15,6 +15,7 @@
 	"dependencies": {
 		"@ai-sdk/anthropic": "^3.0.71",
 		"@ai-sdk/openai": "^3.0.53",
+		"@ai-sdk/react": "^3.0.170",
 		"@base-ui/react": "^1.4.1",
 		"@better-fetch/fetch": "^1.1.21",
 		"@corsair-dev/mcp": "^0.1.16",

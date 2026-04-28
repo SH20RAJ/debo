@@ -1,78 +1,140 @@
 "use client";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
+import { Brain, CalendarDays, Search, Sparkles } from "lucide-react";
+import { toast } from "sonner";
+
+import { ChatInput } from "./ChatInput";
 import { ChatMessage } from "./ChatMessage";
-import { Sparkles } from "lucide-react";
+import { LoadingStep } from "./LoadingStep";
 
-interface ChatContainerProps {
-  messages: any[];
-  isLoading: boolean;
-  onSuggestionClick?: (suggestion: string) => void;
-}
+const suggestions = [
+  "What patterns showed up in my journals this month?",
+  "What have I written about work stress recently?",
+  "What did I seem excited about last week?",
+  "Which memories mention my long-term goals?",
+];
 
-export function ChatContainer({ messages, isLoading, onSuggestionClick }: ChatContainerProps) {
+export function ChatContainer() {
+  const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
+  const transport = useMemo(
+    () => new DefaultChatTransport({ api: "/api/chat" }),
+    []
+  );
+
+  const { messages, sendMessage, status, stop } = useChat({
+    transport,
+    onError: (error) => {
+      console.error("Chat error:", error);
+      toast.error("Debo could not finish that response.");
+    },
+  });
+
+  const isBusy = status === "submitted" || status === "streaming";
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages, isLoading]);
+    scrollRef.current?.scrollTo({
+      top: scrollRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [messages, status]);
 
-  if (messages.length === 0) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8 animate-in fade-in zoom-in duration-500">
-        <div className="w-16 h-16 rounded-3xl bg-primary/10 flex items-center justify-center mb-6 ring-1 ring-primary/20">
-          <Sparkles className="w-8 h-8 text-primary animate-pulse" />
-        </div>
-        <h1 className="text-2xl font-bold tracking-tight mb-2">How can I help you today?</h1>
-        <p className="text-muted-foreground text-center max-w-md text-sm leading-relaxed">
-          Debo is your personal life companion. Ask about your memories, journal entries, or for reflection on your habits.
-        </p>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-10 w-full max-w-xl">
-          {[
-            "What did I do last weekend?",
-            "What are my common stress triggers?",
-            "Summarize my month of April.",
-            "Tell me a memory about my cat."
-          ].map((suggestion) => (
-            <button
-              key={suggestion}
-              className="p-4 text-left text-sm rounded-2xl border border-border bg-muted/30 hover:bg-muted/50 hover:border-primary/20 transition-all group"
-              onClick={() => onSuggestionClick?.(suggestion)}
-            >
-              <p className="font-medium group-hover:text-primary transition-colors">{suggestion}</p>
-            </button>
-          ))}
-        </div>
-      </div>
-    );
-  }
+  const submitPrompt = async (value: string) => {
+    const text = value.trim();
+    if (!text || isBusy) return;
+
+    setInput("");
+    await sendMessage({ text });
+  };
 
   return (
-    <div 
-      ref={scrollRef}
-      className="flex-1 overflow-y-auto pt-8 pb-32 px-4 md:px-0 scroll-smooth"
-    >
-      <div className="max-w-3xl mx-auto flex flex-col gap-2">
-        {messages.map((message) => (
-          <ChatMessage key={message.id} message={message} />
-        ))}
-        {isLoading && messages[messages.length - 1]?.role === 'user' && (
-          <div className="flex justify-start mb-6">
-            <div className="bg-muted text-foreground rounded-2xl rounded-tl-none px-4 py-3 border border-border animate-pulse flex items-center gap-2">
-               <div className="flex gap-1">
-                 <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40 animate-bounce [animation-delay:-0.3s]" />
-                 <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40 animate-bounce [animation-delay:-0.15s]" />
-                 <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40 animate-bounce" />
-               </div>
-               <span className="text-xs font-medium text-muted-foreground/60">Debo is thinking...</span>
+    <div className="flex h-[calc(100vh-4rem)] min-h-[560px] flex-col overflow-hidden bg-background md:h-[calc(100vh-2rem)]">
+      <header className="border-b border-border/60 bg-background/80 px-4 py-3 backdrop-blur md:px-6">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex size-9 items-center justify-center rounded-lg border border-primary/25 bg-primary/10 text-primary">
+              <Sparkles className="size-4" />
+            </div>
+            <div>
+              <h1 className="text-sm font-semibold leading-none text-foreground">
+                Ask Debo
+              </h1>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Live journal retrieval
+              </p>
             </div>
           </div>
-        )}
-      </div>
+          <div className="hidden items-center gap-2 text-xs text-muted-foreground sm:flex">
+            <span className="size-2 rounded-full bg-primary" />
+            Streaming
+          </div>
+        </div>
+      </header>
+
+      <main ref={scrollRef} className="flex-1 overflow-y-auto scroll-smooth">
+        <div className="mx-auto flex min-h-full max-w-5xl flex-col px-4 py-6 md:px-6">
+          {messages.length === 0 ? (
+            <div className="flex flex-1 flex-col justify-center py-10">
+              <div className="max-w-2xl animate-in fade-in slide-in-from-bottom-3 duration-500">
+                <div className="mb-5 flex items-center gap-2 text-xs font-medium uppercase text-muted-foreground">
+                  <span className="h-px w-10 bg-border" />
+                  Private memory engine
+                </div>
+                <h2 className="max-w-xl text-3xl font-semibold leading-tight text-foreground md:text-5xl">
+                  Search your life with a little more signal.
+                </h2>
+              </div>
+
+              <div className="mt-10 grid gap-3 sm:grid-cols-2">
+                {suggestions.map((suggestion) => (
+                  <button
+                    key={suggestion}
+                    type="button"
+                    onClick={() => submitPrompt(suggestion)}
+                    className="group min-h-24 rounded-lg border border-border/70 bg-muted/20 p-4 text-left text-sm transition duration-200 hover:border-primary/35 hover:bg-primary/5"
+                  >
+                    <span className="line-clamp-2 font-medium leading-relaxed text-foreground transition group-hover:text-primary">
+                      {suggestion}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-5 pb-6">
+              {messages.map((message) => (
+                <ChatMessage key={message.id} message={message} />
+              ))}
+
+              {status === "submitted" && (
+                <div className="max-w-2xl animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <div className="grid gap-2 sm:grid-cols-3">
+                    <LoadingStep icon={Search} label="Searching journals..." />
+                    <LoadingStep icon={Brain} label="Accessing memories..." />
+                    <LoadingStep
+                      icon={CalendarDays}
+                      label="Fetching recent entries..."
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </main>
+
+      <footer className="border-t border-border/60 bg-background/90 px-4 py-3 backdrop-blur md:px-6">
+        <ChatInput
+          input={input}
+          setInput={setInput}
+          onSubmit={submitPrompt}
+          isBusy={isBusy}
+          stop={stop}
+        />
+      </footer>
     </div>
   );
 }

@@ -32,23 +32,6 @@
 			"service": "debo"
 		}
 	],
-	"ai": {
-		"binding": "AI"
-	},
-	"vectorize": [
-		{
-			"binding": "VECTOR_INDEX",
-			"index_name": "debo-index"
-		}
-	],
-	"queues": {
-		"producers": [
-			{
-				"binding": "JOURNAL_QUEUE",
-				"queue": "debo-journal-queue"
-			}
-		]
-	},
 	"observability": {
 		"enabled": true
 	},

@@ -1,94 +1,173 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { streamText } from "ai";
-import { createTools } from "./tools";
-import { db } from "@/db";
-import { userPreferences, aiProviders } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
-import { createOpenAI } from "@ai-sdk/openai";
-import { createAnthropic } from "@ai-sdk/anthropic";
-import { decrypt } from "@/lib/encryption";
-import { getCloudflareContext } from "@opennextjs/cloudflare";
+import "server-only";
 
-export async function askLifeStream(messages: any[], userId: string) {
-    // 1. Get User's Preferred Model
-    const prefs = await db.query.userPreferences.findFirst({
-        where: eq(userPreferences.userId, userId)
-    });
+import {
+  convertToModelMessages,
+  generateText,
+  stepCountIs,
+  streamText,
+  type UIMessage,
+} from "ai";
 
-    const activeProviderId = prefs?.activeProvider || "cloudflare";
-    
-    let model: any;
-    
-    if (activeProviderId === "cloudflare") {
-        const ctx = await getCloudflareContext({ async: true });
-        const env = ctx.env as any;
-        
-        // We'll use OpenAI-compatible workers AI if possible, 
-        // but for now let's assume OpenAI fallback if not in production
-        // In a real cloudflare env, we'd use a cloudflare provider for AI SDK
-        // Since there's no official Cloudflare provider for AI SDK yet that's stable,
-        // we might need to use OpenAI or Anthropic as primary for streaming tools.
-        // Actually, let's check if the user has OpenAI/Anthropic configured.
+import { fetchMemories } from "@/lib/ai/memories";
+import { getChatModel } from "@/lib/ai/openai";
+import { createTools } from "@/lib/ai/tools";
+import {
+  searchJournals,
+  type CitationSource,
+} from "@/lib/vector/search";
+
+type RagContext = {
+  contextText: string;
+  citations: CitationSource[];
+};
+
+export async function askLife(question: string, userId: string) {
+  const rag = await buildRagContext(question, userId);
+
+  const result = await generateText({
+    model: getChatModel(),
+    system: buildSystemPrompt(rag),
+    prompt: question,
+    temperature: 0.35,
+  });
+
+  return {
+    answer: result.text,
+    citations: rag.citations,
+  };
+}
+
+export async function askLifeStream(messages: UIMessage[], userId: string) {
+  const tools = createTools(userId);
+  const question = getLatestUserText(messages);
+  const rag = question
+    ? await buildRagContext(question, userId)
+    : { contextText: "", citations: [] };
+
+  const modelMessages = await convertToModelMessages(messages, {
+    tools,
+    ignoreIncompleteToolCalls: true,
+  });
+
+  const result = streamText({
+    model: getChatModel(),
+    system: buildSystemPrompt(rag),
+    messages: modelMessages,
+    tools,
+    stopWhen: stepCountIs(4),
+    temperature: 0.35,
+  });
+
+  return {
+    result,
+    citations: rag.citations,
+  };
+}
+
+async function buildRagContext(
+  question: string,
+  userId: string
+): Promise<RagContext> {
+  const [journalResult, memoryResult] = await Promise.allSettled([
+    searchJournals(question, userId, 6),
+    fetchMemories(userId, question, 6),
+  ]);
+
+  const journals =
+    journalResult.status === "fulfilled" ? journalResult.value : [];
+  const memories =
+    memoryResult.status === "fulfilled" ? memoryResult.value : [];
+
+  if (journalResult.status === "rejected") {
+    console.error("RAG journal retrieval failed:", journalResult.reason);
+  }
+
+  if (memoryResult.status === "rejected") {
+    console.error("RAG memory retrieval failed:", memoryResult.reason);
+  }
+
+  const citations = dedupeCitations([...journals, ...memories]);
+
+  return {
+    citations,
+    contextText: formatContext(journals, memories),
+  };
+}
+
+function buildSystemPrompt(rag: RagContext) {
+  return `You are Debo, the user's private AI life companion and journal analyst.
+
+Use retrieved private context first. Be warm, precise, and grounded. If the retrieved context is thin, use the available tools before making claims about the user's life. Never invent journal facts, dates, people, or memories.
+
+When you use journal evidence, mention the date naturally. When you use a persistent memory, identify it as a memory. If nothing relevant is found, say that Debo does not remember enough yet and offer a useful next step.
+
+Current date: ${new Date().toISOString().slice(0, 10)}
+
+Retrieved context:
+${rag.contextText || "No relevant journals or memories were retrieved before generation."}`;
+}
+
+function formatContext(journals: CitationSource[], memories: CitationSource[]) {
+  const journalText = journals
+    .map((journal, index) => {
+      const date = journal.date
+        ? new Date(journal.date).toLocaleDateString("en", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          })
+        : "Unknown date";
+
+      return `[Journal ${index + 1}]
+Date: ${date}
+Title: ${journal.title || "Untitled"}
+Snippet: ${journal.snippet}`;
+    })
+    .join("\n\n");
+
+  const memoryText = memories
+    .map(
+      (memory, index) => `[Memory ${index + 1}]
+Source: ${memory.source || "mem0"}
+Snippet: ${memory.snippet}`
+    )
+    .join("\n\n");
+
+  return [
+    journalText ? `Journals:\n${journalText}` : "",
+    memoryText ? `Memories:\n${memoryText}` : "",
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+}
+
+function getLatestUserText(messages: UIMessage[]) {
+  const latestUserMessage = [...messages]
+    .reverse()
+    .find((message) => message.role === "user");
+
+  if (!latestUserMessage) {
+    return "";
+  }
+
+  return latestUserMessage.parts
+    .filter((part) => part.type === "text")
+    .map((part) => part.text)
+    .join("\n")
+    .trim();
+}
+
+function dedupeCitations(citations: CitationSource[]) {
+  const seen = new Set<string>();
+
+  return citations.filter((citation) => {
+    const key = `${citation.sourceType}:${citation.journalId || citation.id}`;
+
+    if (seen.has(key)) {
+      return false;
     }
 
-    const providerData = await db.query.aiProviders.findFirst({
-        where: and(
-            eq(aiProviders.userId, userId),
-            eq(aiProviders.providerId, activeProviderId)
-        )
-    });
-
-    // If no provider configured, try to find ANY provider with an API key
-    let finalProviderData = providerData;
-    if (!finalProviderData?.apiKey) {
-        finalProviderData = await db.query.aiProviders.findFirst({
-            where: and(
-                eq(aiProviders.userId, userId)
-            )
-        });
-    }
-
-    if (!finalProviderData?.apiKey) {
-        // Fallback to environment variables if available
-        if (process.env.OPENAI_API_KEY) {
-            model = createOpenAI({ apiKey: process.env.OPENAI_API_KEY })("gpt-4o");
-        } else if (process.env.ANTHROPIC_API_KEY) {
-            model = createAnthropic({ apiKey: process.env.ANTHROPIC_API_KEY })("claude-3-5-sonnet-20240620");
-        } else {
-            throw new Error("No AI provider configured. Please add an API key in settings.");
-        }
-    } else {
-        const apiKey = await decrypt(finalProviderData.apiKey);
-        if (finalProviderData.providerId === "openai") {
-            model = createOpenAI({ apiKey })((finalProviderData as any).modelId || "gpt-4o");
-        } else if (finalProviderData.providerId === "anthropic") {
-            model = createAnthropic({ apiKey })((finalProviderData as any).modelId || "claude-3-5-sonnet-20240620");
-        } else {
-            const custom = createOpenAI({ apiKey, baseURL: finalProviderData.baseUrl || undefined });
-            model = custom((finalProviderData as any).modelId || "model-id-needed");
-        }
-    }
-
-    const tools = createTools(userId);
-
-    return streamText({
-        model,
-        system: `You are Debo, the user's highly intelligent personal AI life companion. 
-        Your goal is to help the user reflect on their life, answer questions about their past, 
-        and provide insights based on their journals and memories.
-
-        GUIDELINES:
-        1. ALWAYS search for relevant information using tools before answering if the user asks about their past, habits, or specific events.
-        2. Be empathetic, concise, and helpful.
-        3. If you find citations (journal entries or memories), refer to them naturally.
-        4. If you don't know something after searching, be honest and say you don't remember that yet.
-        5. Use the user's tone and context to provide personalized responses.
-        6. Think step-by-step. If a user asks a complex question, you might need to call multiple tools or search multiple times.
-
-        Current date: ${new Date().toLocaleDateString()}
-        `,
-        messages,
-        tools,
-    });
+    seen.add(key);
+    return true;
+  });
 }

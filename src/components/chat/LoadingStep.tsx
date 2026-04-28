@@ -1,16 +1,21 @@
 "use client";
 
+import type { LucideIcon } from "lucide-react";
 import { Loader2 } from "lucide-react";
 
 interface LoadingStepProps {
+  icon: LucideIcon;
   label: string;
 }
 
-export function LoadingStep({ label }: LoadingStepProps) {
+export function LoadingStep({ icon: Icon, label }: LoadingStepProps) {
   return (
-    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-primary/20 bg-primary/5 text-primary text-xs font-medium animate-pulse">
-      <Loader2 className="w-3 h-3 animate-spin" />
-      <span>{label}</span>
+    <div className="flex min-h-10 items-center gap-2 rounded-lg border border-primary/20 bg-primary/10 px-3 py-2 text-xs font-medium text-primary shadow-sm">
+      <span className="flex size-6 items-center justify-center rounded-md bg-background/70">
+        <Icon className="size-3.5" />
+      </span>
+      <span className="truncate">{label}</span>
+      <Loader2 className="ml-auto size-3.5 animate-spin" />
     </div>
   );
 }

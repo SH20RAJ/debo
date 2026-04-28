@@ -1,10 +1,16 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { askQuestionAction } from "@/actions/ask";
+import type { UIMessage } from "ai";
 
 export const runtime = "edge";
+export const maxDuration = 60;
 
 export async function POST(req: Request) {
-    const body = await req.json() as any;
+    const body = await req.json() as { messages?: UIMessage[] };
     const { messages } = body;
+
+    if (!Array.isArray(messages)) {
+        return new Response("Invalid chat payload", { status: 400 });
+    }
+
     return await askQuestionAction(messages);
 }

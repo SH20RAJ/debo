@@ -13,7 +13,6 @@ type JournalProps = {
   createdAt: Date;
   updatedAt: Date;
   userId: string;
-  vectorizeId: string | null;
 };
 
 export function JournalTimeline({ journals }: { journals: JournalProps[] }) {

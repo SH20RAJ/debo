@@ -1,46 +1,24 @@
 "use server";
 
-import Mem0 from "mem0ai";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { db } from "@/db";
-import { userPreferences } from "@/db/schema";
-import { eq } from "drizzle-orm";
 import { cache } from "react";
 import { revalidatePath } from "next/cache";
-
-async function getMem0Client(userId: string) {
-    const prefs = await db.query.userPreferences.findFirst({
-        where: eq(userPreferences.userId, userId)
-    });
-
-    const apiKey = prefs?.mem0Key || process.env.MEM0_API_KEY || "dummy";
-    const host = prefs?.mem0Url || undefined;
-
-    return new Mem0({
-        apiKey,
-        // @ts-ignore
-        host
-    });
-}
+import { fetchMemories, getMem0Client } from "@/lib/ai/memories";
 
 export const getMemories = cache(async (query: string = "") => {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session) return { success: false, error: "Unauthorized" };
 
     try {
-        const mem0 = await getMem0Client(session.user.id);
-        const response = await mem0.getAll({ filters: { user_id: session.user.id } });
-        const memories = Array.isArray(response) ? response : ((response as any).memories || []);
-        
-        if (query) {
-            const filtered = (memories as any[]).filter(m => 
-                m.content && m.content.toLowerCase().includes(query.toLowerCase())
-            );
-            return { success: true, data: filtered };
-        }
-
-        return { success: true, data: memories };
+        const memories = await fetchMemories(session.user.id, query, 100);
+        return {
+            success: true,
+            data: memories.map((memory) => ({
+                id: memory.id,
+                content: memory.content,
+            })),
+        };
     } catch (error) {
         console.error("Fetch memories error:", error);
         return { success: false, error: "Failed to fetch memories from Mem0" };
@@ -53,6 +31,7 @@ export async function deleteMemory(memoryId: string) {
 
     try {
         const mem0 = await getMem0Client(session.user.id);
+        if (!mem0) return { success: false, error: "Mem0 is not configured" };
         await mem0.delete(memoryId);
         revalidatePath("/dashboard/memories");
         return { success: true };
@@ -68,6 +47,7 @@ export async function addMemory(fact: string) {
 
     try {
         const mem0 = await getMem0Client(session.user.id);
+        if (!mem0) return { success: false, error: "Mem0 is not configured" };
         const result = await mem0.add([{ role: "user" as const, content: fact }], { filters: { user_id: session.user.id } });
         revalidatePath("/dashboard/memories");
         return { success: true, data: result };
@@ -86,6 +66,7 @@ export async function importMemories(jsonContent: string) {
         if (!Array.isArray(data)) throw new Error("Invalid format. Expected an array of facts.");
         
         const mem0 = await getMem0Client(session.user.id);
+        if (!mem0) return { success: false, error: "Mem0 is not configured" };
         
         // Mem0 batch add
         const messages = data.map(item => ({
