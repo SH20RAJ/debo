@@ -8,7 +8,9 @@ import {
   Search,
   Database,
   Library,
-  Sparkles
+  Sparkles,
+  ChartNoAxesCombined,
+  Clock3
 } from "lucide-react"
 
 import {
@@ -39,6 +41,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
         { title: "Ask Life", href: "/dashboard/ask", icon: Search },
         { title: "Journal", href: "/dashboard/journal/new", icon: Plus },
+        { title: "Timeline", href: "/dashboard/timeline", icon: Clock3 },
+        { title: "Insights", href: "/dashboard/insights", icon: ChartNoAxesCombined },
       ]
     },
     {

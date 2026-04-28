@@ -3,8 +3,8 @@ import { MemoryManager } from "@/components/dashboard/memories/memory-manager";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Memory OS",
-  description: "Manage your persistent intelligence context and facts.",
+  title: "Memory Engine",
+  description: "Manage your persistent memory facts and entity graph.",
 };
 
 export default async function MemoriesPage(props: {

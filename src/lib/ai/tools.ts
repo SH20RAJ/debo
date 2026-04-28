@@ -3,11 +3,11 @@ import "server-only";
 import { tool } from "ai";
 import { z } from "zod";
 
-import { fetchMemories } from "@/lib/ai/memories";
 import {
   getRecentJournalCitations,
   searchJournals,
 } from "@/lib/vector/search";
+import { getRelevantMemories } from "@/lib/memory/query";
 
 export const createTools = (userId: string) => ({
   search_journals: tool({
@@ -35,7 +35,7 @@ export const createTools = (userId: string) => ({
 
   get_memories: tool({
     description:
-      "Retrieve persistent Mem0 memories and facts about the user. Use this to enrich answers with stable preferences, people, goals, and recurring patterns.",
+      "Retrieve persistent memories and facts about the user from the first-party memory engine. Use this to enrich answers with stable preferences, people, goals, and recurring patterns.",
     inputSchema: z.object({
       query: z
         .string()
@@ -51,7 +51,16 @@ export const createTools = (userId: string) => ({
     }),
     execute: async ({ query = "", limit }) => {
       try {
-        return await fetchMemories(userId, query, limit);
+        const memories = await getRelevantMemories(userId, query);
+        return memories.items.slice(0, limit).map((memory) => ({
+          id: memory.id,
+          sourceType: "memory" as const,
+          content: memory.content,
+          snippet: memory.content,
+          date: memory.date,
+          score: memory.score,
+          source: memory.label || memory.sourceType,
+        }));
       } catch (error) {
         console.error("get_memories tool failed:", error);
         return [];

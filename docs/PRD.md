@@ -12,7 +12,7 @@
 ### 2.2 AI Companion & RAG Search
 *   **Conversational Interface**: Interactive chat interface powered by `assistant-ui` (similar to LobeHub) acting as a life companion.
 *   **Smart Retrieval**: AI search over past journal entries using Cloudflare Vectorize (RAG).
-*   **Long-Term Memory Optimization**: Integration with `mem0` to extract and naturally remember specific facts, preferences, and details about the user's life automatically.
+*   **Long-Term Memory Optimization**: A first-party memory engine to extract and naturally remember specific facts, preferences, and details about the user's life automatically.
 
 ### 2.3 BYOK (Bring Your Own Key) & AI Agnosticism
 *   **Default Engine**: Powered by Cloudflare Workers AI (fast, edge-based inference) out of the box.
@@ -37,4 +37,4 @@
     *   **Workers AI**: Edge AI model execution.
     *   **Wrangler**: Infrastructure as Code & deployment management.
 *   **Agent Framework**: `ai` SDK + `assistant-ui` for chat, custom orchestration via Cloudflare Workers.
-*   **Integrations Libs**: `mem0` for continuous memory, `Nango` (or similar) for the 130+ app OAuth connectors.
+*   **Integrations Libs**: In-house memory storage for continuous memory, `Nango` (or similar) for the 130+ app OAuth connectors.

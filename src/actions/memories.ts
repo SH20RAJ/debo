@@ -1,27 +1,37 @@
 "use server";
 
+import { and, eq } from "drizzle-orm";
+
+import { db } from "@/db";
+import { memoryEntities, memoryFacts } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { extractMemory } from "@/lib/memory/extract";
+import { getRelevantMemories } from "@/lib/memory/query";
+import { storeMemory } from "@/lib/memory/store";
 import { headers } from "next/headers";
 import { cache } from "react";
 import { revalidatePath } from "next/cache";
-import { fetchMemories, getMem0Client } from "@/lib/ai/memories";
 
 export const getMemories = cache(async (query: string = "") => {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session) return { success: false, error: "Unauthorized" };
 
     try {
-        const memories = await fetchMemories(session.user.id, query, 100);
+        const memories = await getRelevantMemories(session.user.id, query);
         return {
             success: true,
-            data: memories.map((memory) => ({
+            data: memories.items.map((memory) => ({
                 id: memory.id,
                 content: memory.content,
+                source: memory.source,
+                sourceType: memory.sourceType,
+                score: memory.score,
             })),
+            insights: memories.insights,
         };
     } catch (error) {
         console.error("Fetch memories error:", error);
-        return { success: false, error: "Failed to fetch memories from Mem0" };
+        return { success: false, error: "Failed to fetch memories" };
     }
 });
 
@@ -30,10 +40,17 @@ export async function deleteMemory(memoryId: string) {
     if (!session) return { success: false, error: "Unauthorized" };
 
     try {
-        const mem0 = await getMem0Client(session.user.id);
-        if (!mem0) return { success: false, error: "Mem0 is not configured" };
-        await mem0.delete(memoryId);
+        const fact = await db.query.memoryFacts.findFirst({ where: eq(memoryFacts.id, memoryId) });
+        if (fact) {
+            await db.delete(memoryFacts).where(eq(memoryFacts.id, memoryId));
+        } else {
+            const entity = await db.query.memoryEntities.findFirst({ where: eq(memoryEntities.id, memoryId) });
+            if (!entity) return { success: false, error: "Memory not found" };
+            await db.delete(memoryEntities).where(eq(memoryEntities.id, memoryId));
+        }
+
         revalidatePath("/dashboard/memories");
+        revalidatePath("/dashboard/experimental/memories");
         return { success: true };
     } catch (error) {
         console.error("Delete memory error:", error);
@@ -46,10 +63,15 @@ export async function addMemory(fact: string) {
     if (!session) return { success: false, error: "Unauthorized" };
 
     try {
-        const mem0 = await getMem0Client(session.user.id);
-        if (!mem0) return { success: false, error: "Mem0 is not configured" };
-        const result = await mem0.add([{ role: "user" as const, content: fact }], { filters: { user_id: session.user.id } });
+        const extracted = await extractMemory(fact);
+        const result = await storeMemory(session.user.id, {
+            facts: extracted.facts.length > 0 ? extracted.facts : [fact],
+            entities: extracted.entities,
+            emotions: extracted.emotions,
+            topics: extracted.topics,
+        });
         revalidatePath("/dashboard/memories");
+        revalidatePath("/dashboard/experimental/memories");
         return { success: true, data: result };
     } catch (error) {
         console.error("Add memory error:", error);
@@ -64,19 +86,20 @@ export async function importMemories(jsonContent: string) {
     try {
         const data = JSON.parse(jsonContent);
         if (!Array.isArray(data)) throw new Error("Invalid format. Expected an array of facts.");
-        
-        const mem0 = await getMem0Client(session.user.id);
-        if (!mem0) return { success: false, error: "Mem0 is not configured" };
-        
-        // Mem0 batch add
-        const messages = data.map(item => ({
-            role: "user" as const,
-            content: typeof item === 'string' ? item : item.content || item.fact || JSON.stringify(item)
-        }));
 
-        await mem0.add(messages, { filters: { user_id: session.user.id } });
-        
+        for (const item of data) {
+            const content = typeof item === "string" ? item : item.content || item.fact || JSON.stringify(item);
+            const extracted = await extractMemory(content);
+            await storeMemory(session.user.id, {
+                facts: extracted.facts.length > 0 ? extracted.facts : [content],
+                entities: extracted.entities,
+                emotions: extracted.emotions,
+                topics: extracted.topics,
+            });
+        }
+
         revalidatePath("/dashboard/memories");
+        revalidatePath("/dashboard/experimental/memories");
         return { success: true };
     } catch (error) {
         console.error("Import memories error:", error);

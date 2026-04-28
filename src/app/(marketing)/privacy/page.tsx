@@ -21,7 +21,7 @@ export default function PrivacyPage() {
         <section>
           <h2 className="text-xl font-semibold text-foreground mb-4">2. Memory Extraction</h2>
           <p>
-            When you journal, our engine extracts key facts and patterns to build your personal memory database. This process is isolated to your user account and uses secure, encrypted storage (Neon and Mem0).
+            When you journal, our engine extracts key facts and patterns to build your personal memory database. This process is isolated to your user account and uses secure, encrypted storage in Neon.
           </p>
         </section>
 

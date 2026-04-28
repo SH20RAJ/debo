@@ -1,25 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
-import Mem0 from "mem0ai";
 import { db } from "@/db";
 import { journals, userPreferences } from "@/db/schema";
 import { eq, and, gte, lte, desc, ilike, sql } from "drizzle-orm";
 import crypto from "crypto";
 import { nango } from "@/lib/nango";
-
-// Helper to get specialized client
-async function getMem0ForUser(userId: string) {
-    const pref = await db.query.userPreferences.findFirst({
-        where: eq(userPreferences.userId, userId)
-    });
-    
-    return new Mem0({
-        apiKey: pref?.mem0Key || process.env.MEM0_API_KEY || "dummy",
-        // @ts-ignore
-        host: pref?.mem0Url || undefined
-    });
-}
+import { indexJournal } from "@/lib/vector/search";
+import { upsertMemoryGraphForJournal } from "@/lib/life/graph";
+import { extractMemory } from "@/lib/memory/extract";
+import { getRelevantMemories } from "@/lib/memory/query";
+import { storeMemory } from "@/lib/memory/store";
 
 const server = new Server({
   name: "debo-mcp-server",
@@ -76,7 +67,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: "add_memory",
-        description: "Add a new persistent fact or memory to the intelligence context.",
+        description: "Add a new persistent fact or memory to the first-party intelligence context.",
         inputSchema: {
           type: "object",
           properties: {
@@ -87,7 +78,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: "search_memories",
-        description: "Semantically search through stored facts and memories.",
+        description: "Search through stored facts and memories in the internal memory engine.",
         inputSchema: {
           type: "object",
           properties: {
@@ -145,12 +136,30 @@ server.setRequestHandler(CallToolRequestSchema, async (request, extra) => {
     case "create_journal": {
       const { content, title } = args as { content: string, title?: string };
       const id = crypto.randomUUID();
-      await db.insert(journals).values({
+      const journal = {
         id,
         userId,
         title: title || null,
         content,
-      });
+      };
+
+      await db.insert(journals).values(journal);
+
+      try {
+        await indexJournal({
+          ...journal,
+          createdAt: new Date(),
+        });
+        await upsertMemoryGraphForJournal(userId, {
+          ...journal,
+          createdAt: new Date(),
+        });
+        const extracted = await extractMemory(content);
+        await storeMemory(userId, extracted);
+      } catch (error) {
+        console.error("Failed to index MCP journal:", error);
+      }
+
       return { content: [{ type: "text", text: `Journal entry created with ID: ${id}` }] };
     }
 
@@ -173,16 +182,20 @@ server.setRequestHandler(CallToolRequestSchema, async (request, extra) => {
 
     case "add_memory": {
       const { fact } = args as { fact: string };
-      const mem0User = await getMem0ForUser(userId);
-      const result = await mem0User.add([{ role: "user", content: fact }], { user_id: userId });
+      const extracted = await extractMemory(fact);
+      const result = await storeMemory(userId, {
+        facts: extracted.facts.length > 0 ? extracted.facts : [fact],
+        entities: extracted.entities,
+        emotions: extracted.emotions,
+        topics: extracted.topics,
+      });
       return { content: [{ type: "text", text: `Memory stored successfully: ${JSON.stringify(result)}` }] };
     }
 
     case "search_memories": {
       const { query } = args as { query: string };
-      const mem0User = await getMem0ForUser(userId);
-      const result = await mem0User.search(query, { user_id: userId } as any);
-      return { content: [{ type: "text", text: JSON.stringify(result) }] };
+      const result = await getRelevantMemories(userId, query);
+      return { content: [{ type: "text", text: JSON.stringify(result.items) }] };
     }
 
     case "list_my_connections": {

@@ -6,6 +6,8 @@ export type QdrantVectorPayload = {
   content: string;
   createdAt: string;
   title?: string | null;
+  chunkIndex?: number;
+  chunkCount?: number;
 };
 
 export type QdrantMatch = {
@@ -148,6 +150,23 @@ export async function deleteVector(id: string) {
       method: "POST",
       body: JSON.stringify({
         points: [id],
+      }),
+    });
+  } catch (error) {
+    if (error instanceof QdrantRequestError && error.status === 404) {
+      return;
+    }
+
+    throw error;
+  }
+}
+
+export async function deleteVectorsByFilter(filter: Record<string, unknown>) {
+  try {
+    await qdrantRequest(`${getCollectionPath()}/points/delete?wait=true`, {
+      method: "POST",
+      body: JSON.stringify({
+        filter,
       }),
     });
   } catch (error) {

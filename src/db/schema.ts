@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, index } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, index, uniqueIndex, integer } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
 	id: text("id").primaryKey(),
@@ -65,8 +65,6 @@ export const userPreferences = pgTable("user_preference", {
     ollamaUrl: text("ollama_url"),
     mcpUrl: text("mcp_url"),
     mcpKey: text("mcp_key"),
-    mem0Key: text("mem0_key"),
-    mem0Url: text("mem0_url"),
     activeProvider: text("active_provider").default("cloudflare"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -103,5 +101,68 @@ export const messages = pgTable("message", {
 }, (table) => ({
     chatIdIdx: index("message_chat_id_idx").on(table.chatId),
     createdAtIdx: index("message_created_at_idx").on(table.createdAt),
+}));
+
+export const memoryNodes = pgTable("memory_node", {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull().references(() => user.id),
+    type: text("type").notNull(),
+    name: text("name").notNull(),
+    normalizedName: text("normalized_name").notNull(),
+    weight: text("weight").notNull().default("1"),
+    firstSeenAt: timestamp("first_seen_at").notNull(),
+    lastSeenAt: timestamp("last_seen_at").notNull(),
+    metadata: text("metadata"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+    userIdIdx: index("memory_node_user_id_idx").on(table.userId),
+    typeIdx: index("memory_node_type_idx").on(table.type),
+    uniqueNodeIdx: uniqueIndex("memory_node_unique_idx").on(table.userId, table.type, table.normalizedName),
+}));
+
+export const memoryEdges = pgTable("memory_edge", {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull().references(() => user.id),
+    fromKey: text("from_key").notNull(),
+    toKey: text("to_key").notNull(),
+    relation: text("relation").notNull(),
+    weight: text("weight").notNull().default("1"),
+    lastSeenAt: timestamp("last_seen_at").notNull(),
+    metadata: text("metadata"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+    userIdIdx: index("memory_edge_user_id_idx").on(table.userId),
+    relationIdx: index("memory_edge_relation_idx").on(table.relation),
+    uniqueEdgeIdx: uniqueIndex("memory_edge_unique_idx").on(table.userId, table.fromKey, table.toKey, table.relation),
+}));
+
+export const memoryFacts = pgTable("memory_fact", {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull().references(() => user.id),
+    content: text("content").notNull(),
+    type: text("type").notNull(),
+    weight: integer("weight").notNull().default(1),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+    userIdIdx: index("memory_fact_user_id_idx").on(table.userId),
+    typeIdx: index("memory_fact_type_idx").on(table.type),
+    uniqueFactIdx: uniqueIndex("memory_fact_unique_idx").on(table.userId, table.type, table.content),
+}));
+
+export const memoryEntities = pgTable("memory_entity", {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull().references(() => user.id),
+    name: text("name").notNull(),
+    normalizedName: text("normalized_name").notNull(),
+    type: text("type").notNull(),
+    frequency: integer("frequency").notNull().default(1),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+    userIdIdx: index("memory_entity_user_id_idx").on(table.userId),
+    typeIdx: index("memory_entity_type_idx").on(table.type),
+    uniqueEntityIdx: uniqueIndex("memory_entity_unique_idx").on(table.userId, table.type, table.normalizedName),
 }));
 

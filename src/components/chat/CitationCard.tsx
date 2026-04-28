@@ -32,7 +32,7 @@ export function CitationCard({ source }: CitationCardProps) {
               {isJournal ? source.title || "Journal entry" : "Memory"}
             </p>
             <p className="truncate text-[11px] text-muted-foreground">
-              {isJournal ? date || "Journal date" : `Source: ${source.source || "mem0"}`}
+              {isJournal ? date || "Journal date" : `Source: ${source.source || "memory"}`}
             </p>
           </div>
         </div>

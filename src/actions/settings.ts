@@ -23,7 +23,6 @@ export async function getUserPreferences() {
                 ...prefs,
                 openaiKey: prefs.openaiKey ? "sk-....config" : null,
                 anthropicKey: prefs.anthropicKey ? "sk-ant-....config" : null,
-                mem0Key: prefs.mem0Key ? "m0-....config" : null,
             };
         }
 
@@ -110,8 +109,6 @@ export async function setActiveProvider(providerId: string) {
 export async function saveUserPreferences(data: { 
     mcpUrl?: string, 
     activeProvider?: string,
-    mem0Key?: string,
-    mem0Url?: string
 }) {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session) throw new Error("Unauthorized");
@@ -119,13 +116,8 @@ export async function saveUserPreferences(data: {
     const updateData: any = {
         activeProvider: data.activeProvider || "cloudflare",
         mcpUrl: data.mcpUrl || null,
-        mem0Url: data.mem0Url || null,
         updatedAt: new Date()
     };
-
-    if (data.mem0Key && !data.mem0Key.includes("....config")) {
-        updateData.mem0Key = data.mem0Key;
-    }
 
     const existing = await db.query.userPreferences.findFirst({
         where: eq(userPreferences.userId, session.user.id)

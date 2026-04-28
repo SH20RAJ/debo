@@ -55,7 +55,7 @@ export function MemoryManager({ initialMemories = [], initialQuery = "" }: { ini
     try {
         const res = await addMemory(newFact);
         if (res.success) {
-            toast.success("Fact added to intelligence context.");
+            toast.success("Fact added to memory engine.");
             setNewFact("");
             router.refresh();
         } else {
@@ -174,7 +174,7 @@ export function MemoryManager({ initialMemories = [], initialQuery = "" }: { ini
       <div className={`space-y-4 transition-opacity duration-500 ${isPending ? 'opacity-50' : 'opacity-100'}`}>
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground/40 px-2">
             <Brain className="h-3 w-3" />
-            Active Memory Nodes: {initialMemories.length}
+            Active Memories: {initialMemories.length}
         </div>
         
         {initialMemories.length === 0 ? (
@@ -182,7 +182,7 @@ export function MemoryManager({ initialMemories = [], initialQuery = "" }: { ini
                 <div className="h-16 w-16 bg-muted rounded-full flex items-center justify-center mx-auto">
                     <Database className="h-8 w-8 text-muted-foreground/40" />
                 </div>
-                <p className="text-muted-foreground font-medium">No facts found in your intelligence context.</p>
+                <p className="text-muted-foreground font-medium">No facts found in your memory engine.</p>
             </div>
         ) : (
             <div className="grid gap-4">
@@ -207,7 +207,7 @@ export function MemoryManager({ initialMemories = [], initialQuery = "" }: { ini
                                     <AlertDialogHeader>
                                         <AlertDialogTitle>Delete Memory?</AlertDialogTitle>
                                         <AlertDialogDescription>
-                                            This fact will be removed from your long-term intelligence context. AI models will no longer have access to it.
+                                            This fact will be removed from your long-term memory engine. AI models will no longer have access to it.
                                         </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
@@ -230,7 +230,7 @@ export function MemoryManager({ initialMemories = [], initialQuery = "" }: { ini
 
       <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground/20 uppercase tracking-[0.2em] pt-12 border-t/50">
         <AlertCircle className="h-3 w-3" />
-        Memories are automatically synchronized with the global intelligence layer.
+                Memories are automatically synchronized with the first-party memory layer.
       </div>
     </div>
   );

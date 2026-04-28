@@ -1,18 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { getNangoConnections, deleteNangoConnection, saveUserPreferences } from "@/actions/settings";
+import { getNangoConnections, deleteNangoConnection } from "@/actions/settings";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { KeyRound, ShieldCheck, Link2, ExternalLink, Link2Off, Loader2, Sparkles, Box, Mic, Database, Save } from "lucide-react";
+import { ShieldCheck, Link2, ExternalLink, Link2Off, Loader2, Sparkles, Box, Mic } from "lucide-react";
 import Nango from "@nangohq/frontend";
 import { useRouter } from "next/navigation";
 import { PROVIDERS } from "@/config/providers";
 import { ProviderCard } from "./provider-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
 export function SettingsForm({ 
     initialData, 
@@ -22,17 +20,12 @@ export function SettingsForm({
 }: { 
     initialData?: { 
         activeProvider?: string | null,
-        mem0Key?: string | null,
-        mem0Url?: string | null
     } | null,
     connections?: any[],
     aiProviders?: any[],
     userId: string
 }) {
     const [isConnecting, setIsConnecting] = useState<string | null>(null);
-    const [isSavingMem0, setIsSavingMem0] = useState(false);
-    const [mem0Key, setMem0Key] = useState(initialData?.mem0Key || "");
-    const [mem0Url, setMem0Url] = useState(initialData?.mem0Url || "");
     
     const router = useRouter();
 
@@ -68,22 +61,6 @@ export function SettingsForm({
         }
     };
 
-    const handleSaveMem0 = async () => {
-        setIsSavingMem0(true);
-        try {
-            await saveUserPreferences({
-                mem0Key,
-                mem0Url
-            });
-            toast.success("Memory settings updated.");
-            router.refresh();
-        } catch (e) {
-            toast.error("Failed to save memory settings.");
-        } finally {
-            setIsSavingMem0(false);
-        }
-    };
-
     const isConnected = (provider: string) => connections.some(c => c.providerConfigKey === provider);
 
     const getSavedConfig = (providerId: string) => {
@@ -97,9 +74,6 @@ export function SettingsForm({
                     <TabsList className="p-1">
                         <TabsTrigger value="ai" className="gap-2 rounded-md">
                             <Sparkles className="h-4 w-4" /> AI Providers
-                        </TabsTrigger>
-                        <TabsTrigger value="memory" className="gap-2 rounded-md">
-                            <Database className="h-4 w-4" /> Memory (Mem0)
                         </TabsTrigger>
                         <TabsTrigger value="integrations" className="gap-2 rounded-md">
                             <Box className="h-4 w-4" /> Integrations
@@ -128,54 +102,6 @@ export function SettingsForm({
                             />
                         ))}
                     </div>
-                </TabsContent>
-
-                <TabsContent value="memory" className="space-y-6 mt-0">
-                    <div className="space-y-1">
-                        <h2 className="text-2xl font-bold tracking-tight">Intelligence Context (Mem0)</h2>
-                        <p className="text-muted-foreground">Configure your persistent memory layer. Use our managed service or bring your own.</p>
-                    </div>
-
-                    <Card className="max-w-2xl border-none bg-muted/30">
-                        <CardHeader>
-                            <CardTitle className="text-lg">Mem0 Configuration</CardTitle>
-                            <CardDescription>Enter your Mem0 API key and optional custom host URL for self-hosted instances.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div className="space-y-2">
-                                <Label htmlFor="mem0-key">API Key</Label>
-                                <Input 
-                                    id="mem0-key" 
-                                    type="password" 
-                                    placeholder="m0-..." 
-                                    value={mem0Key}
-                                    onChange={(e) => setMem0Key(e.target.value)}
-                                    className="rounded-xl"
-                                />
-                                <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Leave empty to use system default</p>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="mem0-url">Custom Host URL (Optional)</Label>
-                                <Input 
-                                    id="mem0-url" 
-                                    placeholder="https://your-mem0-instance.com" 
-                                    value={mem0Url}
-                                    onChange={(e) => setMem0Url(e.target.value)}
-                                    className="rounded-xl"
-                                />
-                            </div>
-                        </CardContent>
-                        <CardFooter className="border-t/50 pt-6">
-                            <Button 
-                                onClick={handleSaveMem0} 
-                                disabled={isSavingMem0}
-                                className="rounded-xl gap-2"
-                            >
-                                {isSavingMem0 ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                                Save Memory Settings
-                            </Button>
-                        </CardFooter>
-                    </Card>
                 </TabsContent>
 
                 <TabsContent value="integrations" className="space-y-6 mt-0">

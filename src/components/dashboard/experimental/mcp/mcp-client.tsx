@@ -152,12 +152,12 @@ export function MCPClient() {
             <ToolCard 
                 icon={<Database className="h-5 w-5 text-purple-500" />}
                 name="add_memory"
-                desc="Extract and store persistent facts via Mem0."
+              desc="Extract and store persistent facts in Debo's memory engine."
             />
             <ToolCard 
                 icon={<History className="h-5 w-5 text-amber-500" />}
                 name="search_memories"
-                desc="Semantic retrieval of stored intelligence context."
+              desc="Semantic retrieval of stored memory context and patterns."
             />
             <ToolCard 
                 icon={<Network className="h-5 w-5 text-cyan-500" />}

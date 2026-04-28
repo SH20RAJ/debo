@@ -16,7 +16,7 @@ Debo leverages **LiveKit** as the core infrastructure for all real-time voice, v
 
 ### 1. The Voice Agent Worker
 We will deploy a dedicated **LiveKit Agent** (Node.js) that joins a LiveKit room whenever a user initiates a voice session.
-- **Context Injection**: The agent will automatically query the user's `mem0` memories and `Vectorize` journal entries to provide personalized responses.
+- **Context Injection**: The agent will automatically query the user's memories and `Vectorize` journal entries to provide personalized responses.
 - **Tool Access**: The agent has full access to the **Nango Connectors** (Google Calendar, Notion) to act as a hands-free assistant.
 
 ### 2. Frontend Integration

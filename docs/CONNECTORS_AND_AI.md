@@ -13,10 +13,10 @@ Debo emphasizes user ownership and privacy by default.
     *   If no custom key is provided: `import { createCloudflareWorkersAI }` is utilized natively through standard bindings.
     *   If OpenAI/Anthropic/Ollama is selected, the backend will initialize the specific Vercel AI provider dynamically per request based on the user's DB configuration.
 
-## 2. Memory Extraction (mem0)
+## 2. Memory Extraction
 
 Long-term memory is critical for a "companion" feel.
-*   **Library**: Using `mem0ai/mem0` (or its equivalent accessible API/SDK in Node/Workers).
+*   **Implementation**: Use the first-party memory engine backed by Postgres and AI extraction.
 *   **Trigger Mechanism**: Whenever a new journal entry is created, an asynchronous background job (e.g. Cloudflare Queue -> Worker) triggers.
 *   **Execution**:
     *   The worker sends the journal raw text to the memory engine.

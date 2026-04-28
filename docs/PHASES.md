@@ -51,7 +51,7 @@ This document meticulously tracks the execution phases, architectural decisions,
 - [ ] Implement `VoiceCompanion` client component utilizing `@livekit/components-react`.
 - [ ] Build the **LiveKit Agent Worker** (`livekit-agents` in Python/Node):
   - [ ] Configure `VoicePipelineAgent` with STT (Deepgram/OpenAI) and TTS (Cartesia/ElevenLabs).
-  - [ ] Connect Agent to `mem0` and `Vectorize` context layers.
+  - [ ] Connect Agent to the memory engine and `Vectorize` context layers.
   - [ ] **Context7 Integration**: Equip the Voice Agent with the Context7 MCP server as a tool, allowing the agent to answer highly technical questions by reading live documentation.
 - [ ] Create the **Debo MCP Server Page** (`/dashboard/mcp`):
   - [ ] Provide connection instructions and SSE endpoints so users can connect their Cursor IDE or Claude Desktop to Debo.

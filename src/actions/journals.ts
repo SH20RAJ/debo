@@ -9,6 +9,9 @@ import { revalidatePath } from "next/cache";
 import { cache } from "react";
 import { z } from "zod";
 import { indexJournal, removeJournalFromIndex } from "@/lib/vector/search";
+import { refreshMemoryGraph, upsertMemoryGraphForJournal } from "@/lib/life/graph";
+import { extractMemory } from "@/lib/memory/extract";
+import { storeMemory } from "@/lib/memory/store";
 
 const journalSchema = z.object({
   title: z.string().max(200).optional(),
@@ -106,6 +109,9 @@ export async function saveJournal(rawContent: string, id?: string, title?: strin
 
             if (savedJournal) {
                 await indexJournal(savedJournal);
+                await upsertMemoryGraphForJournal(userId, savedJournal);
+                const extractedMemory = await extractMemory(savedJournal.content);
+                await storeMemory(userId, extractedMemory);
             }
         } catch (err) {
             console.error("Failed to index journal in Qdrant:", err);
@@ -136,6 +142,12 @@ export async function deleteJournal(id: string) {
             await removeJournalFromIndex(id);
         } catch (err) {
             console.error("Failed to delete journal vector from Qdrant:", err);
+        }
+
+        try {
+            await refreshMemoryGraph(session.user.id);
+        } catch (err) {
+            console.error("Failed to refresh memory graph after deletion:", err);
         }
 
         revalidatePath("/dashboard/journals");

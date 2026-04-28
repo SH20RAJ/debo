@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 		template: "%s | Debo",
 	},
 	description: "Debo is your personal memory engine. It remembers your life so you can ask anything about it. High-retention journaling and AI intelligence.",
-	keywords: ["Memory Engine", "Life Querying", "Journaling", "Personal Intelligence", "Privacy", "Mem0"],
+	keywords: ["Memory Engine", "Life Querying", "Journaling", "Personal Intelligence", "Privacy"],
 	authors: [{ name: "Debo" }],
 	creator: "Debo",
 	icons: {

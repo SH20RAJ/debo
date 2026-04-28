@@ -1,4 +1,10 @@
-# Privacy Policy
+# Debo — Privacy Policy
+
+Last updated: YYYY-MM-DD
+
+Introduction
+
+Debo (# Privacy Policy
 
 **Last Updated: April 20, 2026**
 

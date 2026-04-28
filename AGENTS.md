@@ -3,7 +3,7 @@
 This file contains strict guidelines for any AI agent or framework (like Claude, Cursor, GitHub Copilot) working within the Debo repository.
 
 ## Project Goal
-Debo is a next-generation AI companion journal leveraging Next.js, pure Shadcn (Tailwind V4), Better-Auth, Neon Serverless DB, and Cloudflare Edge AI/Vectorize. It heavily utilizes MCP and mem0 for deep conversational logic.
+Debo is a next-generation AI companion journal leveraging Next.js, pure Shadcn (Tailwind V4), Better-Auth, Neon Serverless DB, and Cloudflare Edge AI/Vectorize. It heavily utilizes MCP and a first-party memory engine for deep conversational logic.
 
 ## Strict Coding Directives
 1. **Routing Rules**: `page.tsx` and `layout.tsx` files **must absolutely be server components** (`"use server"` implicitly or explicitly). Never add `"use client"` to a layout or page file.
