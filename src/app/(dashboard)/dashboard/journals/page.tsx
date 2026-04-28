@@ -9,7 +9,7 @@ export default async function JournalsPage() {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session) redirect("/join");
 
-    const journals = await getJournals();
+    const journals = await getJournals("desc", 100);
 
     return (
         <div className="flex-1 space-y-12 p-8 pt-6 max-w-6xl mx-auto">

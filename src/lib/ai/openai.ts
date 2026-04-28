@@ -17,9 +17,13 @@ function readRequiredEnv(name: string) {
 }
 
 export function getOpenAIClient() {
+  const apiKey = readRequiredEnv("OPENAI_API_KEY");
   return createOpenAI({
     baseURL: readRequiredEnv("OPENAI_BASE_URL"),
-    apiKey: readRequiredEnv("OPENAI_API_KEY"),
+    apiKey: apiKey,
+    headers: {
+      "cf-aig-authorization": `Bearer ${apiKey}`,
+    },
   });
 }
 

@@ -92,8 +92,8 @@ export const defaultExtensions = [
     // Ensure no duplication if StarterKit version changes
   }),
   tiptapImage,
-  tiptapLink,
-  TiptapUnderline,
+  // tiptapLink,
+  // TiptapUnderline,
   placeholder,
   Typography,
   horizontalRule,
