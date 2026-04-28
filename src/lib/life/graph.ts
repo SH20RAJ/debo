@@ -264,14 +264,34 @@ export async function buildMemoryGraph(userId: string) {
 }
 
 export async function getMemoryGraphSnapshot(userId: string) {
-  const [nodes, edges] = await Promise.all([
-    db.query.memoryNodes.findMany({
-      where: eq(memoryNodes.userId, userId),
-    }),
-    db.query.memoryEdges.findMany({
-      where: eq(memoryEdges.userId, userId),
-    }),
-  ]);
+  let nodes: GraphNodeRow[] = [];
+  let edges: GraphEdgeRow[] = [];
+
+  try {
+    [nodes, edges] = await Promise.all([
+      db.query.memoryNodes.findMany({
+        where: eq(memoryNodes.userId, userId),
+      }),
+      db.query.memoryEdges.findMany({
+        where: eq(memoryEdges.userId, userId),
+      }),
+    ]);
+  } catch (err: any) {
+    // If the memory graph tables don't exist yet (e.g., migrations not applied),
+    // avoid crashing the whole application. Return an empty snapshot and log a warning.
+    const code = err?.code || (err?.cause && err.cause.code);
+    if (code === "42P01" || /relation .* does not exist/i.test(String(err))) {
+      console.warn("Memory graph tables missing. Returning empty snapshot. Run DB migrations to enable graph features.", err?.message || err);
+      return {
+        nodes: [],
+        edges: [],
+        nodeStats: {},
+        edgeStats: {},
+      };
+    }
+
+    throw err;
+  }
 
   nodes.sort((left, right) => {
     const weightDelta = parseWeight(right.weight) - parseWeight(left.weight);
