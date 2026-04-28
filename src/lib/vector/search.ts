@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { db } from "@/db";
 import { journals } from "@/db/schema";
@@ -51,7 +52,7 @@ async function prodSearch(query: string, userId: string, limit: number) {
 
     // 1. Generate Query Embedding
     const aiResult = await env.AI.run('@cf/baai/bge-large-en-v1.5', { text: [query] });
-    const vector = aiResult.data[0];
+    const vector = (aiResult as any).data[0];
 
     // 2. Query Vector Index
     const results = await env.VECTOR_INDEX.query(vector, {

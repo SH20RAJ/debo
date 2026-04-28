@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2, Cloud } from "lucide-react";
 import dynamic from "next/dynamic";
 
-const BlockEditor = dynamic(() => import("./block-editor"), { 
+const BlockEditor = dynamic(() => import("@/components/journal/block-editor"), { 
     ssr: false,
     loading: () => <div className="h-[500px] w-full bg-muted/20 animate-pulse rounded-2xl" />
 });

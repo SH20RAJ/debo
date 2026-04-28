@@ -1,22 +1,15 @@
 "use server";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { askLife } from "@/lib/life-query-engine";
+import { askLifeStream } from "@/lib/ai/askLife";
 
-export async function askQuestionAction(question: string) {
+export async function askQuestionAction(messages: any[]) {
     const session = await auth.api.getSession({ headers: await headers() });
-    if (!session) return { success: false, error: "Unauthorized" };
+    if (!session) throw new Error("Unauthorized");
 
-    if (!question || question.length < 3) {
-        return { success: false, error: "Question too short." };
-    }
+    const result = await askLifeStream(messages, session.user.id);
 
-    try {
-        const result = await askLife(question, session.user.id);
-        return result;
-    } catch (error) {
-        console.error("Ask action error:", error);
-        return { success: false, error: "Failed to query your life." };
-    }
+    return result.toTextStreamResponse();
 }

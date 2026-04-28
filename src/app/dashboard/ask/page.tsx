@@ -1,22 +1,72 @@
-import { ChatInterface } from "@/components/chat/chat-interface";
-import { Metadata } from "next";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Ask | Debo",
-  description: "Query your life's memories and entries with AI.",
-};
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// @ts-expect-error
+import { useChat } from "ai/react";
+import { ChatContainer } from "@/components/chat/ChatContainer";
+import { ChatInput } from "@/components/chat/ChatInput";
+import { toast } from "sonner";
+import { askQuestionAction } from "@/actions/ask";
+import { useEffect } from "react";
 
 export default function AskPage() {
+  const { 
+    messages, 
+    input, 
+    handleInputChange, 
+    handleSubmit, 
+    isLoading, 
+    stop,
+    error,
+    append
+  } = useChat({
+    api: "/api/chat", // Fallback to API route for better streaming support in some envs
+    onResponse: (response: any) => {
+      if (!response.ok) {
+        toast.error("Failed to get a response from Debo.");
+      }
+    },
+    onError: (err: any) => {
+      console.error("Chat error:", err);
+      toast.error("Something went wrong. Please try again.");
+    }
+  });
+
+  // Example of how to handle suggestions
+  const handleSuggestion = (suggestion: string) => {
+    append({
+      role: 'user',
+      content: suggestion
+    });
+  };
+
   return (
-    <div className="flex-1 space-y-8 p-8 pt-6">
-      <div className="flex flex-col space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Ask your past</h2>
-        <p className="text-muted-foreground text-lg">
-          Query your collective memories, journals, and life patterns.
-        </p>
+    <div className="flex flex-col h-[calc(100vh-4rem)] md:h-[calc(100vh-2rem)] overflow-hidden bg-background">
+      {/* Header */}
+      <div className="flex items-center justify-between px-6 py-4 border-b border-border/50 bg-background/50 backdrop-blur-md z-10">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+          <h2 className="text-sm font-semibold tracking-tight uppercase text-muted-foreground">Live Memory Engine</h2>
+        </div>
       </div>
-      
-      <ChatInterface />
+
+      {/* Chat Area */}
+      <ChatContainer 
+        messages={messages} 
+        isLoading={isLoading} 
+        onSuggestionClick={handleSuggestion}
+      />
+
+      {/* Input Area */}
+      <div className="bg-gradient-to-t from-background via-background to-transparent pt-12">
+        <ChatInput 
+          input={input}
+          handleInputChange={handleInputChange}
+          handleSubmit={handleSubmit}
+          isLoading={isLoading}
+          stop={stop}
+        />
+      </div>
     </div>
   );
 }
