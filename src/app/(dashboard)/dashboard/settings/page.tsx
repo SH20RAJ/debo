@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default async function SettingsPage() {
     const session = await auth.api.getSession({ headers: await headers() });
-    if (!session) redirect("/login");
+    if (!session) redirect("/join");
 
     const [preferences, connections, aiProvidersList] = await Promise.all([
         getUserPreferences(),

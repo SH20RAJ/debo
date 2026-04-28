@@ -1,5 +1,5 @@
 import { getMemories } from "@/actions/memories";
-import { MemoryManager } from "@/components/dashboard/overview/memory-manager";
+import { MemoryManager } from "@/components/dashboard/memories/memory-manager";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {

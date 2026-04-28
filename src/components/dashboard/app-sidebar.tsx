@@ -130,8 +130,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   tooltip="Archive"
                 >
                   <Link href="/dashboard/journals">
+                    <Library className="h-4 w-4" />
                     <span>Memory Archive</span>
-                    <Library className="h-4 w-4 ml-auto" />
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
