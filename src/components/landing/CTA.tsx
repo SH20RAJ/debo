@@ -13,7 +13,7 @@ export function CTA() {
               Start free — Create my account
             </Button>
           </Link>
-          <Link href="/docs/Privacy.md" className="text-sm text-muted-foreground underline">How we protect your data</Link>
+          <Link href="/privacy" className="text-sm text-muted-foreground underline">How we protect your data</Link>
         </div>
       </div>
     </section>
