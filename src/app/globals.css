@@ -9,9 +9,9 @@
 @theme inline {
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
-	--font-sans: Outfit, sans-serif;
-	--font-mono: monospace;
-	--font-heading: var(--font-sans);
+	--font-sans: var(--font-inter), sans-serif;
+	--font-mono: var(--font-geist-mono), monospace;
+	--font-heading: var(--font-outfit), sans-serif;
 	--color-sidebar-ring: var(--sidebar-ring);
 	--color-sidebar-border: var(--sidebar-border);
 	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -109,9 +109,10 @@
 	--sidebar-border: oklch(0.9037 0 0);
 	--sidebar-ring: oklch(0.8348 0.1302 160.9080);
 	--destructive-foreground: oklch(0.9934 0.0032 17.2118);
-	--font-sans: Outfit, sans-serif;
+	--font-sans: var(--font-inter), sans-serif;
+	--font-heading: var(--font-outfit), sans-serif;
 	--font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-	--font-mono: monospace;
+	--font-mono: var(--font-geist-mono), monospace;
 	--shadow-color: #000000;
 	--shadow-opacity: 0.17;
 	--shadow-blur: 3px;
@@ -165,9 +166,10 @@
 	--sidebar-ring: oklch(0.8003 0.1821 151.7110);
 	--destructive-foreground: oklch(0.9368 0.0045 34.3092);
 	--radius: 0.5rem;
-	--font-sans: Outfit, sans-serif;
+	--font-sans: var(--font-inter), sans-serif;
+	--font-heading: var(--font-outfit), sans-serif;
 	--font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-	--font-mono: monospace;
+	--font-mono: var(--font-geist-mono), monospace;
 	--shadow-color: #000000;
 	--shadow-opacity: 0.17;
 	--shadow-blur: 3px;
@@ -197,8 +199,12 @@
     letter-spacing: var(--tracking-normal);
 	}
   html {
-    @apply font-sans scroll-smooth;
+    @apply font-sans scroll-smooth tracking-normal;
 	}
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading tracking-tight;
+  }
 
   ::selection {
     @apply bg-primary/15 text-foreground;

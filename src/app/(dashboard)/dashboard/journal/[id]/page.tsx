@@ -1,5 +1,5 @@
 import { getJournal } from "@/actions/journals";
-import { JournalEditor } from "@/components/dashboard/journal/journal-editor";
+import { JournalEditor } from "@/components/journal/journal-editor";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 

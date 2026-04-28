@@ -3,8 +3,8 @@ import { FeaturesSection } from "@/components/landing/features-section";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Debo | The AI that Remembers Everything",
-  description: "The memory OS for thinkers and builders. Sync your thoughts and 130+ apps into one private intelligence network.",
+  title: "Debo | Your Life's Memory Engine",
+  description: "AI that remembers your life so you can ask anything about it. High-retention journaling and personal intelligence for builders.",
 };
 
 // This is strictly a Server Component, as requested.

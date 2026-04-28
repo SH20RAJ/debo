@@ -2,21 +2,13 @@
 
 import * as React from "react"
 import { 
-  BookOpen, 
   Settings, 
   LayoutDashboard, 
-  BrainCircuit, 
-  Network, 
-  Library, 
-  Mic, 
   Plus,
   Search,
-  History,
-  User,
-  LogOut,
-  ChevronRight,
-  Sparkles,
-  Database
+  Database,
+  Library,
+  Sparkles
 } from "lucide-react"
 
 import {
@@ -36,151 +28,93 @@ import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
 
+  const items = [
+    {
+      title: "Core",
+      items: [
+        { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+        { title: "Ask Life", href: "/dashboard/ask", icon: Search },
+        { title: "Journal", href: "/dashboard/journal/new", icon: Plus },
+      ]
+    },
+    {
+      title: "Library",
+      items: [
+        { title: "Archive", href: "/dashboard/journals", icon: Library },
+        { title: "Memories", href: "/dashboard/memories", icon: Database },
+      ]
+    }
+  ]
+
   return (
     <Sidebar variant="inset" collapsible="icon" {...props}>
-      <SidebarHeader className="h-14 border-b/50 flex items-center px-4">
-        <Link href="/dashboard" className="flex items-center gap-3 font-bold w-full overflow-hidden whitespace-nowrap">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-transparent overflow-hidden shrink-0">
-            <Image 
-                src="/logo.png" 
-                alt="Debo Logo" 
-                width={32} 
-                height={32} 
-                className="object-contain"
-            />
+      <SidebarHeader className="h-20 flex items-center px-6">
+        <Link href="/dashboard" className="flex items-center gap-4 font-bold w-full overflow-hidden whitespace-nowrap">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20 shrink-0">
+             <Sparkles className="h-6 w-6" />
           </div>
-          <span className="tracking-tight text-lg group-data-[collapsible=icon]:hidden">
-            Debo <span className="text-[10px] text-muted-foreground font-medium uppercase ml-1">v1.1</span>
+          <span className="tracking-tighter text-2xl group-data-[collapsible=icon]:hidden">
+            Debo
           </span>
         </Link>
       </SidebarHeader>
 
-      <SidebarContent>
-        {/* Quick Actions */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden">Brain</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  asChild 
-                  isActive={pathname === "/dashboard"}
-                  tooltip="Home"
-                >
-                  <Link href="/dashboard">
-                    <LayoutDashboard className="h-4 w-4" />
-                    <span>Overview</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  asChild 
-                  isActive={pathname === "/dashboard/agent"}
-                  tooltip="Talk"
-                >
-                  <Link href="/dashboard/agent">
-                    <Mic className="h-4 w-4" />
-                    <span>Talk to Intelligence</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Intelligence Context */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden">Context</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  asChild 
-                  isActive={pathname === "/dashboard/mcp"}
-                  tooltip="Gateway"
-                >
-                  <Link href="/dashboard/mcp">
-                    <Network className="h-4 w-4" />
-                    <span>Link External Apps</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  asChild 
-                  isActive={pathname === "/dashboard/memories"}
-                  tooltip="Facts"
-                >
-                  <Link href="/dashboard/memories">
-                    <Database className="h-4 w-4" />
-                    <span>Memory OS</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  asChild 
-                  isActive={pathname === "/dashboard/journals"}
-                  tooltip="Archive"
-                >
-                  <Link href="/dashboard/journals">
-                    <Library className="h-4 w-4" />
-                    <span>Memory Archive</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Creation */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden">New</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  asChild 
-                  isActive={pathname === "/dashboard/journal/new"}
-                  className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-lg shadow-primary/20"
-                  tooltip="Add Memory"
-                >
-                  <Link href="/dashboard/journal/new">
-                    <Plus className="h-4 w-4" />
-                    <span>Capture Thought</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+      <SidebarContent className="px-2">
+        {items.map((group) => (
+          <SidebarGroup key={group.title}>
+            <SidebarGroupLabel className="px-4 text-xs font-bold uppercase tracking-widest text-muted-foreground/50 group-data-[collapsible=icon]:hidden">
+                {group.title}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {group.items.map((item) => (
+                  <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton 
+                      asChild 
+                      isActive={pathname === item.href}
+                      tooltip={item.title}
+                      className="h-12 rounded-xl transition-all hover:bg-muted"
+                    >
+                      <Link href={item.href}>
+                        <item.icon className="h-5 w-5" />
+                        <span className="font-medium text-base">{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
 
-      <SidebarFooter className="border-t/50 p-4 space-y-4">
+      <SidebarFooter className="p-4 space-y-4">
         <SidebarMenu>
             <SidebarMenuItem>
                 <SidebarMenuButton 
                     asChild 
                     isActive={pathname === "/dashboard/settings"}
                     tooltip="Settings"
+                    className="h-12 rounded-xl"
                 >
                     <Link href="/dashboard/settings">
-                        <Settings className="h-4 w-4" />
-                        <span>Configuration</span>
+                        <Settings className="h-5 w-5" />
+                        <span className="font-medium text-base">Settings</span>
                     </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
         </SidebarMenu>
 
-        <div className="flex items-center justify-between w-full group-data-[collapsible=icon]:justify-center">
+        <div className="flex items-center justify-between w-full group-data-[collapsible=icon]:justify-center px-2">
           <ThemeToggle />
-          <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse group-data-[collapsible=icon]:hidden" />
+          <div className="flex items-center gap-2 group-data-[collapsible=icon]:hidden">
+            <span className="text-xs font-medium text-muted-foreground">Connected</span>
+            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+          </div>
         </div>
       </SidebarFooter>
       <SidebarRail />

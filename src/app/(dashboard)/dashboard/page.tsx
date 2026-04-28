@@ -1,133 +1,98 @@
-import { Activity, Sparkles, Database } from "lucide-react";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { JournalTimeline } from "@/components/journal/journal-timeline";
 import { getJournals } from "@/actions/journals";
-import { JournalTimeline } from "@/components/dashboard/journal/journal-timeline";
-import { Card, CardContent } from "@/components/ui/card";
-import { LiveKitVoiceAgent } from "@/components/dashboard/overview/livekit-voice";
-import { Suspense } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Metadata } from "next";
+import { Brain, Sparkles, Plus, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export const metadata: Metadata = {
-  title: "Intelligence Overview",
-  description: "A comprehensive look at your thoughts, memories, and synced intelligence.",
-};
+export default async function DashboardPage() {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session) redirect("/join");
 
-export default function DashboardPage() {
-  return (
-    <div className="flex-1 w-full max-w-7xl mx-auto px-6 py-8 md:px-10 md:py-12 space-y-12 pb-20 animate-in fade-in slide-in-from-bottom-2 duration-500">
-      
-      {/* Bento Grid Stats */}
-      <Suspense fallback={<StatsSkeleton />}>
-        <DashboardStats />
-      </Suspense>
-
-      {/* Voice Agent Section */}
-      <div className="space-y-8">
-        <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-          Voice Companion
-          <div className="h-px bg-border/20 flex-1 ml-4" />
-        </h2>
-        <div className="max-w-3xl">
-          <LiveKitVoiceAgent />
-        </div>
-      </div>
-
-      {/* Timeline Section */}
-      <div className="space-y-8">
-        <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-          Your Timeline
-          <div className="h-px bg-border/20 flex-1 ml-4" />
-        </h2>
-        <Suspense fallback={<TimelineSkeleton />}>
-            <DashboardTimeline />
-        </Suspense>
-      </div>
-
-    </div>
-  );
-}
-
-async function DashboardStats() {
     const journals = await getJournals();
-    const totalEntries = journals.length;
-    const recentEntries = journals.filter(j => 
-        new Date(j.createdAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-    ).length;
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="border-none bg-muted/50">
-                <CardContent className="p-8 flex flex-col justify-between h-full space-y-6">
-                    <div className="p-3 bg-background w-fit rounded-2xl shadow-sm">
-                        <Activity className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                        <p className="text-5xl font-bold tracking-tighter">{totalEntries}</p>
-                        <p className="text-sm text-muted-foreground font-medium mt-1">Total Memories</p>
-                    </div>
-                </CardContent>
-            </Card>
-
-            <Card className="border-none bg-muted/50">
-                <CardContent className="p-8 flex flex-col justify-between h-full space-y-6">
-                    <div className="p-3 bg-background w-fit rounded-2xl shadow-sm">
-                        <Sparkles className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                        <p className="text-5xl font-bold tracking-tighter">{recentEntries}</p>
-                        <p className="text-sm text-muted-foreground font-medium mt-1">New This Week</p>
-                    </div>
-                </CardContent>
-            </Card>
-
-            <Card className="border-none bg-muted/50">
-                <CardContent className="p-8 flex flex-col justify-between h-full space-y-6">
-                    <div className="p-3 bg-background w-fit rounded-2xl shadow-sm">
-                        <Database className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                        <p className="text-5xl font-bold tracking-tighter">Live</p>
-                        <p className="text-sm text-muted-foreground font-medium mt-1">Sync Status</p>
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
-    );
-}
-
-async function DashboardTimeline() {
-    const journals = await getJournals();
-    return <JournalTimeline journals={journals} />;
-}
-
-function StatsSkeleton() {
-    return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[1, 2, 3].map((i) => (
-                <Card key={i} className="border-none bg-muted/50">
-                    <CardContent className="p-8 space-y-6">
-                        <Skeleton className="h-12 w-12 rounded-2xl bg-background" />
-                        <div className="space-y-2">
-                            <Skeleton className="h-12 w-20" />
-                            <Skeleton className="h-4 w-32" />
-                        </div>
-                    </CardContent>
-                </Card>
-            ))}
-        </div>
-    );
-}
-
-function TimelineSkeleton() {
-    return (
-        <div className="space-y-8 pl-4 border-l-2 border-border/40 ml-4">
-            {[1, 2, 3].map((i) => (
-                <div key={i} className="relative pl-10 space-y-4">
-                    <div className="absolute -left-[33px] top-1.5 h-4 w-4 rounded-full bg-muted" />
-                    <Skeleton className="h-4 w-48" />
-                    <Skeleton className="h-32 w-full rounded-2xl" />
+        <div className="flex-1 space-y-12 p-8 pt-6 max-w-6xl mx-auto">
+            {/* Minimalist Hero/Greeting */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div className="space-y-2">
+                    <h1 className="text-4xl font-extrabold tracking-tight">Good day, {session.user.name.split(" ")[0]}.</h1>
+                    <p className="text-muted-foreground text-xl">
+                        Debo remembers your life so you can focus on living it.
+                    </p>
                 </div>
-            ))}
+                <div className="flex items-center gap-3">
+                    <Link href="/dashboard/ask">
+                        <Button variant="outline" className="h-12 rounded-2xl px-6 gap-2 border-2 hover:bg-primary/5 hover:text-primary hover:border-primary/20 transition-all">
+                            <Search className="h-4 w-4" />
+                            Ask your past
+                        </Button>
+                    </Link>
+                    <Link href="/dashboard/journal/new">
+                        <Button className="h-12 rounded-2xl px-8 gap-2 shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95">
+                            <Plus className="h-4 w-4" />
+                            New Entry
+                        </Button>
+                    </Link>
+                </div>
+            </div>
+
+            {/* Daily Insights Section */}
+            <section className="space-y-6">
+                <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-primary">
+                    <Sparkles className="h-4 w-4" />
+                    Life Insights
+                </div>
+                <div className="grid gap-6 md:grid-cols-3">
+                    <InsightCard 
+                        title="Focus Pattern"
+                        content="You've mentioned 'Product Design' 5 times this week. It seems to be your primary focus."
+                        icon={<Brain className="h-5 w-5 text-primary" />}
+                    />
+                    <InsightCard 
+                        title="Emotional Trend"
+                        content="Your entries show a 15% increase in positive sentiment compared to last month."
+                        icon={<Sparkles className="h-5 w-5 text-amber-500" />}
+                    />
+                    <InsightCard 
+                        title="Daily Streak"
+                        content="You have recorded your thoughts for 5 days in a row. Keep the momentum going."
+                        icon={<Plus className="h-5 w-5 text-emerald-500" />}
+                    />
+                </div>
+            </section>
+
+            {/* Recent Timeline */}
+            <section className="space-y-6 pb-20">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-muted-foreground">
+                        Recent Entries
+                    </div>
+                    <Link href="/dashboard/journals" className="text-sm font-medium text-primary hover:underline">
+                        View all entries →
+                    </Link>
+                </div>
+                <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-2">
+                    <JournalTimeline journals={journals.slice(0, 4)} />
+                </div>
+            </section>
         </div>
+    );
+}
+
+function InsightCard({ title, content, icon }: { title: string, content: string, icon: React.ReactNode }) {
+    return (
+        <Card className="border-none bg-muted/30 rounded-3xl shadow-sm hover:shadow-md transition-all">
+            <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0">
+                <CardTitle className="text-sm font-bold uppercase tracking-tight text-muted-foreground">{title}</CardTitle>
+                {icon}
+            </CardHeader>
+            <CardContent>
+                <p className="text-lg font-medium leading-relaxed">{content}</p>
+            </CardContent>
+        </Card>
     );
 }

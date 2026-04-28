@@ -1,69 +1,35 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, Outfit } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
-const geistSans = Geist({
-	variable: "--font-geist-sans",
+const inter = Inter({
+	variable: "--font-inter",
 	subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-	variable: "--font-geist-mono",
+const outfit = Outfit({
+	variable: "--font-outfit",
 	subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
 	metadataBase: new URL("https://debo.app"),
 	title: {
-		default: "Debo | The AI that Remembers",
+		default: "Debo | Your Life's Memory Engine",
 		template: "%s | Debo",
 	},
-	description: "Debo is your intelligent second brain. It remembers everything you forget and builds a living intelligence network from your thoughts.",
-	keywords: ["Second Brain", "AI Memory", "Journaling", "Personal Intelligence", "Privacy"],
-	authors: [{ name: "Debo Intelligence" }],
+	description: "Debo is your personal memory engine. It remembers your life so you can ask anything about it. High-retention journaling and AI intelligence.",
+	keywords: ["Memory Engine", "Life Querying", "Journaling", "Personal Intelligence", "Privacy", "Mem0"],
+	authors: [{ name: "Debo" }],
 	creator: "Debo",
 	icons: {
 		icon: "/logo.png",
 		shortcut: "/logo.png",
 		apple: "/logo.png",
-	},
-	openGraph: {
-		title: "Debo | The AI that Remembers",
-		description: "The memory OS for thinkers. Sync your thoughts into one private intelligence network.",
-		url: "https://debo.app",
-		siteName: "Debo",
-		images: [
-			{
-				url: "/logo.png",
-				width: 512,
-				height: 512,
-				alt: "Debo Logo",
-			},
-		],
-		locale: "en_US",
-		type: "website",
-	},
-	twitter: {
-		card: "summary_large_image",
-		title: "Debo | The AI that Remembers",
-		description: "The memory OS for thinkers.",
-		images: ["/logo.png"],
-		creator: "@debo_app",
-	},
-	robots: {
-		index: true,
-		follow: true,
-		googleBot: {
-			index: true,
-			follow: true,
-			"max-video-preview": -1,
-			"max-image-preview": "large",
-			"max-snippet": -1,
-		},
-	},
+	}
 };
 
 export default function RootLayout({
@@ -75,30 +41,8 @@ export default function RootLayout({
 		<html lang="en" suppressHydrationWarning>
 			<head>
 				<link rel="icon" href="/logo.png" />
-				<script
-					type="application/ld+json"
-					dangerouslySetInnerHTML={{
-						__html: JSON.stringify({
-							"@context": "https://schema.org",
-							"@type": "SoftwareApplication",
-							name: "Debo",
-							description: "AI-powered memory OS and second brain.",
-							applicationCategory: "Productivity",
-							operatingSystem: "Web",
-							author: {
-								"@type": "Organization",
-								name: "Debo Intelligence",
-							},
-							offers: {
-								"@type": "Offer",
-								price: "0",
-								priceCurrency: "USD",
-							},
-						}),
-					}}
-				/>
 			</head>
-			<body className={`${geistSans.variable} ${geistMono.variable} antialiased selection:bg-primary selection:text-primary-foreground`}>
+			<body className={`${inter.variable} ${outfit.variable} font-sans antialiased selection:bg-primary/20 selection:text-primary`}>
 				<ThemeProvider
 					attribute="class"
 					defaultTheme="dark"
