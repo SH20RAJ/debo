@@ -71,8 +71,24 @@ export async function searchJournals(query: string = "", limit: number = 5) {
 
         return sortedJournals;
 
-    } catch (err) {
+    } catch (err: any) {
         console.error("Failed to semantic search journals:", err);
-        return [];
+        
+        // Fallback to basic DB text search if Vectorize fails (likely in local dev)
+        try {
+            console.log("Attempting fallback text search...");
+            const textMatches = await db.query.journals.findMany({
+                where: and(
+                    eq(journals.userId, session.user.id),
+                    // @ts-ignore - simple text search on content
+                    (journals.content as any).ilike(`%${query}%`)
+                ),
+                limit: limit
+            });
+            return textMatches;
+        } catch (fallbackErr) {
+            console.error("Fallback search failed:", fallbackErr);
+            return [];
+        }
     }
 }

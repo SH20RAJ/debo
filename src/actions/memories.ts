@@ -30,7 +30,7 @@ export const getMemories = cache(async (query: string = "") => {
 
     try {
         const mem0 = await getMem0Client(session.user.id);
-        const response = await mem0.getAll({ user_id: session.user.id } as any);
+        const response = await mem0.getAll({ filters: { user_id: session.user.id } });
         const memories = Array.isArray(response) ? response : ((response as any).memories || []);
         
         if (query) {
@@ -68,7 +68,7 @@ export async function addMemory(fact: string) {
 
     try {
         const mem0 = await getMem0Client(session.user.id);
-        const result = await mem0.add([{ role: "user" as const, content: fact }], { user_id: session.user.id } as any);
+        const result = await mem0.add([{ role: "user" as const, content: fact }], { filters: { user_id: session.user.id } });
         revalidatePath("/dashboard/memories");
         return { success: true, data: result };
     } catch (error) {
@@ -93,7 +93,7 @@ export async function importMemories(jsonContent: string) {
             content: typeof item === 'string' ? item : item.content || item.fact || JSON.stringify(item)
         }));
 
-        await mem0.add(messages, { user_id: session.user.id } as any);
+        await mem0.add(messages, { filters: { user_id: session.user.id } });
         
         revalidatePath("/dashboard/memories");
         return { success: true };
