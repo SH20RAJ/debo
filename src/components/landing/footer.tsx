@@ -8,8 +8,8 @@ export function Footer() {
           © {new Date().getFullYear()} Debo. All rights reserved.
         </p>
         <div className="flex items-center space-x-6 text-sm text-muted-foreground">
-          <Link href="#" className="hover:text-foreground transition-colors">Privacy</Link>
-          <Link href="#" className="hover:text-foreground transition-colors">Terms</Link>
+          <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+          <Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link>
         </div>
       </div>
     </footer>
