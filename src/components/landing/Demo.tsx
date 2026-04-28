@@ -6,8 +6,8 @@ export function Demo() {
     <section id="demo" className="py-24 md:py-32">
       <div className="container mx-auto max-w-6xl px-6">
         <div className="mb-12 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Ask your life anything.</h2>
-          <p className="mt-4 text-lg text-muted-foreground">Experience true personal intelligence.</p>
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Real queries. Real context. Real evidence.</h2>
+          <p className="mt-4 text-lg text-muted-foreground">Ask a question and get answers with citations from your history.</p>
         </div>
 
         <div className="max-w-3xl mx-auto">
@@ -26,7 +26,7 @@ export function Demo() {
                 <Bot className="w-5 h-5 text-primary" />
               </div>
               <div className="bg-primary/5 px-4 py-3 rounded-2xl rounded-tl-sm text-foreground border border-primary/10">
-                <p>Last week, you were heavily focused on finishing the new design system for work. You mentioned feeling a bit burnt out on Thursday, but took a long hike on Saturday which helped clear your head. You also started reading "Dune".</p>
+                <p>Last week, you focused on finishing the new design system. You noted burnout on Thursday but took a long hike Saturday, which helped. Citations: Apr 21, Apr 18.</p>
               </div>
             </div>
 
@@ -44,7 +44,7 @@ export function Demo() {
                 <Bot className="w-5 h-5 text-primary" />
               </div>
               <div className="bg-primary/5 px-4 py-3 rounded-2xl rounded-tl-sm text-foreground border border-primary/10">
-                <p>Looking at the past 6 months, you tend to feel most productive when you work out in the morning. However, you also have a pattern of skipping meals when stressed, which often leads to poor sleep the following night.</p>
+                <p>Over the past 6 months you’re most productive after morning workouts. A pattern shows skipped meals during high-stress weeks, often followed by poor sleep. Citations: Mar 12, Feb 3, Jan 7.</p>
               </div>
             </div>
           </Card>

@@ -4,25 +4,29 @@ Purpose: high-conversion, trust-first long-form landing that converts curious vi
 
 ---
 
+
 HERO (Top fold)
 
+- 3-Second Hook (single-line): Not a journaling app. Not a chatbot. Your life, understood.
+
 - Headline options (A/B test):
-  - Everything you forget, Debo remembers.
-  - Your life, understood by AI.
-  - Stop writing notes. Start understanding your life.
+  - Debo: your life intelligence system.
+  - The AI that remembers and explains your life.
+  - Turn everyday moments into lasting insight.
 
-- Subheadline:
-  - Debo turns your thoughts into a living intelligence system you can talk to.
+- Short subheadline (one line): Turn scattered notes into a connected memory you can ask and learn from.
 
-- Primary CTA (button, primary): Start your second brain
-- Secondary CTA (link/button, ghost): Try demo
+- CTA variations (choose one):
+  - Primary (action): Start free — Build my life graph
+  - Secondary (demo): Try the demo — Ask "When was I happiest?"
+  - Small link (trust): Learn how your data stays private
 
-- Trust line (small, under CTA): Your data is private. Your mind stays yours.
+- Trust line (small, under CTA): Built from your data. You own it. We never sell it.
 
 - UI hints:
-  - Full-bleed hero with large type (64–40px scale on desktop). Center-left layout. Right side: a subtle mockup of the Ask flow (chat bubble streaming answer + citation chips).
-  - Use a single high-contrast accent color for CTA (soft rounded pill). Keep background neutral (off-white / light gray).
-  - Accessibility: CTA should be keyboard-focusable, include aria-labels on links.
+  - Layout: two-column hero — left: concise copy + CTAs; right: animated mockup showing a streaming answer with citation chips and a small memory graph preview.
+  - Visual behavior: streaming text animation for answers; clickable citation chips that expand to the original entry.
+  - Accessibility: CTAs must have clear aria-labels and visible focus states; hero image must include descriptive alt text.
 
 ---
 
