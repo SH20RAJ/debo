@@ -50,7 +50,7 @@ export default async function TimelinePage({
 }
 
 export const metadata: Metadata = {
-  title: "Timeline — Debo",
+  title: "Timeline",
   description: "View your journal entries organized by day, week, or month to surface patterns over time.",
 };
 

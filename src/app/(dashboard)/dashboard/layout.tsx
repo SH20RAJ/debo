@@ -30,6 +30,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
 }
 
 export const metadata: Metadata = {
-  title: "Dashboard — Debo",
+  title: "Dashboard",
   description: "Debo dashboard: explore insights, timeline, and your memory graph.",
 };

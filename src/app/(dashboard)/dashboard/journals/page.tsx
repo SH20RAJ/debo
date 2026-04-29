@@ -26,6 +26,6 @@ export default async function JournalsPage() {
 }
 
 export const metadata: Metadata = {
-    title: "Archive — Debo",
+    title: "Archive",
     description: "Browse every journal entry in your personal archive.",
 };

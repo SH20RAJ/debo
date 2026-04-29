@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Terms of Service | Debo",
+  title: "Terms of Service",
   description: "Guidelines for using the Debo Memory Engine.",
 };
 
@@ -9,7 +9,7 @@ export default function TermsPage() {
   return (
     <div className="container max-w-3xl py-20 px-6">
       <h1 className="text-4xl font-bold tracking-tight font-heading mb-8">Terms of Service</h1>
-      
+
       <div className="prose prose-neutral dark:prose-invert space-y-8 text-muted-foreground">
         <section>
           <h2 className="text-xl font-semibold text-foreground mb-4">1. Acceptance of Terms</h2>
@@ -35,7 +35,7 @@ export default function TermsPage() {
         <section>
           <h2 className="text-xl font-semibold text-foreground mb-4">4. Limitation of Liability</h2>
           <p>
-            Debo is provided "as is". While we strive for absolute accuracy in memory extraction, the AI may occasionally generate inaccuracies. We are not liable for any decisions made based on AI-synthesized memories.
+            Debo is provided &quot;as is&quot;. While we strive for absolute accuracy in memory extraction, the AI may occasionally generate inaccuracies. We are not liable for any decisions made based on AI-synthesized memories.
           </p>
         </section>
 
