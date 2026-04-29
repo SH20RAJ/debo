@@ -1,3 +1,4 @@
+// CACHE_BUST: 1
 import { askQuestionAction } from "@/actions/ask";
 import type { UIMessage } from "ai";
 

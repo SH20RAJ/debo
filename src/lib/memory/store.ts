@@ -1,3 +1,4 @@
+// CACHE_BUST: 1
 import "server-only";
 
 import { db } from "@/db";
