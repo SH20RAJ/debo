@@ -1,5 +1,19 @@
 import "server-only";
 
+import { db } from "@/db";
+import { memoryEntities, memoryFacts } from "@/db/schema";
+import { sql } from "drizzle-orm";
+
+import type { ExtractedMemory } from "@/lib/memory/extract";
+
+function normalizeContent(value: string) {
+  return value.replace(/\s+/g, " ").trim();
+}
+
+function normalizeName(value: string) {
+  return value.replace(/\s+/g, " ").trim();
+}
+
 export async function storeMemory(userId: string, extractedData: ExtractedMemory) {
   const facts = Array.from(
     new Set(

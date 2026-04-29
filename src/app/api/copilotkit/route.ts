@@ -15,11 +15,14 @@ const serviceAdapter = new OpenAIAdapter({
 });
 
 export const POST = async (req: NextRequest) => {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await auth.api.getSession({ headers: req.headers });
   
   if (!session) {
+    console.error("[CopilotKit API] Unauthorized - No session found.");
     return new Response("Unauthorized", { status: 401 });
   }
+
+  console.log("[CopilotKit API] Authenticated user:", session.user.email);
 
   const runtime = new CopilotRuntime({
     actions: getAgentTools(session.user.id),

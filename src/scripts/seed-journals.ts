@@ -1,7 +1,6 @@
 import { db } from "@/db";
 import { user, journals } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import crypto from "crypto";
 
 const SEED_DATA = [
   {

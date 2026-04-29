@@ -4,7 +4,6 @@ import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprot
 import { db } from "@/db";
 import { journals, userPreferences } from "@/db/schema";
 import { eq, and, gte, lte, desc, ilike, sql } from "drizzle-orm";
-import crypto from "crypto";
 import { nango } from "@/lib/nango";
 import { indexJournal } from "@/lib/vector/search";
 import { upsertMemoryGraphForJournal } from "@/lib/life/graph";
