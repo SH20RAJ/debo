@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { CopilotChat } from "@copilotkit/react-ui";
 import { useCopilotReadable } from "@copilotkit/react-core";
+import { CustomChatArea } from "@/components/chat/CustomChatArea";
 import { AgentDataRenderer } from "@/components/copilot/AgentDataRenderer";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { getUserChats, createChat, deleteChat } from "@/actions/chat";
@@ -109,15 +110,7 @@ export function CopilotAskContainer() {
       />
 
       <div className="flex-1 relative h-full">
-        <CopilotChat
-          key={activeChatId || "new"}
-          instructions={"You are Debo, the user's life intelligence assistant. You have access to their journals and memories. Be helpful, insightful, and concise. Use the provided tools to render data when relevant."}
-          labels={{
-            title: "Debo Intelligence",
-            initial: "Ask me anything about your past journals, patterns, or insights.",
-          }}
-          className="h-full"
-        />
+        <CustomChatArea key={activeChatId || "new"} />
       </div>
     </div>
   );
