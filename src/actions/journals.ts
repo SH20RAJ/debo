@@ -2,8 +2,7 @@
 
 import { db } from "@/db";
 import { journals } from "@/db/schema";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { stackServerApp } from "@/stack/server";
 import { eq, desc, asc, and, count } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { cache } from "react";
@@ -20,12 +19,12 @@ const journalSchema = z.object({
 });
 
 export const getJournals = cache(async (sortOrder: "asc" | "desc" = "desc", limit: number = 10, offset: number = 0) => {
-    const session = await auth.api.getSession({ headers: await headers() });
-    if (!session) return [];
+    const user = await stackServerApp.getUser();
+    if (!user) return [];
 
     try {
         return await db.query.journals.findMany({
-            where: eq(journals.userId, session.user.id),
+            where: eq(journals.userId, user.id),
             orderBy: [sortOrder === "desc" ? desc(journals.createdAt) : asc(journals.createdAt)],
             limit,
             offset
@@ -37,13 +36,13 @@ export const getJournals = cache(async (sortOrder: "asc" | "desc" = "desc", limi
 });
 
 export const getJournalsCount = cache(async () => {
-    const session = await auth.api.getSession({ headers: await headers() });
-    if (!session) return 0;
+    const user = await stackServerApp.getUser();
+    if (!user) return 0;
 
     try {
         const [result] = await db.select({ value: count() })
             .from(journals)
-            .where(eq(journals.userId, session.user.id));
+            .where(eq(journals.userId, user.id));
         return result.value;
     } catch (error) {
         console.error("Failed to count journals:", error);
@@ -52,12 +51,12 @@ export const getJournalsCount = cache(async () => {
 });
 
 export const getJournal = cache(async (id: string) => {
-    const session = await auth.api.getSession({ headers: await headers() });
-    if (!session) return null;
+    const user = await stackServerApp.getUser();
+    if (!user) return null;
 
     try {
         const journal = await db.query.journals.findFirst({
-            where: and(eq(journals.id, id), eq(journals.userId, session.user.id)),
+            where: and(eq(journals.id, id), eq(journals.userId, user.id)),
         });
         return journal || null;
     } catch (error) {
@@ -79,7 +78,7 @@ export async function saveJournal(rawContent: string, id?: string, title?: strin
 
         const { content, title: validatedTitle } = result.data;
         const journalId = id || crypto.randomUUID();
-        const userId = session.user.id;
+        const userId = user.id;
 
         if (id) {
             // Check ownership
@@ -145,7 +144,7 @@ export async function deleteJournal(id: string) {
         }
 
         try {
-            await refreshMemoryGraph(session.user.id);
+            await refreshMemoryGraph(user.id);
         } catch (err) {
             console.error("Failed to refresh memory graph after deletion:", err);
         }
