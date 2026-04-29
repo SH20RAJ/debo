@@ -21,13 +21,27 @@ export default async function SettingsPage() {
     ]);
 
     return (
-        <div className="flex-1 w-full max-w-7xl mx-auto px-6 py-8 md:px-10 md:py-12 space-y-12 animate-in fade-in slide-in-from-bottom-2 duration-500">
-            <SettingsForm 
-                initialData={preferences} 
-                connections={connections} 
-                aiProviders={aiProvidersList}
-                userId={session.user.id}
-            />
+        <div className="flex-1 bg-background">
+            <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 py-12 lg:px-8">
+                <header className="space-y-4">
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+                        Preferences
+                    </div>
+                    <div className="space-y-2">
+                        <h1 className="text-4xl font-semibold tracking-tight">Configuration</h1>
+                        <p className="max-w-2xl text-lg text-muted-foreground">
+                            Manage your AI providers, integrations, and personal settings.
+                        </p>
+                    </div>
+                </header>
+
+                <SettingsForm 
+                    initialData={preferences} 
+                    connections={connections} 
+                    aiProviders={aiProvidersList}
+                    userId={session.user.id}
+                />
+            </div>
         </div>
     );
 }

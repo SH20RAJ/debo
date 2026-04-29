@@ -23,29 +23,26 @@ export default async function InsightsPage() {
   }
 
   return (
-    <div className="relative flex-1 bg-background">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,var(--primary-muted),transparent_45%),radial-gradient(circle_at_bottom_left,var(--primary-muted),transparent_45%)] opacity-25" />
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_at_center,black,transparent_90%)]" />
-
-      <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-10 px-6 py-12 lg:px-10">
-        <header className="flex flex-col gap-6">
-          <div className="inline-flex items-center gap-2 self-start rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-primary shadow-sm backdrop-blur-md">
+    <div className="flex-1 bg-background">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-6 py-12 lg:px-8">
+        <header className="flex flex-col gap-10">
+          <div className="inline-flex items-center gap-2 self-start rounded-full border border-border bg-muted/30 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
             Cognitive Mapping
           </div>
-          <div className="space-y-4">
-            <h1 className="text-4xl font-bold tracking-tight text-foreground md:text-5xl lg:text-6xl">
-              The Shape of <span className="bg-gradient-to-r from-primary to-primary/50 bg-clip-text text-transparent">Your Memory.</span>
+          <div className="space-y-6">
+            <h1 className="text-4xl font-semibold tracking-tight text-foreground md:text-5xl lg:text-6xl">
+              The Shape of <span className="text-muted-foreground/40">Your Memory.</span>
             </h1>
-            <p className="max-w-2xl text-lg text-muted-foreground/80 leading-relaxed">
+            <p className="max-w-2xl text-lg text-muted-foreground leading-relaxed">
               Debo synthesizes your daily records into deep structural insights, surfacing the strongest people, topics, and emotional patterns in your life.
             </p>
           </div>
 
           <div className="flex flex-wrap gap-3 pt-2">
-            <Button asChild size="sm" className="rounded-full px-6 font-semibold">
+            <Button asChild variant="outline" size="sm" className="h-10 rounded-xl border-border bg-background px-6 text-xs font-medium transition-all hover:bg-muted/50">
               <Link href="/dashboard/ask">Ask Ranked Context</Link>
             </Button>
-            <Button asChild variant="outline" size="sm" className="rounded-full border-border/50 bg-background/50 px-6 font-semibold backdrop-blur-md transition-all hover:bg-muted/50">
+            <Button asChild variant="outline" size="sm" className="h-10 rounded-xl border-border bg-background px-6 text-xs font-medium transition-all hover:bg-muted/50">
               <Link href="/dashboard/timeline">Open Timeline</Link>
             </Button>
           </div>
@@ -67,22 +64,21 @@ export default async function InsightsPage() {
       </div>
     </div>
   );
-}
+  }
 
-export const metadata: Metadata = {
+  export const metadata: Metadata = {
   title: "Insights | Debo",
   description: "Analyze the strongest people, topics, and repeating patterns in your life.",
-};
+  };
 
-function MiniStat({ label, value, description }: { label: string; value: string; description: string }) {
+  function MiniStat({ label, value, description }: { label: string; value: string; description: string }) {
   return (
-    <Card className="group relative overflow-hidden border-border/50 bg-card/40 backdrop-blur-md transition-all hover:bg-card/60 hover:shadow-2xl hover:shadow-primary/5">
-      <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-primary/5 blur-2xl transition-all group-hover:bg-primary/10 group-hover:scale-150" />
-      <CardContent className="p-6 space-y-2 relative z-10">
-        <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60 transition-colors group-hover:text-primary/70">{label}</div>
-        <div className="text-4xl font-bold tracking-tight transition-transform group-hover:translate-x-0.5">{value}</div>
-        <div className="text-[10px] text-muted-foreground/50">{description}</div>
-      </CardContent>
-    </Card>
+    <div className="group space-y-4 rounded-2xl border border-border bg-card p-6 transition-all hover:border-primary/20">
+      <div className="space-y-1">
+        <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 transition-colors group-hover:text-primary/70">{label}</div>
+        <div className="text-3xl font-semibold tracking-tight transition-transform group-hover:translate-x-0.5">{value}</div>
+        <div className="text-[10px] text-muted-foreground/40">{description}</div>
+      </div>
+    </div>
   );
-}
+  }

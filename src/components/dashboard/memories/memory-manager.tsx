@@ -125,24 +125,24 @@ export function MemoryManager({ initialMemories = [], initialQuery = "" }: { ini
   };
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-10">
       {/* Top Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div className="relative w-full md:max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="relative w-full md:max-w-sm">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/50" />
           <Input 
             placeholder="Search persistent facts..." 
             value={query}
             onChange={(e) => { setQuery(e.target.value); updateUrl(e.target.value); }}
-            className="pl-9 h-12 rounded-2xl bg-muted/30 border-none shadow-inner"
+            className="pl-10 h-10 rounded-xl border-border bg-muted/20 text-sm focus-visible:ring-primary/10"
           />
         </div>
-        <div className="flex items-center gap-3 w-full md:w-auto">
-            <Button variant="outline" onClick={handleExport} className="rounded-xl gap-2 flex-1 md:flex-none">
-                <Download className="h-4 w-4" /> Export
+        <div className="flex items-center gap-2 w-full md:w-auto">
+            <Button variant="outline" size="sm" onClick={handleExport} className="h-10 rounded-xl gap-2 flex-1 md:flex-none text-xs font-medium border-border">
+                <Download className="h-3.5 w-3.5" /> Export
             </Button>
-            <Button variant="outline" onClick={handleImportClick} disabled={isImporting} className="rounded-xl gap-2 flex-1 md:flex-none">
-                {isImporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} 
+            <Button variant="outline" size="sm" onClick={handleImportClick} disabled={isImporting} className="h-10 rounded-xl gap-2 flex-1 md:flex-none text-xs font-medium border-border">
+                {isImporting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />} 
                 Import
             </Button>
             <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".json" className="hidden" />
@@ -150,87 +150,84 @@ export function MemoryManager({ initialMemories = [], initialQuery = "" }: { ini
       </div>
 
       {/* Add Fact Section */}
-      <Card className="border-none bg-primary/5 rounded-3xl">
-        <CardContent className="p-6">
-            <div className="flex gap-4">
-                <div className="flex-1">
-                    <Input 
-                        placeholder="Add a new permanent fact about yourself..." 
-                        value={newFact}
-                        onChange={(e) => setNewFact(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-                        className="h-12 bg-background border-none rounded-2xl shadow-sm"
-                    />
-                </div>
-                <Button onClick={handleAdd} disabled={isAdding || !newFact.trim()} className="h-12 px-6 rounded-2xl shadow-lg shadow-primary/20">
-                    {isAdding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />}
-                    Store Fact
-                </Button>
-            </div>
-        </CardContent>
-      </Card>
+      <div className="rounded-2xl border border-border bg-muted/10 p-4">
+          <div className="flex flex-col sm:flex-row gap-2">
+              <Input 
+                  placeholder="Add a new permanent fact about yourself..." 
+                  value={newFact}
+                  onChange={(e) => setNewFact(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+                  className="h-10 bg-background border-border rounded-lg text-sm"
+              />
+              <Button onClick={handleAdd} disabled={isAdding || !newFact.trim()} className="h-10 px-6 rounded-lg text-xs font-bold uppercase tracking-wider">
+                  {isAdding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5 mr-2" />}
+                  Store Fact
+              </Button>
+          </div>
+      </div>
 
       {/* List Section */}
-      <div className={`space-y-4 transition-opacity duration-500 ${isPending ? 'opacity-50' : 'opacity-100'}`}>
-        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground/40 px-2">
+      <div className={`space-y-4 transition-opacity duration-300 ${isPending ? 'opacity-50' : 'opacity-100'}`}>
+        <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 px-1">
             <Brain className="h-3 w-3" />
             Active Memories: {initialMemories.length}
         </div>
         
         {initialMemories.length === 0 ? (
-            <div className="py-20 text-center space-y-4 border border-dashed rounded-3xl bg-muted/5">
-                <div className="h-16 w-16 bg-muted rounded-full flex items-center justify-center mx-auto">
-                    <Database className="h-8 w-8 text-muted-foreground/40" />
+            <div className="py-20 text-center space-y-4 border border-dashed border-border rounded-2xl bg-muted/5">
+                <div className="mx-auto h-12 w-12 bg-background border border-border rounded-xl flex items-center justify-center">
+                    <Database className="h-5 w-5 text-muted-foreground/30" />
                 </div>
-                <p className="text-muted-foreground font-medium">No facts found in your memory engine.</p>
+                <div className="space-y-1">
+                    <p className="text-sm font-semibold text-foreground">No facts found</p>
+                    <p className="text-xs text-muted-foreground">Your memory engine is currently empty.</p>
+                </div>
             </div>
         ) : (
-            <div className="grid gap-4">
+            <div className="grid gap-2">
                 {initialMemories.map((m) => (
-                    <Card key={m.id} className="group border-none bg-muted/30 hover:bg-muted/50 transition-all duration-300 rounded-2xl overflow-hidden">
-                        <CardContent className="p-5 flex items-center justify-between gap-4">
-                            <div className="flex-1 text-sm font-medium leading-relaxed">
-                                {m.content}
-                            </div>
-                            
-                            <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                    <Button 
-                                        variant="ghost" 
-                                        size="icon" 
-                                        className="h-9 w-9 rounded-full opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                    <div key={m.id} className="group flex items-center justify-between gap-4 rounded-xl border border-border bg-card p-4 transition-all hover:bg-muted/30">
+                        <div className="flex-1 text-sm font-medium leading-relaxed">
+                            {m.content}
+                        </div>
+                        
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="h-8 w-8 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                >
+                                    {isDeleting === m.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="rounded-2xl border-border">
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle className="text-xl font-semibold tracking-tight">Delete Memory?</AlertDialogTitle>
+                                    <AlertDialogDescription className="text-sm">
+                                        This fact will be removed from your long-term memory engine.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter className="gap-2">
+                                    <AlertDialogCancel className="rounded-xl border-border">Cancel</AlertDialogCancel>
+                                    <AlertDialogAction 
+                                        onClick={() => handleDelete(m.id)}
+                                        className="bg-destructive hover:bg-destructive/90 rounded-xl"
                                     >
-                                        {isDeleting === m.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-                                    </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent className="rounded-3xl">
-                                    <AlertDialogHeader>
-                                        <AlertDialogTitle>Delete Memory?</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                            This fact will be removed from your long-term memory engine. AI models will no longer have access to it.
-                                        </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                        <AlertDialogCancel className="rounded-2xl">Cancel</AlertDialogCancel>
-                                        <AlertDialogAction 
-                                            onClick={() => handleDelete(m.id)}
-                                            className="bg-destructive hover:bg-destructive/90 rounded-2xl"
-                                        >
-                                            Delete
-                                        </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
-                        </CardContent>
-                    </Card>
+                                        Delete
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    </div>
                 ))}
             </div>
         )}
       </div>
 
-      <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground/20 uppercase tracking-[0.2em] pt-12 border-t/50">
+      <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground/20 uppercase tracking-widest pt-8 border-t border-border/40">
         <AlertCircle className="h-3 w-3" />
-                Memories are automatically synchronized with the first-party memory layer.
+        Synchronized with the primary memory layer.
       </div>
     </div>
   );

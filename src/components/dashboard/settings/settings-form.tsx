@@ -68,31 +68,29 @@ export function SettingsForm({
     };
 
     return (
-        <div className="space-y-8">
-            <Tabs defaultValue="ai" className="w-full space-y-6">
+        <div className="space-y-10">
+            <Tabs defaultValue="ai" className="w-full space-y-8">
                 <div className="flex justify-center md:justify-start">
-                    <TabsList className="p-1">
-                        <TabsTrigger value="ai" className="gap-2 rounded-md">
-                            <Sparkles className="h-4 w-4" /> AI Providers
+                    <TabsList className="h-11 bg-muted/20 border border-border p-1 rounded-xl">
+                        <TabsTrigger value="ai" className="gap-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs font-medium uppercase tracking-wider px-4">
+                            <Sparkles className="h-3.5 w-3.5" /> AI Providers
                         </TabsTrigger>
-                        <TabsTrigger value="integrations" className="gap-2 rounded-md">
-                            <Box className="h-4 w-4" /> Integrations
+                        <TabsTrigger value="integrations" className="gap-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs font-medium uppercase tracking-wider px-4">
+                            <Box className="h-3.5 w-3.5" /> Integrations
                         </TabsTrigger>
-                        <TabsTrigger value="voice" className="gap-2 rounded-md">
-                            <Mic className="h-4 w-4" /> Voice Settings
+                        <TabsTrigger value="voice" className="gap-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs font-medium uppercase tracking-wider px-4">
+                            <Mic className="h-3.5 w-3.5" /> Voice
                         </TabsTrigger>
                     </TabsList>
                 </div>
 
-                <TabsContent value="ai" className="space-y-6 mt-0">
-                    <div className="flex items-center justify-between">
-                        <div className="space-y-1">
-                            <h2 className="text-2xl font-bold tracking-tight">AI Model Providers</h2>
-                            <p className="text-muted-foreground">Enable and configure the intelligence that powers your companion.</p>
-                        </div>
+                <TabsContent value="ai" className="space-y-8 mt-0 animate-in fade-in slide-in-from-bottom-1 duration-200">
+                    <div className="space-y-1">
+                        <h2 className="text-xl font-semibold tracking-tight">AI Model Providers</h2>
+                        <p className="text-sm text-muted-foreground">Configure the intelligence that powers your companion.</p>
                     </div>
 
-                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         {PROVIDERS.map((provider) => (
                             <ProviderCard
                                 key={provider.id}
@@ -104,13 +102,13 @@ export function SettingsForm({
                     </div>
                 </TabsContent>
 
-                <TabsContent value="integrations" className="space-y-6 mt-0">
+                <TabsContent value="integrations" className="space-y-8 mt-0 animate-in fade-in slide-in-from-bottom-1 duration-200">
                     <div className="space-y-1">
-                        <h2 className="text-2xl font-bold tracking-tight">Integrations & Telemetry</h2>
-                        <p className="text-muted-foreground">Sync your life data from external apps to give Debo context.</p>
+                        <h2 className="text-xl font-semibold tracking-tight">Integrations & Telemetry</h2>
+                        <p className="text-sm text-muted-foreground">Sync your life data from external apps to provide context.</p>
                     </div>
 
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                         {[
                             { id: "google-calendar", name: "Google Calendar", icon: "https://www.gstatic.com/calendar/images/dynamiclogo_2020q4/calendar_31_2x.png" },
                             { id: "google-mail", name: "Gmail", icon: "https://ssl.gstatic.com/ui/v1/icons/mail/images/2/itp_google_mail_2x.png" },
@@ -121,31 +119,29 @@ export function SettingsForm({
                             const loading = isConnecting === integration.id;
 
                             return (
-                                <Card key={integration.id} className="overflow-hidden transition-all hover:shadow-sm border-none bg-muted/30">
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                                <div key={integration.id} className="group flex flex-col rounded-2xl border border-border bg-card overflow-hidden transition-all hover:border-primary/20">
+                                    <div className="p-5 flex items-center justify-between gap-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="h-10 w-10 overflow-hidden rounded-xl border bg-background p-1.5 shadow-sm">
-                                                <img src={integration.icon} alt={integration.name} className="h-full w-full object-contain" />
+                                            <div className="h-10 w-10 overflow-hidden rounded-xl border border-border bg-background p-2">
+                                                <img src={integration.icon} alt={integration.name} className="h-full w-full object-contain grayscale group-hover:grayscale-0 transition-all" />
                                             </div>
-                                            <CardTitle className="text-base font-bold">{integration.name}</CardTitle>
+                                            <span className="text-sm font-semibold tracking-tight">{integration.name}</span>
                                         </div>
-                                        <span className={`h-2 w-2 rounded-full ${connected ? 'bg-emerald-500 animate-pulse' : 'bg-muted-foreground/30'}`} />
-                                    </CardHeader>
-                                    <CardContent className="pb-4">
-                                        <CardDescription className="text-xs font-medium">
-                                            {connected ? `Active Connection` : "Ready to synchronize"}
-                                        </CardDescription>
-                                    </CardContent>
-                                    <CardFooter className="bg-background/50 border-t/50 px-4 py-3 flex justify-end">
+                                        <div className={`h-1.5 w-1.5 rounded-full ${connected ? 'bg-emerald-500' : 'bg-muted-foreground/20'}`} />
+                                    </div>
+                                    
+                                    <div className="px-5 py-4 border-t border-border bg-muted/10 flex items-center justify-between mt-auto">
+                                        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">
+                                            {connected ? `Active` : "Inactive"}
+                                        </span>
                                         {connected ? (
                                             <Button
                                                 type="button"
                                                 variant="ghost"
                                                 size="sm"
-                                                className="text-xs font-bold uppercase tracking-widest text-destructive hover:text-destructive hover:bg-destructive/10"
+                                                className="h-8 px-3 text-[10px] font-bold uppercase tracking-widest text-destructive hover:bg-destructive/10"
                                                 onClick={() => handleDisconnect(integration.id)}
                                             >
-                                                <Link2Off className="h-3.5 w-3.5 mr-1" />
                                                 Disconnect
                                             </Button>
                                         ) : (
@@ -153,52 +149,39 @@ export function SettingsForm({
                                                 type="button"
                                                 variant="outline"
                                                 size="sm"
-                                                className="text-xs font-bold uppercase tracking-widest rounded-xl"
+                                                className="h-8 px-3 text-[10px] font-bold uppercase tracking-widest border-border rounded-lg bg-background"
                                                 disabled={loading}
                                                 onClick={() => handleConnect(integration.id)}
                                             >
-                                                {loading ? (
-                                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                                ) : (
-                                                    <>
-                                                        <ExternalLink className="h-3.5 w-3.5 mr-1" />
-                                                        Authorize
-                                                    </>
-                                                )}
+                                                {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : "Authorize"}
                                             </Button>
                                         )}
-                                    </CardFooter>
-                                </Card>
+                                    </div>
+                                </div>
                             );
                         })}
                     </div>
                 </TabsContent>
 
-                <TabsContent value="voice" className="space-y-6 mt-0">
+                <TabsContent value="voice" className="space-y-8 mt-0 animate-in fade-in slide-in-from-bottom-1 duration-200">
                     <div className="space-y-1">
-                        <h2 className="text-2xl font-bold tracking-tight">Voice Agent Settings</h2>
-                        <p className="text-muted-foreground">Configure LiveKit connection and voice preferences.</p>
+                        <h2 className="text-xl font-semibold tracking-tight">Voice Agent Settings</h2>
+                        <p className="text-sm text-muted-foreground">Configure LiveKit connection and voice preferences.</p>
                     </div>
                     
-                    <Card className="border-none bg-muted/30 max-w-2xl">
-                        <CardHeader>
-                            <CardTitle className="text-lg">LiveKit Configuration</CardTitle>
-                            <CardDescription>Managed via project environment variables.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-sm text-muted-foreground leading-relaxed font-medium">
-                                Your voice agent is currently using the cloud-native LiveKit instance. 
-                                Support for custom LiveKit URLs and granular voice profiles (Deepgram, Cartesia) is coming in the next update.
-                            </p>
-                        </CardContent>
-                    </Card>
+                    <div className="rounded-2xl border border-border bg-muted/10 p-6 max-w-2xl">
+                        <h3 className="text-sm font-semibold mb-2">Cloud Infrastructure</h3>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                            Your voice agent is using a managed cloud-native LiveKit instance. Granular voice profiles and custom endpoints are coming in a future update.
+                        </p>
+                    </div>
                 </TabsContent>
             </Tabs>
 
-            <div className="flex items-center justify-center pt-8">
-                <div className="flex items-center text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/40 bg-muted/50 px-6 py-3 rounded-full border border-border/50 shadow-inner">
-                    <ShieldCheck className="h-4 w-4 mr-2 text-emerald-500/50" />
-                    Secure AES-256 Cloud Storage
+            <div className="flex items-center justify-center pt-10 border-t border-border/40">
+                <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30 px-6 py-2 rounded-full border border-border bg-muted/5">
+                    <ShieldCheck className="h-3.5 w-3.5" />
+                    Secure AES-256 Storage
                 </div>
             </div>
         </div>

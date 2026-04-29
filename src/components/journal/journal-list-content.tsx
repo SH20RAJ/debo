@@ -32,65 +32,68 @@ export function JournalListContent({ initialJournals }: { initialJournals: Journ
         });
 
     return (
-        <div className="space-y-8 pb-40">
+        <div className="space-y-10 pb-40">
             {/* Search and Filter Bar */}
-            <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex flex-col md:flex-row gap-3">
                 <div className="relative flex-1">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
                     <Input 
                         placeholder="Search your memories..." 
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-12 h-14 rounded-2xl border-none bg-muted/40 text-lg focus-visible:ring-primary/20"
+                        className="pl-10 h-12 rounded-xl border-border bg-muted/20 text-base focus-visible:ring-primary/10"
                     />
                 </div>
                 <Button 
                     variant="ghost" 
                     size="lg"
                     onClick={() => setSortOrder(prev => prev === "asc" ? "desc" : "asc")}
-                    className="h-14 rounded-2xl gap-2 px-6 bg-muted/20 hover:bg-muted/40"
+                    className="h-12 rounded-xl gap-2 px-5 border border-border bg-background hover:bg-muted/30 text-xs font-medium uppercase tracking-wider"
                 >
-                    {sortOrder === "desc" ? <SortDesc className="h-5 w-5" /> : <SortAsc className="h-5 w-5" />}
-                    {sortOrder === "desc" ? "Newest first" : "Oldest first"}
+                    {sortOrder === "desc" ? <SortDesc className="h-4 w-4" /> : <SortAsc className="h-4 w-4" />}
+                    {sortOrder === "desc" ? "Newest" : "Oldest"}
                 </Button>
             </div>
 
             {/* List */}
-            <div className="grid gap-6">
+            <div className="grid gap-3">
                 {filteredJournals.length > 0 ? (
                     filteredJournals.map((journal) => (
                         <Link key={journal.id} href={`/dashboard/journal/${journal.id}`}>
-                            <Card className="group relative border border-border/40 bg-card/40 hover:bg-card/60 rounded-[2rem] transition-all hover:shadow-xl hover:shadow-primary/5 active:scale-[0.99] overflow-hidden">
-                                <div className="absolute left-0 top-0 h-full w-1 bg-primary/20 group-hover:bg-primary transition-colors" />
-                                <CardContent className="p-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                                    <div className="space-y-3 flex-1">
-                                        <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60">
+                            <div className="group relative border border-border bg-card rounded-2xl transition-all hover:bg-muted/10 active:scale-[0.995]">
+                                <div className="p-8 flex flex-col md:flex-row md:items-center justify-between gap-8">
+                                    <div className="space-y-4 flex-1">
+                                        <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">
                                             <Calendar className="h-3.5 w-3.5" />
                                             {format(new Date(journal.createdAt), "MMMM do, yyyy")}
                                         </div>
-                                        <h3 className="text-2xl font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
-                                            {journal.title || "Untitled Entry"}
-                                        </h3>
-                                        <p className="text-muted-foreground/80 line-clamp-2 text-base leading-relaxed">
-                                            {journal.content.replace(/[#*`]/g, "")}
-                                        </p>
-                                    </div>
-                                    <div className="flex items-center justify-end">
-                                        <div className="h-12 w-12 rounded-2xl bg-muted/50 flex items-center justify-center shadow-sm group-hover:bg-primary group-hover:text-primary-foreground transition-all group-hover:rotate-6 group-hover:scale-110">
-                                            <BookOpen className="h-5 w-5" />
+                                        <div className="space-y-1">
+                                            <h3 className="text-xl font-semibold tracking-tight text-foreground group-hover:text-primary transition-colors">
+                                                {journal.title || "Untitled Entry"}
+                                            </h3>
+                                            <p className="text-muted-foreground/60 line-clamp-2 text-sm leading-relaxed">
+                                                {journal.content.replace(/[#*`]/g, "")}
+                                            </p>
                                         </div>
                                     </div>
-                                </CardContent>
-                            </Card>
+                                    <div className="hidden md:flex items-center justify-end">
+                                        <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground transition-all group-hover:bg-primary group-hover:text-primary-foreground">
+                                            <BookOpen className="h-4 w-4" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </Link>
                     ))
                 ) : (
-                    <div className="py-20 text-center space-y-4 bg-muted/10 rounded-3xl border-2 border-dashed">
-                        <div className="mx-auto h-12 w-12 rounded-full bg-muted/40 flex items-center justify-center">
-                            <Search className="h-6 w-6 text-muted-foreground" />
+                    <div className="py-20 text-center space-y-4 bg-muted/5 rounded-2xl border border-dashed border-border">
+                        <div className="mx-auto h-12 w-12 rounded-xl bg-background border border-border flex items-center justify-center">
+                            <Search className="h-5 w-5 text-muted-foreground/30" />
                         </div>
-                        <h3 className="text-xl font-semibold">No entries found</h3>
-                        <p className="text-muted-foreground">Try adjusting your search query or write your first journal.</p>
+                        <div className="space-y-1">
+                            <h3 className="text-base font-semibold">No entries found</h3>
+                            <p className="text-sm text-muted-foreground">Try adjusting your search query or write your first journal.</p>
+                        </div>
                     </div>
                 )}
             </div>

@@ -20,7 +20,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset className="bg-background relative">
-          <header className="flex h-14 shrink-0 items-center gap-2 px-6 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 bg-background/50 backdrop-blur-xl sticky top-0 z-50">
+          <header className="flex h-14 shrink-0 items-center gap-2 px-6 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 border-b border-border/40 bg-background sticky top-0 z-50">
             <div className="flex items-center gap-2">
               <SidebarTrigger className="-ml-1 text-muted-foreground hover:text-foreground transition-colors" />
             </div>

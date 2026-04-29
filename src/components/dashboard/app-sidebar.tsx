@@ -55,37 +55,37 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   ]
 
   return (
-    <Sidebar variant="inset" collapsible="icon" {...props}>
+    <Sidebar variant="inset" collapsible="icon" {...props} className="border-r border-border/40">
       <SidebarHeader className="h-20 flex items-center px-6">
-        <Link href="/dashboard" className="flex items-center gap-4 font-bold w-full overflow-hidden whitespace-nowrap">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20 shrink-0">
-             <Sparkles className="h-6 w-6" />
+        <Link href="/dashboard" className="flex items-center gap-3 font-semibold w-full overflow-hidden whitespace-nowrap">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-foreground text-background shrink-0">
+             <Sparkles className="h-5 w-5" />
           </div>
-          <span className="tracking-tighter text-2xl group-data-[collapsible=icon]:hidden">
+          <span className="tracking-tight text-xl group-data-[collapsible=icon]:hidden">
             Debo
           </span>
         </Link>
       </SidebarHeader>
 
-      <SidebarContent className="px-2">
+      <SidebarContent className="px-3 gap-6">
         {items.map((group) => (
-          <SidebarGroup key={group.title}>
-            <SidebarGroupLabel className="px-4 text-xs font-bold uppercase tracking-widest text-muted-foreground/50 group-data-[collapsible=icon]:hidden">
+          <SidebarGroup key={group.title} className="p-0">
+            <SidebarGroupLabel className="px-4 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 group-data-[collapsible=icon]:hidden mb-2">
                 {group.title}
             </SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu>
+              <SidebarMenu className="gap-1">
                 {group.items.map((item) => (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton 
                       asChild 
                       isActive={pathname === item.href}
                       tooltip={item.title}
-                      className="h-12 rounded-xl transition-all hover:bg-muted"
+                      className="h-10 rounded-lg transition-all hover:bg-muted/50 data-[active=true]:bg-muted data-[active=true]:text-foreground"
                     >
                       <Link href={item.href}>
-                        <item.icon className="h-5 w-5" />
-                        <span className="font-medium text-base">{item.title}</span>
+                        <item.icon className="h-4 w-4" />
+                        <span className="text-sm font-medium">{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -96,18 +96,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         ))}
       </SidebarContent>
 
-      <SidebarFooter className="p-4 space-y-4">
+      <SidebarFooter className="p-4 pt-0 space-y-4">
         <SidebarMenu>
             <SidebarMenuItem>
                 <SidebarMenuButton 
                     asChild 
                     isActive={pathname === "/dashboard/settings"}
                     tooltip="Settings"
-                    className="h-12 rounded-xl"
+                    className="h-10 rounded-lg transition-all hover:bg-muted/50 data-[active=true]:bg-muted"
                 >
                     <Link href="/dashboard/settings">
-                        <Settings className="h-5 w-5" />
-                        <span className="font-medium text-base">Settings</span>
+                        <Settings className="h-4 w-4" />
+                        <span className="text-sm font-medium">Settings</span>
                     </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
@@ -116,8 +116,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <div className="flex items-center justify-between w-full group-data-[collapsible=icon]:justify-center px-2">
           <ThemeToggle />
           <div className="flex items-center gap-2 group-data-[collapsible=icon]:hidden">
-            <span className="text-xs font-medium text-muted-foreground">Connected</span>
-            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30">Synced</span>
+            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500/50" />
           </div>
         </div>
       </SidebarFooter>
