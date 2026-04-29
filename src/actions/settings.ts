@@ -6,7 +6,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { encrypt } from "@/lib/encryption";
+import { encrypt, decrypt } from "@/lib/encryption";
 import { nango } from "@/lib/nango";
 
 export async function getUserPreferences() {
@@ -69,7 +69,7 @@ export async function saveAIProvider(data: {
         )
     });
 
-    const updateData: Record<string, unknown> = {
+    const updateData: any = {
         providerName: data.providerName,
         baseUrl: data.baseUrl || null,
         isEnabled: data.isEnabled ?? true,
@@ -109,25 +109,15 @@ export async function setActiveProvider(providerId: string) {
 export async function saveUserPreferences(data: { 
     mcpUrl?: string, 
     activeProvider?: string,
-    openaiKey?: string,
-    anthropicKey?: string,
 }) {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session) throw new Error("Unauthorized");
 
-    const updateData: Record<string, unknown> = {
+    const updateData: any = {
         activeProvider: data.activeProvider || "cloudflare",
         mcpUrl: data.mcpUrl || null,
         updatedAt: new Date()
     };
-
-    if (data.openaiKey && !data.openaiKey.includes("....config")) {
-        updateData.openaiKey = await encrypt(data.openaiKey);
-    }
-
-    if (data.anthropicKey && !data.anthropicKey.includes("....config")) {
-        updateData.anthropicKey = await encrypt(data.anthropicKey);
-    }
 
     const existing = await db.query.userPreferences.findFirst({
         where: eq(userPreferences.userId, session.user.id)

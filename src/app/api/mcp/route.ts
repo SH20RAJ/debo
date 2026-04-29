@@ -136,21 +136,24 @@ server.setRequestHandler(CallToolRequestSchema, async (request, extra) => {
     case "create_journal": {
       const { content, title } = args as { content: string, title?: string };
       const id = crypto.randomUUID();
-      const now = new Date();
       const journal = {
         id,
         userId,
         title: title || null,
         content,
-        createdAt: now,
-        updatedAt: now,
       };
 
       await db.insert(journals).values(journal);
 
       try {
-        await indexJournal(journal);
-        await upsertMemoryGraphForJournal(userId, journal);
+        await indexJournal({
+          ...journal,
+          createdAt: new Date(),
+        });
+        await upsertMemoryGraphForJournal(userId, {
+          ...journal,
+          createdAt: new Date(),
+        });
         const extracted = await extractMemory(content);
         await storeMemory(userId, extracted);
       } catch (error) {

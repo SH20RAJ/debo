@@ -54,7 +54,7 @@ export async function storeMemory(userId: string, extractedData: ExtractedMemory
             weight: 1,
           })
           .onConflictDoUpdate({
-            target: [memoryFacts.userId, memoryFacts.type, memoryFacts.content],
+            target: [memoryFacts.userId, memoryFacts.content],
             set: {
               weight: sql`${memoryFacts.weight} + 1`,
               createdAt: new Date(),

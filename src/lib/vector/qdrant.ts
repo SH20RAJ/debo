@@ -38,14 +38,28 @@ function getQdrantConfig() {
   const collection = process.env.QDRANT_COLLECTION || "debo_journals";
 
   if (!url) {
-    throw new Error("QDRANT_URL is required for vector search.");
+    throw new Error("QDRANT_URL is required for vector search. Check your environment variables.");
   }
 
   if (!apiKey) {
-    throw new Error("QDRANT_API_KEY is required for vector search.");
+    throw new Error("QDRANT_API_KEY is required for vector search. Check your environment variables.");
   }
 
   return { url, apiKey, collection };
+}
+
+export async function checkQdrantConnection() {
+  try {
+    const { url } = getQdrantConfig();
+    const response = await fetch(`${url}/healthz`, { 
+      method: "GET",
+      signal: AbortSignal.timeout(3000)
+    });
+    return response.ok;
+  } catch (error) {
+    console.error("Qdrant health check failed:", error);
+    return false;
+  }
 }
 
 async function qdrantRequest<T>(

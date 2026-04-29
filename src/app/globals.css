@@ -201,7 +201,7 @@
     letter-spacing: var(--tracking-normal);
 	}
   html {
-    @apply font-sans scroll-smooth tracking-normal;
+    @apply font-sans tracking-normal;
 	}
   
   h1, h2, h3, h4, h5, h6 {

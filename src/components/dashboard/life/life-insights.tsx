@@ -49,12 +49,13 @@ export function LifeInsights({
               </div>
             ))
           ) : (
-            <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border/60 bg-muted/10 px-6 py-12 text-center text-sm text-muted-foreground">
-               <div className="mb-4 rounded-full bg-muted/20 p-4">
+            <div className="flex flex-col items-center justify-center rounded-[2rem] border border-dashed border-border/60 bg-muted/10 px-6 py-16 text-center text-sm text-muted-foreground">
+               <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/20 p-4">
                   <BrainCircuit className="h-8 w-8 opacity-20" />
                </div>
-               <p className="max-w-[240px]">
-                 Deep patterns are still forming. Keep writing to unlock personalized insights.
+               <h3 className="mb-1 text-base font-semibold text-foreground">Awaiting Signals</h3>
+               <p className="max-w-[240px] text-xs leading-relaxed text-muted-foreground/60">
+                 Deep patterns are still forming. Keep writing to unlock personalized insights and cognitive resonance.
                </p>
             </div>
           )}

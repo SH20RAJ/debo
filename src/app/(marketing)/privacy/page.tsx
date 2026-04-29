@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy",
+  title: "Privacy Policy | Debo",
   description: "How we handle your data and memory engine privacy.",
 };
 
@@ -9,7 +9,7 @@ export default function PrivacyPage() {
   return (
     <div className="container max-w-3xl py-20 px-6">
       <h1 className="text-4xl font-bold tracking-tight font-heading mb-8">Privacy Policy</h1>
-
+      
       <div className="prose prose-neutral dark:prose-invert space-y-8 text-muted-foreground">
         <section>
           <h2 className="text-xl font-semibold text-foreground mb-4">1. Data Sovereignty</h2>
