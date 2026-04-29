@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useCopilotReadable } from "@copilotkit/react-core";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { Brain, CalendarDays, Search, Sparkles } from "lucide-react";
@@ -35,6 +36,17 @@ export function ChatSession({
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const chatIdRef = useRef<string | null>(chatId);
+
+  useCopilotReadable({
+    description: "The active Debo chat transcript as text messages with roles.",
+    value: JSON.stringify(
+      initialMessages.map((message) => ({
+        id: message.id,
+        role: message.role,
+        text: getMessageText(message),
+      }))
+    ),
+  });
 
   useEffect(() => {
     chatIdRef.current = chatId;
@@ -169,3 +181,10 @@ export function ChatSession({
     </div>
   );
 }
+  function getMessageText(message: UIMessage) {
+    return message.parts
+      .filter((part) => part.type === "text")
+      .map((part) => part.text)
+      .join("\n")
+      .trim();
+  }

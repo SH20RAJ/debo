@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { UIMessage } from "ai";
+import { useCopilotReadable } from "@copilotkit/react-core";
 import { toast } from "sonner";
 
 import { createChat, deleteChat, getChatHistory, getUserChats } from "@/actions/chat";
@@ -35,6 +36,19 @@ export function ChatContainer() {
     () => chats.find((chat) => chat.id === activeChatId)?.title || "Ask Debo",
     [activeChatId, chats]
   );
+
+  useCopilotReadable({
+    description: "The user's Debo chat list and the currently selected conversation.",
+    value: JSON.stringify({
+      activeChatId,
+      activeChatTitle,
+      chats: chats.map((chat) => ({
+        id: chat.id,
+        title: chat.title,
+        updatedAt: chat.updatedAt,
+      })),
+    }),
+  });
 
   const refreshChats = useCallback(async (preferredChatId?: string) => {
     setIsLoadingChats(true);

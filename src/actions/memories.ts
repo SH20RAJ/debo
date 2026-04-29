@@ -12,6 +12,12 @@ import { headers } from "next/headers";
 import { cache } from "react";
 import { revalidatePath } from "next/cache";
 
+type MemoryRecord = {
+    id: string;
+    content: string;
+    type: string;
+};
+
 export const getMemories = cache(async (query: string = "") => {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session) return { success: false, error: "Unauthorized" };
@@ -55,6 +61,68 @@ export async function deleteMemory(memoryId: string) {
     } catch (error) {
         console.error("Delete memory error:", error);
         return { success: false, error: "Failed to delete memory" };
+    }
+}
+
+export async function getMemory(memoryId: string) {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session) return { success: false, error: "Unauthorized" };
+
+    try {
+        const fact = await db.query.memoryFacts.findFirst({ where: eq(memoryFacts.id, memoryId) });
+        if (fact) {
+            return { success: true, data: { ...fact, kind: "fact" as const } };
+        }
+
+        const entity = await db.query.memoryEntities.findFirst({ where: eq(memoryEntities.id, memoryId) });
+        if (entity) {
+            return { success: true, data: { ...entity, kind: "entity" as const } };
+        }
+
+        return { success: false, error: "Memory not found" };
+    } catch (error) {
+        console.error("Get memory error:", error);
+        return { success: false, error: "Failed to fetch memory" };
+    }
+}
+
+export async function updateMemory(memoryId: string, content: string) {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session) return { success: false, error: "Unauthorized" };
+
+    try {
+        const fact = await db.query.memoryFacts.findFirst({ where: eq(memoryFacts.id, memoryId) });
+        if (fact) {
+            await db.update(memoryFacts).set({
+                content,
+                type: fact.type,
+                weight: fact.weight + 1,
+                createdAt: new Date(),
+            }).where(eq(memoryFacts.id, memoryId));
+
+            revalidatePath("/dashboard/memories");
+            revalidatePath("/dashboard/experimental/memories");
+            return { success: true, data: memoryId };
+        }
+
+        const entity = await db.query.memoryEntities.findFirst({ where: eq(memoryEntities.id, memoryId) });
+        if (entity) {
+            await db.update(memoryEntities).set({
+                name: content,
+                normalizedName: content.toLowerCase().replace(/\s+/g, " ").trim(),
+                updatedAt: new Date(),
+                frequency: entity.frequency + 1,
+            }).where(eq(memoryEntities.id, memoryId));
+
+            revalidatePath("/dashboard/memories");
+            revalidatePath("/dashboard/experimental/memories");
+            return { success: true, data: memoryId };
+        }
+
+        return { success: false, error: "Memory not found" };
+    } catch (error) {
+        console.error("Update memory error:", error);
+        return { success: false, error: "Failed to update memory" };
     }
 }
 
