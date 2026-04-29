@@ -128,6 +128,7 @@
 	--shadow-md: 0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 2px 4px -1px hsl(0 0% 0% / 0.17);
 	--shadow-lg: 0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 4px 6px -1px hsl(0 0% 0% / 0.17);
 	--shadow-xl: 0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 8px 10px -1px hsl(0 0% 0% / 0.17);
+	--primary-muted: oklch(0.95 0.03 160.9);
 	--shadow-2xl: 0px 1px 3px 0px hsl(0 0% 0% / 0.43);
 	--tracking-normal: 0.025em;
 }
@@ -185,6 +186,7 @@
 	--shadow-md: 0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 2px 4px -1px hsl(0 0% 0% / 0.17);
 	--shadow-lg: 0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 4px 6px -1px hsl(0 0% 0% / 0.17);
 	--shadow-xl: 0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 8px 10px -1px hsl(0 0% 0% / 0.17);
+	--primary-muted: oklch(0.25 0.04 156.7);
 	--shadow-2xl: 0px 1px 3px 0px hsl(0 0% 0% / 0.43);
 }
 

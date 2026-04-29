@@ -24,7 +24,7 @@ export function Problem() {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                Traditional journals just sit there. They don't talk back, they don't connect the dots, they just store text.
+                Traditional journals just sit there. They don&apos;t talk back, they don&apos;t connect the dots, they just store text.
               </p>
             </CardContent>
           </Card>

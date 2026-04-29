@@ -23,34 +23,39 @@ export default async function InsightsPage() {
   }
 
   return (
-    <div className="relative flex-1 overflow-hidden bg-[radial-gradient(circle_at_top_right,_rgba(16,185,129,0.12),_transparent_28%),radial-gradient(circle_at_bottom_left,_rgba(234,88,12,0.08),_transparent_24%),linear-gradient(180deg,_rgba(248,250,252,0.92),_rgba(241,245,249,0.72))] dark:bg-[radial-gradient(circle_at_top_right,_rgba(16,185,129,0.08),_transparent_28%),radial-gradient(circle_at_bottom_left,_rgba(234,88,12,0.06),_transparent_24%),linear-gradient(180deg,_rgba(15,23,42,0.96),_rgba(2,6,23,0.92))]">
-      <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-8 lg:px-8">
-        <section className="rounded-[2rem] border border-border/70 bg-card/80 p-8 shadow-xl shadow-black/5 backdrop-blur-sm">
-          <div className="space-y-3">
-            <div className="text-xs font-semibold uppercase tracking-[0.35em] text-muted-foreground">Insights</div>
-            <h1 className="text-4xl font-semibold tracking-tight">The shape of your memory</h1>
-            <p className="max-w-2xl text-muted-foreground">
-              Debo ranks the strongest people, topics, emotions, and repeated patterns so you can spot what keeps surfacing.
+    <div className="relative min-h-screen flex-1 bg-background">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,var(--primary-muted),transparent_45%),radial-gradient(circle_at_bottom_left,var(--primary-muted),transparent_45%)] opacity-25" />
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_at_center,black,transparent_90%)]" />
+
+      <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-10 px-6 py-12 lg:px-10">
+        <header className="flex flex-col gap-6">
+          <div className="inline-flex items-center gap-2 self-start rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-primary shadow-sm backdrop-blur-md">
+            Cognitive Mapping
+          </div>
+          <div className="space-y-4">
+            <h1 className="text-4xl font-bold tracking-tight text-foreground md:text-5xl lg:text-6xl">
+              The Shape of <span className="bg-gradient-to-r from-primary to-primary/50 bg-clip-text text-transparent">Your Memory.</span>
+            </h1>
+            <p className="max-w-2xl text-lg text-muted-foreground/80 leading-relaxed">
+              Debo synthesizes your daily records into deep structural insights, surfacing the strongest people, topics, and emotional patterns in your life.
             </p>
           </div>
 
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Button asChild className="rounded-full px-5">
-              <Link href="/dashboard/ask">Ask the ranked context</Link>
+          <div className="flex flex-wrap gap-3 pt-2">
+            <Button asChild size="sm" className="rounded-full px-6 font-semibold">
+              <Link href="/dashboard/ask">Ask Ranked Context</Link>
             </Button>
-            <Button asChild variant="outline" className="rounded-full px-5">
-              <Link href="/dashboard/timeline">Open timeline</Link>
+            <Button asChild variant="outline" size="sm" className="rounded-full border-border/50 bg-background/50 px-6 font-semibold backdrop-blur-md transition-all hover:bg-muted/50">
+              <Link href="/dashboard/timeline">Open Timeline</Link>
             </Button>
           </div>
-        </section>
+        </header>
 
-        <Card className="border-border/70 bg-card/80 backdrop-blur-sm">
-          <CardContent className="grid gap-4 p-6 sm:grid-cols-3">
-            <MiniStat label="Journal entries" value={journalCount.toString()} />
-            <MiniStat label="People surfaced" value={graph.topPeople.length.toString()} />
-            <MiniStat label="Recurring patterns" value={graph.patterns.length.toString()} />
-          </CardContent>
-        </Card>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <MiniStat label="Journal Entries" value={journalCount.toString()} description="Chronological moments" />
+          <MiniStat label="Entities Surface" value={graph.topPeople.length.toString()} description="Ranked people nodes" />
+          <MiniStat label="Recurrence" value={graph.patterns.length.toString()} description="Pattern signals detected" />
+        </div>
 
         <LifeInsights
           insights={graph.insights}
@@ -65,15 +70,19 @@ export default async function InsightsPage() {
 }
 
 export const metadata: Metadata = {
-  title: "Insights",
+  title: "Insights | Debo",
   description: "Analyze the strongest people, topics, and repeating patterns in your life.",
 };
 
-function MiniStat({ label, value }: { label: string; value: string }) {
+function MiniStat({ label, value, description }: { label: string; value: string; description: string }) {
   return (
-    <div className="rounded-2xl border border-border/60 bg-muted/20 p-4">
-      <div className="text-xs font-semibold uppercase tracking-[0.25em] text-muted-foreground">{label}</div>
-      <div className="mt-2 text-3xl font-semibold tracking-tight">{value}</div>
-    </div>
+    <Card className="group relative overflow-hidden border-border/50 bg-card/40 backdrop-blur-md transition-all hover:bg-card/60 hover:shadow-2xl hover:shadow-primary/5">
+      <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-primary/5 blur-2xl transition-all group-hover:bg-primary/10 group-hover:scale-150" />
+      <CardContent className="p-6 space-y-2 relative z-10">
+        <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60 transition-colors group-hover:text-primary/70">{label}</div>
+        <div className="text-4xl font-bold tracking-tight transition-transform group-hover:translate-x-0.5">{value}</div>
+        <div className="text-[10px] text-muted-foreground/50">{description}</div>
+      </CardContent>
+    </Card>
   );
 }

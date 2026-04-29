@@ -99,7 +99,8 @@ async function upsertNode(
   const nextMetadata = {
     ...baseMetadata,
     ...metadata,
-    journalIds: unique([...(baseMetadata as any).journalIds || [], ...(metadata as any).journalIds || []]),
+    journalId: metadata.journalId || (baseMetadata as any).journalId || null,
+    journalIds: unique([...((baseMetadata as any).journalIds || []), ...((metadata as any).journalIds || []), metadata.journalId].filter(Boolean) as string[]),
     mentions: (baseMetadata as any).mentions ? Number((baseMetadata as any).mentions) + 1 : 1,
   };
 

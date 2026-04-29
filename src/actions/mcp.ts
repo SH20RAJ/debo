@@ -5,13 +5,13 @@ import { userPreferences } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { eq } from "drizzle-orm";
-import crypto from "node:crypto";
-
 export async function rotateMCPKey() {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session) throw new Error("Unauthorized");
 
-    const newKey = `debo_${crypto.randomBytes(24).toString("hex")}`;
+    const bytes = new Uint8Array(24);
+    crypto.getRandomValues(bytes);
+    const newKey = `debo_${Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('')}`;
 
     await db.insert(userPreferences)
         .values({ 

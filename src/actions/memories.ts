@@ -40,13 +40,17 @@ export async function deleteMemory(memoryId: string) {
     if (!session) return { success: false, error: "Unauthorized" };
 
     try {
-        const fact = await db.query.memoryFacts.findFirst({ where: eq(memoryFacts.id, memoryId) });
+        const fact = await db.query.memoryFacts.findFirst({ 
+            where: and(eq(memoryFacts.id, memoryId), eq(memoryFacts.userId, session.user.id)) 
+        });
         if (fact) {
-            await db.delete(memoryFacts).where(eq(memoryFacts.id, memoryId));
+            await db.delete(memoryFacts).where(and(eq(memoryFacts.id, memoryId), eq(memoryFacts.userId, session.user.id)));
         } else {
-            const entity = await db.query.memoryEntities.findFirst({ where: eq(memoryEntities.id, memoryId) });
-            if (!entity) return { success: false, error: "Memory not found" };
-            await db.delete(memoryEntities).where(eq(memoryEntities.id, memoryId));
+            const entity = await db.query.memoryEntities.findFirst({ 
+                where: and(eq(memoryEntities.id, memoryId), eq(memoryEntities.userId, session.user.id)) 
+            });
+            if (!entity) return { success: false, error: "Memory not found or unauthorized" };
+            await db.delete(memoryEntities).where(and(eq(memoryEntities.id, memoryId), eq(memoryEntities.userId, session.user.id)));
         }
 
         revalidatePath("/dashboard/memories");

@@ -22,7 +22,7 @@ export default async function TimelinePage({
   const timeline = await getLifeTimeline(session.user.id, grouping);
 
   return (
-    <div className="relative flex-1 overflow-hidden bg-[radial-gradient(circle_at_top_right,_rgba(233,196,106,0.14),_transparent_28%),linear-gradient(180deg,_rgba(248,250,252,0.92),_rgba(241,245,249,0.72))] dark:bg-[radial-gradient(circle_at_top_right,_rgba(233,196,106,0.08),_transparent_28%),linear-gradient(180deg,_rgba(15,23,42,0.96),_rgba(2,6,23,0.92))]">
+    <div className="relative flex-1 overflow-hidden bg-background">
       <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-8 lg:px-8">
         <section className="space-y-4 rounded-[2rem] border border-border/70 bg-card/80 p-8 shadow-xl shadow-black/5 backdrop-blur-sm">
           <div className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.35em] text-muted-foreground">

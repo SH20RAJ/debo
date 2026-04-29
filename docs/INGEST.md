@@ -3797,7 +3797,7 @@ export default async function DashboardPage() {
     const recentEntryCount = recentTimeline.length;
 
     return (
-        <div className="relative flex-1 overflow-hidden bg-[radial-gradient(circle_at_top_right,_rgba(233,196,106,0.18),_transparent_32%),radial-gradient(circle_at_bottom_left,_rgba(16,185,129,0.12),_transparent_28%),linear-gradient(180deg,_rgba(248,250,252,0.9),_rgba(241,245,249,0.72))] dark:bg-[radial-gradient(circle_at_top_right,_rgba(233,196,106,0.12),_transparent_32%),radial-gradient(circle_at_bottom_left,_rgba(16,185,129,0.08),_transparent_28%),linear-gradient(180deg,_rgba(15,23,42,0.96),_rgba(2,6,23,0.92))]">
+        <div className="relative flex-1 overflow-hidden bg-background">
             <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.35)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.35)_1px,transparent_1px)] bg-[size:42px_42px] opacity-20 dark:opacity-10" />
             <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-10 px-6 py-8 lg:px-8">
                 <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
@@ -3980,7 +3980,7 @@ export default async function InsightsPage() {
   }
 
   return (
-    <div className="relative flex-1 overflow-hidden bg-[radial-gradient(circle_at_top_right,_rgba(16,185,129,0.12),_transparent_28%),radial-gradient(circle_at_bottom_left,_rgba(234,88,12,0.08),_transparent_24%),linear-gradient(180deg,_rgba(248,250,252,0.92),_rgba(241,245,249,0.72))] dark:bg-[radial-gradient(circle_at_top_right,_rgba(16,185,129,0.08),_transparent_28%),radial-gradient(circle_at_bottom_left,_rgba(234,88,12,0.06),_transparent_24%),linear-gradient(180deg,_rgba(15,23,42,0.96),_rgba(2,6,23,0.92))]">
+    <div className="relative flex-1 overflow-hidden bg-background">
       <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-8 lg:px-8">
         <section className="rounded-[2rem] border border-border/70 bg-card/80 p-8 shadow-xl shadow-black/5 backdrop-blur-sm">
           <div className="space-y-3">
@@ -4317,7 +4317,7 @@ export default async function TimelinePage({
   const timeline = await getLifeTimeline(session.user.id, grouping);
 
   return (
-    <div className="relative flex-1 overflow-hidden bg-[radial-gradient(circle_at_top_right,_rgba(233,196,106,0.14),_transparent_28%),linear-gradient(180deg,_rgba(248,250,252,0.92),_rgba(241,245,249,0.72))] dark:bg-[radial-gradient(circle_at_top_right,_rgba(233,196,106,0.08),_transparent_28%),linear-gradient(180deg,_rgba(15,23,42,0.96),_rgba(2,6,23,0.92))]">
+    <div className="relative flex-1 overflow-hidden bg-background">
       <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-8 lg:px-8">
         <section className="space-y-4 rounded-[2rem] border border-border/70 bg-card/80 p-8 shadow-xl shadow-black/5 backdrop-blur-sm">
           <div className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.35em] text-muted-foreground">

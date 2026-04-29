@@ -15,7 +15,7 @@ export function Features() {
               <p className="text-muted-foreground">
                 Debo turns entries into durable memories, surfacing what matters across time.
               </p>
-              <p className="mt-3 text-sm text-muted-foreground/80">Example: "I prefer deep work on Tuesdays" saved as a preference.</p>
+              <p className="mt-3 text-sm text-muted-foreground/80">Example: &quot;I prefer deep work on Tuesdays&quot; saved as a preference.</p>
             </CardContent>
           </Card>
 
@@ -26,7 +26,7 @@ export function Features() {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">Ask natural questions about your past and get evidence-backed answers.</p>
-              <p className="mt-3 text-sm text-muted-foreground/80">Example: "When was I happiest this year?" → timeline + citations.</p>
+              <p className="mt-3 text-sm text-muted-foreground/80">Example: &quot;When was I happiest this year?&quot; &rarr; timeline + citations.</p>
             </CardContent>
           </Card>
 
@@ -70,7 +70,7 @@ export function Features() {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">Receive actionable nudges and advice based on your history.</p>
-              <p className="mt-3 text-sm text-muted-foreground/80">Example: "You do best work mornings; schedule focus blocks then."</p>
+              <p className="mt-3 text-sm text-muted-foreground/80">Example: &quot;You do best work mornings; schedule focus blocks then.&quot;</p>
             </CardContent>
           </Card>
         </div>

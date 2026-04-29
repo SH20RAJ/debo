@@ -20,7 +20,7 @@ export function Hero() {
           </Link>
           <Link href="#demo" aria-label="Try the demo - Ask a question">
             <Button size="lg" variant="outline" className="rounded-full w-full sm:w-auto text-base px-8 h-12">
-              Try the demo — Ask "When was I happiest?"
+              Try the demo &mdash; Ask &quot;When was I happiest?&quot;
             </Button>
           </Link>
         </div>
