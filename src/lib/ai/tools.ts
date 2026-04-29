@@ -3,8 +3,8 @@ import "server-only";
 import { generateText, tool } from "ai";
 import { z } from "zod";
 
-import { getJournal, getJournals, saveJournal, deleteJournal } from "@/actions/journals";
-import { addMemory, deleteMemory, getMemory, getMemories, updateMemory } from "@/actions/memories";
+import { getJournals, saveJournal, deleteJournal } from "@/actions/journals";
+import { addMemory, deleteMemory, getMemory, updateMemory } from "@/actions/memories";
 import {
   getRecentJournalCitations,
   searchJournals,
