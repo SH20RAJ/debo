@@ -1,10 +1,17 @@
 "use client";
 
 import { CopilotPopup } from "@copilotkit/react-ui";
-import { Sparkles } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { AgentDataRenderer } from "./AgentDataRenderer";
 
 export function CopilotChat() {
+  const pathname = usePathname();
+  
+  // Hide the popup chat if we are on the dedicated "Ask" page
+  if (pathname === "/dashboard/ask") {
+    return <AgentDataRenderer />;
+  }
+
   return (
     <>
       <AgentDataRenderer />

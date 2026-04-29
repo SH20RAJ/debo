@@ -52,25 +52,6 @@ type DetectPatternsArgs = {
   question: string;
 };
 
-type RenderJournalArgs = {
-  id: string;
-  title: string;
-  content: string;
-  date: string;
-};
-
-type RenderTimelineArgs = {
-  date: string;
-  summary: string;
-  events: string[];
-  emotions?: string[];
-};
-
-type RenderInsightArgs = {
-  insight: string;
-  type?: string;
-};
-
 export function getAgentTools(userId: string): FrontendAction<any>[] {
   return [
     {
@@ -80,7 +61,8 @@ export function getAgentTools(userId: string): FrontendAction<any>[] {
         { name: "content", type: "string", description: "The content of the journal entry.", required: true },
         { name: "title", type: "string", description: "An optional title for the journal.", required: false }
       ],
-      handler: async ({ content, title }: JournalActionArgs) => {
+      handler: async (args: Record<string, any>) => {
+        const { content, title } = args as JournalActionArgs;
         return await saveJournal(content, undefined, title);
       },
     },
@@ -90,7 +72,8 @@ export function getAgentTools(userId: string): FrontendAction<any>[] {
       parameters: [
         { name: "id", type: "string", description: "The ID of the journal to delete.", required: true }
       ],
-      handler: async ({ id }: IdActionArgs) => {
+      handler: async (args: Record<string, any>) => {
+        const { id } = args as IdActionArgs;
         return await deleteJournal(id);
       },
     },
@@ -102,7 +85,8 @@ export function getAgentTools(userId: string): FrontendAction<any>[] {
         { name: "content", type: "string", description: "The new content of the journal entry.", required: true },
         { name: "title", type: "string", description: "Optional updated title.", required: false },
       ],
-      handler: async ({ id, content, title }: UpdateJournalArgs) => {
+      handler: async (args: Record<string, any>) => {
+        const { id, content, title } = args as UpdateJournalArgs;
         return await saveJournal(content, id, title);
       },
     },
@@ -112,7 +96,8 @@ export function getAgentTools(userId: string): FrontendAction<any>[] {
       parameters: [
         { name: "limit", type: "number", description: "Maximum number of journals to return.", required: false },
       ],
-      handler: async ({ limit = 10 }: { limit?: number }) => {
+      handler: async (args: Record<string, any>) => {
+        const { limit = 10 } = args as { limit?: number };
         return await getJournals("desc", limit, 0);
       },
     },
@@ -122,19 +107,9 @@ export function getAgentTools(userId: string): FrontendAction<any>[] {
       parameters: [
         { name: "query", type: "string", description: "The semantic search query.", required: true }
       ],
-      handler: async ({ query }: SearchActionArgs, { actionContext }: CopilotActionContext) => {
+      handler: async (args: Record<string, any>) => {
+        const { query } = args as SearchActionArgs;
         const results = await searchJournals(query, userId);
-        
-        // Proactively render the most relevant journal card
-        if (results[0]) {
-          await actionContext.runAction("render_journal_card", {
-            id: results[0].id,
-            title: results[0].title || "Untitled Entry",
-            content: results[0].snippet,
-            date: results[0].date
-          });
-        }
-        
         return results;
       },
     },
@@ -144,7 +119,8 @@ export function getAgentTools(userId: string): FrontendAction<any>[] {
       parameters: [
         { name: "fact", type: "string", description: "The memory content to store.", required: true },
       ],
-      handler: async ({ fact }: { fact: string }) => {
+      handler: async (args: Record<string, any>) => {
+        const { fact } = args as { fact: string };
         return await addMemory(fact);
       },
     },
@@ -155,7 +131,8 @@ export function getAgentTools(userId: string): FrontendAction<any>[] {
         { name: "id", type: "string", description: "The memory ID.", required: true },
         { name: "content", type: "string", description: "The updated memory content.", required: true },
       ],
-      handler: async ({ id, content }: { id: string; content: string }) => {
+      handler: async (args: Record<string, any>) => {
+        const { id, content } = args as { id: string; content: string };
         return await updateMemory(id, content);
       },
     },
@@ -165,7 +142,8 @@ export function getAgentTools(userId: string): FrontendAction<any>[] {
       parameters: [
         { name: "id", type: "string", description: "The memory ID.", required: true },
       ],
-      handler: async ({ id }: IdActionArgs) => {
+      handler: async (args: Record<string, any>) => {
+        const { id } = args as IdActionArgs;
         return await deleteMemory(id);
       },
     },
@@ -175,7 +153,8 @@ export function getAgentTools(userId: string): FrontendAction<any>[] {
       parameters: [
         { name: "id", type: "string", description: "The memory ID.", required: true },
       ],
-      handler: async ({ id }: IdActionArgs) => {
+      handler: async (args: Record<string, any>) => {
+        const { id } = args as IdActionArgs;
         return await getMemory(id);
       },
     },
@@ -185,7 +164,8 @@ export function getAgentTools(userId: string): FrontendAction<any>[] {
       parameters: [
         { name: "query", type: "string", description: "The memory query.", required: true }
       ],
-      handler: async ({ query }: SearchActionArgs) => {
+      handler: async (args: Record<string, any>) => {
+        const { query } = args as SearchActionArgs;
         const memories = await getRelevantMemories(userId, query);
         return memories.items;
       },
@@ -197,7 +177,8 @@ export function getAgentTools(userId: string): FrontendAction<any>[] {
         { name: "conversation", type: "string", description: "The conversation transcript.", required: true },
         { name: "focus", type: "string", description: "Optional focus for the summary.", required: false },
       ],
-      handler: async ({ conversation, focus }: SummarizeChatArgs) => {
+      handler: async (args: Record<string, any>) => {
+        const { conversation, focus } = args as SummarizeChatArgs;
         const result = await generateText({
           model: getChatModel(),
           temperature: 0.2,
@@ -214,7 +195,8 @@ export function getAgentTools(userId: string): FrontendAction<any>[] {
       parameters: [
         { name: "text", type: "string", description: "The conversation or note text.", required: true },
       ],
-      handler: async ({ text }: ExtractInsightsArgs) => {
+      handler: async (args: Record<string, any>) => {
+        const { text } = args as ExtractInsightsArgs;
         return await extractMemory(text);
       },
     },
@@ -224,17 +206,9 @@ export function getAgentTools(userId: string): FrontendAction<any>[] {
       parameters: [
         { name: "question", type: "string", description: "The specific question about patterns.", required: true }
       ],
-      handler: async ({ question }: DetectPatternsArgs, { actionContext }: CopilotActionContext) => {
+      handler: async (args: Record<string, any>) => {
+        const { question } = args as DetectPatternsArgs;
         const patterns = await queryGraph(question, userId);
-        
-        // Proactively render an insight summary for the most relevant pattern
-        if (patterns.insights?.[0]) {
-          await actionContext.runAction("render_insight_summary", {
-            insight: patterns.insights[0],
-            type: "Pattern"
-          });
-        }
-        
         return patterns;
       },
     },
@@ -247,7 +221,7 @@ export function getAgentTools(userId: string): FrontendAction<any>[] {
         { name: "content", type: "string", description: "The content snippet of the journal entry.", required: true },
         { name: "date", type: "string", description: "The date of the journal entry.", required: true },
       ],
-      handler: async (_args: RenderJournalArgs) => {
+      handler: async () => {
         return "Journal card rendered.";
       },
     },
@@ -260,7 +234,7 @@ export function getAgentTools(userId: string): FrontendAction<any>[] {
         { name: "events", type: "string[]", description: "Key events during this period.", required: true },
         { name: "emotions", type: "string[]", description: "Dominant emotions.", required: false },
       ],
-      handler: async (_args: RenderTimelineArgs) => {
+      handler: async () => {
         return "Timeline item rendered.";
       },
     },
@@ -271,7 +245,7 @@ export function getAgentTools(userId: string): FrontendAction<any>[] {
         { name: "insight", type: "string", description: "The insight text.", required: true },
         { name: "type", type: "string", description: "Type of insight (e.g., emotion, topic, pattern).", required: false },
       ],
-      handler: async (_args: RenderInsightArgs) => {
+      handler: async () => {
         return "Insight summary rendered.";
       },
     },

@@ -153,6 +153,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request, extra) => {
         await upsertMemoryGraphForJournal(userId, {
           ...journal,
           createdAt: new Date(),
+          updatedAt: new Date(),
         });
         const extracted = await extractMemory(content);
         await storeMemory(userId, extracted);
