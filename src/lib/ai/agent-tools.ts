@@ -1,4 +1,4 @@
-import { CopilotAction } from "@copilotkit/shared";
+import type { FrontendAction } from "@copilotkit/react-core";
 import { saveJournal, deleteJournal, getJournals } from "@/actions/journals";
 import { addMemory, deleteMemory, getMemory, getMemories, updateMemory } from "@/actions/memories";
 import { getChatHistory, getUserChats } from "@/actions/chat";
@@ -10,7 +10,68 @@ import { generateText } from "ai";
 import { getChatModel } from "@/lib/ai/openai";
 import { extractMemory } from "@/lib/memory/extract";
 
-export function getAgentTools(userId: string): CopilotAction<any>[] {
+type CopilotActionContext = {
+  actionContext: {
+    runAction: (name: string, args: Record<string, unknown>) => Promise<unknown>;
+  };
+};
+
+type JournalActionArgs = {
+  content: string;
+  title?: string;
+};
+
+type IdActionArgs = {
+  id: string;
+};
+
+type UpdateJournalArgs = {
+  id: string;
+  content: string;
+  title?: string;
+};
+
+type SearchActionArgs = {
+  query: string;
+};
+
+type TimelineActionArgs = {
+  grouping?: string;
+};
+
+type SummarizeChatArgs = {
+  conversation: string;
+  focus?: string;
+};
+
+type ExtractInsightsArgs = {
+  text: string;
+};
+
+type DetectPatternsArgs = {
+  question: string;
+};
+
+type RenderJournalArgs = {
+  id: string;
+  title: string;
+  content: string;
+  date: string;
+};
+
+type RenderTimelineArgs = {
+  date: string;
+  summary: string;
+  events: string[];
+  emotions?: string[];
+};
+
+type RenderInsightArgs = {
+  insight: string;
+  type?: string;
+};
+
+export function getAgentTools(userId: string): FrontendAction<any>[] {
   return [
     {
       name: "create_journal",
@@ -19,7 +80,7 @@ export function getAgentTools(userId: string): CopilotAction<any>[] {
         { name: "content", type: "string", description: "The content of the journal entry.", required: true },
         { name: "title", type: "string", description: "An optional title for the journal.", required: false }
       ],
-      handler: async ({ content, title }) => {
+      handler: async ({ content, title }: JournalActionArgs) => {
         return await saveJournal(content, undefined, title);
       },
     },
@@ -29,7 +90,7 @@ export function getAgentTools(userId: string): CopilotAction<any>[] {
       parameters: [
         { name: "id", type: "string", description: "The ID of the journal to delete.", required: true }
       ],
-      handler: async ({ id }) => {
+      handler: async ({ id }: IdActionArgs) => {
         return await deleteJournal(id);
       },
     },
@@ -41,7 +102,7 @@ export function getAgentTools(userId: string): CopilotAction<any>[] {
         { name: "content", type: "string", description: "The new content of the journal entry.", required: true },
         { name: "title", type: "string", description: "Optional updated title.", required: false },
       ],
-      handler: async ({ id, content, title }) => {
+      handler: async ({ id, content, title }: UpdateJournalArgs) => {
         return await saveJournal(content, id, title);
       },
     },
@@ -51,7 +112,7 @@ export function getAgentTools(userId: string): CopilotAction<any>[] {
       parameters: [
         { name: "limit", type: "number", description: "Maximum number of journals to return.", required: false },
       ],
-      handler: async ({ limit = 10 }) => {
+      handler: async ({ limit = 10 }: { limit?: number }) => {
         return await getJournals("desc", limit, 0);
       },
     },
@@ -61,7 +122,7 @@ export function getAgentTools(userId: string): CopilotAction<any>[] {
       parameters: [
         { name: "query", type: "string", description: "The semantic search query.", required: true }
       ],
-      handler: async ({ query }, { actionContext }) => {
+      handler: async ({ query }: SearchActionArgs, { actionContext }: CopilotActionContext) => {
         const results = await searchJournals(query, userId);
         
         // Proactively render the most relevant journal card
@@ -83,7 +144,7 @@ export function getAgentTools(userId: string): CopilotAction<any>[] {
       parameters: [
         { name: "fact", type: "string", description: "The memory content to store.", required: true },
       ],
-      handler: async ({ fact }) => {
+      handler: async ({ fact }: { fact: string }) => {
         return await addMemory(fact);
       },
     },
@@ -94,7 +155,7 @@ export function getAgentTools(userId: string): CopilotAction<any>[] {
         { name: "id", type: "string", description: "The memory ID.", required: true },
         { name: "content", type: "string", description: "The updated memory content.", required: true },
       ],
-      handler: async ({ id, content }) => {
+      handler: async ({ id, content }: { id: string; content: string }) => {
         return await updateMemory(id, content);
       },
     },
@@ -104,7 +165,7 @@ export function getAgentTools(userId: string): CopilotAction<any>[] {
       parameters: [
         { name: "id", type: "string", description: "The memory ID.", required: true },
       ],
-      handler: async ({ id }) => {
+      handler: async ({ id }: IdActionArgs) => {
         return await deleteMemory(id);
       },
     },
@@ -114,7 +175,7 @@ export function getAgentTools(userId: string): CopilotAction<any>[] {
       parameters: [
         { name: "id", type: "string", description: "The memory ID.", required: true },
       ],
-      handler: async ({ id }) => {
+      handler: async ({ id }: IdActionArgs) => {
         return await getMemory(id);
       },
     },
@@ -124,52 +185,9 @@ export function getAgentTools(userId: string): CopilotAction<any>[] {
       parameters: [
         { name: "query", type: "string", description: "The memory query.", required: true }
       ],
-      handler: async ({ query }) => {
+      handler: async ({ query }: SearchActionArgs) => {
         const memories = await getRelevantMemories(userId, query);
         return memories.items;
-      },
-    },
-    {
-      name: "get_timeline",
-      description: "Get a chronological timeline of life events.",
-      parameters: [
-        { name: "grouping", type: "string", description: "Grouping: daily, weekly, or monthly", required: false }
-      ],
-      handler: async ({ grouping = "daily" }, { actionContext }) => {
-        const timeline = await getLifeTimeline(userId, grouping as any);
-
-        if (timeline[0]) {
-          await actionContext.runAction("render_timeline_item", {
-            date: timeline[0].date,
-            summary: timeline[0].summary,
-            events: timeline[0].events,
-            emotions: timeline[0].emotions
-          });
-        }
-
-        return timeline;
-      },
-    },
-    {
-      name: "get_timeline",
-      description: "Get a chronological timeline of life events.",
-      parameters: [
-        { name: "grouping", type: "string", description: "Grouping: daily, weekly, or monthly", required: false }
-      ],
-      handler: async ({ grouping = "daily" }, { actionContext }) => {
-        const timeline = await getLifeTimeline(userId, grouping as any);
-        
-        // Proactively render the latest timeline node
-        if (timeline[0]) {
-          await actionContext.runAction("render_timeline_item", {
-            date: timeline[0].date,
-            summary: timeline[0].summary,
-            events: timeline[0].events,
-            emotions: timeline[0].emotions
-          });
-        }
-        
-        return timeline;
       },
     },
     {
@@ -179,7 +197,7 @@ export function getAgentTools(userId: string): CopilotAction<any>[] {
         { name: "conversation", type: "string", description: "The conversation transcript.", required: true },
         { name: "focus", type: "string", description: "Optional focus for the summary.", required: false },
       ],
-      handler: async ({ conversation, focus }) => {
+      handler: async ({ conversation, focus }: SummarizeChatArgs) => {
         const result = await generateText({
           model: getChatModel(),
           temperature: 0.2,
@@ -196,7 +214,7 @@ export function getAgentTools(userId: string): CopilotAction<any>[] {
       parameters: [
         { name: "text", type: "string", description: "The conversation or note text.", required: true },
       ],
-      handler: async ({ text }) => {
+      handler: async ({ text }: ExtractInsightsArgs) => {
         return await extractMemory(text);
       },
     },
@@ -206,7 +224,7 @@ export function getAgentTools(userId: string): CopilotAction<any>[] {
       parameters: [
         { name: "question", type: "string", description: "The specific question about patterns.", required: true }
       ],
-      handler: async ({ question }, { actionContext }) => {
+      handler: async ({ question }: DetectPatternsArgs, { actionContext }: CopilotActionContext) => {
         const patterns = await queryGraph(question, userId);
         
         // Proactively render an insight summary for the most relevant pattern
@@ -229,7 +247,7 @@ export function getAgentTools(userId: string): CopilotAction<any>[] {
         { name: "content", type: "string", description: "The content snippet of the journal entry.", required: true },
         { name: "date", type: "string", description: "The date of the journal entry.", required: true },
       ],
-      handler: async () => {
+      handler: async (_args: RenderJournalArgs) => {
         return "Journal card rendered.";
       },
     },
@@ -242,7 +260,7 @@ export function getAgentTools(userId: string): CopilotAction<any>[] {
         { name: "events", type: "string[]", description: "Key events during this period.", required: true },
         { name: "emotions", type: "string[]", description: "Dominant emotions.", required: false },
       ],
-      handler: async () => {
+      handler: async (_args: RenderTimelineArgs) => {
         return "Timeline item rendered.";
       },
     },
@@ -253,7 +271,7 @@ export function getAgentTools(userId: string): CopilotAction<any>[] {
         { name: "insight", type: "string", description: "The insight text.", required: true },
         { name: "type", type: "string", description: "Type of insight (e.g., emotion, topic, pattern).", required: false },
       ],
-      handler: async () => {
+      handler: async (_args: RenderInsightArgs) => {
         return "Insight summary rendered.";
       },
     },

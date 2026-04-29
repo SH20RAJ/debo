@@ -11,6 +11,7 @@ export function AgentDataRenderer() {
   useCopilotAction({
     name: "render_journal_card",
     description: "Render a journal entry card in the chat.",
+    available: "frontend",
     parameters: [
       { name: "id", type: "string", description: "The ID of the journal entry.", required: true },
       { name: "title", type: "string", description: "The title of the journal entry.", required: true },
@@ -59,6 +60,7 @@ export function AgentDataRenderer() {
   useCopilotAction({
     name: "render_timeline_item",
     description: "Render a specific timeline entry in the chat.",
+    available: "frontend",
     parameters: [
       { name: "date", type: "string", description: "The date of the timeline entry.", required: true },
       { name: "summary", type: "string", description: "A summary of the day/period.", required: true },
@@ -103,6 +105,7 @@ export function AgentDataRenderer() {
   useCopilotAction({
     name: "render_insight_summary",
     description: "Render a deep life insight in the chat.",
+    available: "frontend",
     parameters: [
       { name: "insight", type: "string", description: "The insight text.", required: true },
       { name: "type", type: "string", description: "Type of insight (e.g., emotion, topic, pattern).", required: false },
