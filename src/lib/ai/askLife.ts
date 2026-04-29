@@ -5,6 +5,7 @@ import {
   generateText,
   stepCountIs,
   streamText,
+  type StreamTextOnFinishCallback,
   type UIMessage,
 } from "ai";
 
@@ -35,7 +36,11 @@ export async function askLife(question: string, userId: string) {
   };
 }
 
-export async function askLifeStream(messages: UIMessage[], userId: string) {
+export async function askLifeStream(
+  messages: UIMessage[],
+  userId: string,
+  options: { onFinish?: StreamTextOnFinishCallback<any> } = {}
+) {
   const tools = createTools(userId);
   const question = getLatestUserText(messages);
   const rag = question
@@ -54,6 +59,7 @@ export async function askLifeStream(messages: UIMessage[], userId: string) {
     tools,
     stopWhen: stepCountIs(4),
     temperature: 0.35,
+    onFinish: options.onFinish,
   });
 
   return {

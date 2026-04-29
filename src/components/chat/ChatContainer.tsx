@@ -1,140 +1,194 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
-import { Brain, CalendarDays, Search, Sparkles } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { UIMessage } from "ai";
 import { toast } from "sonner";
 
-import { ChatInput } from "./ChatInput";
-import { ChatMessage } from "./ChatMessage";
-import { LoadingStep } from "./LoadingStep";
+import { createChat, deleteChat, getChatHistory, getUserChats } from "@/actions/chat";
 
-const suggestions = [
-  "What patterns showed up in my journals this month?",
-  "What have I written about work stress recently?",
-  "What did I seem excited about last week?",
-  "Which memories mention my long-term goals?",
-];
+import { ChatSession } from "./ChatSession";
+import { ChatSidebar } from "./ChatSidebar";
+
+type ChatSummary = {
+  id: string;
+  title: string | null;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+};
+
+type ChatMessageRecord = {
+  id: string;
+  role: string;
+  content: string;
+  metadata?: string | null;
+  createdAt: Date | string;
+};
 
 export function ChatContainer() {
-  const [input, setInput] = useState("");
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const transport = useMemo(
-    () => new DefaultChatTransport({ api: "/api/chat" }),
-    []
+  const [chats, setChats] = useState<ChatSummary[]>([]);
+  const [activeChatId, setActiveChatId] = useState<string | null>(null);
+  const [initialMessages, setInitialMessages] = useState<UIMessage[]>([]);
+  const [isLoadingChats, setIsLoadingChats] = useState(true);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+
+  const activeChatTitle = useMemo(
+    () => chats.find((chat) => chat.id === activeChatId)?.title || "Ask Debo",
+    [activeChatId, chats]
   );
 
-  const { messages, sendMessage, status, stop } = useChat({
-    transport,
-    onError: (error) => {
-      console.error("Chat error:", error);
-      toast.error("Debo could not finish that response.");
-    },
-  });
+  const refreshChats = useCallback(async (preferredChatId?: string) => {
+    setIsLoadingChats(true);
+    try {
+      const existingChats = (await getUserChats()) as ChatSummary[];
+      setChats(existingChats);
 
-  const isBusy = status === "submitted" || status === "streaming";
+      const storedChatId = typeof window !== "undefined" ? window.localStorage.getItem("debo.activeChatId") : null;
+      const nextChatId = preferredChatId || storedChatId || activeChatId || existingChats[0]?.id || null;
+
+      if (nextChatId && existingChats.some((chat) => chat.id === nextChatId)) {
+        setActiveChatId(nextChatId);
+      } else if (!nextChatId) {
+        setActiveChatId(null);
+        setInitialMessages([]);
+      }
+    } catch (error) {
+      console.error("Failed to load chats:", error);
+      toast.error("Could not load chat history.");
+    } finally {
+      setIsLoadingChats(false);
+    }
+  }, [activeChatId]);
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({
-      top: scrollRef.current.scrollHeight,
-      behavior: "smooth",
-    });
-  }, [messages, status]);
+    void refreshChats();
+  }, [refreshChats]);
 
-  const submitPrompt = async (value: string) => {
-    const text = value.trim();
-    if (!text || isBusy) return;
+  useEffect(() => {
+    if (typeof window !== "undefined" && activeChatId) {
+      window.localStorage.setItem("debo.activeChatId", activeChatId);
+    }
+  }, [activeChatId]);
 
-    setInput("");
-    await sendMessage({ text });
-  };
+  useEffect(() => {
+    if (!activeChatId) {
+      setInitialMessages([]);
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadHistory = async () => {
+      setIsLoadingHistory(true);
+      try {
+        const history = (await getChatHistory(activeChatId)) as ChatMessageRecord[];
+        if (cancelled) return;
+
+        setInitialMessages(history.map(recordToUIMessage));
+      } catch (error) {
+        console.error("Failed to load chat history:", error);
+        if (!cancelled) {
+          toast.error("Could not load this conversation.");
+          setInitialMessages([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoadingHistory(false);
+        }
+      }
+    };
+
+    void loadHistory();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeChatId]);
+
+  const createChatDraft = useCallback(async (title = "New Conversation") => {
+    const chatId = await createChat(title);
+    return chatId;
+  }, []);
+
+  const handleCreateAndSelectChat = useCallback(async () => {
+    const chatId = await createChatDraft("New Conversation");
+    setActiveChatId(chatId);
+    setInitialMessages([]);
+    await refreshChats(chatId);
+  }, [createChatDraft, refreshChats]);
+
+  const handleSelectChat = useCallback((chatId: string) => {
+    setActiveChatId(chatId);
+  }, []);
+
+  const handleDeleteChat = useCallback(async (chatId: string) => {
+    try {
+      await deleteChat(chatId);
+      const nextChats = chats.filter((chat) => chat.id !== chatId);
+      setChats(nextChats);
+
+      const nextActive = nextChats[0]?.id || null;
+      setActiveChatId(nextActive);
+      if (typeof window !== "undefined") {
+        if (nextActive) {
+          window.localStorage.setItem("debo.activeChatId", nextActive);
+        } else {
+          window.localStorage.removeItem("debo.activeChatId");
+        }
+      }
+      toast.success("Conversation deleted.");
+    } catch (error) {
+      console.error("Delete chat failed:", error);
+      toast.error("Could not delete the conversation.");
+    }
+  }, [chats]);
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] min-h-[560px] flex-col overflow-hidden bg-background md:h-[calc(100vh-2rem)]">
-      <header className="border-b border-border/60 bg-background/80 px-4 py-3 backdrop-blur md:px-6">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-lg border border-primary/25 bg-primary/10 text-primary">
-              <Sparkles className="size-4" />
-            </div>
-            <div>
-              <h1 className="text-sm font-semibold leading-none text-foreground">
-                Ask Debo
-              </h1>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Live journal retrieval
-              </p>
-            </div>
-          </div>
-          <div className="hidden items-center gap-2 text-xs text-muted-foreground sm:flex">
-            <span className="size-2 rounded-full bg-primary" />
-            Streaming
-          </div>
-        </div>
-      </header>
+    <div className="flex h-[calc(100vh-4rem)] min-h-[560px] flex-col overflow-hidden bg-background md:h-[calc(100vh-2rem)] md:flex-row">
+      <ChatSidebar
+        chats={chats}
+        activeChatId={activeChatId}
+        onSelectChat={handleSelectChat}
+        onCreateChat={() => void handleCreateAndSelectChat()}
+        onDeleteChat={handleDeleteChat}
+        isLoading={isLoadingChats}
+      />
 
-      <main ref={scrollRef} className="flex-1 overflow-y-auto scroll-smooth">
-        <div className="mx-auto flex min-h-full max-w-5xl flex-col px-4 py-6 md:px-6">
-          {messages.length === 0 ? (
-            <div className="flex flex-1 flex-col justify-center py-10">
-              <div className="max-w-2xl animate-in fade-in slide-in-from-bottom-3 duration-500">
-                <div className="mb-5 flex items-center gap-2 text-xs font-medium uppercase text-muted-foreground">
-                  <span className="h-px w-10 bg-border" />
-                  Private memory engine
-                </div>
-                <h2 className="max-w-xl text-3xl font-semibold leading-tight text-foreground md:text-5xl">
-                  Search your life with a little more signal.
-                </h2>
-              </div>
-
-              <div className="mt-10 grid gap-3 sm:grid-cols-2">
-                {suggestions.map((suggestion) => (
-                  <button
-                    key={suggestion}
-                    type="button"
-                    onClick={() => submitPrompt(suggestion)}
-                    className="group min-h-24 rounded-lg border border-border/70 bg-muted/20 p-4 text-left text-sm transition duration-200 hover:border-primary/35 hover:bg-primary/5"
-                  >
-                    <span className="line-clamp-2 font-medium leading-relaxed text-foreground transition group-hover:text-primary">
-                      {suggestion}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-5 pb-6">
-              {messages.map((message) => (
-                <ChatMessage key={message.id} message={message} />
-              ))}
-
-              {status === "submitted" && (
-                <div className="max-w-2xl animate-in fade-in slide-in-from-bottom-2 duration-300">
-                  <div className="grid gap-2 sm:grid-cols-3">
-                    <LoadingStep icon={Search} label="Searching journals..." />
-                    <LoadingStep icon={Brain} label="Accessing memories..." />
-                    <LoadingStep
-                      icon={CalendarDays}
-                      label="Fetching recent entries..."
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </main>
-
-      <footer className="border-t border-border/60 bg-background/90 px-4 py-3 backdrop-blur md:px-6">
-        <ChatInput
-          input={input}
-          setInput={setInput}
-          onSubmit={submitPrompt}
-          isBusy={isBusy}
-          stop={stop}
+      <div className="relative min-w-0 flex-1">
+        <ChatSession
+          key={activeChatId || "new-chat"}
+          chatId={activeChatId}
+          title={activeChatTitle}
+          initialMessages={initialMessages}
+          onCreateChat={createChatDraft}
+          onMessageCommitted={(chatId) => refreshChats(chatId || undefined)}
         />
-      </footer>
+        {isLoadingHistory && (
+          <div className="pointer-events-none absolute inset-0 bg-background/30 backdrop-blur-[1px]" />
+        )}
+      </div>
     </div>
   );
+}
+
+function recordToUIMessage(record: ChatMessageRecord): UIMessage {
+  return {
+    id: record.id,
+    role: record.role as UIMessage["role"],
+    parts: recordToParts(record.content),
+    metadata: parseMetadata(record.metadata),
+  } as UIMessage;
+}
+
+function recordToParts(content: string) {
+  return [{ type: "text" as const, text: content }];
+}
+
+function parseMetadata(value?: string | null) {
+  if (!value) return undefined;
+
+  try {
+    return JSON.parse(value) as Record<string, unknown>;
+  } catch {
+    return undefined;
+  }
 }

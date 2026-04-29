@@ -3,7 +3,7 @@
 import { db } from "@/db";
 import { chats, messages } from "@/db/schema";
 import { auth } from "@/lib/auth";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, asc } from "drizzle-orm";
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 
@@ -26,13 +26,23 @@ export async function getChatHistory(chatId: string) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) throw new Error("Unauthorized");
 
+  const chat = await db.query.chats.findFirst({
+    where: and(eq(chats.id, chatId), eq(chats.userId, session.user.id)),
+  });
+  if (!chat) throw new Error("Chat not found or unauthorized");
+
   return await db.query.messages.findMany({
     where: eq(messages.chatId, chatId),
-    orderBy: [desc(messages.createdAt)],
+    orderBy: [asc(messages.createdAt)],
   });
 }
 
-export async function addChatMessage(chatId: string, role: string, content: string) {
+export async function addChatMessage(
+  chatId: string,
+  role: string,
+  content: string,
+  metadata?: Record<string, unknown>
+) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) throw new Error("Unauthorized");
 
@@ -48,7 +58,13 @@ export async function addChatMessage(chatId: string, role: string, content: stri
     chatId,
     role,
     content,
+    metadata: metadata ? JSON.stringify(metadata) : null,
   });
+
+  await db
+    .update(chats)
+    .set({ updatedAt: new Date() })
+    .where(and(eq(chats.id, chatId), eq(chats.userId, session.user.id)));
 
   return messageId;
 }

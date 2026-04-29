@@ -97,6 +97,7 @@ export const messages = pgTable("message", {
     chatId: text("chat_id").notNull().references(() => chats.id),
     role: text("role").notNull(), // 'user', 'assistant', 'system', 'tool'
     content: text("content").notNull(), // JSON string for complex content
+    metadata: text("metadata"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (table) => ({
     chatIdIdx: index("message_chat_id_idx").on(table.chatId),
