@@ -3,6 +3,8 @@ import { Inter, Outfit } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
+import { StackProvider, StackTheme } from "@stackframe/stack";
+import { stackClientApp } from "@/stack/client";
 import "./globals.css";
 
 const inter = Inter({
@@ -43,17 +45,21 @@ export default function RootLayout({
 				<link rel="icon" href="/logo.png" />
 			</head>
 			<body className={`${inter.variable} ${outfit.variable} font-sans antialiased selection:bg-primary/20 selection:text-primary`}>
-				<ThemeProvider
-					attribute="class"
-					defaultTheme="dark"
-					enableSystem
-					disableTransitionOnChange
-				>
-					<TooltipProvider>
-						{children}
-						<Toaster />
-					</TooltipProvider>
-				</ThemeProvider>
+				<StackProvider app={stackClientApp}>
+					<StackTheme>
+						<ThemeProvider
+							attribute="class"
+							defaultTheme="dark"
+							enableSystem
+							disableTransitionOnChange
+						>
+							<TooltipProvider>
+								{children}
+								<Toaster />
+							</TooltipProvider>
+						</ThemeProvider>
+					</StackTheme>
+				</StackProvider>
 			</body>
 		</html>
 	);

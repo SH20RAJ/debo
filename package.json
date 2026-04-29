@@ -30,6 +30,7 @@
 		"@nangohq/node": "^0.70.1",
 		"@neondatabase/serverless": "^0.10.4",
 		"@opennextjs/cloudflare": "^1.19.1",
+		"@stackframe/stack": "^2.8.85",
 		"@tailwindcss/typography": "^0.5.19",
 		"@tiptap/core": "^3.22.4",
 		"@tiptap/extension-bubble-menu": "^3.22.4",
