@@ -1,4 +1,5 @@
-import type { FrontendAction, Parameter } from "@copilotkit/react-core";
+import type { FrontendAction } from "@copilotkit/react-core";
+import type { Parameter } from "@copilotkit/shared";
 import { saveJournal, deleteJournal, getJournals } from "@/actions/journals";
 import { addMemory, deleteMemory, getMemory, updateMemory } from "@/actions/memories";
 import { searchJournals, getRecentJournalCitations } from "@/lib/vector/search";
