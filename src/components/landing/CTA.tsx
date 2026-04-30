@@ -13,7 +13,8 @@ export function CTA() {
               Start free — Create my account
             </Button>
           </Link>
-          <Link href="/privacy" className="text-sm text-muted-foreground underline">How we protect your data</Link>
+           <Link href="/privacy" className="text-sm text-muted-foreground underline">How we protect your data</Link>
+           <Link href="https://github.com/SH20RAJ/debo" className="text-sm text-muted-foreground underline">Contribute on GitHub</Link>
         </div>
       </div>
     </section>

@@ -67,8 +67,8 @@ export const getJournal = cache(async (id: string) => {
 
 export async function saveJournal(rawContent: string, id?: string, title?: string) {
     try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session) return { success: false, error: "Unauthorized" };
+        const user = await stackServerApp.getUser();
+        if (!user) return { success: false, error: "Unauthorized" };
 
         // Validate input
         const result = journalSchema.safeParse({ content: rawContent, id, title });
@@ -129,8 +129,8 @@ export async function saveJournal(rawContent: string, id?: string, title?: strin
 
 export async function deleteJournal(id: string) {
     try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session) return { success: false, error: "Unauthorized" };
+        const user = await stackServerApp.getUser();
+        if (!user) return { success: false, error: "Unauthorized" };
 
         const existing = await getJournal(id);
         if (!existing) return { success: false, error: "Entry not found or unauthorized" };
