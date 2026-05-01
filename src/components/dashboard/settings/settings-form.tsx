@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { getNangoConnections, deleteNangoConnection } from "@/actions/settings";
+import { deleteNangoConnection } from "@/actions/settings";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { ShieldCheck, Link2, ExternalLink, Link2Off, Loader2, Sparkles, Box, Mic } from "lucide-react";
+import { ShieldCheck, Loader2, Sparkles, Box, Mic } from "lucide-react";
 import Nango from "@nangohq/frontend";
 import { useRouter } from "next/navigation";
 import { PROVIDERS } from "@/config/providers";
@@ -21,7 +20,9 @@ export function SettingsForm({
     initialData?: { 
         activeProvider?: string | null,
     } | null,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     connections?: any[],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     aiProviders?: any[],
     userId: string
 }) {
@@ -56,7 +57,7 @@ export function SettingsForm({
                 toast.success(`Disconnected from ${providerConfigKey}.`);
                 router.refresh();
             }
-        } catch (error) {
+        } catch (_error) {
             toast.error("Failed to disconnect.");
         }
     };
@@ -123,6 +124,7 @@ export function SettingsForm({
                                     <div className="p-5 flex items-center justify-between gap-4">
                                         <div className="flex items-center gap-3">
                                             <div className="h-10 w-10 overflow-hidden rounded-xl border border-border bg-background p-2">
+                                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                                 <img src={integration.icon} alt={integration.name} className="h-full w-full object-contain grayscale group-hover:grayscale-0 transition-all" />
                                             </div>
                                             <span className="text-sm font-semibold tracking-tight">{integration.name}</span>

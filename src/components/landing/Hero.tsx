@@ -34,7 +34,7 @@ export function Hero({ isSignedIn = false }: HeroProps) {
           )}
           <Link href="#demo" aria-label="Try the demo - Ask a question">
             <Button size="lg" variant="outline" className="h-12 w-full rounded-full px-8 text-base sm:w-auto">
-              Ask the demo: "What changed me this month?"
+              Ask the demo: &quot;What changed me this month?&quot;
             </Button>
           </Link>
         </div>

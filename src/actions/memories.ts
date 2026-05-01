@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 import { db } from "@/db";
 import { memoryEntities, memoryFacts } from "@/db/schema";
@@ -11,12 +11,6 @@ import { storeMemory } from "@/lib/memory/store";
 import { headers } from "next/headers";
 import { cache } from "react";
 import { revalidatePath } from "next/cache";
-
-type MemoryRecord = {
-    id: string;
-    content: string;
-    type: string;
-};
 
 export const getMemories = cache(async (query: string = "") => {
     const session = await auth.api.getSession({ headers: await headers() });

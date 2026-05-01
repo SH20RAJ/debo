@@ -5,12 +5,12 @@ import {
 } from "@copilotkit/runtime";
 import { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
 import { getOpenAIClient } from "@/lib/ai/openai";
 
 import { getAgentTools } from "@/lib/ai/agent-tools";
 
 const serviceAdapter = new OpenAIAdapter({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   openai: getOpenAIClient() as any,
 });
 

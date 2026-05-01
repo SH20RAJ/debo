@@ -9,7 +9,6 @@ import { LifeInsights } from "@/components/dashboard/life/life-insights";
 import { BarChart3, BookOpen, Plus, Search, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Card, CardContent } from "@/components/ui/card";
 import { getJournalsCount } from "@/actions/journals";
 
 export default async function DashboardPage() {

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -11,7 +10,6 @@ import { ProviderConfig } from "@/config/providers";
 import { saveAIProvider, setActiveProvider } from "@/actions/settings";
 import { toast } from "sonner";
 import { Settings2, ExternalLink, CheckCircle2 } from "lucide-react";
-import Image from "next/image";
 
 interface ProviderCardProps {
     config: ProviderConfig;
@@ -41,7 +39,7 @@ export function ProviderCard({ config, savedConfig, isActive }: ProviderCardProp
             });
             toast.success(`${config.name} configured successfully`);
             setOpen(false);
-        } catch (error) {
+        } catch (_error) {
             toast.error("Failed to save provider config");
         } finally {
             setLoading(false);
@@ -57,7 +55,7 @@ export function ProviderCard({ config, savedConfig, isActive }: ProviderCardProp
         try {
             await setActiveProvider(config.id);
             toast.success(`${config.name} is now your active provider`);
-        } catch (error) {
+        } catch (_error) {
             toast.error("Failed to set active provider");
         }
     };
@@ -67,6 +65,7 @@ export function ProviderCard({ config, savedConfig, isActive }: ProviderCardProp
             <div className="p-5 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                     <div className="relative h-10 w-10 overflow-hidden rounded-xl border border-border bg-background p-2 transition-transform group-hover:scale-105">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={config.icon} alt={config.name} className="h-full w-full object-contain grayscale group-hover:grayscale-0 transition-all" />
                     </div>
                     <div className="space-y-0.5">

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { EditorRoot, EditorContent, type JSONContent, handleCommandNavigation } from "novel";
+import React from "react";
+import { EditorRoot, EditorContent, handleCommandNavigation } from "novel";
 import { defaultExtensions } from "./extensions";
 import { slashCommand, suggestionItems, renderItems } from "./slash-command";
 
@@ -25,7 +25,9 @@ export default function BlockEditor({ initialContent, onChange }: BlockEditorPro
   return (
     <EditorRoot>
       <EditorContent
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         initialContent={initialContent as any}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         extensions={extensions as any}
         immediatelyRender={false}
         editorProps={{

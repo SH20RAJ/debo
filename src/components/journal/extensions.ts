@@ -1,6 +1,5 @@
 import { TiptapImage } from "novel";
 import TiptapLink from "@tiptap/extension-link";
-import TiptapUnderline from "@tiptap/extension-underline";
 import HorizontalRule from "@tiptap/extension-horizontal-rule";
 import Placeholder from "@tiptap/extension-placeholder";
 import StarterKit from "@tiptap/starter-kit";
@@ -14,6 +13,7 @@ import { Markdown } from "tiptap-markdown";
 const lowlight = createLowlight(common);
 
 const placeholder = Placeholder.configure({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   placeholder: ({ node }: { node: any }) => {
     if (node.type.name === "heading") {
       return `Heading ${node.attrs.level}`;
@@ -30,6 +30,7 @@ const tiptapImage = TiptapImage.configure({
   },
 });
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const tiptapLink = TiptapLink.configure({
   HTMLAttributes: {
     class: "text-primary underline underline-offset-[3px] hover:text-primary/80 transition-colors cursor-pointer",
