@@ -18,6 +18,7 @@ Debo turns life entries into queryable memory. Be warm, concise, and evidence-ba
 When useful, render structured results with render_journal_card, render_timeline_item, or render_insight_summary. Prefer concrete dates, short summaries, and useful next actions over generic advice.`;
 
 export const POST = async (req: NextRequest) => {
+  console.log("[CopilotKit API] POST request received");
   const user = await stackServerApp.getUser();
 
   if (!user) {
@@ -25,25 +26,30 @@ export const POST = async (req: NextRequest) => {
     return new Response("Unauthorized", { status: 401 });
   }
 
-  console.log("[CopilotKit API] Authenticated user:", user.primaryEmail);
+  console.log("[CopilotKit API] Authenticated user:", user.primaryEmail, "ID:", user.id);
 
-  const runtime = new CopilotRuntime({
-    agents: {
-      default: new BuiltInAgent({
-        model: getChatModel(),
-        prompt: DEBO_AGENT_PROMPT,
-        maxSteps: 5,
-        temperature: 0.35,
-      }),
-    },
-    actions: getAgentTools(user.id),
-  });
+  try {
+    const runtime = new CopilotRuntime({
+      agents: {
+        default: new BuiltInAgent({
+          model: getChatModel(),
+          prompt: DEBO_AGENT_PROMPT,
+          maxSteps: 5,
+          temperature: 0.35,
+        }),
+      },
+      actions: getAgentTools(user.id),
+    });
 
-  const { handleRequest } = copilotRuntimeNextJSAppRouterEndpoint({
-    runtime,
-    serviceAdapter,
-    endpoint: "/api/copilotkit",
-  });
+    const { handleRequest } = copilotRuntimeNextJSAppRouterEndpoint({
+      runtime,
+      serviceAdapter,
+      endpoint: "/api/copilotkit",
+    });
 
-  return handleRequest(req);
+    return await handleRequest(req);
+  } catch (error: any) {
+    console.error("[CopilotKit API] Runtime Error:", error);
+    return new Response(error.message || "Internal Server Error", { status: error.status || 500 });
+  }
 };

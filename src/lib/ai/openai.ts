@@ -37,7 +37,12 @@ export function getOpenAIClient() {
   const baseURL = readRequiredEnv("OPENAI_BASE_URL");
 
   // Use Cloudflare's custom fetch only for /openai endpoint, not for /compat
-  const fetch = baseURL.includes("cloudflare") && !baseURL.includes("/compat") ? cloudflareAuthFetch : undefined;
+  const isCloudflare = baseURL.includes("cloudflare");
+  const isCompat = baseURL.includes("/compat");
+  const fetch = isCloudflare && !isCompat ? cloudflareAuthFetch : undefined;
+
+  const maskedKey = apiKey.substring(0, 4) + "..." + apiKey.substring(apiKey.length - 4);
+  console.log(`[AI Config] Initializing OpenAI client. baseURL: ${baseURL}, isCloudflare: ${isCloudflare}, isCompat: ${isCompat}, customFetch: ${!!fetch}, key: ${maskedKey}`);
 
   return createOpenAI({
     baseURL,
