@@ -1,17 +1,24 @@
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { stackServerApp } from "@/stack/server";
 import { redirect } from "next/navigation";
-import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import {
+  SidebarProvider,
+  SidebarInset,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
 import { Metadata } from "next";
 import { CopilotKit } from "@copilotkit/react-core";
 import "@copilotkit/react-ui/styles.css";
 import { CopilotChat } from "@/components/copilot/CopilotChat";
 
-export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const session = await auth.api.getSession({ headers: await headers() });
+export default async function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const user = await stackServerApp.getUser();
 
-  if (!session) {
+  if (!user) {
     redirect("/join");
   }
 
@@ -25,9 +32,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
               <SidebarTrigger className="-ml-1 text-muted-foreground hover:text-foreground transition-colors" />
             </div>
           </header>
-          <main className="flex-1 overflow-y-auto">
-            {children}
-          </main>
+          <main className="flex-1 overflow-y-auto">{children}</main>
           <CopilotChat />
         </SidebarInset>
       </SidebarProvider>
@@ -37,5 +42,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
 export const metadata: Metadata = {
   title: "Dashboard",
-  description: "Debo dashboard: explore insights, timeline, and your memory graph.",
+  description:
+    "Debo dashboard: explore insights, timeline, and your memory graph.",
 };

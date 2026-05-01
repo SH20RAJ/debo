@@ -1,13 +1,13 @@
 import { AccessToken } from "livekit-server-sdk";
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { stackServerApp } from "@/stack/server";
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await auth.api.getSession({ headers: await headers() });
-    const participantName = session?.user?.name || "Anonymous";
-    const participantIdentity = session?.user?.id || `user_${Math.random().toString(36).substring(7)}`;
+    const user = await stackServerApp.getUser();
+    const participantName = user?.displayName || "Anonymous";
+    const participantIdentity =
+      user?.id || `user_${Math.random().toString(36).substring(7)}`;
 
     const roomName = "debo-agent-room"; // Keep this consistent for the agent to join
 
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
       {
         identity: participantIdentity,
         name: participantName,
-      }
+      },
     );
 
     at.addGrant({
@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
     console.error("Error generating LiveKit token:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

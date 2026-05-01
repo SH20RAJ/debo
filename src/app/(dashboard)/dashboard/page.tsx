@@ -1,5 +1,4 @@
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { stackServerApp } from "@/stack/server";
 import { redirect } from "next/navigation";
 import { Metadata } from "next";
 import { getLifeTimeline } from "@/lib/life/timeline";
@@ -12,24 +11,30 @@ import Link from "next/link";
 import { getJournalsCount } from "@/actions/journals";
 
 export default async function DashboardPage() {
-    const session = await auth.api.getSession({ headers: await headers() });
-    if (!session) redirect("/join");
+  const user = await stackServerApp.getUser();
+  if (!user) redirect("/join");
 
-    const [journalCount, timeline] = await Promise.all([
-        getJournalsCount(),
-        getLifeTimeline(session.user.id, "daily"),
-    ]);
+  const [journalCount, timeline] = await Promise.all([
+    getJournalsCount(),
+    getLifeTimeline(user.id, "daily"),
+  ]);
 
-    let graph = await queryGraph("What recurring patterns stand out in my life?", session.user.id);
+  let graph = await queryGraph(
+    "What recurring patterns stand out in my life?",
+    user.id,
+  );
 
-    if (!graph.topPeople.length && journalCount > 0) {
-        await refreshMemoryGraph(session.user.id);
-        graph = await queryGraph("What recurring patterns stand out in my life?", session.user.id);
-    }
+  if (!graph.topPeople.length && journalCount > 0) {
+    await refreshMemoryGraph(user.id);
+    graph = await queryGraph(
+      "What recurring patterns stand out in my life?",
+      user.id,
+    );
+  }
 
-    const recentTimeline = timeline.slice(-4).reverse();
-    const firstName = session.user.name.split(" ")[0];
-    const recentEntryCount = recentTimeline.length;
+  const recentTimeline = timeline.slice(-4).reverse();
+  const firstName = (user.displayName ?? "there").split(" ")[0];
+  const recentEntryCount = recentTimeline.length;
 
   return (
     <div className="relative flex-1 bg-background">
@@ -39,7 +44,7 @@ export default async function DashboardPage() {
             <Sparkles className="h-3 w-3" />
             Intelligence Engine Active
           </div>
-          
+
           <div className="grid gap-12 xl:grid-cols-[1fr_400px]">
             <div className="space-y-8">
               <h1 className="text-4xl font-semibold tracking-tight text-foreground md:text-5xl lg:text-6xl">
@@ -47,17 +52,28 @@ export default async function DashboardPage() {
                 <span className="text-muted-foreground/40">of Your Life.</span>
               </h1>
               <p className="max-w-xl text-lg leading-relaxed text-muted-foreground">
-                Welcome back, {firstName}. Debo has synthesized your recent moments into actionable cognitive patterns and emotional signals.
+                Welcome back, {firstName}. Debo has synthesized your recent
+                moments into actionable cognitive patterns and emotional
+                signals.
               </p>
-              
+
               <div className="flex flex-wrap gap-3 pt-2">
-                <Button asChild size="lg" className="h-12 rounded-xl px-6 text-sm font-medium transition-all hover:opacity-90 active:scale-[0.98]">
+                <Button
+                  asChild
+                  size="lg"
+                  className="h-12 rounded-xl px-6 text-sm font-medium transition-all hover:opacity-90 active:scale-[0.98]"
+                >
                   <Link href="/dashboard/ask">
                     <Search className="mr-2 h-4 w-4" />
                     Ask Your Past
                   </Link>
                 </Button>
-                <Button asChild variant="outline" size="lg" className="h-12 rounded-xl border-border bg-background px-6 text-sm font-medium transition-all hover:bg-muted/50 active:scale-[0.98]">
+                <Button
+                  asChild
+                  variant="outline"
+                  size="lg"
+                  className="h-12 rounded-xl border-border bg-background px-6 text-sm font-medium transition-all hover:bg-muted/50 active:scale-[0.98]"
+                >
                   <Link href="/dashboard/journal/new">
                     <Plus className="mr-2 h-4 w-4" />
                     New Entry
@@ -67,10 +83,34 @@ export default async function DashboardPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <StatCard icon={<BarChart3 className="h-4 w-4" />} label="Memories" value={journalCount.toString()} description="Log entries" />
-              <StatCard icon={<Sparkles className="h-4 w-4" />} label="Recent" value={recentEntryCount.toString()} description="Timeline nodes" />
-              <StatCard icon={<BookOpen className="h-4 w-4" />} label="Patterns" value={graph.patterns.length.toString()} description="Recurrence detected" />
-              <StatCard icon={<Search className="h-4 w-4" />} label="Signals" value={(graph.topPeople.length + graph.topTopics.length + graph.topEmotions.length).toString()} description="Graph nodes" />
+              <StatCard
+                icon={<BarChart3 className="h-4 w-4" />}
+                label="Memories"
+                value={journalCount.toString()}
+                description="Log entries"
+              />
+              <StatCard
+                icon={<Sparkles className="h-4 w-4" />}
+                label="Recent"
+                value={recentEntryCount.toString()}
+                description="Timeline nodes"
+              />
+              <StatCard
+                icon={<BookOpen className="h-4 w-4" />}
+                label="Patterns"
+                value={graph.patterns.length.toString()}
+                description="Recurrence detected"
+              />
+              <StatCard
+                icon={<Search className="h-4 w-4" />}
+                label="Signals"
+                value={(
+                  graph.topPeople.length +
+                  graph.topTopics.length +
+                  graph.topEmotions.length
+                ).toString()}
+                description="Graph nodes"
+              />
             </div>
           </div>
         </header>
@@ -89,15 +129,29 @@ export default async function DashboardPage() {
           <div className="flex flex-col gap-8">
             <div className="space-y-6">
               <div className="space-y-1">
-                <h3 className="text-lg font-semibold tracking-tight">Navigation</h3>
+                <h3 className="text-lg font-semibold tracking-tight">
+                  Navigation
+                </h3>
                 <p className="text-sm text-muted-foreground">
                   Deep dive into specific cognitive layers.
                 </p>
               </div>
               <div className="grid gap-2">
-                <ShortcutLink href="/dashboard/insights" title="Signals" description="People, topics, and resonance" />
-                <ShortcutLink href="/dashboard/journals" title="Archive" description="Every moment, searchable" />
-                <ShortcutLink href="/dashboard/ask" title="Query Engine" description="LLM-powered life retrieval" />
+                <ShortcutLink
+                  href="/dashboard/insights"
+                  title="Signals"
+                  description="People, topics, and resonance"
+                />
+                <ShortcutLink
+                  href="/dashboard/journals"
+                  title="Archive"
+                  description="Every moment, searchable"
+                />
+                <ShortcutLink
+                  href="/dashboard/ask"
+                  title="Query Engine"
+                  description="LLM-powered life retrieval"
+                />
               </div>
             </div>
 
@@ -109,7 +163,8 @@ export default async function DashboardPage() {
                 <div className="space-y-1">
                   <div className="text-sm font-semibold">Pro Tip</div>
                   <p className="text-xs leading-relaxed text-muted-foreground">
-                    Try asking "What was I worried about 3 months ago?" to see how your perspective has shifted.
+                    Try asking "What was I worried about 3 months ago?" to see
+                    how your perspective has shifted.
                   </p>
                 </div>
               </div>
@@ -122,8 +177,9 @@ export default async function DashboardPage() {
 }
 
 export const metadata: Metadata = {
-    title: "Dashboard | Debo",
-    description: "Your personal life intelligence dashboard: insights, timeline, and memory graph.",
+  title: "Dashboard | Debo",
+  description:
+    "Your personal life intelligence dashboard: insights, timeline, and memory graph.",
 };
 
 function StatCard({
@@ -147,7 +203,9 @@ function StatCard({
           {label}
         </div>
         <div className="text-2xl font-semibold tracking-tight">{value}</div>
-        <div className="text-[10px] text-muted-foreground/40">{description}</div>
+        <div className="text-[10px] text-muted-foreground/40">
+          {description}
+        </div>
       </div>
     </div>
   );
@@ -169,7 +227,9 @@ function ShortcutLink({
     >
       <div className="space-y-0.5">
         <div className="text-sm font-semibold tracking-tight">{title}</div>
-        <div className="text-[11px] text-muted-foreground/70">{description}</div>
+        <div className="text-[11px] text-muted-foreground/70">
+          {description}
+        </div>
       </div>
       <Plus className="h-3.5 w-3.5 text-muted-foreground/30 transition-all group-hover:translate-x-0.5 group-hover:text-primary" />
     </Link>

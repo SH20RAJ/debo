@@ -98,8 +98,6 @@ export function CopilotAskContainer() {
 
   return (
     <div className="flex h-[calc(100vh-4rem)] min-h-[560px] flex-col overflow-hidden bg-background md:h-[calc(100vh-3.5rem)] md:flex-row">
-      <AgentDataRenderer />
-      
       <ChatSidebar
         chats={chats}
         activeChatId={activeChatId || null}

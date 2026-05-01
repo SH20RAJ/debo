@@ -10,7 +10,8 @@ import {
   Library,
   Sparkles,
   ChartNoAxesCombined,
-  Clock3
+  Clock3,
+  LogOut
 } from "lucide-react"
 
 import {
@@ -30,9 +31,11 @@ import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { useUser } from "@stackframe/stack"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
+  const user = useUser()
 
   const items = [
     {
@@ -58,9 +61,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     <Sidebar variant="inset" collapsible="icon" {...props} className="border-r border-border/40">
       <SidebarHeader className="h-20 flex items-center px-6">
         <Link href="/dashboard" className="flex items-center gap-3 font-semibold w-full overflow-hidden whitespace-nowrap">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-foreground text-background shrink-0">
-             <Sparkles className="h-5 w-5" />
-          </div>
           <span className="tracking-tight text-xl group-data-[collapsible=icon]:hidden">
             Debo
           </span>
@@ -109,6 +109,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         <Settings className="h-4 w-4" />
                         <span className="text-sm font-medium">Settings</span>
                     </Link>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
+
+            <SidebarMenuItem>
+                <SidebarMenuButton 
+                    onClick={() => user?.signOut()}
+                    tooltip="Sign Out"
+                    className="h-10 rounded-lg transition-all hover:bg-muted/50 text-muted-foreground hover:text-destructive"
+                >
+                    <LogOut className="h-4 w-4" />
+                    <span className="text-sm font-medium">Sign Out</span>
                 </SidebarMenuButton>
             </SidebarMenuItem>
         </SidebarMenu>

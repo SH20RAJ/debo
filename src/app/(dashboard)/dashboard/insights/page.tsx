@@ -1,5 +1,4 @@
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { stackServerApp } from "@/stack/server";
 import { redirect } from "next/navigation";
 import { Metadata } from "next";
 
@@ -11,15 +10,21 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 export default async function InsightsPage() {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session) redirect("/join");
+  const user = await stackServerApp.getUser();
+  if (!user) redirect("/join");
 
   const journalCount = await getJournalsCount();
-  let graph = await queryGraph("What do I work on most, who do I meet most, and what stresses me?", session.user.id);
+  let graph = await queryGraph(
+    "What do I work on most, who do I meet most, and what stresses me?",
+    user.id,
+  );
 
   if (!graph.topPeople.length && journalCount > 0) {
-    await refreshMemoryGraph(session.user.id);
-    graph = await queryGraph("What do I work on most, who do I meet most, and what stresses me?", session.user.id);
+    await refreshMemoryGraph(user.id);
+    graph = await queryGraph(
+      "What do I work on most, who do I meet most, and what stresses me?",
+      user.id,
+    );
   }
 
   return (
@@ -31,27 +36,52 @@ export default async function InsightsPage() {
           </div>
           <div className="space-y-6">
             <h1 className="text-4xl font-semibold tracking-tight text-foreground md:text-5xl lg:text-6xl">
-              The Shape of <span className="text-muted-foreground/40">Your Memory.</span>
+              The Shape of{" "}
+              <span className="text-muted-foreground/40">Your Memory.</span>
             </h1>
             <p className="max-w-2xl text-lg text-muted-foreground leading-relaxed">
-              Debo synthesizes your daily records into deep structural insights, surfacing the strongest people, topics, and emotional patterns in your life.
+              Debo synthesizes your daily records into deep structural insights,
+              surfacing the strongest people, topics, and emotional patterns in
+              your life.
             </p>
           </div>
 
           <div className="flex flex-wrap gap-3 pt-2">
-            <Button asChild variant="outline" size="sm" className="h-10 rounded-xl border-border bg-background px-6 text-xs font-medium transition-all hover:bg-muted/50">
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="h-10 rounded-xl border-border bg-background px-6 text-xs font-medium transition-all hover:bg-muted/50"
+            >
               <Link href="/dashboard/ask">Ask Ranked Context</Link>
             </Button>
-            <Button asChild variant="outline" size="sm" className="h-10 rounded-xl border-border bg-background px-6 text-xs font-medium transition-all hover:bg-muted/50">
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="h-10 rounded-xl border-border bg-background px-6 text-xs font-medium transition-all hover:bg-muted/50"
+            >
               <Link href="/dashboard/timeline">Open Timeline</Link>
             </Button>
           </div>
         </header>
 
         <div className="grid gap-4 sm:grid-cols-3">
-          <MiniStat label="Journal Entries" value={journalCount.toString()} description="Chronological moments" />
-          <MiniStat label="Entities Surface" value={graph.topPeople.length.toString()} description="Ranked people nodes" />
-          <MiniStat label="Recurrence" value={graph.patterns.length.toString()} description="Pattern signals detected" />
+          <MiniStat
+            label="Journal Entries"
+            value={journalCount.toString()}
+            description="Chronological moments"
+          />
+          <MiniStat
+            label="Entities Surface"
+            value={graph.topPeople.length.toString()}
+            description="Ranked people nodes"
+          />
+          <MiniStat
+            label="Recurrence"
+            value={graph.patterns.length.toString()}
+            description="Pattern signals detected"
+          />
         </div>
 
         <LifeInsights
@@ -64,21 +94,36 @@ export default async function InsightsPage() {
       </div>
     </div>
   );
-  }
+}
 
-  export const metadata: Metadata = {
+export const metadata: Metadata = {
   title: "Insights | Debo",
-  description: "Analyze the strongest people, topics, and repeating patterns in your life.",
-  };
+  description:
+    "Analyze the strongest people, topics, and repeating patterns in your life.",
+};
 
-  function MiniStat({ label, value, description }: { label: string; value: string; description: string }) {
+function MiniStat({
+  label,
+  value,
+  description,
+}: {
+  label: string;
+  value: string;
+  description: string;
+}) {
   return (
     <div className="group space-y-4 rounded-2xl border border-border bg-card p-6 transition-all hover:border-primary/20">
       <div className="space-y-1">
-        <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 transition-colors group-hover:text-primary/70">{label}</div>
-        <div className="text-3xl font-semibold tracking-tight transition-transform group-hover:translate-x-0.5">{value}</div>
-        <div className="text-[10px] text-muted-foreground/40">{description}</div>
+        <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 transition-colors group-hover:text-primary/70">
+          {label}
+        </div>
+        <div className="text-3xl font-semibold tracking-tight transition-transform group-hover:translate-x-0.5">
+          {value}
+        </div>
+        <div className="text-[10px] text-muted-foreground/40">
+          {description}
+        </div>
       </div>
     </div>
   );
-  }
+}

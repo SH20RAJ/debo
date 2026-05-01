@@ -11,7 +11,7 @@ import { Loader2, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function CustomChatArea() {
-  const { visibleMessages, appendMessage, isLoading } = useCopilotChat();
+  const { visibleMessages = [], appendMessage, isLoading } = useCopilotChat();
   const [inputValue, setInputValue] = useState("");
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);

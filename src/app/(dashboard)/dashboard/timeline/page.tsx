@@ -1,5 +1,4 @@
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { stackServerApp } from "@/stack/server";
 import { redirect } from "next/navigation";
 
 import { Metadata } from "next";
@@ -15,12 +14,12 @@ export default async function TimelinePage({
 }: {
   searchParams: Promise<{ group?: string }>;
 }) {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session) redirect("/join");
+  const user = await stackServerApp.getUser();
+  if (!user) redirect("/join");
 
   const params = await searchParams;
   const grouping = normalizeGrouping(params.group);
-  const timeline = await getLifeTimeline(session.user.id, grouping);
+  const timeline = await getLifeTimeline(user.id, grouping);
 
   return (
     <div className="flex-1 bg-background">
@@ -31,9 +30,12 @@ export default async function TimelinePage({
           </div>
           <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div className="space-y-2">
-              <h1 className="text-4xl font-semibold tracking-tight">Your life, arranged by time</h1>
+              <h1 className="text-4xl font-semibold tracking-tight">
+                Your life, arranged by time
+              </h1>
               <p className="max-w-2xl text-lg text-muted-foreground">
-                Debo turns journals into a structured sequence of days, weeks, and months.
+                Debo turns journals into a structured sequence of days, weeks,
+                and months.
               </p>
             </div>
             <div className="flex items-center rounded-xl border border-border bg-muted/20 p-1">
@@ -44,7 +46,10 @@ export default async function TimelinePage({
           </div>
         </header>
 
-        <LifeTimeline entries={timeline} title={`${grouping[0].toUpperCase()}${grouping.slice(1)} timeline`} />
+        <LifeTimeline
+          entries={timeline}
+          title={`${grouping[0].toUpperCase()}${grouping.slice(1)} timeline`}
+        />
       </div>
     </div>
   );
@@ -52,7 +57,8 @@ export default async function TimelinePage({
 
 export const metadata: Metadata = {
   title: "Timeline",
-  description: "View your journal entries organized by day, week, or month to surface patterns over time.",
+  description:
+    "View your journal entries organized by day, week, or month to surface patterns over time.",
 };
 
 function normalizeGrouping(value?: string): TimelineGrouping {
@@ -63,7 +69,13 @@ function normalizeGrouping(value?: string): TimelineGrouping {
   return "daily";
 }
 
-function GroupingButton({ current, value }: { current: TimelineGrouping; value: TimelineGrouping }) {
+function GroupingButton({
+  current,
+  value,
+}: {
+  current: TimelineGrouping;
+  value: TimelineGrouping;
+}) {
   const isActive = current === value;
   return (
     <Button
@@ -74,7 +86,7 @@ function GroupingButton({ current, value }: { current: TimelineGrouping; value: 
         "rounded-lg px-4 text-xs font-medium transition-all",
         isActive
           ? "bg-background text-foreground shadow-sm"
-          : "text-muted-foreground hover:bg-background/50 hover:text-foreground"
+          : "text-muted-foreground hover:bg-background/50 hover:text-foreground",
       )}
     >
       <Link href={`/dashboard/timeline?group=${value}`}>{value}</Link>
