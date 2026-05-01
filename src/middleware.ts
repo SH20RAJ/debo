@@ -7,7 +7,7 @@ import { eq } from "drizzle-orm";
 export default async function middleware(request: NextRequest) {
 	const user = await stackServerApp.getUser();
 
-	const isAuthPage = request.nextUrl.pathname === "/join" || request.nextUrl.pathname === "/login";
+	const isAuthPage = request.nextUrl.pathname === "/join";
 	const isDashboardPage = request.nextUrl.pathname.startsWith("/dashboard");
 
 	if (!user) {
@@ -58,5 +58,5 @@ export default async function middleware(request: NextRequest) {
 }
 
 export const config = {
-	matcher: ["/dashboard/:path*", "/join", "/login"],
+	matcher: ["/dashboard/:path*", "/join"],
 };
