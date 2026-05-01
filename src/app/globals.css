@@ -131,6 +131,9 @@
 	--primary-muted: oklch(0.95 0.03 160.9);
 	--shadow-2xl: 0px 1px 3px 0px hsl(0 0% 0% / 0.43);
 	--tracking-normal: 0.025em;
+	--glass-blur: 12px;
+	--glass-opacity: 0.45;
+	--glass-border: oklch(100% 0 0 / 0.1);
 }
 
 .dark {
@@ -188,6 +191,9 @@
 	--shadow-xl: 0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 8px 10px -1px hsl(0 0% 0% / 0.17);
 	--primary-muted: oklch(0.25 0.06 252.6);
 	--shadow-2xl: 0px 1px 3px 0px hsl(0 0% 0% / 0.43);
+	--glass-blur: 20px;
+	--glass-opacity: 0.25;
+	--glass-border: oklch(100% 0 0 / 0.05);
 }
 
 @layer base {
@@ -220,5 +226,17 @@
   }
   ::-webkit-scrollbar-thumb {
     @apply bg-muted-foreground/10 rounded-full hover:bg-muted-foreground/20 transition-colors;
+  }
+
+  .glass {
+    @apply bg-background/var(--glass-opacity) backdrop-blur-[var(--glass-blur)] border border-[var(--glass-border)] shadow-sm;
+  }
+
+  .glass-card {
+    @apply bg-card/var(--glass-opacity) backdrop-blur-[var(--glass-blur)] border border-[var(--glass-border)] shadow-md transition-all hover:shadow-lg hover:border-[var(--glass-border)]/20;
+  }
+
+  .glass-header {
+    @apply bg-background/60 backdrop-blur-xl border-b border-border/40;
   }
 }

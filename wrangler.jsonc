@@ -11,6 +11,12 @@
 	"name": "debo",
 	"main": ".open-next/worker.js",
 	"compatibility_date": "2026-04-20",
+	"routes": [
+		{
+			"pattern": "debo.life",
+			"custom_domain": true
+		}
+	],
 	"compatibility_flags": [
 		"nodejs_compat",
 		"global_fetch_strictly_public"

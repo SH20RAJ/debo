@@ -23,7 +23,7 @@ export function LifeInsights({
 }) {
   return (
     <section className="grid gap-8 xl:grid-cols-[1fr_400px]">
-      <div className="space-y-6 rounded-2xl border border-border bg-card p-6">
+      <div className="space-y-6 rounded-2xl glass p-6">
         <header className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-foreground">
             <BrainCircuit className="h-5 w-5" />
@@ -41,9 +41,9 @@ export function LifeInsights({
             insights.map((insight) => (
               <div 
                 key={insight} 
-                className="relative overflow-hidden rounded-xl border border-border bg-background px-5 py-4 text-sm leading-relaxed text-foreground transition-colors hover:bg-muted/30"
+                className="relative overflow-hidden rounded-xl glass-card px-5 py-4 text-sm leading-relaxed text-foreground transition-all hover:bg-muted/10"
               >
-                <div className="absolute left-0 top-0 h-full w-0.5 bg-primary/20" />
+                <div className="absolute left-0 top-0 h-full w-0.5 bg-primary/40" />
                 {insight}
               </div>
             ))
@@ -61,7 +61,7 @@ export function LifeInsights({
 
       <div className="flex flex-col gap-6">
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="rounded-2xl border border-border bg-card p-5">
+          <div className="rounded-2xl glass-card p-5">
             <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-4">
               Top Entities
             </div>
@@ -78,7 +78,7 @@ export function LifeInsights({
             </div>
           </div>
 
-          <div className="rounded-2xl border border-border bg-card p-5">
+          <div className="rounded-2xl glass-card p-5">
             <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-4">
               Key Topics
             </div>
@@ -96,7 +96,7 @@ export function LifeInsights({
           </div>
         </div>
 
-        <div className="rounded-2xl border border-border bg-card p-5">
+        <div className="rounded-2xl glass-card p-5">
           <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-4">
             Emotional Resonance
           </div>
@@ -113,8 +113,8 @@ export function LifeInsights({
           </div>
         </div>
 
-        <div className="rounded-2xl border border-border bg-card overflow-hidden">
-          <div className="p-5 border-b border-border bg-muted/10">
+        <div className="rounded-2xl glass overflow-hidden">
+          <div className="p-5 border-b border-border/40 bg-muted/20">
             <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
               Recurring Frequency
             </div>

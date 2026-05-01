@@ -194,8 +194,8 @@ function StatCard({
   description: string;
 }) {
   return (
-    <div className="group space-y-3 rounded-2xl border border-border bg-card p-5 transition-all hover:border-primary/20">
-      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-foreground transition-colors group-hover:bg-primary/10 group-hover:text-primary">
+    <div className="group space-y-3 rounded-2xl glass-card p-5 transition-all">
+      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/5 text-foreground transition-colors group-hover:bg-primary/10 group-hover:text-primary">
         {icon}
       </div>
       <div className="space-y-1">
@@ -203,7 +203,7 @@ function StatCard({
           {label}
         </div>
         <div className="text-2xl font-semibold tracking-tight">{value}</div>
-        <div className="text-[10px] text-muted-foreground/40">
+        <div className="text-[10px] text-muted-foreground/40 italic">
           {description}
         </div>
       </div>

@@ -149,7 +149,7 @@ export const memoryFacts = pgTable("memory_fact", {
 }, (table) => ({
     userIdIdx: index("memory_fact_user_id_idx").on(table.userId),
     typeIdx: index("memory_fact_type_idx").on(table.type),
-    uniqueFactIdx: uniqueIndex("memory_fact_unique_idx").on(table.userId, table.content),
+    uniqueFactIdx: uniqueIndex("memory_fact_unique_idx").on(table.userId, table.type, table.content),
 }));
 
 export const memoryEntities = pgTable("memory_entity", {

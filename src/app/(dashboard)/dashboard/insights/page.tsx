@@ -112,7 +112,7 @@ function MiniStat({
   description: string;
 }) {
   return (
-    <div className="group space-y-4 rounded-2xl border border-border bg-card p-6 transition-all hover:border-primary/20">
+    <div className="group space-y-4 rounded-2xl glass-card p-6 transition-all">
       <div className="space-y-1">
         <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 transition-colors group-hover:text-primary/70">
           {label}
@@ -120,7 +120,7 @@ function MiniStat({
         <div className="text-3xl font-semibold tracking-tight transition-transform group-hover:translate-x-0.5">
           {value}
         </div>
-        <div className="text-[10px] text-muted-foreground/40">
+        <div className="text-[10px] text-muted-foreground/40 italic">
           {description}
         </div>
       </div>
