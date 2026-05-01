@@ -2,8 +2,6 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { CalendarClock, ChevronRight, Sparkles } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { LifeTimelineEntry } from "@/lib/life/timeline";
 
 export function LifeTimeline({

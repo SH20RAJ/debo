@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { Metadata } from "next";
 
 import { LifeInsights } from "@/components/dashboard/life/life-insights";
-import { Card, CardContent } from "@/components/ui/card";
 import { queryGraph, refreshMemoryGraph } from "@/lib/life/graph";
 import { getJournalsCount } from "@/actions/journals";
 import Link from "next/link";
