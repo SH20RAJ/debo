@@ -16,11 +16,33 @@ function readRequiredEnv(name: string) {
   return value;
 }
 
+/**
+ * Custom fetch wrapper to convert standard Authorization header to Cloudflare's cf-aig-authorization header.
+ * This is required because Cloudflare AI Gateway uses a non-standard authorization header name.
+ */
+function cloudflareAuthFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  const request = new Request(input, init);
+  
+  const authHeader = request.headers.get("authorization");
+  if (authHeader) {
+    request.headers.delete("authorization");
+    request.headers.set("cf-aig-authorization", authHeader);
+  }
+  
+  return fetch(request);
+}
+
 export function getOpenAIClient() {
   const apiKey = readRequiredEnv("OPENAI_API_KEY");
+  const baseURL = readRequiredEnv("OPENAI_BASE_URL");
+  
+  // Use Cloudflare's gateway if the base URL contains cloudflare
+  const fetch = baseURL.includes("cloudflare") ? cloudflareAuthFetch : undefined;
+  
   return createOpenAI({
-    baseURL: readRequiredEnv("OPENAI_BASE_URL"),
-    apiKey: apiKey,
+    baseURL,
+    apiKey,
+    fetch,
   });
 }
 
