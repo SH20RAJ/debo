@@ -197,54 +197,63 @@
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+	* {
+		@apply border-border outline-ring/50;
 	}
-  body {
-    @apply bg-background text-foreground;
-    font-feature-settings: "cv11", "ss01";
-    font-variant-ligatures: discretionary-ligatures;
-    letter-spacing: var(--tracking-normal);
+
+	body {
+		@apply bg-background text-foreground;
+		font-feature-settings: "cv11", "ss01";
+		font-variant-ligatures: discretionary-ligatures;
+		letter-spacing: var(--tracking-normal);
 	}
-  html {
-    @apply font-sans tracking-normal;
+
+	html {
+		@apply font-sans tracking-normal;
 	}
-  
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-heading tracking-tight;
-  }
 
-  ::selection {
-    @apply bg-primary/15 text-foreground;
-  }
+	h1,
+	h2,
+	h3,
+	h4,
+	h5,
+	h6 {
+		@apply font-heading tracking-tight;
+	}
 
-  ::-webkit-scrollbar {
-    width: 6px;
-  }
-  ::-webkit-scrollbar-track {
-    @apply bg-transparent;
-  }
-  ::-webkit-scrollbar-thumb {
-    @apply bg-muted-foreground/10 rounded-full hover:bg-muted-foreground/20 transition-colors;
-  }
+	::selection {
+		@apply bg-primary/15 text-foreground;
+	}
 
-  .glass {
-    background-color: oklch(from var(--background) l c h / var(--glass-opacity));
-    backdrop-filter: blur(var(--glass-blur));
-    border: 1px solid var(--glass-border);
-    @apply shadow-sm;
-  }
+	::-webkit-scrollbar {
+		width: 6px;
+	}
 
-  .glass-card {
-    background-color: oklch(from var(--card) l c h / var(--glass-opacity));
-    backdrop-filter: blur(var(--glass-blur));
-    border: 1px solid var(--glass-border);
-    @apply shadow-md transition-all hover:shadow-lg;
-  }
+	::-webkit-scrollbar-track {
+		@apply bg-transparent;
+	}
 
-  .glass-header {
-    background-color: oklch(from var(--background) l c h / 0.6);
-    backdrop-filter: blur(24px);
-    @apply border-b border-border/40;
-  }
+	::-webkit-scrollbar-thumb {
+		@apply bg-muted-foreground/10 rounded-full hover:bg-muted-foreground/20 transition-colors;
+	}
+
+	.glass {
+		background-color: oklch(from var(--background) l c h / var(--glass-opacity));
+		backdrop-filter: blur(var(--glass-blur));
+		border: 1px solid var(--glass-border);
+		@apply shadow-sm;
+	}
+
+	.glass-card {
+		background-color: oklch(from var(--card) l c h / var(--glass-opacity));
+		backdrop-filter: blur(var(--glass-blur));
+		border: 1px solid var(--glass-border);
+		@apply shadow-md transition-all hover:shadow-lg;
+	}
+
+	.glass-header {
+		background-color: oklch(from var(--background) l c h / 0.6);
+		backdrop-filter: blur(24px);
+		@apply border-b border-border/40;
+	}
 }
