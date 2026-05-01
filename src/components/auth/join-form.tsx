@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { stackClientApp } from "@/stack/client";
-import { OAuthButtonGroup, OAuthButton } from "@stackframe/stack";
+import { OAuthButtonGroup } from "@stackframe/stack";
 import {
   Card,
   CardContent,
@@ -50,9 +50,7 @@ export function JoinForm() {
           </div>
         )}
         <div className="w-full">
-          <OAuthButtonGroup app={stackClientApp} className="w-full">
-            <OAuthButton providerId="google" className="w-full" />
-          </OAuthButtonGroup>
+          <OAuthButtonGroup type="sign-up" />
         </div>
       </CardContent>
       <CardFooter className="flex flex-col items-center mt-2 text-xs text-muted-foreground text-center">

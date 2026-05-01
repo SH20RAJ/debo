@@ -138,7 +138,7 @@ export async function deleteJournal(id: string) {
         await db.delete(journals).where(eq(journals.id, id));
 
         try {
-            await removeJournalFromIndex(id);
+            await removeJournalFromIndex(id, user.id);
         } catch (err) {
             console.error("Failed to delete journal vector from Qdrant:", err);
         }

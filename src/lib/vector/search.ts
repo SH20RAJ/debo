@@ -117,6 +117,12 @@ export async function indexJournal(journal: JournalForIndex) {
           value: journal.id,
         },
       },
+      {
+        key: "userId",
+        match: {
+          value: journal.userId,
+        },
+      },
     ],
   });
 
@@ -144,17 +150,26 @@ export async function indexJournal(journal: JournalForIndex) {
   );
 }
 
-export async function removeJournalFromIndex(journalId: string) {
-  await deleteVectorsByFilter({
-    must: [
-      {
-        key: "journalId",
-        match: {
-          value: journalId,
-        },
+export async function removeJournalFromIndex(journalId: string, userId?: string) {
+  const must = [
+    {
+      key: "journalId",
+      match: {
+        value: journalId,
       },
-    ],
-  });
+    },
+  ];
+
+  if (userId) {
+    must.push({
+      key: "userId",
+      match: {
+        value: userId,
+      },
+    });
+  }
+
+  await deleteVectorsByFilter({ must });
 }
 
 export async function searchJournals(

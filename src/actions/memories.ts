@@ -1,6 +1,6 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 import { db } from "@/db";
 import { memoryEntities, memoryFacts } from "@/db/schema";
@@ -40,16 +40,16 @@ export async function deleteMemory(memoryId: string) {
 
   try {
     const fact = await db.query.memoryFacts.findFirst({
-      where: eq(memoryFacts.id, memoryId),
+      where: and(eq(memoryFacts.id, memoryId), eq(memoryFacts.userId, user.id)),
     });
     if (fact) {
-      await db.delete(memoryFacts).where(eq(memoryFacts.id, memoryId));
+      await db.delete(memoryFacts).where(and(eq(memoryFacts.id, memoryId), eq(memoryFacts.userId, user.id)));
     } else {
       const entity = await db.query.memoryEntities.findFirst({
-        where: eq(memoryEntities.id, memoryId),
+        where: and(eq(memoryEntities.id, memoryId), eq(memoryEntities.userId, user.id)),
       });
       if (!entity) return { success: false, error: "Memory not found" };
-      await db.delete(memoryEntities).where(eq(memoryEntities.id, memoryId));
+      await db.delete(memoryEntities).where(and(eq(memoryEntities.id, memoryId), eq(memoryEntities.userId, user.id)));
     }
 
     revalidatePath("/dashboard/memories");
@@ -67,14 +67,14 @@ export async function getMemory(memoryId: string) {
 
   try {
     const fact = await db.query.memoryFacts.findFirst({
-      where: eq(memoryFacts.id, memoryId),
+      where: and(eq(memoryFacts.id, memoryId), eq(memoryFacts.userId, user.id)),
     });
     if (fact) {
       return { success: true, data: { ...fact, kind: "fact" as const } };
     }
 
     const entity = await db.query.memoryEntities.findFirst({
-      where: eq(memoryEntities.id, memoryId),
+      where: and(eq(memoryEntities.id, memoryId), eq(memoryEntities.userId, user.id)),
     });
     if (entity) {
       return { success: true, data: { ...entity, kind: "entity" as const } };
@@ -93,7 +93,7 @@ export async function updateMemory(memoryId: string, content: string) {
 
   try {
     const fact = await db.query.memoryFacts.findFirst({
-      where: eq(memoryFacts.id, memoryId),
+      where: and(eq(memoryFacts.id, memoryId), eq(memoryFacts.userId, user.id)),
     });
     if (fact) {
       await db
@@ -104,7 +104,7 @@ export async function updateMemory(memoryId: string, content: string) {
           weight: fact.weight + 1,
           createdAt: new Date(),
         })
-        .where(eq(memoryFacts.id, memoryId));
+        .where(and(eq(memoryFacts.id, memoryId), eq(memoryFacts.userId, user.id)));
 
       revalidatePath("/dashboard/memories");
       revalidatePath("/dashboard/experimental/memories");
@@ -112,7 +112,7 @@ export async function updateMemory(memoryId: string, content: string) {
     }
 
     const entity = await db.query.memoryEntities.findFirst({
-      where: eq(memoryEntities.id, memoryId),
+      where: and(eq(memoryEntities.id, memoryId), eq(memoryEntities.userId, user.id)),
     });
     if (entity) {
       await db
@@ -123,7 +123,7 @@ export async function updateMemory(memoryId: string, content: string) {
           updatedAt: new Date(),
           frequency: entity.frequency + 1,
         })
-        .where(eq(memoryEntities.id, memoryId));
+        .where(and(eq(memoryEntities.id, memoryId), eq(memoryEntities.userId, user.id)));
 
       revalidatePath("/dashboard/memories");
       revalidatePath("/dashboard/experimental/memories");
