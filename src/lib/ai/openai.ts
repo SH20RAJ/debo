@@ -35,10 +35,10 @@ function cloudflareAuthFetch(input: RequestInfo | URL, init?: RequestInit): Prom
 export function getOpenAIClient() {
   const apiKey = readRequiredEnv("OPENAI_API_KEY");
   const baseURL = readRequiredEnv("OPENAI_BASE_URL");
-  
-  // Use Cloudflare's gateway if the base URL contains cloudflare
-  const fetch = baseURL.includes("cloudflare") ? cloudflareAuthFetch : undefined;
-  
+
+  // Use Cloudflare's custom fetch only for /openai endpoint, not for /compat
+  const fetch = baseURL.includes("cloudflare") && !baseURL.includes("/compat") ? cloudflareAuthFetch : undefined;
+
   return createOpenAI({
     baseURL,
     apiKey,
