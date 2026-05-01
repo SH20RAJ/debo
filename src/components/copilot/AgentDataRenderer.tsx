@@ -131,5 +131,111 @@ export function AgentDataRenderer() {
     },
   });
 
+  // 4. Render Voice Agent
+  useCopilotAction({
+    name: "render_voice_agent",
+    description: "Initialize a real-time LiveKit voice conversation in the chat.",
+    available: "frontend",
+    parameters: [],
+    render: () => {
+      return (
+        <div className="my-4 rounded-2xl glass-card overflow-hidden">
+          <div className="bg-primary/5 p-4 border-b border-primary/10 flex items-center gap-2">
+            <div className="size-2 rounded-full bg-primary animate-pulse" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Voice Uplink Active</span>
+          </div>
+          <VoiceAgentInChat />
+        </div>
+      );
+    },
+  });
+
   return null;
+}
+
+import { useState, useEffect } from "react";
+import {
+  LiveKitRoom,
+  RoomAudioRenderer,
+  BarVisualizer,
+  useVoiceAssistant,
+} from "@livekit/components-react";
+import "@livekit/components-styles";
+import { Mic, MicOff, PhoneOff } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+function VoiceAgentInChat() {
+  const [token, setToken] = useState<string | null>(null);
+  const [isConnecting, setIsConnecting] = useState(false);
+
+  useEffect(() => {
+    async function getToken() {
+      setIsConnecting(true);
+      try {
+        const res = await fetch("/api/livekit/token");
+        const data = await res.json() as { token?: string };
+        if (data.token) setToken(data.token);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setIsConnecting(false);
+      }
+    }
+    getToken();
+  }, []);
+
+  if (!token) {
+    return (
+      <div className="p-8 flex flex-col items-center justify-center space-y-4">
+        <div className="size-12 rounded-full bg-muted animate-pulse" />
+        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+          {isConnecting ? "Establishing Secure Link..." : "Link Failed"}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <LiveKitRoom
+      serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL || "wss://daksha-fuq54ytc.livekit.cloud"}
+      token={token}
+      connect={true}
+      audio={true}
+      video={false}
+      className="p-6"
+    >
+      <VoiceClientUI onEnd={() => setToken(null)} />
+    </LiveKitRoom>
+  );
+}
+
+function VoiceClientUI({ onEnd }: { onEnd: () => void }) {
+  const { state, audioTrack } = useVoiceAssistant();
+
+  return (
+    <div className="flex flex-col items-center space-y-6">
+      <div className="flex flex-col items-center justify-center space-y-4 w-full h-24 bg-primary/5 rounded-xl border border-primary/10">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-primary/60">
+          {state || "INITIALIZING"}
+        </p>
+        {audioTrack && (
+          <div className="w-32 h-8 flex justify-center">
+            <BarVisualizer trackRef={audioTrack} barCount={7} className="h-full" />
+          </div>
+        )}
+      </div>
+      <div className="flex items-center gap-3">
+         <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={onEnd}
+            className="h-9 rounded-xl border-destructive/20 bg-destructive/5 text-destructive hover:bg-destructive hover:text-white transition-all text-[10px] font-bold uppercase tracking-widest"
+          >
+           <PhoneOff className="size-3.5 mr-2" />
+           Disconnect
+         </Button>
+      </div>
+      <RoomAudioRenderer />
+    </div>
+  );
 }

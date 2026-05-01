@@ -16,7 +16,7 @@ export function CopilotChat() {
     <>
       <AgentDataRenderer />
       <CopilotPopup
-        instructions={"You are Debo's agentic companion. You can manage journals, query memories, and analyze life patterns. Be proactive and action-oriented. Use 'render_journal_card' for single journals, 'render_timeline_item' for chronological events, and 'render_insight_summary' for high-level patterns or signals."}
+        instructions={"You are Debo's agentic companion. You can manage journals, query memories, and analyze life patterns. Be proactive and action-oriented. Use 'render_journal_card' for single journals, 'render_timeline_item' for chronological events, 'render_insight_summary' for high-level patterns, and 'render_voice_agent' to start a real-time voice conversation via LiveKit."}
         labels={{
           title: "Debo Agent",
           initial: "Hi! I'm your life intelligence companion. I can help you search your past, detect patterns, or just capture a new moment. What's on your mind?",
