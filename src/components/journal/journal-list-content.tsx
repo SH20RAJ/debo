@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { format } from "date-fns";
-import { Card, CardContent } from "@/components/ui/card";
 
 interface Journal {
     id: string;
@@ -60,7 +59,7 @@ export function JournalListContent({ initialJournals }: { initialJournals: Journ
                 {filteredJournals.length > 0 ? (
                     filteredJournals.map((journal) => (
                         <Link key={journal.id} href={`/dashboard/journal/${journal.id}`}>
-                            <div className="group relative border border-border bg-card rounded-2xl transition-all hover:bg-muted/10 active:scale-[0.995]">
+                            <div className="group relative glass-card rounded-2xl transition-all active:scale-[0.995]">
                                 <div className="p-8 flex flex-col md:flex-row md:items-center justify-between gap-8">
                                     <div className="space-y-4 flex-1">
                                         <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">

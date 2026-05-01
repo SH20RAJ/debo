@@ -47,7 +47,7 @@ export function LifeTimeline({
             <summary className="list-none cursor-pointer">
               <div className="absolute -left-[45px] top-6 flex h-3 w-3 items-center justify-center rounded-full border border-border bg-background transition-all group-hover:border-primary group-open:border-primary group-open:bg-primary" />
 
-              <div className="rounded-2xl border border-border bg-card p-6 transition-all hover:bg-muted/10 group-open:bg-muted/10">
+              <div className="rounded-2xl glass-card p-6 transition-all group-open:bg-muted/10">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div className="space-y-4">
                     <div className="flex flex-wrap items-center gap-3">
@@ -69,7 +69,7 @@ export function LifeTimeline({
               </div>
             </summary>
 
-            <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-background p-6 animate-in fade-in slide-in-from-top-1 duration-200">
+            <div className="mt-4 overflow-hidden rounded-2xl glass p-6 animate-in fade-in slide-in-from-top-1 duration-200">
               <div className="space-y-8">
                 <div className="grid gap-8 md:grid-cols-3">
                   <TimelineList label="Key Events" items={entry.events} tone="primary" />
@@ -77,7 +77,7 @@ export function LifeTimeline({
                   <TimelineList label="Thematic Focus" items={entry.topics} tone="emerald" />
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-border bg-muted/20 p-5">
+                <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl glass p-5">
                   <div className="space-y-0.5">
                     <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Source Evidence</div>
                     <div className="text-xs font-medium text-muted-foreground">Linked to {entry.journalIds.length} recorded moments</div>

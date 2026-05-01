@@ -38,7 +38,7 @@ export default async function TimelinePage({
                 and months.
               </p>
             </div>
-            <div className="flex items-center rounded-xl border border-border bg-muted/20 p-1">
+            <div className="flex items-center rounded-xl glass p-1">
               <GroupingButton current={grouping} value="daily" />
               <GroupingButton current={grouping} value="weekly" />
               <GroupingButton current={grouping} value="monthly" />
