@@ -6,12 +6,11 @@
 [![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
 Your life, understood by AI.
-
-<!-- Website: https://debo.life -->
+Live at: [debo.life](https://debo.life)
 
 Debo is not a journal with a chat box. It is a life intelligence system: a private layer that learns from your writing, retrieves your history with citations, detects patterns across time, and turns memory into useful guidance.
 
-<img src="./public/og-image.png" alt="Debo" width="100%" />
+<img src="./public/logo-text.png" alt="Debo" width="100%" />
 
 ## Vision
 
@@ -57,7 +56,7 @@ Every answer is grounded in your data. Debo returns citations so you can inspect
 
 ## UX Philosophy
 
-The interface stays simple on purpose.
+The interface stays simple on purpose, utilizing a **premium glassmorphism aesthetic** that feels light and responsive.
 
 Debo uses a minimal, calm surface so the user can focus on writing, asking, and reviewing. The complexity lives underneath in retrieval, memory extraction, ranking, and orchestration. The product should feel light to use even when the system behind it is doing serious work.
 
@@ -98,7 +97,7 @@ Next.js 16 App Router, React 19, Tailwind CSS v4, shadcn/ui, and the Vercel AI S
 
 ### Backend
 
-Next.js Server Actions, route handlers, Better Auth, and Drizzle ORM on top of Neon Postgres.
+Next.js Server Actions, route handlers, Stack Auth, and Drizzle ORM on top of Neon Postgres.
 
 ### AI
 
@@ -125,8 +124,9 @@ bun install
 Copy `.env.example` to `.env` and set the required values for:
 
 - `DATABASE_URL`
-- `BETTER_AUTH_SECRET`
-- `BETTER_AUTH_URL`
+- `STACK_PUBLISHABLE_KEY`
+- `STACK_SECRET_KEY`
+- `STACK_PROJECT_ID`
 - `QDRANT_URL`
 - `QDRANT_API_KEY`
 - `OPENAI_BASE_URL`

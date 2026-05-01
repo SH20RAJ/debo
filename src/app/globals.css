@@ -229,14 +229,22 @@
   }
 
   .glass {
-    @apply bg-background/var(--glass-opacity) backdrop-blur-[var(--glass-blur)] border border-[var(--glass-border)] shadow-sm;
+    background-color: oklch(from var(--background) l c h / var(--glass-opacity));
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    @apply shadow-sm;
   }
 
   .glass-card {
-    @apply bg-card/var(--glass-opacity) backdrop-blur-[var(--glass-blur)] border border-[var(--glass-border)] shadow-md transition-all hover:shadow-lg hover:border-[var(--glass-border)]/20;
+    background-color: oklch(from var(--card) l c h / var(--glass-opacity));
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    @apply shadow-md transition-all hover:shadow-lg;
   }
 
   .glass-header {
-    @apply bg-background/60 backdrop-blur-xl border-b border-border/40;
+    background-color: oklch(from var(--background) l c h / 0.6);
+    backdrop-filter: blur(24px);
+    @apply border-b border-border/40;
   }
 }
