@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { BookOpenText, ChevronRight, Plus, Trash2 } from "lucide-react";
+import { MessageSquareText, Plus, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -36,14 +36,14 @@ export function ChatSidebar({
   );
 
   return (
-    <aside className="flex h-full w-full flex-col border-r border-border/60 bg-background/95 backdrop-blur-xl md:w-[19rem]">
-      <div className="border-b border-border/60 px-4 py-4">
-        <div className="flex items-center justify-between gap-3">
+    <aside className="hidden h-full w-[17rem] shrink-0 flex-col border-r border-border/60 bg-muted/20 md:flex">
+      <div className="border-b border-border/60 p-3">
+        <div className="flex items-center justify-between gap-2">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-muted-foreground/60">Chat History</p>
-            <h2 className="mt-1 text-sm font-semibold text-foreground">Persistent conversations</h2>
+            <p className="text-[11px] font-medium uppercase tracking-normal text-muted-foreground">Chats</p>
+            <h2 className="mt-1 text-sm font-semibold tracking-normal text-foreground">Ask Debo</h2>
           </div>
-          <Button size="icon" variant="outline" className="size-9 rounded-xl" onClick={onCreateChat} aria-label="New chat">
+          <Button size="icon" variant="outline" className="size-8" onClick={onCreateChat} aria-label="New chat">
             <Plus className="size-4" />
           </Button>
         </div>
@@ -51,42 +51,45 @@ export function ChatSidebar({
 
       <div className="flex-1 overflow-y-auto px-3 py-3">
         {isLoading ? (
-          <div className="space-y-3 p-2 text-sm text-muted-foreground">Loading chats…</div>
+          <div className="space-y-2 p-1">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <div key={index} className="h-9 animate-pulse rounded-lg bg-muted" />
+            ))}
+          </div>
         ) : sortedChats.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border/70 bg-muted/20 p-4 text-sm text-muted-foreground">
-            Start a new conversation to store your first durable chat memory.
+          <div className="rounded-lg border border-dashed border-border/70 bg-background/60 p-3 text-sm leading-5 text-muted-foreground">
+            Start a conversation to keep it available here.
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-1">
             {sortedChats.map((chat) => {
               const isActive = chat.id === activeChatId;
               return (
                 <div
                   key={chat.id}
                   className={cn(
-                    "group flex items-center gap-2 rounded-2xl border px-3 py-3 transition-all",
+                    "group flex items-center gap-1 rounded-lg transition-colors",
                     isActive
-                      ? "border-primary/30 bg-primary/5 shadow-sm"
-                      : "border-border/60 bg-background/40 hover:border-primary/20 hover:bg-primary/5"
+                      ? "bg-primary/10 text-foreground"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   )}
                 >
                   <button
                     type="button"
                     onClick={() => onSelectChat(chat.id)}
-                    className="flex min-w-0 flex-1 items-center gap-3 text-left"
+                    className="flex min-w-0 flex-1 items-center gap-2 px-2 py-2 text-left"
                   >
-                    <span className={cn("flex size-9 shrink-0 items-center justify-center rounded-xl", isActive ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground")}>
-                      <BookOpenText className="size-4" />
+                    <span className="flex size-7 shrink-0 items-center justify-center rounded-md">
+                      <MessageSquareText className="size-4" />
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-medium text-foreground">
+                      <span className="block truncate text-sm font-medium">
                         {chat.title || "New Conversation"}
                       </span>
                       <span className="block text-[11px] text-muted-foreground">
                         Updated {formatRelativeDate(chat.updatedAt)}
                       </span>
                     </span>
-                    <ChevronRight className={cn("size-4 shrink-0 transition-opacity", isActive ? "opacity-100 text-primary" : "opacity-0 group-hover:opacity-100 text-muted-foreground")} />
                   </button>
 
                   {onDeleteChat && (
@@ -94,7 +97,7 @@ export function ChatSidebar({
                       type="button"
                       size="icon"
                       variant="ghost"
-                      className="size-8 shrink-0 rounded-xl text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive"
+                      className="mr-1 size-7 shrink-0 text-muted-foreground opacity-0 transition-opacity hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
                       onClick={() => onDeleteChat(chat.id)}
                       aria-label={`Delete ${chat.title || "conversation"}`}
                     >

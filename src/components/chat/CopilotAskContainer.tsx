@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { CopilotChat } from "@copilotkit/react-ui";
-import { useCopilotReadable } from "@copilotkit/react-core";
+import { Plus } from "lucide-react";
+import { useCopilotContext, useCopilotReadable } from "@copilotkit/react-core";
 import { CustomChatArea } from "@/components/chat/CustomChatArea";
 import { AgentDataRenderer } from "@/components/copilot/AgentDataRenderer";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { getUserChats, createChat, deleteChat } from "@/actions/chat";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 type ChatSummary = {
@@ -20,6 +21,7 @@ export function CopilotAskContainer() {
   const [chats, setChats] = useState<ChatSummary[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | undefined>();
   const [isLoadingChats, setIsLoadingChats] = useState(true);
+  const { setThreadId } = useCopilotContext();
 
   const refreshChats = useCallback(async (preferredChatId?: string) => {
     setIsLoadingChats(true);
@@ -52,6 +54,12 @@ export function CopilotAskContainer() {
       window.localStorage.setItem("debo.copilot.activeChatId", activeChatId);
     }
   }, [activeChatId]);
+
+  useEffect(() => {
+    if (activeChatId) {
+      setThreadId(activeChatId);
+    }
+  }, [activeChatId, setThreadId]);
 
   const handleCreateChat = useCallback(async () => {
     try {
@@ -96,8 +104,28 @@ export function CopilotAskContainer() {
     }),
   });
 
+  const activeChat = chats.find((chat) => chat.id === activeChatId);
+
   return (
-    <div className="flex h-[calc(100vh-4rem)] min-h-[560px] flex-col overflow-hidden bg-background md:h-[calc(100vh-3.5rem)] md:flex-row">
+    <div className="flex h-[calc(100vh-3.5rem)] min-h-[560px] flex-col overflow-hidden bg-background md:flex-row">
+      <div className="flex h-12 shrink-0 items-center justify-between border-b border-border/60 px-4 md:hidden">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-medium text-foreground">
+            {activeChat?.title || "Ask Debo"}
+          </p>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          className="size-8"
+          onClick={() => void handleCreateChat()}
+          aria-label="New chat"
+        >
+          <Plus className="size-4" />
+        </Button>
+      </div>
+
       <ChatSidebar
         chats={chats}
         activeChatId={activeChatId || null}
@@ -107,7 +135,7 @@ export function CopilotAskContainer() {
         isLoading={isLoadingChats}
       />
 
-      <div className="flex-1 relative h-full">
+      <div className="relative min-h-0 flex-1">
         <CustomChatArea key={activeChatId || "new"} />
       </div>
     </div>

@@ -123,7 +123,17 @@ export function getAgentTools(userId: string) {
       ] as Parameter[],
       handler: async (args: Record<string, unknown>) => {
         const { query } = args as unknown as SearchActionArgs;
-        return await searchJournals(query, userId);
+        try {
+          return await searchJournals(query, userId);
+        } catch (error) {
+          console.error("Agent journal search failed:", error);
+          const fallback = await getRecentJournalCitations(userId, 30, 5);
+
+          return {
+            error: "Journal vector search is temporarily unavailable.",
+            fallback,
+          };
+        }
       },
     },
     {

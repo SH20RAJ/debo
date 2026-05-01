@@ -1,150 +1,467 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { useCopilotChat } from "@copilotkit/react-core";
-import { MessageRole, TextMessage } from "@copilotkit/runtime-client-gql";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { useEffect, useRef, useState } from "react";
+import {
+  CopilotChat as CopilotKitChat,
+  Markdown,
+  useChatContext,
+  type AssistantMessageProps,
+  type ErrorMessageProps,
+  type InputProps,
+  type MessagesProps,
+  type RenderSuggestionsListProps,
+  type UserMessageProps,
+} from "@copilotkit/react-ui";
+import {
+  Brain,
+  Check,
+  Clock3,
+  Copy,
+  Loader2,
+  Paperclip,
+  RotateCcw,
+  Search,
+  Send,
+  Sparkles,
+  Square,
+  ThumbsDown,
+  ThumbsUp,
+} from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Card } from "@/components/ui/card";
-import { Loader2, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function CustomChatArea() {
-  const { visibleMessages = [], appendMessage, isLoading } = useCopilotChat();
-  const [inputValue, setInputValue] = useState("");
-  const [isSending, setIsSending] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+const DEBO_CHAT_INSTRUCTIONS =
+  "You are Debo's agentic companion. Search journals and memories before making claims about the user's life. Be calm, direct, and evidence-backed. Use render_journal_card for specific entries, render_timeline_item for dated periods, and render_insight_summary for patterns or signals.";
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+const STARTER_PROMPTS = [
+  {
+    title: "Find a memory",
+    message: "What do you remember about my recent priorities?",
+  },
+  {
+    title: "Trace a pattern",
+    message: "What patterns have repeated in my journals lately?",
+  },
+  {
+    title: "Review my week",
+    message: "What changed for me this week?",
+  },
+];
+
+export function CustomChatArea() {
+  return (
+    <CopilotKitChat
+      className="flex h-full w-full bg-background text-foreground"
+      instructions={DEBO_CHAT_INSTRUCTIONS}
+      labels={{
+        title: "Ask Debo",
+        initial: "",
+        placeholder: "Ask about memories, journals, timelines, or patterns",
+        error: "Debo hit a problem while answering.",
+      }}
+      suggestions={STARTER_PROMPTS}
+      Messages={DeboMessages}
+      RenderSuggestionsList={DeboSuggestions}
+      AssistantMessage={DeboAssistantMessage}
+      UserMessage={DeboUserMessage}
+      ErrorMessage={DeboErrorMessage}
+      Input={DeboInput}
+    />
+  );
+}
+
+function DeboMessages({
+  messages,
+  inProgress,
+  children,
+  RenderMessage,
+  AssistantMessage,
+  UserMessage,
+  ErrorMessage,
+  ImageRenderer,
+  onRegenerate,
+  onCopy,
+  onThumbsUp,
+  onThumbsDown,
+  messageFeedback,
+  markdownTagRenderers,
+  chatError,
+}: MessagesProps) {
+  const endRef = useRef<HTMLDivElement>(null);
+  const hasMessages = messages.length > 0;
 
   useEffect(() => {
-    scrollToBottom();
-  }, [visibleMessages, isLoading]);
+    endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [messages, inProgress]);
 
-  const handleSendMessage = async () => {
-    if (!inputValue.trim() || isSending || isLoading) return;
+  return (
+    <section className="min-h-0 flex-1 overflow-y-auto px-4 py-6 md:px-8">
+      <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col">
+        {!hasMessages ? (
+          <div className="flex flex-1 flex-col items-center justify-center py-12 text-center">
+            <div className="flex size-12 items-center justify-center rounded-2xl border border-primary/15 bg-primary/10 text-primary shadow-sm">
+              <Brain className="size-5" />
+            </div>
+            <h1 className="mt-5 text-2xl font-semibold tracking-normal text-foreground md:text-3xl">
+              Ask your life.
+            </h1>
+            <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground md:text-base">
+              Search your journal, surface patterns, and turn memory into a clear next step.
+            </p>
+            {children}
+          </div>
+        ) : (
+          <div className="space-y-7">
+            {messages.map((message, index) => (
+              <RenderMessage
+                key={message.id || index}
+                message={message}
+                messages={messages}
+                inProgress={inProgress}
+                index={index}
+                isCurrentMessage={index === messages.length - 1}
+                AssistantMessage={AssistantMessage}
+                UserMessage={UserMessage}
+                ImageRenderer={ImageRenderer}
+                onRegenerate={onRegenerate}
+                onCopy={onCopy}
+                onThumbsUp={onThumbsUp}
+                onThumbsDown={onThumbsDown}
+                messageFeedback={messageFeedback}
+                markdownTagRenderers={markdownTagRenderers}
+              />
+            ))}
 
-    const messageContent = inputValue;
-    setInputValue("");
-    setIsSending(true);
+            {inProgress && messages[messages.length - 1]?.role === "user" ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="size-4 animate-spin" />
+                Debo is searching your context...
+              </div>
+            ) : null}
 
-    try {
-      await appendMessage(
-        new TextMessage({
-          content: messageContent,
-          role: MessageRole.User,
-        })
-      );
-    } catch (error) {
-      console.error("Failed to send message:", error);
-      setInputValue(messageContent); // restore input on failure
-    } finally {
-      setIsSending(false);
-    }
-  };
+            {chatError && ErrorMessage ? (
+              <ErrorMessage error={chatError} isCurrentMessage />
+            ) : null}
+          </div>
+        )}
+        <div ref={endRef} />
+      </div>
+    </section>
+  );
+}
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      void handleSendMessage();
-    }
+function DeboSuggestions({
+  suggestions,
+  onSuggestionClick,
+  isLoading,
+}: RenderSuggestionsListProps) {
+  const icons = [Search, Sparkles, Clock3];
+
+  return (
+    <div className="mt-8 grid w-full max-w-2xl gap-2 sm:grid-cols-3">
+      {suggestions.map((suggestion, index) => {
+        const Icon = icons[index % icons.length];
+
+        return (
+          <button
+            key={suggestion.title}
+            type="button"
+            disabled={isLoading || suggestion.isLoading}
+            onClick={() => onSuggestionClick(suggestion.message)}
+            className="group flex min-h-24 flex-col rounded-lg border border-border/70 bg-card/70 p-4 text-left shadow-sm transition hover:border-primary/35 hover:bg-primary/5 disabled:pointer-events-none disabled:opacity-60"
+          >
+            <span className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Icon className="size-4" />
+            </span>
+            <span className="mt-3 text-sm font-medium text-foreground">
+              {suggestion.title}
+            </span>
+            <span className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">
+              {suggestion.message}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function DeboInput({
+  inProgress,
+  onSend,
+  onStop,
+  onUpload,
+  hideStopButton,
+  chatReady,
+}: InputProps) {
+  const { labels } = useChatContext();
+  const [text, setText] = useState("");
+  const [isComposing, setIsComposing] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const canStop = inProgress && !hideStopButton;
+  const canSend = chatReady && !inProgress && text.trim().length > 0;
+
+  const submit = async () => {
+    const value = text.trim();
+
+    if (!value || !canSend) return;
+
+    setText("");
+    await onSend(value);
+    textareaRef.current?.focus();
   };
 
   return (
-    <div className="flex h-full w-full flex-col bg-background">
-      <ScrollArea className="flex-1 p-4 md:p-6">
-        <div className="space-y-6 pb-4">
-          {visibleMessages.length === 0 ? (
-            <div className="flex h-[400px] flex-col items-center justify-center text-center">
-              <div className="flex size-14 items-center justify-center rounded-full bg-primary/10">
-                <span className="text-2xl text-primary">✨</span>
-              </div>
-              <h2 className="mt-4 text-lg font-semibold text-foreground">Debo Intelligence</h2>
-              <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-                Ask me anything about your past journals, patterns, or insights.
-              </p>
-            </div>
-          ) : (
-            visibleMessages.map((message) => {
-              if (message.isActionExecutionMessage()) {
-               return null;
-              }
+    <footer className="border-t border-border/60 bg-background/95 px-4 py-3 backdrop-blur md:px-8">
+      <div className="mx-auto max-w-3xl">
+        <div className="flex items-end gap-2 rounded-2xl border border-border/70 bg-card px-3 py-2 shadow-sm focus-within:border-primary/40 focus-within:ring-3 focus-within:ring-primary/10">
+          {onUpload ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="mb-1 size-8 text-muted-foreground"
+              onClick={onUpload}
+              title="Attach"
+            >
+              <Paperclip className="size-4" />
+              <span className="sr-only">Attach</span>
+            </Button>
+          ) : null}
 
-              if (message.isTextMessage()) {
-                const isUser = message.role === MessageRole.User;
-                return (
-                  <div
-                    key={message.id}
-                    className={cn(
-                      "flex w-full overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300",
-                      isUser ? "justify-end" : "justify-start"
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        "relative max-w-[85%] md:max-w-[75%] rounded-2xl px-5 py-3.5 shadow-sm",
-                        isUser
-                          ? "bg-primary text-primary-foreground font-medium rounded-br-sm"
-                          : "bg-muted/50 border border-border/50 text-foreground rounded-bl-sm"
-                      )}
-                    >
-                      <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">
-                        {message.content}
-                      </p>
-                    </div>
-                  </div>
-                );
-              }
-              return null;
-            })
-          )}
-
-          {isLoading && (
-            <div className="flex justify-start animate-in fade-in slide-in-from-bottom-2">
-              <div className="bg-muted/50 border border-border/50 rounded-2xl rounded-bl-sm px-5 py-3.5 shadow-sm">
-                <div className="flex items-center gap-2">
-                  <Loader2 className="size-4 animate-spin text-muted-foreground" />
-                  <span className="text-sm font-medium text-muted-foreground">Thinking...</span>
-                </div>
-              </div>
-            </div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-      </ScrollArea>
-
-      <div className="border-t bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="mx-auto flex max-w-4xl items-end gap-2">
           <Textarea
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Ask me anything..."
-            disabled={isSending || isLoading}
-            className="min-h-[52px] max-h-[160px] resize-none rounded-xl border-muted-foreground/20 bg-muted/50 py-3.5 pr-12 focus-visible:ring-1 focus-visible:ring-primary/30"
+            ref={textareaRef}
+            value={text}
             rows={1}
+            disabled={!chatReady || inProgress}
+            onChange={(event) => setText(event.target.value)}
+            onCompositionStart={() => setIsComposing(true)}
+            onCompositionEnd={() => setIsComposing(false)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && !event.shiftKey && !isComposing) {
+                event.preventDefault();
+                void submit();
+              }
+            }}
+            placeholder={labels.placeholder}
+            className="max-h-40 min-h-10 resize-none border-0 bg-transparent px-1 py-2 text-[15px] shadow-none focus-visible:border-0 focus-visible:ring-0"
           />
+
           <Button
-            onClick={() => void handleSendMessage()}
-            disabled={!inputValue.trim() || isSending || isLoading}
+            type="button"
             size="icon"
-            className="mb-0.5 size-[48px] shrink-0 rounded-xl"
+            className="mb-1 size-8 rounded-lg"
+            disabled={!canSend && !canStop}
+            onClick={() => {
+              if (canStop) {
+                onStop?.();
+                return;
+              }
+              void submit();
+            }}
+            title={canStop ? "Stop" : "Send"}
           >
-            {isSending ? (
-              <Loader2 className="size-5 animate-spin" />
-            ) : (
-              <Send className="size-5" />
-            )}
-            <span className="sr-only">Send message</span>
+            {canStop ? <Square className="size-3.5" /> : <Send className="size-4" />}
+            <span className="sr-only">{canStop ? "Stop" : "Send"}</span>
           </Button>
         </div>
-        <p className="mx-auto mt-2 max-w-4xl text-center text-[11px] font-medium text-muted-foreground/60">
-          Debo Intelligence can make mistakes. Consider verifying important information.
+        <p className="mt-2 text-center text-[11px] leading-5 text-muted-foreground">
+          Debo can make mistakes. Verify important details against your own records.
         </p>
+      </div>
+    </footer>
+  );
+}
+
+function DeboAssistantMessage({
+  message,
+  isLoading,
+  isGenerating,
+  onRegenerate,
+  onCopy,
+  onThumbsUp,
+  onThumbsDown,
+  feedback,
+  subComponent,
+  markdownTagRenderers,
+}: AssistantMessageProps) {
+  const [copied, setCopied] = useState(false);
+  const content = message?.content || "";
+  const generativeUI = message?.generativeUI?.() ?? subComponent;
+  const generativeUIPosition =
+    (message as { generativeUIPosition?: "before" | "after" } | undefined)
+      ?.generativeUIPosition ?? "after";
+
+  const handleCopy = async () => {
+    if (!content) return;
+
+    await navigator.clipboard?.writeText(content);
+    setCopied(true);
+    onCopy?.(content);
+    window.setTimeout(() => setCopied(false), 1400);
+  };
+
+  return (
+    <div className="group flex w-full gap-3 animate-in fade-in slide-in-from-bottom-1 duration-200">
+      <div className="mt-1 flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+        <Sparkles className="size-4" />
+      </div>
+      <div className="min-w-0 flex-1 space-y-3">
+        {generativeUI && generativeUIPosition === "before" ? generativeUI : null}
+
+        {content ? (
+          <div className="prose prose-sm max-w-none text-foreground dark:prose-invert prose-p:my-3 prose-ul:my-3 prose-ol:my-3 prose-li:my-1 prose-pre:rounded-lg prose-pre:border prose-pre:border-border prose-pre:bg-muted">
+            <Markdown
+              content={content}
+              components={markdownTagRenderers}
+            />
+          </div>
+        ) : null}
+
+        {isLoading ? (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="size-4 animate-spin" />
+            Thinking...
+          </div>
+        ) : null}
+
+        {generativeUI && generativeUIPosition !== "before" ? generativeUI : null}
+
+        {content && !isLoading && !isGenerating ? (
+          <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              onClick={onRegenerate}
+              title="Regenerate"
+            >
+              <RotateCcw className="size-3.5" />
+              <span className="sr-only">Regenerate</span>
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-xs"
+              onClick={() => void handleCopy()}
+              title="Copy"
+            >
+              {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
+              <span className="sr-only">Copy</span>
+            </Button>
+            {onThumbsUp ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-xs"
+                onClick={() => message && onThumbsUp(message)}
+                className={feedback === "thumbsUp" ? "text-primary" : ""}
+                title="Good response"
+              >
+                <ThumbsUp className="size-3.5" />
+                <span className="sr-only">Good response</span>
+              </Button>
+            ) : null}
+            {onThumbsDown ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-xs"
+                onClick={() => message && onThumbsDown(message)}
+                className={feedback === "thumbsDown" ? "text-primary" : ""}
+                title="Bad response"
+              >
+                <ThumbsDown className="size-3.5" />
+                <span className="sr-only">Bad response</span>
+              </Button>
+            ) : null}
+          </div>
+        ) : null}
       </div>
     </div>
   );
+}
+
+function DeboUserMessage({ message, ImageRenderer }: UserMessageProps) {
+  const content = message?.content;
+  const textContent = getUserText(content);
+  const mediaParts = getMediaParts(content);
+
+  return (
+    <div className="flex w-full justify-end animate-in fade-in slide-in-from-bottom-1 duration-200">
+      <div className="max-w-[85%] rounded-2xl rounded-br-md bg-muted px-4 py-2.5 text-sm leading-6 text-foreground md:max-w-[72%]">
+        {textContent ? <p className="whitespace-pre-wrap break-words">{textContent}</p> : null}
+        {mediaParts.length > 0 ? (
+          <div className={cn("space-y-2", textContent ? "mt-3" : "")}>
+            {mediaParts.map((part, index) =>
+              part.type === "image" ? (
+                <ImageRenderer key={index} source={part.source} />
+              ) : (
+                <div
+                  key={index}
+                  className="flex items-center gap-2 rounded-lg border border-border/70 bg-background/60 px-3 py-2 text-xs text-muted-foreground"
+                >
+                  <Paperclip className="size-3.5" />
+                  {part.type}
+                </div>
+              )
+            )}
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function DeboErrorMessage({ error, onRegenerate }: ErrorMessageProps) {
+  return (
+    <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive">
+      <div className="font-medium">{error.message}</div>
+      {onRegenerate ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="mt-2 text-destructive hover:bg-destructive/10 hover:text-destructive"
+          onClick={onRegenerate}
+        >
+          <RotateCcw className="size-3.5" />
+          Retry
+        </Button>
+      ) : null}
+    </div>
+  );
+}
+
+type UserContent = NonNullable<UserMessageProps["message"]>["content"];
+
+function getUserText(content: UserContent | undefined) {
+  if (!content) return "";
+  if (typeof content === "string") return content;
+
+  return content
+    .map((part) => (part.type === "text" ? part.text : ""))
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+}
+
+function getMediaParts(content: UserContent | undefined) {
+  if (!content || typeof content === "string") return [];
+
+  return content.filter(
+    (part) =>
+      part.type === "image" ||
+      part.type === "audio" ||
+      part.type === "video" ||
+      part.type === "document"
+  ) as Array<{
+    type: "image" | "audio" | "video" | "document";
+    source:
+      | { type: "data"; value: string; mimeType: string }
+      | { type: "url"; value: string; mimeType?: string };
+  }>;
 }
