@@ -2,23 +2,32 @@ import { AccessToken } from "livekit-server-sdk";
 import { NextRequest, NextResponse } from "next/server";
 import { stackServerApp } from "@/stack/server";
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const user = await stackServerApp.getUser();
-    const participantName = user?.displayName || "Anonymous";
-    const participantIdentity =
-      user?.id || `user_${Math.random().toString(36).substring(7)}`;
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const participantName = user.displayName || "Debo User";
+    const participantIdentity = user.id;
 
     const roomName = "debo-agent-room"; // Keep this consistent for the agent to join
 
-    const at = new AccessToken(
-      process.env.LIVEKIT_API_KEY,
-      process.env.LIVEKIT_API_SECRET,
-      {
-        identity: participantIdentity,
-        name: participantName,
-      },
-    );
+    const apiKey = process.env.LIVEKIT_API_KEY;
+    const apiSecret = process.env.LIVEKIT_API_SECRET;
+
+    if (!apiKey || !apiSecret) {
+      return NextResponse.json(
+        { error: "LiveKit is not configured" },
+        { status: 500 },
+      );
+    }
+
+    const at = new AccessToken(apiKey, apiSecret, {
+      identity: participantIdentity,
+      name: participantName,
+    });
 
     at.addGrant({
       roomJoin: true,
