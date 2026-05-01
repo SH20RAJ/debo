@@ -77,7 +77,7 @@ export function getAgentTools(userId: string) {
       ] as Parameter[],
       handler: async (args: Record<string, unknown>) => {
         const { content, title } = args as unknown as JournalActionArgs;
-        return await saveJournal(content, undefined, title);
+        return await saveJournal(content, undefined, title, userId);
       },
     },
     {
@@ -88,7 +88,7 @@ export function getAgentTools(userId: string) {
       ] as Parameter[],
       handler: async (args: Record<string, unknown>) => {
         const { id } = args as unknown as IdActionArgs;
-        return await deleteJournal(id);
+        return await deleteJournal(id, userId);
       },
     },
     {
@@ -101,7 +101,7 @@ export function getAgentTools(userId: string) {
       ] as Parameter[],
       handler: async (args: Record<string, unknown>) => {
         const { id, content, title } = args as unknown as UpdateJournalArgs;
-        return await saveJournal(content, id, title);
+        return await saveJournal(content, id, title, userId);
       },
     },
     {
@@ -112,7 +112,7 @@ export function getAgentTools(userId: string) {
       ] as Parameter[],
       handler: async (args: Record<string, unknown>) => {
         const { limit = 10 } = args as { limit?: number };
-        return await getJournals("desc", limit, 0);
+        return await getJournals("desc", limit, 0, userId);
       },
     },
     {
@@ -144,7 +144,7 @@ export function getAgentTools(userId: string) {
       ] as Parameter[],
       handler: async (args: Record<string, unknown>) => {
         const { fact } = args as { fact: string };
-        return await addMemory(fact);
+        return await addMemory(fact, userId);
       },
     },
     {
@@ -156,7 +156,7 @@ export function getAgentTools(userId: string) {
       ] as Parameter[],
       handler: async (args: Record<string, unknown>) => {
         const { id, content } = args as { id: string; content: string };
-        return await updateMemory(id, content);
+        return await updateMemory(id, content, userId);
       },
     },
     {
@@ -167,7 +167,7 @@ export function getAgentTools(userId: string) {
       ] as Parameter[],
       handler: async (args: Record<string, unknown>) => {
         const { id } = args as unknown as IdActionArgs;
-        return await deleteMemory(id);
+        return await deleteMemory(id, userId);
       },
     },
     {
@@ -178,7 +178,7 @@ export function getAgentTools(userId: string) {
       ] as Parameter[],
       handler: async (args: Record<string, unknown>) => {
         const { id } = args as unknown as IdActionArgs;
-        return await getMemory(id);
+        return await getMemory(id, userId);
       },
     },
     {

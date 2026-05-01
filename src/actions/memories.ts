@@ -11,12 +11,21 @@ import { storeMemory } from "@/lib/memory/store";
 import { cache } from "react";
 import { revalidatePath } from "next/cache";
 
-export const getMemories = cache(async (query: string = "") => {
+async function resolveUserId(userId?: string) {
+  if (userId) return userId;
+
   const user = await stackServerApp.getUser();
-  if (!user) return { success: false, error: "Unauthorized" };
+  if (!user) return null;
+
+  return user.id;
+}
+
+export const getMemories = cache(async (query: string = "", userId?: string) => {
+  const resolvedUserId = await resolveUserId(userId);
+  if (!resolvedUserId) return { success: false, error: "Unauthorized" };
 
   try {
-    const memories = await getRelevantMemories(user.id, query);
+    const memories = await getRelevantMemories(resolvedUserId, query);
     return {
       success: true,
       data: memories.items.map((memory) => ({
@@ -34,22 +43,22 @@ export const getMemories = cache(async (query: string = "") => {
   }
 });
 
-export async function deleteMemory(memoryId: string) {
-  const user = await stackServerApp.getUser();
-  if (!user) return { success: false, error: "Unauthorized" };
+export async function deleteMemory(memoryId: string, userId?: string) {
+  const resolvedUserId = await resolveUserId(userId);
+  if (!resolvedUserId) return { success: false, error: "Unauthorized" };
 
   try {
     const fact = await db.query.memoryFacts.findFirst({
-      where: and(eq(memoryFacts.id, memoryId), eq(memoryFacts.userId, user.id)),
+      where: and(eq(memoryFacts.id, memoryId), eq(memoryFacts.userId, resolvedUserId)),
     });
     if (fact) {
-      await db.delete(memoryFacts).where(and(eq(memoryFacts.id, memoryId), eq(memoryFacts.userId, user.id)));
+      await db.delete(memoryFacts).where(and(eq(memoryFacts.id, memoryId), eq(memoryFacts.userId, resolvedUserId)));
     } else {
       const entity = await db.query.memoryEntities.findFirst({
-        where: and(eq(memoryEntities.id, memoryId), eq(memoryEntities.userId, user.id)),
+        where: and(eq(memoryEntities.id, memoryId), eq(memoryEntities.userId, resolvedUserId)),
       });
       if (!entity) return { success: false, error: "Memory not found" };
-      await db.delete(memoryEntities).where(and(eq(memoryEntities.id, memoryId), eq(memoryEntities.userId, user.id)));
+      await db.delete(memoryEntities).where(and(eq(memoryEntities.id, memoryId), eq(memoryEntities.userId, resolvedUserId)));
     }
 
     revalidatePath("/dashboard/memories");
@@ -61,20 +70,20 @@ export async function deleteMemory(memoryId: string) {
   }
 }
 
-export async function getMemory(memoryId: string) {
-  const user = await stackServerApp.getUser();
-  if (!user) return { success: false, error: "Unauthorized" };
+export async function getMemory(memoryId: string, userId?: string) {
+  const resolvedUserId = await resolveUserId(userId);
+  if (!resolvedUserId) return { success: false, error: "Unauthorized" };
 
   try {
     const fact = await db.query.memoryFacts.findFirst({
-      where: and(eq(memoryFacts.id, memoryId), eq(memoryFacts.userId, user.id)),
+      where: and(eq(memoryFacts.id, memoryId), eq(memoryFacts.userId, resolvedUserId)),
     });
     if (fact) {
       return { success: true, data: { ...fact, kind: "fact" as const } };
     }
 
     const entity = await db.query.memoryEntities.findFirst({
-      where: and(eq(memoryEntities.id, memoryId), eq(memoryEntities.userId, user.id)),
+      where: and(eq(memoryEntities.id, memoryId), eq(memoryEntities.userId, resolvedUserId)),
     });
     if (entity) {
       return { success: true, data: { ...entity, kind: "entity" as const } };
@@ -87,13 +96,13 @@ export async function getMemory(memoryId: string) {
   }
 }
 
-export async function updateMemory(memoryId: string, content: string) {
-  const user = await stackServerApp.getUser();
-  if (!user) return { success: false, error: "Unauthorized" };
+export async function updateMemory(memoryId: string, content: string, userId?: string) {
+  const resolvedUserId = await resolveUserId(userId);
+  if (!resolvedUserId) return { success: false, error: "Unauthorized" };
 
   try {
     const fact = await db.query.memoryFacts.findFirst({
-      where: and(eq(memoryFacts.id, memoryId), eq(memoryFacts.userId, user.id)),
+      where: and(eq(memoryFacts.id, memoryId), eq(memoryFacts.userId, resolvedUserId)),
     });
     if (fact) {
       await db
@@ -104,7 +113,7 @@ export async function updateMemory(memoryId: string, content: string) {
           weight: fact.weight + 1,
           createdAt: new Date(),
         })
-        .where(and(eq(memoryFacts.id, memoryId), eq(memoryFacts.userId, user.id)));
+        .where(and(eq(memoryFacts.id, memoryId), eq(memoryFacts.userId, resolvedUserId)));
 
       revalidatePath("/dashboard/memories");
       revalidatePath("/dashboard/experimental/memories");
@@ -112,7 +121,7 @@ export async function updateMemory(memoryId: string, content: string) {
     }
 
     const entity = await db.query.memoryEntities.findFirst({
-      where: and(eq(memoryEntities.id, memoryId), eq(memoryEntities.userId, user.id)),
+      where: and(eq(memoryEntities.id, memoryId), eq(memoryEntities.userId, resolvedUserId)),
     });
     if (entity) {
       await db
@@ -123,7 +132,7 @@ export async function updateMemory(memoryId: string, content: string) {
           updatedAt: new Date(),
           frequency: entity.frequency + 1,
         })
-        .where(and(eq(memoryEntities.id, memoryId), eq(memoryEntities.userId, user.id)));
+        .where(and(eq(memoryEntities.id, memoryId), eq(memoryEntities.userId, resolvedUserId)));
 
       revalidatePath("/dashboard/memories");
       revalidatePath("/dashboard/experimental/memories");
@@ -137,13 +146,13 @@ export async function updateMemory(memoryId: string, content: string) {
   }
 }
 
-export async function addMemory(fact: string) {
-  const user = await stackServerApp.getUser();
-  if (!user) return { success: false, error: "Unauthorized" };
+export async function addMemory(fact: string, userId?: string) {
+  const resolvedUserId = await resolveUserId(userId);
+  if (!resolvedUserId) return { success: false, error: "Unauthorized" };
 
   try {
     const extracted = await extractMemory(fact);
-    const result = await storeMemory(user.id, {
+    const result = await storeMemory(resolvedUserId, {
       facts: extracted.facts.length > 0 ? extracted.facts : [fact],
       entities: extracted.entities,
       emotions: extracted.emotions,

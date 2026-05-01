@@ -18,13 +18,22 @@ const journalSchema = z.object({
   id: z.string().uuid().optional()
 });
 
-export const getJournals = cache(async (sortOrder: "asc" | "desc" = "desc", limit: number = 10, offset: number = 0) => {
+async function resolveUserId(userId?: string) {
+    if (userId) return userId;
+
     const user = await stackServerApp.getUser();
-    if (!user) return [];
+    if (!user) return null;
+
+    return user.id;
+}
+
+export const getJournals = cache(async (sortOrder: "asc" | "desc" = "desc", limit: number = 10, offset: number = 0, userId?: string) => {
+    const resolvedUserId = await resolveUserId(userId);
+    if (!resolvedUserId) return [];
 
     try {
         return await db.query.journals.findMany({
-            where: eq(journals.userId, user.id),
+            where: eq(journals.userId, resolvedUserId),
             orderBy: [sortOrder === "desc" ? desc(journals.createdAt) : asc(journals.createdAt)],
             limit,
             offset
@@ -50,13 +59,13 @@ export const getJournalsCount = cache(async () => {
     }
 });
 
-export const getJournal = cache(async (id: string) => {
-    const user = await stackServerApp.getUser();
-    if (!user) return null;
+export const getJournal = cache(async (id: string, userId?: string) => {
+    const resolvedUserId = await resolveUserId(userId);
+    if (!resolvedUserId) return null;
 
     try {
         const journal = await db.query.journals.findFirst({
-            where: and(eq(journals.id, id), eq(journals.userId, user.id)),
+            where: and(eq(journals.id, id), eq(journals.userId, resolvedUserId)),
         });
         return journal || null;
     } catch (error) {
@@ -65,10 +74,10 @@ export const getJournal = cache(async (id: string) => {
     }
 });
 
-export async function saveJournal(rawContent: string, id?: string, title?: string) {
+export async function saveJournal(rawContent: string, id?: string, title?: string, userId?: string) {
     try {
-        const user = await stackServerApp.getUser();
-        if (!user) return { success: false, error: "Unauthorized" };
+        const resolvedUserId = await resolveUserId(userId);
+        if (!resolvedUserId) return { success: false, error: "Unauthorized" };
 
         // Validate input
         const result = journalSchema.safeParse({ content: rawContent, id, title });
@@ -78,11 +87,9 @@ export async function saveJournal(rawContent: string, id?: string, title?: strin
 
         const { content, title: validatedTitle } = result.data;
         const journalId = id || crypto.randomUUID();
-        const userId = user.id;
-
         if (id) {
             // Check ownership
-            const existing = await getJournal(id);
+            const existing = await getJournal(id, resolvedUserId);
             if (!existing) return { success: false, error: "Entry not found or unauthorized" };
             
             await db.update(journals).set({
@@ -94,7 +101,7 @@ export async function saveJournal(rawContent: string, id?: string, title?: strin
             // Insert new
             await db.insert(journals).values({
                 id: journalId,
-                userId,
+                userId: resolvedUserId,
                 title: validatedTitle || null,
                 content,
             });
@@ -103,14 +110,14 @@ export async function saveJournal(rawContent: string, id?: string, title?: strin
         // Keep vector indexing server-side so Qdrant credentials never reach the browser.
         try {
             const savedJournal = await db.query.journals.findFirst({
-                where: and(eq(journals.id, journalId), eq(journals.userId, userId)),
+                where: and(eq(journals.id, journalId), eq(journals.userId, resolvedUserId)),
             });
 
             if (savedJournal) {
                 await indexJournal(savedJournal);
-                await upsertMemoryGraphForJournal(userId, savedJournal);
+                await upsertMemoryGraphForJournal(resolvedUserId, savedJournal);
                 const extractedMemory = await extractMemory(savedJournal.content);
-                await storeMemory(userId, extractedMemory);
+                await storeMemory(resolvedUserId, extractedMemory);
             }
         } catch (err) {
             console.error("Failed to index journal in Qdrant:", err);
@@ -127,24 +134,24 @@ export async function saveJournal(rawContent: string, id?: string, title?: strin
     }
 }
 
-export async function deleteJournal(id: string) {
+export async function deleteJournal(id: string, userId?: string) {
     try {
-        const user = await stackServerApp.getUser();
-        if (!user) return { success: false, error: "Unauthorized" };
+        const resolvedUserId = await resolveUserId(userId);
+        if (!resolvedUserId) return { success: false, error: "Unauthorized" };
 
-        const existing = await getJournal(id);
+        const existing = await getJournal(id, resolvedUserId);
         if (!existing) return { success: false, error: "Entry not found or unauthorized" };
 
         await db.delete(journals).where(eq(journals.id, id));
 
         try {
-            await removeJournalFromIndex(id, user.id);
+            await removeJournalFromIndex(id, resolvedUserId);
         } catch (err) {
             console.error("Failed to delete journal vector from Qdrant:", err);
         }
 
         try {
-            await refreshMemoryGraph(user.id);
+            await refreshMemoryGraph(resolvedUserId);
         } catch (err) {
             console.error("Failed to refresh memory graph after deletion:", err);
         }
