@@ -31,18 +31,16 @@ export default async function InsightsPage() {
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-6 py-12 lg:px-8">
         <header className="flex flex-col gap-10">
           <div className="inline-flex items-center gap-2 self-start rounded-full border border-border bg-muted/30 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-            Cognitive Mapping
+            Life Insights
           </div>
           <div className="space-y-6">
-            <h1 className="text-4xl font-semibold tracking-tight text-foreground md:text-5xl lg:text-6xl">
-              The Shape of{" "}
-              <span className="text-muted-foreground/40">Your Memory.</span>
-            </h1>
-            <p className="max-w-2xl text-lg text-muted-foreground leading-relaxed">
-              Debo synthesizes your daily records into deep structural insights,
-              surfacing the strongest people, topics, and emotional patterns in
-              your life.
-            </p>
+              <h1 className="text-4xl font-semibold tracking-tight text-foreground md:text-5xl lg:text-6xl">
+                Your Memory <br />
+                <span className="text-muted-foreground/40">Patterns.</span>
+              </h1>
+              <p className="max-w-2xl text-lg text-muted-foreground leading-relaxed">
+                Debo looks at your daily notes to show you the people, topics, and feelings that appear most often.
+              </p>
           </div>
 
           <div className="flex flex-wrap gap-3 pt-2">
@@ -52,7 +50,7 @@ export default async function InsightsPage() {
               size="sm"
               className="h-10 rounded-xl border-border bg-background px-6 text-xs font-medium transition-all hover:bg-muted/50"
             >
-              <Link href="/dashboard/ask">Ask Ranked Context</Link>
+              <Link href="/dashboard/ask">Ask AI</Link>
             </Button>
             <Button
               asChild
@@ -69,17 +67,17 @@ export default async function InsightsPage() {
           <MiniStat
             label="Journal Entries"
             value={journalCount.toString()}
-            description="Chronological moments"
+            description="Total notes"
           />
           <MiniStat
-            label="Entities Surface"
+            label="People & Places"
             value={graph.topPeople.length.toString()}
-            description="Ranked people nodes"
+            description="People you mention often"
           />
           <MiniStat
-            label="Recurrence"
+            label="Patterns"
             value={graph.patterns.length.toString()}
-            description="Pattern signals detected"
+            description="Recurring themes found"
           />
         </div>
 

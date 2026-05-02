@@ -30,7 +30,7 @@ export function LifeInsights({
             <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
               Cognitive Analysis
             </div>
-            <h2 className="text-xl font-semibold tracking-tight">Intelligence Feed</h2>
+            <h2 className="text-xl font-semibold tracking-tight">AI Insights</h2>
           </div>
         </header>
 
@@ -48,9 +48,9 @@ export function LifeInsights({
           ) : (
             <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted/5 px-6 py-16 text-center">
                <BrainCircuit className="h-8 w-8 text-muted-foreground/20 mb-4" />
-               <h3 className="text-sm font-semibold text-foreground">Awaiting Signals</h3>
+               <h3 className="text-sm font-semibold text-foreground">Waiting for more notes</h3>
                <p className="mt-1 max-w-[240px] text-xs leading-relaxed text-muted-foreground/50">
-                 Deep patterns are still forming. Keep writing to unlock personalized insights.
+                 I need more notes to find patterns. Keep writing to get insights!
                </p>
             </div>
           )}
@@ -61,7 +61,7 @@ export function LifeInsights({
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="rounded-2xl glass-card p-5">
             <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-4">
-              Top Entities
+              Frequent Mentions
             </div>
             <div className="flex flex-wrap gap-2">
               {topPeople.length > 0 ? (
@@ -71,7 +71,7 @@ export function LifeInsights({
                   </div>
                 ))
               ) : (
-                <span className="text-[11px] text-muted-foreground italic">None tracked</span>
+                <span className="text-[11px] text-muted-foreground italic">None found</span>
               )}
             </div>
           </div>
@@ -88,7 +88,7 @@ export function LifeInsights({
                   </div>
                 ))
               ) : (
-                <span className="text-[11px] text-muted-foreground italic">No topics identified</span>
+                <span className="text-[11px] text-muted-foreground italic">No topics found</span>
               )}
             </div>
           </div>
@@ -96,7 +96,7 @@ export function LifeInsights({
 
         <div className="rounded-2xl glass-card p-5">
           <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-4">
-            Emotional Resonance
+            Feelings
           </div>
           <div className="flex flex-wrap gap-2">
             {topEmotions.length > 0 ? (
@@ -106,7 +106,7 @@ export function LifeInsights({
                 </div>
               ))
             ) : (
-              <span className="text-[11px] text-muted-foreground italic">Listening for cues...</span>
+              <span className="text-[11px] text-muted-foreground italic">Analyzing feelings...</span>
             )}
           </div>
         </div>
@@ -114,7 +114,7 @@ export function LifeInsights({
         <div className="rounded-2xl glass overflow-hidden">
           <div className="p-5 border-b border-border/40 bg-muted/20">
             <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
-              Recurring Frequency
+              Mention Counts
             </div>
           </div>
           <div className="divide-y divide-border">
@@ -139,7 +139,7 @@ export function LifeInsights({
             ) : (
               <div className="flex items-center gap-3 px-5 py-6 text-[11px] text-muted-foreground italic">
                 <CircleAlert className="h-3.5 w-3.5" />
-                Patterns will surface as you record more.
+                Patterns will show up once you write more.
               </div>
             )}
           </div>

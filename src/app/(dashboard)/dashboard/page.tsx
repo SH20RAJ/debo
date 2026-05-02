@@ -45,19 +45,17 @@ export default async function DashboardPage() {
         <header className="flex flex-col gap-10">
           <div className="inline-flex items-center gap-2 self-start rounded-full border border-border bg-muted/30 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
             <Sparkles className="h-3 w-3" />
-            Intelligence Engine Active
+            AI is Ready
           </div>
 
           <div className="grid gap-12 xl:grid-cols-[1fr_400px]">
             <div className="space-y-8">
               <h1 className="text-4xl font-semibold tracking-tight text-foreground md:text-5xl lg:text-6xl">
-                The Living Model <br />
-                <span className="text-muted-foreground/40">of Your Life.</span>
+                Your Personal <br />
+                <span className="text-muted-foreground/40">Memory Engine.</span>
               </h1>
               <p className="max-w-xl text-lg leading-relaxed text-muted-foreground">
-                Welcome back, {firstName}. Debo has synthesized your recent
-                moments into actionable cognitive patterns and emotional
-                signals.
+                Welcome back, {firstName}. Debo has looked at your recent notes to find patterns and insights.
               </p>
 
               <div className="flex flex-wrap gap-3 pt-2">
@@ -68,7 +66,7 @@ export default async function DashboardPage() {
                 >
                   <Link href="/dashboard/ask">
                     <Search className="mr-2 h-4 w-4" />
-                    Ask Your Past
+                    Ask Questions
                   </Link>
                 </Button>
                 <Button
@@ -90,19 +88,19 @@ export default async function DashboardPage() {
                 icon={<BarChart3 className="h-4 w-4" />}
                 label="Memories"
                 value={journalCount.toString()}
-                description="Log entries"
+                description="Journal entries"
               />
               <StatCard
                 icon={<Sparkles className="h-4 w-4" />}
                 label="Recent"
                 value={recentEntryCount.toString()}
-                description="Timeline nodes"
+                description="New items"
               />
               <StatCard
                 icon={<BookOpen className="h-4 w-4" />}
                 label="Patterns"
                 value={graph.patterns.length.toString()}
-                description="Recurrence detected"
+                description="Recurring themes"
               />
               <StatCard
                 icon={<Search className="h-4 w-4" />}
@@ -112,7 +110,7 @@ export default async function DashboardPage() {
                   graph.topTopics.length +
                   graph.topEmotions.length
                 ).toString()}
-                description="Graph nodes"
+                description="Memory nodes"
               />
             </div>
           </div>
@@ -127,23 +125,23 @@ export default async function DashboardPage() {
         />
 
         <section className="grid gap-12 xl:grid-cols-[1fr_400px]">
-          <LifeTimeline entries={recentTimeline} title="Chronological Pulse" />
+          <LifeTimeline entries={recentTimeline} title="Recent Notes" />
 
           <div className="flex flex-col gap-8">
             <div className="space-y-6">
               <div className="space-y-1">
                 <h3 className="text-lg font-semibold tracking-tight">
-                  Navigation
+                  Explore
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  Deep dive into specific cognitive layers.
+                  Look at different parts of your memory.
                 </p>
               </div>
               <div className="grid gap-2">
                 <ShortcutLink
                   href="/dashboard/insights"
-                  title="Signals"
-                  description="People, topics, and resonance"
+                  title="Insights"
+                  description="People, topics, and feelings"
                 />
                 <ShortcutLink
                   href="/dashboard/journals"
@@ -152,8 +150,8 @@ export default async function DashboardPage() {
                 />
                 <ShortcutLink
                   href="/dashboard/ask"
-                  title="Query Engine"
-                  description="LLM-powered life retrieval"
+                  title="Ask AI"
+                  description="Search your memory with AI"
                 />
               </div>
             </div>

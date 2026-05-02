@@ -26,7 +26,7 @@ export default async function TimelinePage({
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 py-12 lg:px-8">
         <header className="space-y-6">
           <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
-            Chronology
+            Timeline
           </div>
           <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div className="space-y-2">
@@ -34,8 +34,7 @@ export default async function TimelinePage({
                 Your life, arranged by time
               </h1>
               <p className="max-w-2xl text-lg text-muted-foreground">
-                Debo turns journals into a structured sequence of days, weeks,
-                and months.
+                Debo organizes your notes by day, week, and month.
               </p>
             </div>
             <div className="flex items-center rounded-xl glass p-1">

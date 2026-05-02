@@ -1,0 +1,76 @@
+
+/Users/shaswatraj/Desktop/debo/src/actions/settings.ts
+   71:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  119:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/shaswatraj/Desktop/debo/src/app/(dashboard)/dashboard/page.tsx
+  167:32  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  167:71  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+/Users/shaswatraj/Desktop/debo/src/app/api/mcp/route.ts
+  129:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  207:79  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  246:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/shaswatraj/Desktop/debo/src/app/api/webhooks/stack/route.ts
+  33:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  40:11  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/shaswatraj/Desktop/debo/src/components/auth/join-form.tsx
+  27:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/shaswatraj/Desktop/debo/src/components/copilot/AgentDataRenderer.tsx
+  19:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  35:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  49:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/shaswatraj/Desktop/debo/src/components/dashboard/experimental/mcp/mcp-client.tsx
+  12:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  35:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/shaswatraj/Desktop/debo/src/components/dashboard/memories/memory-manager.tsx
+  23:95  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/shaswatraj/Desktop/debo/src/components/dashboard/settings/settings-form.tsx
+  177:31  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/Users/shaswatraj/Desktop/debo/src/components/journal/slash-command.tsx
+   54:18  error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+   63:18  error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+   77:18  error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+   91:18  error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  105:18  error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  114:18  error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  123:18  error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  132:18  error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  142:12  error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  216:45  error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  234:14  error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  245:7   error  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+  270:7   error  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+
+/Users/shaswatraj/Desktop/debo/src/lib/ai/askLife.ts
+  42:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/shaswatraj/Desktop/debo/src/lib/life/graph.ts
+  102:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  103:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  103:87  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  104:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  104:72  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  155:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  155:72  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  280:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/shaswatraj/Desktop/debo/src/lib/nango.ts
+  35:62  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  62:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/shaswatraj/Desktop/debo/src/lib/vector/qdrant.ts
+  99:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/shaswatraj/Desktop/debo/src/middleware.ts
+  25:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 43 problems (43 errors, 0 warnings)
+

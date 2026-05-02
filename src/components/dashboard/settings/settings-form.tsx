@@ -74,10 +74,10 @@ export function SettingsForm({
                 <div className="flex justify-center md:justify-start">
                     <TabsList className="h-11 bg-muted/20 border border-border p-1 rounded-xl">
                         <TabsTrigger value="ai" className="gap-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs font-medium uppercase tracking-wider px-4">
-                            <Sparkles className="h-3.5 w-3.5" /> AI Providers
+                            <Sparkles className="h-3.5 w-3.5" /> AI Models
                         </TabsTrigger>
                         <TabsTrigger value="integrations" className="gap-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs font-medium uppercase tracking-wider px-4">
-                            <Box className="h-3.5 w-3.5" /> Integrations
+                            <Box className="h-3.5 w-3.5" /> Connections
                         </TabsTrigger>
                         <TabsTrigger value="voice" className="gap-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs font-medium uppercase tracking-wider px-4">
                             <Mic className="h-3.5 w-3.5" /> Voice
@@ -87,8 +87,8 @@ export function SettingsForm({
 
                 <TabsContent value="ai" className="space-y-8 mt-0 animate-in fade-in slide-in-from-bottom-1 duration-200">
                     <div className="space-y-1">
-                        <h2 className="text-xl font-semibold tracking-tight">AI Model Providers</h2>
-                        <p className="text-sm text-muted-foreground">Configure the intelligence that powers your companion.</p>
+                        <h2 className="text-xl font-semibold tracking-tight">AI Settings</h2>
+                        <p className="text-sm text-muted-foreground">Choose the AI that powers Debo.</p>
                     </div>
 
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -105,8 +105,8 @@ export function SettingsForm({
 
                 <TabsContent value="integrations" className="space-y-8 mt-0 animate-in fade-in slide-in-from-bottom-1 duration-200">
                     <div className="space-y-1">
-                        <h2 className="text-xl font-semibold tracking-tight">Integrations & Telemetry</h2>
-                        <p className="text-sm text-muted-foreground">Sync your life data from external apps to provide context.</p>
+                        <h2 className="text-xl font-semibold tracking-tight">App Connections</h2>
+                        <p className="text-sm text-muted-foreground">Connect your favorite apps to give Debo more context.</p>
                     </div>
 
                     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -167,14 +167,14 @@ export function SettingsForm({
 
                 <TabsContent value="voice" className="space-y-8 mt-0 animate-in fade-in slide-in-from-bottom-1 duration-200">
                     <div className="space-y-1">
-                        <h2 className="text-xl font-semibold tracking-tight">Voice Agent Settings</h2>
-                        <p className="text-sm text-muted-foreground">Configure LiveKit connection and voice preferences.</p>
+                        <h2 className="text-xl font-semibold tracking-tight">Voice Settings</h2>
+                        <p className="text-sm text-muted-foreground">Change how your voice agent works.</p>
                     </div>
                     
                     <div className="rounded-2xl border border-border bg-muted/10 p-6 max-w-2xl">
-                        <h3 className="text-sm font-semibold mb-2">Cloud Infrastructure</h3>
+                        <h3 className="text-sm font-semibold mb-2">System Info</h3>
                         <p className="text-xs text-muted-foreground leading-relaxed">
-                            Your voice agent is using a managed cloud-native LiveKit instance. Granular voice profiles and custom endpoints are coming in a future update.
+                            We're using a fast cloud system for voice. More options are coming soon!
                         </p>
                     </div>
                 </TabsContent>
@@ -183,7 +183,7 @@ export function SettingsForm({
             <div className="flex items-center justify-center pt-10 border-t border-border/40">
                 <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30 px-6 py-2 rounded-full border border-border bg-muted/5">
                     <ShieldCheck className="h-3.5 w-3.5" />
-                    Secure AES-256 Storage
+                    Your data is encrypted
                 </div>
             </div>
         </div>
