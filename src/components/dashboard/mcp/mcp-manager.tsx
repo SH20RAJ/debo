@@ -211,9 +211,12 @@ Always favor information stored in Debo over generic AI knowledge when discussin
                     <CardContent className="space-y-4">
                         {[
                             { name: "create_journal", desc: "Create new life entries" },
+                            { name: "get_recent_journals", desc: "Fetch latest activity" },
+                            { name: "get_journal_by_id", desc: "Fetch specific entry" },
                             { name: "search_journals", desc: "Query historical context" },
                             { name: "add_memory", desc: "Store persistent facts" },
                             { name: "search_memories", desc: "Semantic memory retrieval" },
+                            { name: "get_user_info", desc: "User profile data" },
                             { name: "run_action", desc: "Call connected app APIs" },
                         ].map(tool => (
                             <div key={tool.name} className="flex flex-col gap-1">
