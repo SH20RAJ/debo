@@ -14,8 +14,10 @@ graph TD
     
     subgraph Edge_Execution[Cloudflare Edge Layer]
         Web --> Actions[Server Actions]
+        Web --> Copilot[CopilotKit V2 Runtime]
         Voice --> VoiceLogic[Voice Activity Detection + TTS/STT]
         Actions --> AIGateway[Cloudflare AI Gateway]
+        Copilot --> AIGateway
         VoiceLogic --> AIGateway
     end
 
@@ -185,6 +187,17 @@ Before generation, the system builds a compact context block containing ranked s
 
 Model traffic is routed through Cloudflare AI Gateway so providers can be managed consistently. This helps with observability, provider switching, and future failover strategies.
 
+### CopilotKit V2 Integration
+
+Debo uses **CopilotKit V2** for deep agentic integration within the dashboard. The runtime is hosted at `/api/copilotkit` using the `copilotRuntimeNextJSAppRouterEndpoint` handler. This allows the AI agent to interact directly with the frontend state and execute client-side actions (like searching journals or creating entries) with high reliability and zero-configuration routing.
+
+## 9. Performance & Edge Proxy
+
+To maintain high performance in a global environment, Debo employs a specialized **Edge Proxy Layer**:
+
+- **Decoupled Auth Sync**: Session validation is separated from database synchronization. The system uses a lightweight `getUserId` helper to verify identity in milliseconds, while heavy synchronization tasks (like updating user profiles in the DB) are deferred or skipped during latency-sensitive operations.
+- **Node.js Proxy Runtime**: The proxy runs on the standard Node.js runtime to maintain compatibility with heavy libraries while leveraging Cloudflare's global network for routing and security.
+
 ## 10. Voice Architecture (Jarvis Agent)
 
 The voice layer is built for **human-parity latency** using LiveKit's real-time infrastructure.
@@ -209,3 +222,10 @@ The architecture includes a "Philanthropy Hook":
 - **Transparency Metrics**: The system tracks aggregate, anonymous usage milestones.
 - **Automatic Allocation**: A portion of platform proceeds is tracked through the **Transparency Portal**, showing real-time updates on projects like "Building Wells in Rajasthan" or "School Funding in Bihar".
 - **Verifiable Proof**: Every philanthropic project is documented with photos, coordinates, and cost-breakdowns linked to the blockchain (future vision) for absolute transparency.
+
+## 13. Growth & Outreach Engine
+
+Debo utilizes an automated **Outreach & Community Engine** powered by **Composio**:
+- **Targeted Engagement**: Programmatic search for top GitHub contributors across specific tech stacks (TS, Rust, Go).
+- **Personalized Outreach**: High-volume, personalized email sequences delivered via the Gmail API to invite top developers to contribute to the open-source mission.
+- **Analytics-Driven**: Tracking of community engagement metrics (stars, forks, issues) to measure the impact of outreach efforts.

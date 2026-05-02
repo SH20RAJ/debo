@@ -17,6 +17,11 @@
 **Sub-headline:** Debo is more than an app. It’s a life-aware OS that learns who you are, what you know, and helps you build what’s next.
 **CTA:** Establish Neural Link
 
+### 4. The Human Approach (Minimal & Poetic)
+**Headline:** Hope to be human.
+**Sub-headline:** Debo is the first AI that doesn't want to replace you. It wants to remember you. Build your life intelligence link today.
+**CTA:** Start free — Build my life graph
+
 ---
 
 ## High-Converting CTAs
@@ -34,3 +39,13 @@
 - Intelligence in every entry.
 - Stop searching. Start knowing.
 - Write once. Know forever.
+- Hope to be human.
+- Memory, but operational.
+
+---
+
+## Campaigns & Visions
+
+### Project Jarvis
+**The Vision:** Moving beyond text to ambient, real-time voice intelligence.
+**Goal:** Ambient life context available via sub-second voice interaction.

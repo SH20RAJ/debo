@@ -61,6 +61,10 @@ Every answer is grounded in your data. Debo returns citations so you can inspect
 
 A real-time, low-latency ambient voice interface powered by LiveKit. Talk to your journal naturally—ask about your day, reflect on memories, or get proactive advice while on the move, with sub-second response times and full emotional context.
 
+### Copilot Agent
+
+Integrated **CopilotKit** intelligence that lives alongside your workspace. It can proactively suggest journal entries, help search your history as you type, and execute complex cross-platform actions to help you maintain momentum.
+
 ## UX Philosophy
 
 The interface stays simple on purpose, utilizing a **premium glassmorphism aesthetic** that feels light and responsive.
@@ -74,10 +78,15 @@ graph TD
     User[User] --> UI[Next.js App Router UI]
     UI --> JournalEditor[Journal Editor]
     UI --> AskFlow[Ask Your Life]
-    UI --> Timeline[Timeline + Memory Graph]
+    UI --> Copilot[CopilotKit Agent]
+    
+    subgraph Edge_Proxy[Performance Proxy]
+        UI --> Proxy[Decoupled Auth Proxy]
+    end
 
     JournalEditor --> JournalAPI[Server Actions]
     AskFlow --> AskAction[askQuestionAction]
+    Copilot --> CopilotRuntime[CopilotKit Runtime]
 
     JournalAPI --> DB[(Neon Postgres)]
     JournalAPI --> EmbedJob[Chunk + Embed]
@@ -86,6 +95,7 @@ graph TD
     MemoryIngest --> MemoryStore[(Postgres Memory Tables)]
 
     AskAction --> Orchestrator[AI Orchestration Layer]
+    CopilotRuntime --> Orchestrator
     Orchestrator --> Tools[Retrieval Tools]
     Tools --> Qdrant
     Tools --> MemoryStore

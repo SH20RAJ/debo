@@ -10,7 +10,8 @@ import {
   Library,
   ChartNoAxesCombined,
   Clock3,
-  LogOut
+  LogOut,
+  Cpu
 } from "lucide-react"
 
 import {
@@ -51,6 +52,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       items: [
         { title: "Archive", href: "/dashboard/journals", icon: Library },
         { title: "Memories", href: "/dashboard/memories", icon: Database },
+      ]
+    },
+    {
+      title: "Connectivity",
+      items: [
+        { title: "MCP", href: "/dashboard/mcp", icon: Cpu },
       ]
     }
   ]

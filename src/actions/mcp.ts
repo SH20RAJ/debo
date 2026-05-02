@@ -1,44 +1,52 @@
-"use server";
+"use server"
 
-import { db } from "@/db";
-import { userPreferences } from "@/db/schema";
-import { resolveUserId } from "./auth-sync";
-import { eq } from "drizzle-orm";
+import { db } from "@/db"
+import { userPreferences } from "@/db/schema"
+import { eq } from "drizzle-orm"
+import { getUserId } from "./auth-sync"
+import { revalidatePath } from "next/cache"
 
-export async function rotateMCPKey() {
-  const userId = await resolveUserId();
-  if (!userId) throw new Error("Unauthorized");
+export async function getMcpConfig() {
+    const userId = await getUserId();
+    if (!userId) return null;
 
-  const bytes = new Uint8Array(24);
-  crypto.getRandomValues(bytes);
-  const newKey = `debo_${Array.from(bytes)
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("")}`;
-
-  await db
-    .insert(userPreferences)
-    .values({
-      userId,
-      mcpKey: newKey,
-    })
-    .onConflictDoUpdate({
-      target: userPreferences.userId,
-      set: {
-        mcpKey: newKey,
-        updatedAt: new Date(),
-      },
+    const config = await db.query.userPreferences.findFirst({
+        where: eq(userPreferences.userId, userId)
     });
 
-  return newKey;
+    if (!config) {
+        // Initialize if not exists
+        const newKey = crypto.randomUUID();
+        await db.insert(userPreferences).values({
+            userId,
+            mcpKey: newKey,
+        });
+        return { mcpKey: newKey };
+    }
+
+    if (!config.mcpKey) {
+        const newKey = crypto.randomUUID();
+        await db.update(userPreferences)
+            .set({ mcpKey: newKey })
+            .where(eq(userPreferences.userId, userId));
+        return { mcpKey: newKey };
+    }
+
+    return { mcpKey: config.mcpKey };
 }
 
-export async function getMCPConfig() {
-  const userId = await resolveUserId();
-  if (!userId) throw new Error("Unauthorized");
+export async function rotateMcpKey() {
+    const userId = await getUserId();
+    if (!userId) throw new Error("Unauthorized");
 
-  const config = await db.query.userPreferences.findFirst({
-    where: eq(userPreferences.userId, userId),
-  });
+    const newKey = crypto.randomUUID();
+    await db.update(userPreferences)
+        .set({ 
+            mcpKey: newKey,
+            updatedAt: new Date()
+        })
+        .where(eq(userPreferences.userId, userId));
 
-  return config;
+    revalidatePath("/dashboard/mcp");
+    return { mcpKey: newKey };
 }

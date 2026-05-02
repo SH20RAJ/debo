@@ -119,6 +119,35 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           },
           required: ["providerConfigKey"]
         }
+      },
+      {
+        name: "get_recent_journals",
+        description: "Fetch the most recent journal entries to get up to speed with the user's latest thoughts and events.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            limit: { type: "number", default: 5, description: "Number of entries to fetch." }
+          }
+        }
+      },
+      {
+        name: "get_journal_by_id",
+        description: "Fetch a specific journal entry by its unique ID.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            id: { type: "string", description: "The unique ID of the journal entry." }
+          },
+          required: ["id"]
+        }
+      },
+      {
+        name: "get_user_info",
+        description: "Get basic information about the current user (name, email).",
+        inputSchema: {
+          type: "object",
+          properties: {}
+        }
       }
     ]
   };
@@ -219,6 +248,32 @@ server.setRequestHandler(CallToolRequestSchema, async (request, extra) => {
             data
         });
         return { content: [{ type: "text", text: JSON.stringify(response.data) }] };
+    }
+
+    case "get_recent_journals": {
+        const { limit = 5 } = args as { limit?: number };
+        const results = await db.query.journals.findMany({
+            where: eq(journals.userId, userId),
+            orderBy: [desc(journals.createdAt)],
+            limit,
+        });
+        return { content: [{ type: "text", text: JSON.stringify(results) }] };
+    }
+
+    case "get_journal_by_id": {
+        const { id } = args as { id: string };
+        const result = await db.query.journals.findFirst({
+            where: and(eq(journals.id, id), eq(journals.userId, userId)),
+        });
+        if (!result) return { content: [{ type: "text", text: "Journal not found." }] };
+        return { content: [{ type: "text", text: JSON.stringify(result) }] };
+    }
+
+    case "get_user_info": {
+        const result = await db.query.user.findFirst({
+            where: eq(user.id, userId),
+        });
+        return { content: [{ type: "text", text: JSON.stringify({ name: result?.name, email: result?.email }) }] };
     }
 
     case "get_integration_guide": {
