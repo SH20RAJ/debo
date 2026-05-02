@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Terms of Service | Debo",
+  title: "Terms of Service",
   description: "Guidelines for using the Debo Memory Engine.",
 };
 

@@ -96,7 +96,7 @@ export default async function InsightsPage() {
 }
 
 export const metadata: Metadata = {
-  title: "Insights | Debo",
+  title: "Insights",
   description:
     "Analyze the strongest people, topics, and repeating patterns in your life.",
 };

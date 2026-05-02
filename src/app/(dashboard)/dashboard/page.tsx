@@ -180,7 +180,7 @@ export default async function DashboardPage() {
 }
 
 export const metadata: Metadata = {
-  title: "Dashboard | Debo",
+  title: "Dashboard",
   description:
     "Your personal life intelligence dashboard: insights, timeline, and memory graph.",
 };

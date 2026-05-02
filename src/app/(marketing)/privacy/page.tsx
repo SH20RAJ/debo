@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | Debo",
+  title: "Privacy Policy",
   description: "How we handle your data and memory engine privacy.",
 };
 
