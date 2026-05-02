@@ -1,17 +1,25 @@
-// CACHE_BUST: 1
-import { askQuestionAction } from "@/actions/ask";
-import type { UIMessage } from "ai";
+import { mastra } from "@/mastra";
+import { resolveUserId } from "@/actions/auth-sync";
+import { NextRequest } from "next/server";
 
-export const runtime = "edge";
-export const maxDuration = 60;
+export async function POST(req: NextRequest) {
+  const userId = await resolveUserId();
+  if (!userId) {
+    return new Response("Unauthorized", { status: 401 });
+  }
 
-export async function POST(req: Request) {
-    const body = await req.json() as { messages?: UIMessage[]; chatId?: string };
-    const { messages, chatId } = body;
+  const { messages } = await req.json();
+  const agent = mastra.getAgent("debo");
 
-    if (!Array.isArray(messages)) {
-        return new Response("Invalid chat payload", { status: 400 });
+  const result = await agent.stream(messages, {
+    memory: {
+        thread: "default", // We can improve this with thread IDs later
+        resource: userId,
+    },
+    requestContext: {
+        userId,
     }
+  });
 
-    return await askQuestionAction(messages, chatId);
+  return result.toDataStreamResponse();
 }

@@ -11,7 +11,9 @@ import {
     Cable,
     Check,
     Cpu,
-    ExternalLink
+    ExternalLink,
+    Code2,
+    Shield
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
@@ -60,120 +62,110 @@ export function McpManager({ initialKey }: McpManagerProps) {
 Use the provided Debo tools to:
 1. Fetch historical journals to understand context.
 2. Search and store persistent memories about the user's preferences, goals, and history.
-3. Interact with connected apps (GitHub, Calendar, etc.) to help the user execute tasks.
+3. Detect patterns in the user's notes to provide proactive insights.
 
-Always favor information stored in Debo over generic AI knowledge when discussing the user's personal context. When you learn something significant, proactively store it as a memory.`
+Always favor information stored in Debo over generic AI knowledge when discussing the user's personal context. When you learn something significant, proactively store it as a memory using add_memory.`
 
     return (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-            <div className="col-span-4 space-y-6">
-                <Card className="glass-card">
-                    <CardHeader>
-                        <div className="flex items-center justify-between">
-                            <CardTitle className="flex items-center gap-2">
-                                <Cable className="h-5 w-5 text-primary" />
-                                Connection Credentials
+        <div className="grid gap-8 lg:grid-cols-12 pb-20">
+            <div className="lg:col-span-8 space-y-8">
+                <section className="space-y-4">
+                    <div className="flex items-center gap-2 mb-2">
+                        <Shield className="h-5 w-5 text-primary" />
+                        <h3 className="text-lg font-semibold tracking-tight">Security & Connection</h3>
+                    </div>
+                    <Card className="border border-border/50 bg-card/30 backdrop-blur-sm">
+                        <CardHeader className="pb-4">
+                            <CardTitle className="text-sm font-medium flex items-center justify-between">
+                                Access Credentials
+                                <Badge variant="secondary" className="font-mono text-[10px] uppercase tracking-widest">Bearer Auth</Badge>
                             </CardTitle>
-                            <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
-                                Live
-                            </Badge>
-                        </div>
-                        <CardDescription>
-                            Use these credentials to connect external agents to your Debo instance.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">MCP Endpoint URL</label>
-                            <div className="flex gap-2">
-                                <Input value={mcpUrl} readOnly className="font-mono text-sm bg-muted/30" />
-                                <Button variant="outline" size="icon" onClick={() => copyToClipboard(mcpUrl, "URL")}>
-                                    {copiedField === "URL" ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                                </Button>
+                            <CardDescription className="text-xs">
+                                These credentials allow external agents to access your Debo tools securely.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">MCP Endpoint URL</label>
+                                <div className="flex gap-2">
+                                    <div className="relative flex-1">
+                                        <Input value={mcpUrl} readOnly className="font-mono text-xs bg-muted/20 border-border/50 h-10 pr-10" />
+                                        <Button 
+                                            variant="ghost" 
+                                            size="icon" 
+                                            className="absolute right-1 top-1 h-8 w-8 text-muted-foreground hover:text-foreground"
+                                            onClick={() => copyToClipboard(mcpUrl, "URL")}
+                                        >
+                                            {copiedField === "URL" ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                                        </Button>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
 
-                        <div className="space-y-2">
-                            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Bearer Token (MCP Key)</label>
-                            <div className="flex gap-2">
-                                <Input 
-                                    value={key} 
-                                    type={showKey ? "text" : "password"} 
-                                    readOnly 
-                                    className="font-mono text-sm bg-muted/30" 
-                                />
-                                <Button variant="outline" size="icon" onClick={() => setShowKey(!showKey)}>
-                                    {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                </Button>
-                                <Button variant="outline" size="icon" onClick={() => copyToClipboard(key, "Key")}>
-                                    {copiedField === "Key" ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                                </Button>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Bearer Token (MCP Key)</label>
+                                <div className="flex gap-2">
+                                    <div className="relative flex-1">
+                                        <Input 
+                                            value={key} 
+                                            type={showKey ? "text" : "password"} 
+                                            readOnly 
+                                            className="font-mono text-xs bg-muted/20 border-border/50 h-10 pr-20" 
+                                        />
+                                        <div className="absolute right-1 top-1 flex gap-1">
+                                            <Button 
+                                                variant="ghost" 
+                                                size="icon" 
+                                                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                                                onClick={() => setShowKey(!showKey)}
+                                            >
+                                                {showKey ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                                            </Button>
+                                            <Button 
+                                                variant="ghost" 
+                                                size="icon" 
+                                                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                                                onClick={() => copyToClipboard(key, "Key")}
+                                            >
+                                                {copiedField === "Key" ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                                            </Button>
+                                        </div>
+                                    </div>
+                                    <Button 
+                                        variant="outline" 
+                                        className="h-10 border-border/50 hover:bg-destructive/5 hover:text-destructive hover:border-destructive/20 gap-2 transition-colors"
+                                        onClick={handleRotate}
+                                        disabled={isRotating}
+                                    >
+                                        <RefreshCw className={`h-3.5 w-3.5 ${isRotating ? "animate-spin" : ""}`} />
+                                        <span className="text-xs">Rotate</span>
+                                    </Button>
+                                </div>
                             </div>
-                        </div>
-                    </CardContent>
-                    <CardFooter className="border-t border-border/40 bg-muted/10 px-6 py-4">
-                        <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="text-muted-foreground hover:text-destructive gap-2"
-                            onClick={handleRotate}
-                            disabled={isRotating}
-                        >
-                            <RefreshCw className={`h-3.5 w-3.5 ${isRotating ? "animate-spin" : ""}`} />
-                            Rotate Key
-                        </Button>
-                    </CardFooter>
-                </Card>
+                        </CardContent>
+                    </Card>
+                </section>
 
-                <Card className="glass-card">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Terminal className="h-5 w-5 text-primary" />
-                            Sample System Prompt
-                        </CardTitle>
-                        <CardDescription>
-                            Add this to your AI agent's instructions to enable intelligent context awareness.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="relative group">
-                            <pre className="p-4 rounded-lg bg-muted/50 text-xs leading-relaxed whitespace-pre-wrap border border-border/40">
-                                {samplePrompt}
-                            </pre>
-                            <Button 
-                                variant="secondary" 
-                                size="sm" 
-                                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                                onClick={() => copyToClipboard(samplePrompt, "Prompt")}
-                            >
-                                <Copy className="h-3 w-3 mr-2" />
-                                Copy
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-
-            <div className="col-span-3 space-y-6">
-                <Card className="glass-card">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-lg">
-                            <BookOpen className="h-4 w-4 text-primary" />
-                            Setup Guides
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-0">
+                <section className="space-y-4">
+                    <div className="flex items-center gap-2 mb-2">
+                        <Code2 className="h-5 w-5 text-primary" />
+                        <h3 className="text-lg font-semibold tracking-tight">Setup Guides</h3>
+                    </div>
+                    <Card className="border border-border/50 bg-card/30 backdrop-blur-sm overflow-hidden">
                         <Tabs defaultValue="claude" className="w-full">
-                            <TabsList className="w-full justify-start rounded-none border-b bg-transparent px-6 h-12">
-                                <TabsTrigger value="claude" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none shadow-none">Claude Desktop</TabsTrigger>
-                                <TabsTrigger value="cursor" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none shadow-none">Cursor</TabsTrigger>
+                            <TabsList className="w-full justify-start rounded-none border-b border-border/50 bg-muted/10 h-12 px-2">
+                                <TabsTrigger value="claude" className="text-xs data-[state=active]:bg-background">Claude</TabsTrigger>
+                                <TabsTrigger value="cursor" className="text-xs data-[state=active]:bg-background">Cursor</TabsTrigger>
+                                <TabsTrigger value="openai" className="text-xs data-[state=active]:bg-background">OpenAI</TabsTrigger>
+                                <TabsTrigger value="langchain" className="text-xs data-[state=active]:bg-background">LangChain</TabsTrigger>
                             </TabsList>
                             <TabsContent value="claude" className="p-6 space-y-4">
-                                <p className="text-sm text-muted-foreground">To add Debo to Claude Desktop, edit your config file:</p>
-                                <div className="bg-muted/50 p-3 rounded text-[10px] font-mono">
-                                    ~/Library/Application Support/Claude/claude_desktop_config.json
+                                <div className="space-y-2">
+                                    <h4 className="text-sm font-medium">Claude Desktop Configuration</h4>
+                                    <p className="text-xs text-muted-foreground">Add the following to your <code className="text-foreground">claude_desktop_config.json</code>:</p>
                                 </div>
-                                <pre className="bg-zinc-950 p-4 rounded-lg text-[10px] text-zinc-300 overflow-x-auto">
+                                <div className="relative group">
+                                    <pre className="bg-zinc-950 p-5 rounded-xl text-[11px] text-zinc-300 overflow-x-auto font-mono border border-white/5 shadow-2xl">
 {`{
   "mcpServers": {
     "debo": {
@@ -182,58 +174,144 @@ Always favor information stored in Debo over generic AI knowledge when discussin
     }
   }
 }`}
+                                    </pre>
+                                    <Button 
+                                        variant="secondary" 
+                                        size="sm" 
+                                        className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity h-7 text-[10px]"
+                                        onClick={() => copyToClipboard(`{
+  "mcpServers": {
+    "debo": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-http", "--url", "${mcpUrl}", "--token", "${key}"]
+    }
+  }
+}`, "Config")}
+                                    >
+                                        Copy JSON
+                                    </Button>
+                                </div>
+                            </TabsContent>
+                            <TabsContent value="cursor" className="p-6 space-y-4">
+                                <div className="space-y-2">
+                                    <h4 className="text-sm font-medium">Connect to Cursor</h4>
+                                    <p className="text-xs text-muted-foreground">Follow these steps to integrate Debo into your IDE:</p>
+                                </div>
+                                <div className="grid gap-3">
+                                    {[
+                                        "Open Settings (Cmd + Shift + J)",
+                                        "Features > MCP > Add New MCP Server",
+                                        "Name: Debo | Type: SSE",
+                                        `URL: ${mcpUrl}`
+                                    ].map((step, i) => (
+                                        <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-muted/20 border border-border/30">
+                                            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary border border-primary/20">
+                                                {i + 1}
+                                            </div>
+                                            <span className="text-xs font-medium">{step}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </TabsContent>
+                            <TabsContent value="openai" className="p-6 space-y-4">
+                                <div className="space-y-2">
+                                    <h4 className="text-sm font-medium">Custom GPT Action</h4>
+                                    <p className="text-xs text-muted-foreground">Create a Custom GPT and add an Action with this schema:</p>
+                                </div>
+                                <div className="bg-amber-500/5 border border-amber-500/10 p-3 rounded-lg text-[11px] text-amber-500/80 mb-2">
+                                    Note: You'll need to wrap the MCP endpoint in an OpenAPI spec for GPT Actions.
+                                </div>
+                                <Button variant="outline" size="sm" className="w-full h-9 text-xs" asChild>
+                                    <a href={`${mcpUrl}/openapi.json`} target="_blank" rel="noreferrer">
+                                        View OpenAPI Schema <ExternalLink className="ml-2 h-3 w-3" />
+                                    </a>
+                                </Button>
+                            </TabsContent>
+                            <TabsContent value="langchain" className="p-6 space-y-4">
+                                <div className="space-y-2">
+                                    <h4 className="text-sm font-medium">LangChain / Python Implementation</h4>
+                                    <p className="text-xs text-muted-foreground">Use the following snippet in your agent scripts:</p>
+                                </div>
+                                <pre className="bg-zinc-950 p-5 rounded-xl text-[11px] text-zinc-300 overflow-x-auto font-mono border border-white/5 shadow-2xl">
+{`from langchain_community.tools.mcp import MCPTool
+from langchain_openai import ChatOpenAI
+
+tools = MCPTool.from_url(
+    url="${mcpUrl}",
+    token="${key}"
+)
+
+agent = create_react_agent(ChatOpenAI(), tools)
+agent.invoke({"input": "What did I learn today?"})`}
                                 </pre>
                             </TabsContent>
-                            <TabsContent value="cursor" className="p-6 space-y-4 text-sm">
-                                <ol className="list-decimal list-inside space-y-3 text-muted-foreground">
-                                    <li>Open Cursor Settings <kbd className="text-[10px] px-1 py-0.5 rounded bg-muted border">Cmd + Shift + J</kbd></li>
-                                    <li>Go to <span className="text-foreground font-medium">Features</span> &gt; <span className="text-foreground font-medium">MCP</span></li>
-                                    <li>Click <span className="text-foreground font-medium">+ Add New MCP Server</span></li>
-                                    <li>Set Name to <span className="text-primary font-mono italic">Debo</span></li>
-                                    <li>Set Type to <span className="text-primary font-mono italic">SSE</span></li>
-                                    <li>Paste the URL: <span className="text-xs break-all font-mono bg-muted px-1">{mcpUrl}</span></li>
-                                </ol>
-                                <p className="text-xs text-amber-500/80 bg-amber-500/10 p-2 rounded border border-amber-500/20">
-                                    Note: Some versions of Cursor may require a separate auth header for Bearer tokens.
-                                </p>
-                            </TabsContent>
                         </Tabs>
-                    </CardContent>
-                </Card>
+                    </Card>
+                </section>
+            </div>
 
-                <Card className="glass-card">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-lg">
-                            <Cpu className="h-4 w-4 text-primary" />
-                            Available Tools
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {[
-                            { name: "create_journal", desc: "Create new life entries" },
-                            { name: "get_recent_journals", desc: "Fetch latest activity" },
-                            { name: "get_journal_by_id", desc: "Fetch specific entry" },
-                            { name: "search_journals", desc: "Query historical context" },
-                            { name: "add_memory", desc: "Store persistent facts" },
-                            { name: "search_memories", desc: "Semantic memory retrieval" },
-                            { name: "get_user_info", desc: "User profile data" },
-                            { name: "run_action", desc: "Call connected app APIs" },
-                        ].map(tool => (
-                            <div key={tool.name} className="flex flex-col gap-1">
-                                <code className="text-xs text-primary bg-primary/10 px-1.5 py-0.5 rounded w-fit">{tool.name}</code>
-                                <span className="text-[10px] text-muted-foreground px-1">{tool.desc}</span>
+            <div className="lg:col-span-4 space-y-8">
+                <section className="space-y-4">
+                    <div className="flex items-center gap-2 mb-2">
+                        <Sparkles className="h-5 w-5 text-primary" />
+                        <h3 className="text-lg font-semibold tracking-tight">System Prompt</h3>
+                    </div>
+                    <Card className="border border-border/50 bg-primary/[0.02] backdrop-blur-sm h-fit">
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-xs font-bold uppercase tracking-widest text-primary/80">Recommended Instruction</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="relative group">
+                                <div className="p-4 rounded-xl bg-background/50 text-[11px] leading-relaxed text-muted-foreground italic border border-border/30">
+                                    "{samplePrompt}"
+                                </div>
+                                <Button 
+                                    variant="secondary" 
+                                    size="sm" 
+                                    className="absolute -bottom-3 -right-3 h-8 shadow-lg text-[10px] rounded-full"
+                                    onClick={() => copyToClipboard(samplePrompt, "Prompt")}
+                                >
+                                    <Copy className="h-3 w-3 mr-2" />
+                                    Copy Prompt
+                                </Button>
                             </div>
-                        ))}
-                    </CardContent>
-                    <CardFooter className="pt-0">
-                        <Button variant="link" className="text-xs h-auto p-0" asChild>
-                            <a href="https://modelcontextprotocol.io" target="_blank" rel="noreferrer" className="flex items-center gap-1">
-                                Read MCP Specs
-                                <ExternalLink className="h-3 w-3" />
-                            </a>
-                        </Button>
-                    </CardFooter>
-                </Card>
+                        </CardContent>
+                    </Card>
+                </section>
+
+                <section className="space-y-4">
+                    <div className="flex items-center gap-2 mb-2">
+                        <Cpu className="h-5 w-5 text-primary" />
+                        <h3 className="text-lg font-semibold tracking-tight">Available Tools</h3>
+                    </div>
+                    <Card className="border border-border/50 bg-card/30 backdrop-blur-sm overflow-hidden">
+                        <CardContent className="p-0">
+                            <div className="divide-y divide-border/50">
+                                {[
+                                    { name: "create_journal", desc: "Save new life entries" },
+                                    { name: "search_journals", desc: "Semantic history search" },
+                                    { name: "add_memory", desc: "Store persistent facts" },
+                                    { name: "get_memories", desc: "Recall user context" },
+                                    { name: "get_timeline", desc: "Chronological timeline" },
+                                    { name: "detect_patterns", desc: "AI pattern analysis" },
+                                ].map(tool => (
+                                    <div key={tool.name} className="p-4 hover:bg-muted/30 transition-colors group">
+                                        <div className="flex items-center justify-between mb-1">
+                                            <code className="text-[10px] font-bold text-primary font-mono">{tool.name}</code>
+                                            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                                        </div>
+                                        <p className="text-[10px] text-muted-foreground leading-tight">{tool.desc}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                        <CardFooter className="bg-muted/10 p-4">
+                            <p className="text-[10px] text-muted-foreground italic text-center w-full">
+                                Tools are automatically updated based on your subscription and connected apps.
+                            </p>
+                        </CardFooter>
+                    </Card>
+                </section>
             </div>
         </div>
     )

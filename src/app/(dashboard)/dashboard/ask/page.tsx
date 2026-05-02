@@ -1,4 +1,4 @@
-import { CopilotAskContainer } from "@/components/chat/CopilotAskContainer";
+import { AskAssistant } from "@/components/assistant/AskAssistant";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function AskPage() {
-  return <CopilotAskContainer />;
+  return <AskAssistant />;
 }

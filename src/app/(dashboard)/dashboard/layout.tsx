@@ -7,9 +7,8 @@ import {
 } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
 import { Metadata } from "next";
-import { CopilotKit } from "@copilotkit/react-core";
-import "@copilotkit/react-ui/styles.css";
-import { CopilotChat } from "@/components/copilot/CopilotChat";
+import { MyAssistantRuntimeProvider } from "@/components/assistant/AssistantRuntimeProvider";
+import { MyAssistant } from "@/components/assistant/MyAssistant";
 
 export default async function DashboardLayout({
   children,
@@ -23,7 +22,7 @@ export default async function DashboardLayout({
   }
 
   return (
-    <CopilotKit runtimeUrl="/api/copilotkit">
+    <MyAssistantRuntimeProvider>
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset className="bg-background relative flex h-svh flex-col overflow-hidden">
@@ -35,10 +34,10 @@ export default async function DashboardLayout({
           <main className="flex-1 overflow-y-auto no-scrollbar scroll-smooth">
             {children}
           </main>
-          <CopilotChat />
+          <MyAssistant />
         </SidebarInset>
       </SidebarProvider>
-    </CopilotKit>
+    </MyAssistantRuntimeProvider>
   );
 }
 
