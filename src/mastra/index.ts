@@ -6,12 +6,27 @@ import { DuckDBStore } from "@mastra/duckdb";
 import { MastraCompositeStore } from '@mastra/core/storage';
 import { Observability, DefaultExporter, CloudExporter, SensitiveDataFilter } from '@mastra/observability';
 import { weatherWorkflow } from './workflows/weather-workflow';
+import { dailyAnalysisWorkflow } from './workflows/daily-analysis';
 import { weatherAgent } from './agents/weather-agent';
 import { deboAgent } from './agents/debo';
+import { deboCompanion } from './agents/companion';
+import { deboLibrarian } from './agents/librarian';
+import { deboAnalyst } from './agents/analyst';
 
 export const mastra = new Mastra({
-  workflows: { weatherWorkflow },
-  agents: { weatherAgent, debo: deboAgent },
+  workflows: { weatherWorkflow, dailyAnalysis: dailyAnalysisWorkflow },
+  agents: { 
+    weatherAgent, 
+    debo: deboAgent, 
+    deboCompanion, 
+    deboLibrarian, 
+    deboAnalyst 
+  },
+  backgroundTasks: {
+    enabled: true,
+    globalConcurrency: 10,
+    perAgentConcurrency: 5,
+  },
   storage: new MastraCompositeStore({
     id: 'composite-storage',
     default: new LibSQLStore({

@@ -124,6 +124,12 @@ export const queryGraphTool = createTool({
   inputSchema: z.object({
     question: z.string().describe('The specific question about patterns.'),
   }),
+  outputSchema: z.object({
+    insight: z.string().describe('The primary pattern or insight discovered.'),
+    evidence: z.array(z.string()).describe('List of journal IDs or citations supporting this insight.'),
+    sentiment: z.enum(['positive', 'negative', 'neutral', 'growth']).describe('The overall sentiment of this pattern.'),
+    suggestedAction: z.string().optional().describe('A suggested reflection or action for the user.'),
+  }),
   execute: async ({ input, context }) => {
     const userId = context?.requestContext?.get('userId') || (context as any).userId;
     if (!userId) throw new Error('Unauthorized');
