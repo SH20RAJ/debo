@@ -103,7 +103,7 @@
     "@types/react": "^19.1.5",
     "@types/react-dom": "^19.1.5",
     "dotenv": "^16.4.7",
-    "drizzle-kit": "^0.30.4",
+    "drizzle-kit": "^0.31.10",
     "eslint": "^9",
     "eslint-config-next": "15.4.6",
     "tailwindcss": "^4",
