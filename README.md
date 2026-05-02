@@ -1,5 +1,8 @@
 # Debo
 
+> [!IMPORTANT]
+> **Project Jarvis is officially announced!** We are moving beyond text to build a real-time, ambient voice intelligence layer that allows you to talk to your life context naturally. [Learn more about the vision.](https://github.com/SH20RAJ/debo/issues/36)
+
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org/)
 [![Qdrant](https://img.shields.io/badge/Qdrant-Vector_DB-FF4D4D?logo=qdrant)](https://qdrant.tech/)
 [![AI](https://img.shields.io/badge/AI-Vercel_SDK_+_Cloudflare_Gateway-111827)](https://sdk.vercel.ai/)
