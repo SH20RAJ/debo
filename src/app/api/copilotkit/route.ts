@@ -25,8 +25,6 @@ async function getRuntime(req: NextRequest) {
 
   const agent = new BuiltInAgent({
     model: getChatModel(),
-    name: "debo",
-    description: "Debo, the user's private AI companion journal.",
     prompt: DEBO_AGENT_PROMPT,
     tools: getAgentTools(userId),
   });

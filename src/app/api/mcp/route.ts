@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { db } from "@/db";
-import { journals, userPreferences } from "@/db/schema";
+import { journals, userPreferences, user } from "@/db/schema";
 import { eq, and, gte, lte, desc, ilike, sql } from "drizzle-orm";
 import { nango } from "@/lib/nango";
 import { indexJournal } from "@/lib/vector/search";

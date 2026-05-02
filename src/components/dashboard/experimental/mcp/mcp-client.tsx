@@ -5,7 +5,7 @@ import { Network, Key, RefreshCw, ShieldCheck, Terminal, CheckCircle2, Copy, Tra
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { rotateMCPKey, getMCPConfig } from "@/actions/mcp";
+import { rotateMcpKey, getMcpConfig } from "@/actions/mcp";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export function MCPClient() {
@@ -19,7 +19,7 @@ export function MCPClient() {
 
   const loadConfig = async () => {
     try {
-      const data = await getMCPConfig();
+      const data = await getMcpConfig();
       setConfig(data);
     } catch (e) {
       toast.error("Failed to load MCP configuration");
@@ -31,8 +31,8 @@ export function MCPClient() {
   const handleRotate = async () => {
     setIsRotating(true);
     try {
-      const newKey = await rotateMCPKey();
-      setConfig((prev: any) => ({ ...prev, mcpKey: newKey }));
+      const result = await rotateMcpKey();
+      setConfig((prev: any) => ({ ...prev, mcpKey: result.mcpKey }));
       toast.success("MCP API Key rotated successfully");
     } catch (e) {
       toast.error("Failed to rotate key");
