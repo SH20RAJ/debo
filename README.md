@@ -4,6 +4,7 @@
 [![Qdrant](https://img.shields.io/badge/Qdrant-Vector_DB-FF4D4D?logo=qdrant)](https://qdrant.tech/)
 [![AI](https://img.shields.io/badge/AI-Vercel_SDK_+_Cloudflare_Gateway-111827)](https://sdk.vercel.ai/)
 [![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![Visitors](https://api.visitorbadge.io/api/combined?path=https%3A%2F%2Fgithub.com%2FSH20RAJ%2Fdebo&countColor=%23263759&style=flat)](https://visitorbadge.io/status?path=https%3A%2F%2Fgithub.com%2FSH20RAJ%2Fdebo)
 
 Your life, understood by AI.
 Live at: [debo.life](https://debo.life)
