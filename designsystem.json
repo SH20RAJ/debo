@@ -1,0 +1,88 @@
+{
+  "name": "Debo Premium Design System",
+  "version": "1.0.0",
+  "meta": {
+    "description": "Design tokens inspired by high-end automotive and AI assistant interfaces.",
+    "aesthetic": "Modern Minimalist / Soft-UI"
+  },
+  "colors": {
+    "background": {
+      "main": "#E5E7EB",
+      "surface": "#F3F4F6",
+      "card": "#FFFFFF"
+    },
+    "primary": {
+      "base": "#008F58",
+      "hover": "#007A4B",
+      "foreground": "#FFFFFF"
+    },
+    "neutral": {
+      "900": "#111827",
+      "700": "#374151",
+      "500": "#6B7280",
+      "300": "#D1D5DB",
+      "100": "#F3F4F6"
+    },
+    "accents": {
+      "soft_shadow": "rgba(0, 0, 0, 0.05)",
+      "glass": "rgba(255, 255, 255, 0.7)"
+    }
+  },
+  "typography": {
+    "fontFamily": "Inter, system-ui, sans-serif",
+    "sizes": {
+      "display": "2.5rem",
+      "h1": "2rem",
+      "h2": "1.5rem",
+      "h3": "1.25rem",
+      "base": "1rem",
+      "sm": "0.875rem",
+      "xs": "0.75rem"
+    },
+    "weights": {
+      "bold": "700",
+      "semibold": "600",
+      "medium": "500",
+      "regular": "400"
+    }
+  },
+  "radius": {
+    "card": "32px",
+    "button": "16px",
+    "pill": "9999px",
+    "input": "12px"
+  },
+  "spacing": {
+    "xs": "4px",
+    "sm": "8px",
+    "md": "16px",
+    "lg": "24px",
+    "xl": "32px",
+    "2xl": "48px"
+  },
+  "shadows": {
+    "soft": "0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05)",
+    "inner": "inset 0 2px 4px 0 rgba(0, 0, 0, 0.05)"
+  },
+  "components": {
+    "card": {
+      "backgroundColor": "#FFFFFF",
+      "borderRadius": "32px",
+      "padding": "24px",
+      "boxShadow": "0 4px 20px rgba(0, 0, 0, 0.03)"
+    },
+    "button": {
+      "primary": {
+        "backgroundColor": "#008F58",
+        "borderRadius": "16px",
+        "color": "#FFFFFF",
+        "padding": "12px 24px"
+      },
+      "ghost": {
+        "backgroundColor": "transparent",
+        "color": "#374151",
+        "padding": "12px 24px"
+      }
+    }
+  }
+}
