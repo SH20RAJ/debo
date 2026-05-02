@@ -1,36 +1,27 @@
-# Debo — Privacy Policy
+# 🔒 Debo Privacy Manifesto: Data Sovereignty by Design
 
-Last updated: YYYY-MM-DD
+**Last Updated: May 2, 2026**
 
-Introduction
+At Debo, we believe that your memories and inner thoughts are the most sacred data you own. Our privacy architecture is designed not just to comply with laws, but to mathematically ensure **Data Sovereignty**.
 
-Debo (# Privacy Policy
+## 1. The Zero-Knowledge Vision
+We are architecting Debo to move toward a **Zero-Knowledge** model. This means that in the future, your journal entries will be encrypted client-side using keys only you possess. The "Life Intelligence" will be processed in secure enclaves or locally, ensuring that even we cannot read your raw thoughts.
 
-**Last Updated: April 20, 2026**
+## 2. Technical Data Safeguards
+- **Edge-First Privacy**: Model traffic is routed through a private **Cloudflare AI Gateway**, scrubbing sensitive identifiers before they reach third-party inference engines.
+- **Provider Isolation**: We do not "sell" your data to train generic models. Your entries are used strictly to build your personal memory graph.
+- **Database Hardening**: Our **Neon Postgres** and **Qdrant** instances are isolated and encrypted at rest with industry-leading standards (AES-256).
 
-Debo ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your information when you use our AI-powered journaling application.
+## 3. Your Right to Memory
+- **Full Portability**: You can export your entire structured memory graph and raw journals in human-readable JSON at any time.
+- **The "Delete Everything" Switch**: Deletion in Debo means complete erasure from our database, vector index, and memory extraction caches.
+- **Transparent Logging**: You can view every retrieval call made by the AI to see exactly which parts of your history were used to generate an answer.
 
-## 1. Information We Collect
-- **Account Information:** Email address and name provided during signup.
-- **Content:** The text entries and data you provide to the AI ecosystem.
-- **Usage Data:** Technical information about how you interact with our service.
+## 4. Third-Party Intelligence
+We leverage best-in-class models (OpenAI, Anthropic, Meta) for reasoning. However, we minimize the data sent to them by using **Contextual Snippets** instead of full document dumping.
 
-## 2. How We Use Your Information
-- To provide and maintain the Debo service.
-- To improve our AI models and user experience.
-- To communicate with you regarding updates or support.
+## 5. Continuous Audit
+As part of our **Radical Transparency** goal, our core retrieval and memory extraction logic is open-source. Anyone can audit how we handle your data on [GitHub](https://github.com/SH20RAJ/debo).
 
-## 3. Data Security
-We implement industry-standard security measures to protect your data. However, no method of transmission over the internet is 100% secure.
-
-## 4. Third-Party Services
-We may use third-party providers (e.g., database providers, AI model APIs) to facilitate our service. These providers have access to your data only to perform specific tasks on our behalf.
-
-## 5. Your Rights
-You may request access to, correction of, or deletion of your personal data at any time.
-
-## 6. Changes to This Policy
-We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new policy on this page.
-
-## 7. Contact Us
-If you have any questions about this Privacy Policy, please contact us.
+---
+*Your life is private. Your AI should be too.*

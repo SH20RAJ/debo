@@ -1,6 +1,6 @@
-# 🎙️ Voice Agent Architecture: LiveKit Integration
+# 🎙️ Project Jarvis: Ambient Voice Intelligence (LiveKit)
 
-Debo leverages **LiveKit** as the core infrastructure for all real-time voice, video, and multimodal interactions. By using LiveKit, we achieve a sub-100ms latency experience, making the AI companion feel truly conversational and "alive."
+Debo leverages **LiveKit** to power "Project Jarvis"—a real-time, zero-latency ambient voice intelligence. By using LiveKit's multimodal pipeline, we create an AI companion that doesn't just listen, but understands emotion, context, and the subtle nuances of your life through a sub-100ms conversational loop.
 
 ## 🚀 Why LiveKit?
 

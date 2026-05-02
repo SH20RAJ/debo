@@ -16,42 +16,26 @@ The core system already has the right shape:
 
 The product focus now is improving retrieval quality, memory quality, and the clarity of the user experience.
 
-## Next Features
+## Next Features (Phases)
 
-### 1. Better Pattern Detection
+### Phase 1: Ambient Intelligence (Active)
+- **Jarvis-style Voice Agent**: Real-time voice interaction using LiveKit and sub-second latency STT/TTS.
+- **Modern Glassmorphism UI**: A fluid, premium interface that breathes with the user's data.
+- **Predictive Burnout Detection**: Proactive nudges based on sentiment and pattern shifts.
 
-Improve recurring emotional and behavioral analysis so Debo can surface stronger trends and better summaries over time.
+### Phase 2: Memory Synthesis
+- **AI Legacy Mode**: Synthesizing years of context into a structured "Life Philosophy" book.
+- **Weekly Growth Podcasts**: Automated private audio reflections generated from weekly journal entries.
+- **Gratitude Jar & Zen Mode**: Interactive UI components for micro-journaling and deep focus.
 
-### 2. Stronger Timeline Views
+### Phase 3: Radical Transparency
+- **Foundation Portal**: Real-time tracking of philanthropic impact (wells, schools) linked to platform milestones.
+- **Zero-Knowledge Privacy**: End-to-end encrypted journal storage where only the user holds the key.
 
-Add richer day, week, and month views with automatic summaries and easier navigation through past entries.
+## Long-Term Vision: The Personal Operating System
 
-### 3. Deeper Memory Graph
+The end state is a **trusted life co-pilot** that anticipates needs, summarizes evolution, and scales your impact:
 
-Expand the graph model so people, projects, topics, and emotions can be connected more explicitly and queried more naturally.
-
-### 4. Smarter Citations
-
-Improve source highlighting, confidence indicators, and explanation quality so answers are easier to verify.
-
-### 5. Connector Expansion
-
-Broaden external context sources through integrations and MCP-compatible tools.
-
-### 6. Better Personalization
-
-Use long-term memory and repeated patterns to adapt tone, suggestions, and summaries to each user.
-
-## Long-Term Vision
-
-Debo should become a personal operating system for life context.
-
-That means the system should be able to:
-
-- predict what the user may need next,
-- summarize how they are changing,
-- warn about repeated stress patterns,
-- connect work, health, relationships, and goals,
-- help the user make better decisions with less friction.
-
-The end state is not a smarter journal. The end state is a trusted life co-pilot.
+- **AI Legacy**: Preserving your essence and wisdom for future generations.
+- **Predictive Living**: Warning you about behavior loops before they happen.
+- **Global Impact**: Turning personal reflection into real-world change through the Debo Foundation.

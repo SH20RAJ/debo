@@ -1,42 +1,42 @@
 # Technical Architecture
 
-## 1. High-Level Architecture
+Debo is built as a **Privacy-First Life Intelligence System**, architected for edge-latency and deep contextual recall. The system is split into four primary layers:
 
-Debo is split into three layers:
-
-1. The Next.js application layer for UI, auth, and server actions.
-2. The retrieval layer for embeddings, Qdrant search, and structured memory.
-3. The AI orchestration layer for tool calling, ranking, citations, and streaming responses.
+1. **Ambient Interface Layer**: Next.js App Router for web, and **LiveKit** for real-time, low-latency Jarvis-style voice interactions.
+2. **Edge Execution Layer**: Runs on **Cloudflare Workers** (OpenNext) for sub-second global response times and AI Gateway management.
+3. **Intelligence & Retrieval Layer**: Dual-store strategy using **Qdrant** for semantic search and **Neon (Postgres)** for structured, durable memories.
+4. **Impact Layer**: The **Radical Transparency Portal** that connects journal activity to real-world philanthropic outcomes.
 
 ```mermaid
 graph TD
-    User[User] --> App[Next.js 16 App Router]
-    App --> Auth[Better Auth]
-    App --> Editor[Journal Editor]
-    App --> Ask[askQuestionAction]
-    App --> Timeline[Timeline Views]
-    App --> Graph[Memory Graph Views]
+    User[User] --> Web[Next.js 16 Web UI]
+    User --> Voice[LiveKit Jarvis Voice Agent]
+    
+    subgraph Edge_Execution[Cloudflare Edge Layer]
+        Web --> Actions[Server Actions]
+        Voice --> VoiceLogic[Voice Activity Detection + TTS/STT]
+        Actions --> AIGateway[Cloudflare AI Gateway]
+        VoiceLogic --> AIGateway
+    end
 
-    Editor --> Save[Journal Save Action]
-    Save --> DB[(Neon Postgres)]
-    Save --> Chunk[Chunking + Embedding Job]
-    Chunk --> Embeddings[Embedding Model]
-    Chunk --> Qdrant[(Qdrant)]
-    Save --> MemoryExtract[Memory Extraction]
-    MemoryExtract --> MemoryStore[(Postgres Memory Tables)]
+    subgraph Intelligence_Layer[Intelligence & Retrieval]
+        Actions --> DB[(Neon Postgres)]
+        Actions --> Qdrant[(Qdrant Vector DB)]
+        
+        subgraph Memory_Engine[Debo Memory Engine]
+            DB --> Facts[Structured Facts]
+            DB --> Prefs[User Preferences]
+        end
+    end
 
-    Ask --> Context[buildRetrievedContext]
-    Context --> JournalSearch[Journal Search Tool]
-    Context --> MemorySearch[Memory Search Tool]
-    JournalSearch --> Qdrant
-    JournalSearch --> DB
-    MemorySearch --> MemoryStore
-    Context --> Rank[Ranking + Dedupe]
-    Rank --> Prompt[System Prompt + Citations]
-    Prompt --> Gateway[Cloudflare AI Gateway]
-    Gateway --> Model[LLM Provider]
-    Model --> Stream[Streaming UI Response]
-    Stream --> App
+    subgraph Impact_Layer[Foundation & Philanthropy]
+        DB --> Transparency[Radical Transparency Portal]
+        Transparency --> Impact[Real-world Philanthropy]
+    end
+
+    AIGateway --> LLM[LLM Provider]
+    LLM --> Stream[Streaming Response]
+    Stream --> User
 ```
 
 ## 2. Data Flow
@@ -185,22 +185,27 @@ Before generation, the system builds a compact context block containing ranked s
 
 Model traffic is routed through Cloudflare AI Gateway so providers can be managed consistently. This helps with observability, provider switching, and future failover strategies.
 
-## 9. Scaling Strategy
+## 10. Voice Architecture (Jarvis Agent)
 
-Debo should scale horizontally without changing the product model.
+The voice layer is built for **human-parity latency** using LiveKit's real-time infrastructure.
 
-### Horizontal Scaling
+1. **VAD (Voice Activity Detection)**: Processes audio at the edge to detect when the user starts/stops speaking.
+2. **STT (Speech-to-Text)**: High-speed transcription using Deepgram or Whisper.
+3. **Intelligence Loop**: Transcripts are piped into the `askQuestionAction` flow, retrieving personal memory and generating a response.
+4. **TTS (Text-to-Speech)**: Expressive voice synthesis (Cartesia/OpenAI) that streams audio back to the user via a LiveKit Room.
 
-Next.js server actions and route handlers remain stateless, so the app can scale across multiple instances. Persistent state lives in Neon, Qdrant, and the in-house memory tables rather than in memory.
+## 11. Security & Privacy Architecture
 
-### Vector DB Scaling
+Debo is built on a **Zero-Trust for Data** model:
 
-Qdrant can scale independently from the web application. As journal volume grows, the vector layer can be tuned without changing the UI or the core answer flow.
+- **E2E Encryption Vision**: Future versions will support client-side encryption for the primary journal store, where the server only sees encrypted blobs.
+- **Data Sovereignty**: Users can export their entire Postgres and Vector store at any time.
+- **Provider Isolation**: By using the Cloudflare AI Gateway, we can obfuscate PII before it reaches 3rd-party LLM providers.
+- **Auth Security**: Powered by **Better-Auth** with secure session management and multi-factor support.
 
-### Caching
+## 12. Impact-Driven Philanthropy
 
-The system should cache stable, repeated retrieval work where appropriate, but never at the cost of freshness for recent journal data. Recent entries and recent memories should remain easy to refresh.
-
-### Operational Boundaries
-
-The architecture keeps the UI light, the retrieval layer explicit, and the model orchestration isolated. That separation makes it easier to debug quality issues, control cost, and introduce new retrieval sources later.
+The architecture includes a "Philanthropy Hook":
+- **Transparency Metrics**: The system tracks aggregate, anonymous usage milestones.
+- **Automatic Allocation**: A portion of platform proceeds is tracked through the **Transparency Portal**, showing real-time updates on projects like "Building Wells in Rajasthan" or "School Funding in Bihar".
+- **Verifiable Proof**: Every philanthropic project is documented with photos, coordinates, and cost-breakdowns linked to the blockchain (future vision) for absolute transparency.

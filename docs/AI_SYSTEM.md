@@ -69,3 +69,27 @@ Debo should not:
 - Answer from generic model priors when personal data is available.
 
 That discipline is what makes the product feel trustworthy.
+
+## 10. Memory Engine Deep Dive
+
+Debo's first-party memory engine is the core of its "Life Intelligence." It operates in three phases:
+
+1. **Extraction**: Using structured LLM calls to identify "Memory Atoms"—atomic facts about preferences, people, recurring events, and values from raw journal text.
+2. **Deduplication & Merging**: If a user mentions a preference for "morning coffee" multiple times, the engine merges these into a single durable memory node with a "confidence" score.
+3. **Retrieval**: When a query is made, the engine performs a hybrid search:
+   - **Semantic Search**: Finding memories related to the query's meaning.
+   - **Entity Search**: Finding memories explicitly linked to people or places mentioned in the query.
+
+## 11. Multi-modal Voice Reasoning
+
+With the integration of LiveKit, the AI system now handles a **Real-time Loop**:
+
+- **VAD-Triggered Reasoning**: The system can "think" while the user is still speaking, preparing retrieval queries based on the initial few seconds of audio.
+- **Interruption Handling**: If the user interrupts, the AI orchestration layer immediately halts generation and resets the retrieval state for the new input.
+- **Emotional Mirroring**: The system prompt includes "Voice Tone" instructions that dynamically adjust based on the sentiment of the user's audio input.
+
+## 12. Privacy-Aware Retrieval
+
+Before any data is sent to the LLM via the Cloudflare AI Gateway:
+- **PII Scrubbing (Optional)**: In high-privacy mode, the system can scrub sensitive identifiers, replacing them with tokens that are mapped back locally.
+- **Context Truncation**: Only the most relevant snippets are sent, minimizing the amount of personal data exposed to the model provider.
