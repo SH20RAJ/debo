@@ -68,27 +68,28 @@ export async function saveAIProvider(data: {
     ),
   });
 
-  const updateData: Record<string, string | boolean | Date | null> = {
-    providerName: data.providerName,
-    baseUrl: data.baseUrl || null,
-    isEnabled: data.isEnabled ?? true,
-    updatedAt: new Date(),
-  };
-
-  if (encryptedKey) updateData.apiKey = encryptedKey;
-
   if (existing) {
     await db
       .update(aiProviders)
-      .set(updateData)
+      .set({
+        providerName: data.providerName,
+        baseUrl: data.baseUrl || null,
+        apiKey: encryptedKey || undefined,
+        isEnabled: data.isEnabled ?? true,
+        updatedAt: new Date(),
+      })
       .where(eq(aiProviders.id, existing.id));
   } else {
     await db.insert(aiProviders).values({
       id: crypto.randomUUID(),
       userId: userId,
       providerId: data.providerId,
-      ...updateData,
+      providerName: data.providerName,
+      baseUrl: data.baseUrl || null,
       apiKey: encryptedKey || null,
+      isEnabled: data.isEnabled ?? true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
   }
 
