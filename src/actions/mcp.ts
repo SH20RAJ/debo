@@ -2,12 +2,12 @@
 
 import { db } from "@/db";
 import { userPreferences } from "@/db/schema";
-import { stackServerApp } from "@/stack/server";
+import { resolveUserId } from "./auth-sync";
 import { eq } from "drizzle-orm";
 
 export async function rotateMCPKey() {
-  const user = await stackServerApp.getUser();
-  if (!user) throw new Error("Unauthorized");
+  const userId = await resolveUserId();
+  if (!userId) throw new Error("Unauthorized");
 
   const bytes = new Uint8Array(24);
   crypto.getRandomValues(bytes);
@@ -18,7 +18,7 @@ export async function rotateMCPKey() {
   await db
     .insert(userPreferences)
     .values({
-      userId: user.id,
+      userId,
       mcpKey: newKey,
     })
     .onConflictDoUpdate({
@@ -33,11 +33,11 @@ export async function rotateMCPKey() {
 }
 
 export async function getMCPConfig() {
-  const user = await stackServerApp.getUser();
-  if (!user) throw new Error("Unauthorized");
+  const userId = await resolveUserId();
+  if (!userId) throw new Error("Unauthorized");
 
   const config = await db.query.userPreferences.findFirst({
-    where: eq(userPreferences.userId, user.id),
+    where: eq(userPreferences.userId, userId),
   });
 
   return config;

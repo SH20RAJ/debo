@@ -2,7 +2,7 @@
 
 import { db } from "@/db";
 import { journals } from "@/db/schema";
-import { stackServerApp } from "@/stack/server";
+import { resolveUserId } from "./auth-sync";
 import { eq, desc, asc, and, count } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { cache } from "react";
@@ -18,14 +18,7 @@ const journalSchema = z.object({
   id: z.string().uuid().optional()
 });
 
-async function resolveUserId(userId?: string) {
-    if (userId) return userId;
-
-    const user = await stackServerApp.getUser();
-    if (!user) return null;
-
-    return user.id;
-}
+// resolveUserId is imported from ./auth-sync
 
 export const getJournals = cache(async (sortOrder: "asc" | "desc" = "desc", limit: number = 10, offset: number = 0, userId?: string) => {
     const resolvedUserId = await resolveUserId(userId);
@@ -45,13 +38,13 @@ export const getJournals = cache(async (sortOrder: "asc" | "desc" = "desc", limi
 });
 
 export const getJournalsCount = cache(async () => {
-    const user = await stackServerApp.getUser();
-    if (!user) return 0;
+    const userId = await resolveUserId();
+    if (!userId) return 0;
 
     try {
         const [result] = await db.select({ value: count() })
             .from(journals)
-            .where(eq(journals.userId, user.id));
+            .where(eq(journals.userId, userId));
         return result.value;
     } catch (error) {
         console.error("Failed to count journals:", error);

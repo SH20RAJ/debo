@@ -1,4 +1,4 @@
-import { stackServerApp } from "@/stack/server";
+import { resolveUserId } from "@/actions/auth-sync";
 import { redirect } from "next/navigation";
 import {
   SidebarProvider,
@@ -16,9 +16,9 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const user = await stackServerApp.getUser();
+  const userId = await resolveUserId();
 
-  if (!user) {
+  if (!userId) {
     redirect("/join");
   }
 

@@ -2,7 +2,7 @@ import "server-only";
 import OpenAI from "openai";
 import { createOpenAI } from "@ai-sdk/openai";
 
-const baseURL = process.env.OPENAI_BASE_URL || "https://gateway.ai.cloudflare.com/v1/091539408595ba99a0ef106d42391d5b/default/compat";
+const baseURL = process.env.OPENAI_BASE_URL || "https://gateway.ai.cloudflare.com/v1/091539408595ba99a0ef106d42391d5b/default/workers-ai/v1";
 const apiKey = process.env.CF_AIG_TOKEN || process.env.OPENAI_API_KEY;
 
 export const client = new OpenAI({
@@ -11,9 +11,9 @@ export const client = new OpenAI({
 });
 
 export const DEFAULT_CHAT_MODEL =
-  process.env.OPENAI_MODEL || "workers-ai/@cf/meta/llama-3.3-70b-instruct-fp8-fast";
+  process.env.OPENAI_MODEL || "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 export const DEFAULT_EMBEDDING_MODEL = 
-  process.env.OPENAI_EMBEDDING_MODEL || "workers-ai/@cf/qwen/qwen3-embedding-0.6b";
+  process.env.OPENAI_EMBEDDING_MODEL || "@cf/qwen/qwen3-embedding-0.6b";
 
 /**
  * Vercel AI SDK Provider
@@ -22,6 +22,7 @@ export const DEFAULT_EMBEDDING_MODEL =
 export const aiProvider = createOpenAI({
   apiKey,
   baseURL,
+  compatibility: "strict", // Force standard Chat Completions to avoid /responses endpoint
 });
 
 export function getChatModel() {

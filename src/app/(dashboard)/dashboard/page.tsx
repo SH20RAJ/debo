@@ -1,4 +1,4 @@
-import { stackServerApp } from "@/stack/server";
+import { resolveUserId } from "@/actions/auth-sync";
 import { redirect } from "next/navigation";
 import { Metadata } from "next";
 import { getLifeTimeline } from "@/lib/life/timeline";
@@ -9,26 +9,29 @@ import { BarChart3, BookOpen, Plus, Search, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { getJournalsCount } from "@/actions/journals";
+import { stackServerApp } from "@/stack/server";
 
 export default async function DashboardPage() {
-  const user = await stackServerApp.getUser();
-  if (!user) redirect("/join");
+  const userId = await resolveUserId();
+  if (!userId) redirect("/join");
+  
+  const user = await stackServerApp.getUser(); // Still need for display name
 
   const [journalCount, timeline] = await Promise.all([
     getJournalsCount(),
-    getLifeTimeline(user.id, "daily"),
+    getLifeTimeline(userId, "daily"),
   ]);
 
   let graph = await queryGraph(
     "What recurring patterns stand out in my life?",
-    user.id,
+    userId,
   );
 
   if (!graph.topPeople.length && journalCount > 0) {
-    await refreshMemoryGraph(user.id);
+    await refreshMemoryGraph(userId);
     graph = await queryGraph(
       "What recurring patterns stand out in my life?",
-      user.id,
+      userId,
     );
   }
 

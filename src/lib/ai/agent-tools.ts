@@ -1,5 +1,5 @@
-import type { FrontendAction } from "@copilotkit/react-core";
-import type { Parameter } from "@copilotkit/shared";
+import { defineTool, type ToolDefinition } from "@copilotkit/runtime/v2";
+import { z } from "zod";
 import { saveJournal, deleteJournal, getJournals } from "@/actions/journals";
 import { addMemory, deleteMemory, getMemory, updateMemory } from "@/actions/memories";
 import { searchJournals, getRecentJournalCitations } from "@/lib/vector/search";
@@ -10,119 +10,58 @@ import { generateText } from "ai";
 import { getChatModel } from "@/lib/ai/openai";
 import { extractMemory } from "@/lib/memory/extract";
 
-type JournalActionArgs = {
-  content: string;
-  title?: string;
-};
-
-type IdActionArgs = {
-  id: string;
-};
-
-type UpdateJournalArgs = {
-  id: string;
-  content: string;
-  title?: string;
-};
-
-type SearchActionArgs = {
-  query: string;
-};
-
-type SummarizeChatArgs = {
-  conversation: string;
-  focus?: string;
-};
-
-type ExtractInsightsArgs = {
-  text: string;
-};
-
-type DetectPatternsArgs = {
-  question: string;
-};
-
-type RecentEntriesArgs = {
-  days?: number;
-  limit?: number;
-};
-
-type RenderJournalCardArgs = {
-  id: string;
-  title: string;
-  content: string;
-  date: string;
-};
-
-type RenderTimelineItemArgs = {
-  date: string;
-  summary: string;
-  events: string[];
-  emotions?: string[];
-};
-
-type RenderInsightSummaryArgs = {
-  insight: string;
-  type?: string;
-};
-
-export function getAgentTools(userId: string) {
+export function getAgentTools(userId: string): ToolDefinition[] {
   return [
-    {
+    defineTool({
       name: "create_journal",
       description: "Create a new journal entry.",
-      parameters: [
-        { name: "content", type: "string", description: "The content of the journal entry.", required: true },
-        { name: "title", type: "string", description: "An optional title for the journal.", required: false }
-      ] as Parameter[],
-      handler: async (args: Record<string, unknown>) => {
-        const { content, title } = args as unknown as JournalActionArgs;
+      parameters: z.object({
+        content: z.string().describe("The content of the journal entry."),
+        title: z.string().optional().describe("An optional title for the journal."),
+      }),
+      execute: async ({ content, title }) => {
         return await saveJournal(content, undefined, title, userId);
       },
-    },
-    {
+    }),
+    defineTool({
       name: "delete_journal",
       description: "Delete a journal entry by ID.",
-      parameters: [
-        { name: "id", type: "string", description: "The ID of the journal to delete.", required: true }
-      ] as Parameter[],
-      handler: async (args: Record<string, unknown>) => {
-        const { id } = args as unknown as IdActionArgs;
+      parameters: z.object({
+        id: z.string().describe("The ID of the journal to delete."),
+      }),
+      execute: async ({ id }) => {
         return await deleteJournal(id, userId);
       },
-    },
-    {
+    }),
+    defineTool({
       name: "update_journal",
       description: "Update an existing journal entry.",
-      parameters: [
-        { name: "id", type: "string", description: "The ID of the journal to update.", required: true },
-        { name: "content", type: "string", description: "The new content of the journal entry.", required: true },
-        { name: "title", type: "string", description: "Optional updated title.", required: false },
-      ] as Parameter[],
-      handler: async (args: Record<string, unknown>) => {
-        const { id, content, title } = args as unknown as UpdateJournalArgs;
+      parameters: z.object({
+        id: z.string().describe("The ID of the journal to update."),
+        content: z.string().describe("The new content of the journal entry."),
+        title: z.string().optional().describe("Optional updated title."),
+      }),
+      execute: async ({ id, content, title }) => {
         return await saveJournal(content, id, title, userId);
       },
-    },
-    {
+    }),
+    defineTool({
       name: "get_journals",
       description: "List the user's journals.",
-      parameters: [
-        { name: "limit", type: "number", description: "Maximum number of journals to return.", required: false }
-      ] as Parameter[],
-      handler: async (args: Record<string, unknown>) => {
-        const { limit = 10 } = args as { limit?: number };
+      parameters: z.object({
+        limit: z.number().optional().default(10).describe("Maximum number of journals to return."),
+      }),
+      execute: async ({ limit }) => {
         return await getJournals("desc", limit, 0, userId);
       },
-    },
-    {
+    }),
+    defineTool({
       name: "search_journals",
       description: "Search user journals for specific events or feelings.",
-      parameters: [
-        { name: "query", type: "string", description: "The semantic search query.", required: true }
-      ] as Parameter[],
-      handler: async (args: Record<string, unknown>) => {
-        const { query } = args as unknown as SearchActionArgs;
+      parameters: z.object({
+        query: z.string().describe("The semantic search query."),
+      }),
+      execute: async ({ query }) => {
         try {
           return await searchJournals(query, userId);
         } catch (error) {
@@ -135,61 +74,56 @@ export function getAgentTools(userId: string) {
           };
         }
       },
-    },
-    {
+    }),
+    defineTool({
       name: "add_memory",
       description: "Add a new memory fact or preference.",
-      parameters: [
-        { name: "fact", type: "string", description: "The memory content to store.", required: true }
-      ] as Parameter[],
-      handler: async (args: Record<string, unknown>) => {
-        const { fact } = args as { fact: string };
+      parameters: z.object({
+        fact: z.string().describe("The memory content to store."),
+      }),
+      execute: async ({ fact }) => {
         return await addMemory(fact, userId);
       },
-    },
-    {
+    }),
+    defineTool({
       name: "update_memory",
       description: "Update an existing memory by ID.",
-      parameters: [
-        { name: "id", type: "string", description: "The memory ID.", required: true },
-        { name: "content", type: "string", description: "The updated memory content.", required: true },
-      ] as Parameter[],
-      handler: async (args: Record<string, unknown>) => {
-        const { id, content } = args as { id: string; content: string };
+      parameters: z.object({
+        id: z.string().describe("The memory ID."),
+        content: z.string().describe("The updated memory content."),
+      }),
+      execute: async ({ id, content }) => {
         return await updateMemory(id, content, userId);
       },
-    },
-    {
+    }),
+    defineTool({
       name: "delete_memory",
       description: "Delete a persistent memory by ID.",
-      parameters: [
-        { name: "id", type: "string", description: "The memory ID.", required: true }
-      ] as Parameter[],
-      handler: async (args: Record<string, unknown>) => {
-        const { id } = args as unknown as IdActionArgs;
+      parameters: z.object({
+        id: z.string().describe("The memory ID."),
+      }),
+      execute: async ({ id }) => {
         return await deleteMemory(id, userId);
       },
-    },
-    {
+    }),
+    defineTool({
       name: "get_memory",
       description: "Fetch a persistent memory by ID.",
-      parameters: [
-        { name: "id", type: "string", description: "The memory ID.", required: true }
-      ] as Parameter[],
-      handler: async (args: Record<string, unknown>) => {
-        const { id } = args as unknown as IdActionArgs;
+      parameters: z.object({
+        id: z.string().describe("The memory ID."),
+      }),
+      execute: async ({ id }) => {
         return await getMemory(id, userId);
       },
-    },
-    {
+    }),
+    defineTool({
       name: "get_memories",
       description: "Query persistent memories and facts about the user.",
-      parameters: [
-        { name: "query", type: "string", description: "Optional memory search query.", required: false },
-        { name: "limit", type: "number", description: "Maximum number of memories to return.", required: false },
-      ] as Parameter[],
-      handler: async (args: Record<string, unknown>) => {
-        const { query = "", limit = 5 } = args as { query?: string; limit?: number };
+      parameters: z.object({
+        query: z.string().optional().default("").describe("Optional memory search query."),
+        limit: z.number().optional().default(5).describe("Maximum number of memories to return."),
+      }),
+      execute: async ({ query, limit }) => {
         const memories = await getRelevantMemories(userId, query);
         return memories.items.slice(0, limit).map((memory) => ({
           id: memory.id,
@@ -201,40 +135,36 @@ export function getAgentTools(userId: string) {
           source: memory.label || memory.sourceType,
         }));
       },
-    },
-    {
+    }),
+    defineTool({
       name: "get_timeline",
       description: "Fetch a chronological timeline of journal-backed life events.",
-      parameters: [
-        { name: "grouping", type: "string", description: "Grouping mode: daily, weekly, or monthly.", required: false }
-      ] as Parameter[],
-      handler: async (args: Record<string, unknown>) => {
-        const { grouping = "daily" } = args as { grouping?: string };
-        const validGrouping = ["daily", "weekly", "monthly"].includes(grouping) ? grouping as "daily" | "weekly" | "monthly" : "daily";
-        return await getLifeTimeline(userId, validGrouping);
+      parameters: z.object({
+        grouping: z.enum(["daily", "weekly", "monthly"]).optional().default("daily").describe("Grouping mode."),
+      }),
+      execute: async ({ grouping }) => {
+        return await getLifeTimeline(userId, grouping);
       },
-    },
-    {
+    }),
+    defineTool({
       name: "get_recent_entries",
       description: "Fetch recent journal entries by date range. Use when the user asks about today, this week, or recent trends.",
-      parameters: [
-        { name: "days", type: "number", description: "Number of days to look back (1-90).", required: false },
-        { name: "limit", type: "number", description: "Maximum number of entries to return (1-10).", required: false },
-      ] as Parameter[],
-      handler: async (args: Record<string, unknown>) => {
-        const { days = 7, limit = 5 } = args as RecentEntriesArgs;
+      parameters: z.object({
+        days: z.number().optional().default(7).describe("Number of days to look back (1-90)."),
+        limit: z.number().optional().default(5).describe("Maximum number of entries to return (1-10)."),
+      }),
+      execute: async ({ days, limit }) => {
         return await getRecentJournalCitations(userId, days, limit);
       },
-    },
-    {
+    }),
+    defineTool({
       name: "summarize_chat",
       description: "Summarize a conversation transcript.",
-      parameters: [
-        { name: "conversation", type: "string", description: "The conversation transcript.", required: true },
-        { name: "focus", type: "string", description: "Optional focus for the summary.", required: false },
-      ] as Parameter[],
-      handler: async (args: Record<string, unknown>) => {
-        const { conversation, focus } = args as unknown as SummarizeChatArgs;
+      parameters: z.object({
+        conversation: z.string().describe("The conversation transcript."),
+        focus: z.string().optional().describe("Optional focus for the summary."),
+      }),
+      execute: async ({ conversation, focus }) => {
         const result = await generateText({
           model: getChatModel(),
           temperature: 0.2,
@@ -244,70 +174,73 @@ export function getAgentTools(userId: string) {
 
         return { summary: result.text };
       },
-    },
-    {
+    }),
+    defineTool({
       name: "extract_insights",
       description: "Extract durable facts, preferences, goals, emotions, and topics from text.",
-      parameters: [
-        { name: "text", type: "string", description: "The conversation or note text.", required: true },
-      ] as Parameter[],
-      handler: async (args: Record<string, unknown>) => {
-        const { text } = args as unknown as ExtractInsightsArgs;
+      parameters: z.object({
+        text: z.string().describe("The conversation or note text."),
+      }),
+      execute: async ({ text }) => {
         return await extractMemory(text);
       },
-    },
-    {
+    }),
+    defineTool({
       name: "detect_patterns",
       description: "Analyze journals and memories for recurring patterns.",
-      parameters: [
-        { name: "question", type: "string", description: "The specific question about patterns.", required: true }
-      ] as Parameter[],
-      handler: async (args: Record<string, unknown>) => {
-        const { question } = args as unknown as DetectPatternsArgs;
+      parameters: z.object({
+        question: z.string().describe("The specific question about patterns."),
+      }),
+      execute: async ({ question }) => {
         return await queryGraph(question, userId);
       },
-    },
-    {
+    }),
+    defineTool({
       name: "render_journal_card",
       description: "Render a journal entry card in the chat. Use this when the user asks to see a specific journal or when searching for journals.",
-      parameters: [
-        { name: "id", type: "string", description: "The ID of the journal entry.", required: true },
-        { name: "title", type: "string", description: "The title of the journal entry.", required: true },
-        { name: "content", type: "string", description: "The content snippet of the journal entry.", required: true },
-        { name: "date", type: "string", description: "The date of the journal entry.", required: true },
-      ] as Parameter[],
-      handler: async (args: Record<string, unknown>) => {
-        const { id, title, content, date } = args as unknown as RenderJournalCardArgs;
-        return { id, title, content, date };
+      parameters: z.object({
+        id: z.string().describe("The ID of the journal entry."),
+        title: z.string().describe("The title of the journal entry."),
+        content: z.string().describe("The content snippet of the journal entry."),
+        date: z.string().describe("The date of the journal entry."),
+      }),
+      execute: async (args) => {
+        return args;
       },
-    },
-    {
+    }),
+    defineTool({
       name: "render_timeline_item",
       description: "Render a specific timeline entry in the chat. Use this when the user asks about what they did on a specific date or period.",
-      parameters: [
-        { name: "date", type: "string", description: "The date of the timeline entry.", required: true },
-        { name: "summary", type: "string", description: "A summary of the day/period.", required: true },
-        { name: "events", type: "string", description: "JSON array of key events during this period.", required: true },
-        { name: "emotions", type: "string", description: "JSON array of dominant emotions.", required: false },
-      ] as Parameter[],
-      handler: async (args: Record<string, unknown>) => {
-        const { date, summary, events, emotions } = args as unknown as RenderTimelineItemArgs;
+      parameters: z.object({
+        date: z.string().describe("The date of the timeline entry."),
+        summary: z.string().describe("A summary of the day/period."),
+        events: z.union([z.string(), z.array(z.string())]).describe("Events during this period."),
+        emotions: z.union([z.string(), z.array(z.string())]).optional().describe("Dominant emotions."),
+      }),
+      execute: async ({ date, summary, events, emotions }) => {
         const parsedEvents = typeof events === "string" ? JSON.parse(events) : events;
         const parsedEmotions = emotions ? (typeof emotions === "string" ? JSON.parse(emotions) : emotions) : [];
         return { date, summary, events: parsedEvents, emotions: parsedEmotions };
       },
-    },
-    {
+    }),
+    defineTool({
       name: "render_insight_summary",
       description: "Render a deep life insight in the chat. Use this when sharing a discovery or pattern.",
-      parameters: [
-        { name: "insight", type: "string", description: "The insight text.", required: true },
-        { name: "type", type: "string", description: "Type of insight (e.g., emotion, topic, pattern).", required: false },
-      ] as Parameter[],
-      handler: async (args: Record<string, unknown>) => {
-        const { insight, type } = args as unknown as RenderInsightSummaryArgs;
-        return { insight, type: type || "general" };
+      parameters: z.object({
+        insight: z.string().describe("The insight text."),
+        type: z.string().optional().default("general").describe("Type of insight."),
+      }),
+      execute: async (args) => {
+        return args;
       },
-    },
-  ] as FrontendAction[];
+    }),
+    defineTool({
+      name: "render_voice_agent",
+      description: "Initialize a real-time LiveKit voice conversation in the chat. Use this when the user wants to talk via voice or wants a hands-free interaction.",
+      parameters: z.object({}),
+      execute: async () => {
+        return { success: true };
+      },
+    }),
+  ];
 }

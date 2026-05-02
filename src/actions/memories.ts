@@ -4,21 +4,14 @@ import { eq, and } from "drizzle-orm";
 
 import { db } from "@/db";
 import { memoryEntities, memoryFacts } from "@/db/schema";
-import { stackServerApp } from "@/stack/server";
+import { resolveUserId } from "./auth-sync";
 import { extractMemory } from "@/lib/memory/extract";
 import { getRelevantMemories } from "@/lib/memory/query";
 import { storeMemory } from "@/lib/memory/store";
 import { cache } from "react";
 import { revalidatePath } from "next/cache";
 
-async function resolveUserId(userId?: string) {
-  if (userId) return userId;
-
-  const user = await stackServerApp.getUser();
-  if (!user) return null;
-
-  return user.id;
-}
+// resolveUserId is imported from ./auth-sync
 
 export const getMemories = cache(async (query: string = "", userId?: string) => {
   const resolvedUserId = await resolveUserId(userId);
@@ -168,8 +161,8 @@ export async function addMemory(fact: string, userId?: string) {
 }
 
 export async function importMemories(jsonContent: string) {
-  const user = await stackServerApp.getUser();
-  if (!user) return { success: false, error: "Unauthorized" };
+  const userId = await resolveUserId();
+  if (!userId) return { success: false, error: "Unauthorized" };
 
   try {
     const data = JSON.parse(jsonContent);
@@ -182,7 +175,7 @@ export async function importMemories(jsonContent: string) {
           ? item
           : item.content || item.fact || JSON.stringify(item);
       const extracted = await extractMemory(content);
-      await storeMemory(user.id, {
+      await storeMemory(userId, {
         facts: extracted.facts.length > 0 ? extracted.facts : [content],
         entities: extracted.entities,
         emotions: extracted.emotions,

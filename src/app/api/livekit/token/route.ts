@@ -1,16 +1,18 @@
 import { AccessToken } from "livekit-server-sdk";
 import { NextRequest, NextResponse } from "next/server";
 import { stackServerApp } from "@/stack/server";
+import { resolveUserId } from "@/actions/auth-sync";
 
 export async function GET(_req: NextRequest) {
   try {
-    const user = await stackServerApp.getUser();
-    if (!user) {
+    const userId = await resolveUserId();
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const participantName = user.displayName || "Debo User";
-    const participantIdentity = user.id;
+    const user = await stackServerApp.getUser();
+    const participantName = user?.displayName || "Debo User";
+    const participantIdentity = userId;
 
     const roomName = "debo-agent-room"; // Keep this consistent for the agent to join
 

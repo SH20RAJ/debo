@@ -2,19 +2,19 @@
 
 import { db } from "@/db";
 import { userPreferences, aiProviders } from "@/db/schema";
-import { stackServerApp } from "@/stack/server";
+import { resolveUserId } from "./auth-sync";
 import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { encrypt } from "@/lib/encryption";
 import { nango } from "@/lib/nango";
 
 export async function getUserPreferences() {
-  const user = await stackServerApp.getUser();
-  if (!user) throw new Error("Unauthorized");
+  const userId = await resolveUserId();
+  if (!userId) throw new Error("Unauthorized");
 
   try {
     const prefs = await db.query.userPreferences.findFirst({
-      where: eq(userPreferences.userId, user.id),
+      where: eq(userPreferences.userId, userId),
     });
 
     if (prefs) {
@@ -33,11 +33,11 @@ export async function getUserPreferences() {
 }
 
 export async function getAIProviders() {
-  const user = await stackServerApp.getUser();
-  if (!user) throw new Error("Unauthorized");
+  const userId = await resolveUserId();
+  if (!userId) throw new Error("Unauthorized");
 
   const providers = await db.query.aiProviders.findMany({
-    where: eq(aiProviders.userId, user.id),
+    where: eq(aiProviders.userId, userId),
   });
 
   return providers.map((p) => ({
@@ -53,8 +53,8 @@ export async function saveAIProvider(data: {
   baseUrl?: string;
   isEnabled?: boolean;
 }) {
-  const user = await stackServerApp.getUser();
-  if (!user) throw new Error("Unauthorized");
+  const userId = await resolveUserId();
+  if (!userId) throw new Error("Unauthorized");
 
   const encryptedKey =
     data.apiKey && !data.apiKey.includes("....config")
@@ -63,7 +63,7 @@ export async function saveAIProvider(data: {
 
   const existing = await db.query.aiProviders.findFirst({
     where: and(
-      eq(aiProviders.userId, user.id),
+      eq(aiProviders.userId, userId),
       eq(aiProviders.providerId, data.providerId),
     ),
   });
@@ -85,7 +85,7 @@ export async function saveAIProvider(data: {
   } else {
     await db.insert(aiProviders).values({
       id: crypto.randomUUID(),
-      userId: user.id,
+      userId: userId,
       providerId: data.providerId,
       ...updateData,
       apiKey: encryptedKey || null,
@@ -97,13 +97,13 @@ export async function saveAIProvider(data: {
 }
 
 export async function setActiveProvider(providerId: string) {
-  const user = await stackServerApp.getUser();
-  if (!user) throw new Error("Unauthorized");
+  const userId = await resolveUserId();
+  if (!userId) throw new Error("Unauthorized");
 
   await db
     .update(userPreferences)
     .set({ activeProvider: providerId, updatedAt: new Date() })
-    .where(eq(userPreferences.userId, user.id));
+    .where(eq(userPreferences.userId, userId));
 
   revalidatePath("/dashboard/settings");
   return true;
@@ -113,8 +113,8 @@ export async function saveUserPreferences(data: {
   mcpUrl?: string;
   activeProvider?: string;
 }) {
-  const user = await stackServerApp.getUser();
-  if (!user) throw new Error("Unauthorized");
+  const userId = await resolveUserId();
+  if (!userId) throw new Error("Unauthorized");
 
   const updateData: any = {
     activeProvider: data.activeProvider || "cloudflare",
@@ -123,17 +123,17 @@ export async function saveUserPreferences(data: {
   };
 
   const existing = await db.query.userPreferences.findFirst({
-    where: eq(userPreferences.userId, user.id),
+    where: eq(userPreferences.userId, userId),
   });
 
   if (existing) {
     await db
       .update(userPreferences)
       .set(updateData)
-      .where(eq(userPreferences.userId, user.id));
+      .where(eq(userPreferences.userId, userId));
   } else {
     await db.insert(userPreferences).values({
-      userId: user.id,
+      userId: userId,
       ...updateData,
     });
   }
@@ -147,8 +147,8 @@ const UUID_V4 =
   /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export async function getNangoConnections() {
-  const user = await stackServerApp.getUser();
-  if (!user) throw new Error("Unauthorized");
+  const userId = await resolveUserId();
+  if (!userId) throw new Error("Unauthorized");
 
   try {
     const key = process.env.NANGO_SECRET_KEY;
@@ -157,7 +157,7 @@ export async function getNangoConnections() {
       return [];
     }
 
-    const connections = await nango.listConnections(user.id);
+    const connections = await nango.listConnections(userId);
     return connections;
   } catch (error) {
     console.error("Failed to list Nango connections:", error);
@@ -166,11 +166,11 @@ export async function getNangoConnections() {
 }
 
 export async function deleteNangoConnection(providerConfigKey: string) {
-  const user = await stackServerApp.getUser();
-  if (!user) throw new Error("Unauthorized");
+  const userId = await resolveUserId();
+  if (!userId) throw new Error("Unauthorized");
 
   try {
-    await nango.deleteConnection(providerConfigKey, user.id);
+    await nango.deleteConnection(providerConfigKey, userId);
     revalidatePath("/dashboard/settings");
     return true;
   } catch (error) {

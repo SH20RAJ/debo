@@ -136,6 +136,7 @@ export function CopilotAskContainer() {
       />
 
       <div className="relative min-h-0 flex-1">
+        <AgentDataRenderer />
         <CustomChatArea key={activeChatId || "new"} />
       </div>
     </div>
