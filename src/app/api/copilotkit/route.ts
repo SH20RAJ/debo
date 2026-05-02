@@ -1,21 +1,20 @@
 import {
   CopilotRuntime,
-  ExperimentalEmptyAdapter,
+  OpenAIAdapter,
   copilotRuntimeNextJSAppRouterEndpoint,
 } from "@copilotkit/runtime";
-import { BuiltInAgent } from "@copilotkit/runtime/v2";
 import { NextRequest } from "next/server";
 import { stackServerApp } from "@/stack/server";
-import { getChatModel } from "@/lib/ai/openai";
+import { client, DEFAULT_CHAT_MODEL } from "@/lib/ai/openai";
 import { getAgentTools } from "@/lib/ai/agent-tools";
-
-const serviceAdapter = new ExperimentalEmptyAdapter();
 
 const DEBO_AGENT_PROMPT = `You are Debo, the user's private AI companion journal.
 
 Debo turns life entries into queryable memory. Be warm, concise, and evidence-backed. Use the available tools aggressively when the user asks about journals, memories, timeline events, recurring patterns, or durable facts. Never invent life details, dates, or citations.
 
-When useful, render structured results with render_journal_card, render_timeline_item, or render_insight_summary. Prefer concrete dates, short summaries, and useful next actions over generic advice.`;
+When useful, render structured results with render_journal_card, render_timeline_item, or render_insight_summary. Prefer concrete dates, short summaries, and useful next actions over generic advice.
+
+IMPORTANT: When you decide to use a tool, use the tool calling API. Do not wrap the JSON in text or markdown.`;
 
 export const POST = async (req: NextRequest) => {
   console.log("[CopilotKit API] POST request received");
@@ -30,15 +29,12 @@ export const POST = async (req: NextRequest) => {
 
   try {
     const runtime = new CopilotRuntime({
-      agents: {
-        default: new BuiltInAgent({
-          model: getChatModel(),
-          prompt: DEBO_AGENT_PROMPT,
-          maxSteps: 5,
-          temperature: 0.35,
-        }),
-      },
       actions: getAgentTools(user.id),
+    });
+
+    const serviceAdapter = new OpenAIAdapter({
+      openai: client as any,
+      model: DEFAULT_CHAT_MODEL,
     });
 
     const { handleRequest } = copilotRuntimeNextJSAppRouterEndpoint({
@@ -53,3 +49,4 @@ export const POST = async (req: NextRequest) => {
     return new Response(error.message || "Internal Server Error", { status: error.status || 500 });
   }
 };
+

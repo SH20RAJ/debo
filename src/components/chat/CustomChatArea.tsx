@@ -31,6 +31,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { JournalCard, TimelineCard, InsightCard } from "@/components/copilot/renderers";
 
 const DEBO_CHAT_INSTRUCTIONS =
   "You are Debo's agentic companion. Search journals and memories before making claims about the user's life. Be calm, direct, and evidence-backed. Use render_journal_card for specific entries, render_timeline_item for dated periods, and render_insight_summary for patterns or signals.";
@@ -55,6 +56,7 @@ export function CustomChatArea() {
     <CopilotKitChat
       className="flex h-full w-full bg-background text-foreground"
       instructions={DEBO_CHAT_INSTRUCTIONS}
+      showDevConsole={false}
       labels={{
         title: "Ask Debo",
         initial: "",
@@ -295,6 +297,22 @@ function DeboAssistantMessage({
     (message as { generativeUIPosition?: "before" | "after" } | undefined)
       ?.generativeUIPosition ?? "after";
 
+  // Fallback rendering for JSON tool calls that didn't use the tools API
+  let fallbackUI: React.ReactNode = null;
+  if (!generativeUI && content.trim().startsWith("{") && content.trim().endsWith("}")) {
+    try {
+      const data = JSON.parse(content.trim());
+      const name = data.name || data.action || "";
+      const args = data.args || data.arguments || data.parameters || data;
+
+      if (name === "render_journal_card") fallbackUI = <JournalCard {...args} />;
+      else if (name === "render_timeline_item") fallbackUI = <TimelineCard {...args} />;
+      else if (name === "render_insight_summary") fallbackUI = <InsightCard {...args} />;
+    } catch (e) {
+      // Not valid JSON or parsing failed, ignore
+    }
+  }
+
   const handleCopy = async () => {
     if (!content) return;
 
@@ -311,8 +329,9 @@ function DeboAssistantMessage({
       </div>
       <div className="min-w-0 flex-1 space-y-3">
         {generativeUI && generativeUIPosition === "before" ? generativeUI : null}
+        {fallbackUI && generativeUIPosition === "before" ? fallbackUI : null}
 
-        {content ? (
+        {content && !fallbackUI ? (
           <div className="prose prose-sm max-w-none text-foreground dark:prose-invert prose-p:my-3 prose-ul:my-3 prose-ol:my-3 prose-li:my-1 prose-pre:rounded-lg prose-pre:border prose-pre:border-border prose-pre:bg-muted">
             <Markdown
               content={content}
@@ -329,8 +348,10 @@ function DeboAssistantMessage({
         ) : null}
 
         {generativeUI && generativeUIPosition !== "before" ? generativeUI : null}
+        {fallbackUI && generativeUIPosition !== "before" ? fallbackUI : null}
 
         {content && !isLoading && !isGenerating ? (
+
           <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
             <Button
               type="button"

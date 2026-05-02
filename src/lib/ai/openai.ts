@@ -2,15 +2,12 @@ import "server-only";
 import OpenAI from "openai";
 import { createOpenAI } from "@ai-sdk/openai";
 
-/**
- * Standard Debo AI Client
- * Uses Cloudflare AI Gateway in compatibility mode.
- */
+const baseURL = process.env.OPENAI_BASE_URL || "https://gateway.ai.cloudflare.com/v1/091539408595ba99a0ef106d42391d5b/default/compat";
+const apiKey = process.env.CF_AIG_TOKEN || process.env.OPENAI_API_KEY;
+
 export const client = new OpenAI({
-  apiKey: process.env.CF_AIG_TOKEN || process.env.OPENAI_API_KEY,
-  baseURL:
-    process.env.OPENAI_BASE_URL ||
-    "https://gateway.ai.cloudflare.com/v1/091539408595ba99a0ef106d42391d5b/default/compat",
+  apiKey,
+  baseURL,
 });
 
 export const DEFAULT_CHAT_MODEL =
@@ -23,10 +20,8 @@ export const DEFAULT_EMBEDDING_MODEL =
  * Allows using the Cloudflare Gateway client with 'ai' package tools like streamText.
  */
 export const aiProvider = createOpenAI({
-  apiKey: process.env.CF_AIG_TOKEN || process.env.OPENAI_API_KEY,
-  baseURL:
-    process.env.OPENAI_BASE_URL ||
-    "https://gateway.ai.cloudflare.com/v1/091539408595ba99a0ef106d42391d5b/default/compat",
+  apiKey,
+  baseURL,
 });
 
 export function getChatModel() {
