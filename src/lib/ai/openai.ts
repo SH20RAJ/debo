@@ -22,7 +22,6 @@ export const DEFAULT_EMBEDDING_MODEL =
 export const aiProvider = createOpenAI({
   apiKey,
   baseURL,
-  compatibility: "strict", // Force standard Chat Completions to avoid /responses endpoint
 });
 
 export function getChatModel() {

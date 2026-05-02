@@ -96,9 +96,10 @@ function getCollectionPath() {
 }
 
 function readVectorSize(collectionInfo: unknown) {
-  const vectors = (collectionInfo as any)?.result?.config?.params?.vectors;
+  const info = collectionInfo as { result?: { config?: { params?: { vectors?: { size?: number } | Record<string, { size?: number }> } } } };
+  const vectors = info?.result?.config?.params?.vectors;
 
-  if (typeof vectors?.size === "number") {
+  if (vectors && "size" in vectors && typeof vectors.size === "number") {
     return vectors.size;
   }
 

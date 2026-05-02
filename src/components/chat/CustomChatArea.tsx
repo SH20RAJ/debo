@@ -56,7 +56,6 @@ export function CustomChatArea() {
     <CopilotKitChat
       className="flex h-full w-full bg-background text-foreground"
       instructions={DEBO_CHAT_INSTRUCTIONS}
-      showDevConsole={false}
       labels={{
         title: "Ask Debo",
         initial: "",

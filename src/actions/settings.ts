@@ -68,7 +68,7 @@ export async function saveAIProvider(data: {
     ),
   });
 
-  const updateData: any = {
+  const updateData: Record<string, string | boolean | Date | null> = {
     providerName: data.providerName,
     baseUrl: data.baseUrl || null,
     isEnabled: data.isEnabled ?? true,
@@ -116,7 +116,7 @@ export async function saveUserPreferences(data: {
   const userId = await resolveUserId();
   if (!userId) throw new Error("Unauthorized");
 
-  const updateData: any = {
+  const updateData: Record<string, string | Date | null> = {
     activeProvider: data.activeProvider || "cloudflare",
     mcpUrl: data.mcpUrl || null,
     updatedAt: new Date(),

@@ -30,14 +30,14 @@ export async function POST(req: Request) {
 
   const wh = new Webhook(STACK_WEBHOOK_SECRET);
 
-  let evt: any;
+  let evt: { type: string; data: any }; // Using any for data as it's a dynamic webhook payload
 
   try {
     evt = wh.verify(body, {
       "svix-id": svix_id,
       "svix-timestamp": svix_timestamp,
       "svix-signature": svix_signature,
-    }) as any;
+    }) as { type: string; data: any };
   } catch (err) {
     console.error("Error verifying webhook:", err);
     return new Response("Error occurred", {
@@ -45,10 +45,18 @@ export async function POST(req: Request) {
     });
   }
 
+  interface StackUserData {
+    id: string;
+    display_name?: string;
+    primary_email: string;
+    primary_email_verified?: boolean;
+    profile_image_url?: string;
+  }
+
   const { type, data } = evt;
 
   if (type === "user.created" || type === "user.updated") {
-    const stackUser = data;
+    const stackUser = data as StackUserData;
     
     // Map Stack user to our local user table
     const userData = {

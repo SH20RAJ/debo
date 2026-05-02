@@ -15,7 +15,8 @@ export default async function DashboardPage() {
   const userId = await resolveUserId();
   if (!userId) redirect("/join");
   
-  const user = await stackServerApp.getUser(); // Still need for display name
+  const user = await stackServerApp.getUser();
+  if (!user) redirect("/join");
 
   const [journalCount, timeline] = await Promise.all([
     getJournalsCount(),
@@ -51,11 +52,11 @@ export default async function DashboardPage() {
           <div className="grid gap-12 xl:grid-cols-[1fr_400px]">
             <div className="space-y-8">
               <h1 className="text-4xl font-semibold tracking-tight text-foreground md:text-5xl lg:text-6xl">
-                Your Personal <br />
+                Your <br />
                 <span className="text-muted-foreground/40">Memory Engine.</span>
               </h1>
               <p className="max-w-xl text-lg leading-relaxed text-muted-foreground">
-                Welcome back, {firstName}. Debo has looked at your recent notes to find patterns and insights.
+                Welcome back, {firstName}. Debo found patterns in your recent notes.
               </p>
 
               <div className="flex flex-wrap gap-3 pt-2">
@@ -88,19 +89,19 @@ export default async function DashboardPage() {
                 icon={<BarChart3 className="h-4 w-4" />}
                 label="Memories"
                 value={journalCount.toString()}
-                description="Journal entries"
+                description="Total notes"
               />
               <StatCard
                 icon={<Sparkles className="h-4 w-4" />}
                 label="Recent"
                 value={recentEntryCount.toString()}
-                description="New items"
+                description="Recent notes"
               />
               <StatCard
                 icon={<BookOpen className="h-4 w-4" />}
                 label="Patterns"
                 value={graph.patterns.length.toString()}
-                description="Recurring themes"
+                description="Life themes"
               />
               <StatCard
                 icon={<Search className="h-4 w-4" />}
@@ -110,7 +111,7 @@ export default async function DashboardPage() {
                   graph.topTopics.length +
                   graph.topEmotions.length
                 ).toString()}
-                description="Memory nodes"
+                description="Total facts"
               />
             </div>
           </div>
@@ -134,24 +135,24 @@ export default async function DashboardPage() {
                   Explore
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  Look at different parts of your memory.
+                  Check your memories.
                 </p>
               </div>
               <div className="grid gap-2">
                 <ShortcutLink
                   href="/dashboard/insights"
                   title="Insights"
-                  description="People, topics, and feelings"
+                  description="Life patterns"
                 />
                 <ShortcutLink
                   href="/dashboard/journals"
                   title="Archive"
-                  description="Every moment, searchable"
+                  description="View old notes"
                 />
                 <ShortcutLink
                   href="/dashboard/ask"
                   title="Ask AI"
-                  description="Search your memory with AI"
+                  description="Chat with AI"
                 />
               </div>
             </div>

@@ -126,10 +126,9 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 
 // Tool Implementation
 server.setRequestHandler(CallToolRequestSchema, async (request, extra) => {
-  const userId = (extra as any).userId;
-  if (!userId) throw new Error("Unauthorized");
-
   const { name, arguments: args } = request.params;
+  const userId = (extra as { userId?: string }).userId;
+  if (!userId) throw new Error("Unauthorized");
 
   switch (name) {
     case "create_journal": {
@@ -204,7 +203,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request, extra) => {
     }
 
     case "run_action": {
-        const { providerConfigKey, method, endpoint, params, data } = args as any;
+      const { providerConfigKey, method, endpoint, params, data } = args as {
+        providerConfigKey: string;
+        method: string;
+        endpoint: string;
+        params?: Record<string, string>;
+        data?: unknown;
+      };
         const response = await nango.proxy({
             method,
             endpoint,
@@ -243,7 +248,7 @@ export async function POST(req: NextRequest) {
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const response = await (server as any).handleRequest(body, { userId });
+  const response = await (server as unknown as { handleRequest: (body: unknown, extra: { userId: string }) => Promise<unknown> }).handleRequest(body, { userId });
   return NextResponse.json(response);
 }
 

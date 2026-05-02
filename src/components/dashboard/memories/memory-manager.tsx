@@ -20,7 +20,15 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-export function MemoryManager({ initialMemories = [], initialQuery = "" }: { initialMemories: any[], initialQuery: string }) {
+export interface Memory {
+  id: string;
+  content: string;
+  source?: string;
+  sourceType?: string;
+  score?: number;
+}
+
+export function MemoryManager({ initialMemories = [], initialQuery = "" }: { initialMemories: Memory[], initialQuery: string }) {
   const [query, setQuery] = useState(initialQuery);
   const [isPending, startTransition] = useTransition();
   const [isAdding, setIsAdding] = useState(false);

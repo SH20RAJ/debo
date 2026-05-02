@@ -96,12 +96,15 @@ async function upsertNode(
   const ageFactor = 1 / (Math.max(0, (Date.now() - journalDate.getTime()) / (1000 * 60 * 60 * 24)) + 1);
   const nextWeight = baseWeight + 1 + ageFactor;
   const baseMetadata = existing?.metadata ? safeParseJson(existing.metadata) : {};
+  const meta = metadata as { journalId?: string; journalIds?: string[]; mentions?: number };
+  const bMeta = baseMetadata as { journalId?: string; journalIds?: string[]; mentions?: number };
+  
   const nextMetadata = {
     ...baseMetadata,
     ...metadata,
-    journalId: metadata.journalId || (baseMetadata as any).journalId || null,
-    journalIds: unique([...((baseMetadata as any).journalIds || []), ...((metadata as any).journalIds || []), metadata.journalId].filter(Boolean) as string[]),
-    mentions: (baseMetadata as any).mentions ? Number((baseMetadata as any).mentions) + 1 : 1,
+    journalId: meta.journalId || bMeta.journalId || null,
+    journalIds: unique([...(bMeta.journalIds || []), ...(meta.journalIds || []), meta.journalId].filter(Boolean) as string[]),
+    mentions: bMeta.mentions ? Number(bMeta.mentions) + 1 : 1,
   };
 
   if (existing) {
@@ -149,10 +152,11 @@ async function upsertEdge(
   const ageFactor = 1 / (Math.max(0, (Date.now() - journalDate.getTime()) / (1000 * 60 * 60 * 24)) + 1);
   const nextWeight = baseWeight + 1 + ageFactor;
   const baseMetadata = existing?.metadata ? safeParseJson(existing.metadata) : {};
+  const bMeta = baseMetadata as { mentions?: number };
   const nextMetadata = {
     ...baseMetadata,
     ...metadata,
-    mentions: (baseMetadata as any).mentions ? Number((baseMetadata as any).mentions) + 1 : 1,
+    mentions: bMeta.mentions ? Number(bMeta.mentions) + 1 : 1,
   };
 
   if (existing) {
@@ -277,12 +281,13 @@ export async function getMemoryGraphSnapshot(userId: string) {
         where: eq(memoryEdges.userId, userId),
       }),
     ]);
-  } catch (err: any) {
+  } catch (err: unknown) {
     // If the memory graph tables don't exist yet (e.g., migrations not applied),
     // avoid crashing the whole application. Return an empty snapshot and log a warning.
-    const code = err?.code || (err?.cause && err.cause.code);
+    const error = err as { code?: string; cause?: { code?: string }; message?: string };
+    const code = error?.code || error?.cause?.code;
     if (code === "42P01" || /relation .* does not exist/i.test(String(err))) {
-      console.warn("Memory graph tables missing. Returning empty snapshot. Run DB migrations to enable graph features.", err?.message || err);
+      console.warn("Memory graph tables missing. Returning empty snapshot. Run DB migrations to enable graph features.", error?.message || String(err));
       return {
         nodes: [],
         edges: [],

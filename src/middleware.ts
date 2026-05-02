@@ -22,7 +22,16 @@ export default async function proxy(request: NextRequest) {
       });
 
       const now = new Date();
-      const anyUser = user as any;
+      const anyUser = user as unknown as {
+        name?: string;
+        displayName?: string;
+        primaryEmail?: string;
+        email?: string;
+        image?: string;
+        avatarUrl?: string;
+        emailVerified?: boolean;
+        verified?: boolean;
+      };
       const name = anyUser.name ?? anyUser.displayName ?? anyUser.primaryEmail ?? "";
       const email = anyUser.primaryEmail ?? anyUser.email ?? "";
       const image = anyUser.image ?? anyUser.avatarUrl ?? null;

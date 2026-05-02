@@ -19,10 +19,10 @@ export default async function JournalsPage() {
           </div>
           <div className="space-y-2">
             <h1 className="text-4xl font-semibold tracking-tight">
-              Your life, every thought
+              All your entries
             </h1>
             <p className="max-w-2xl text-lg text-muted-foreground">
-              Browse every journal entry recorded in your personal database.
+              Browse your past notes.
             </p>
           </div>
         </header>

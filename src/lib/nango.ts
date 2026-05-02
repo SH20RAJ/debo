@@ -32,7 +32,7 @@ export class NangoEdge {
             throw new Error(`Nango listConnections failed: ${error}`);
         }
 
-        const data = await response.json() as { connections: any[] };
+        const data = await response.json() as { connections: unknown[] };
         return data.connections;
     }
 
@@ -59,7 +59,7 @@ export class NangoEdge {
         providerConfigKey: string;
         connectionId: string;
         params?: Record<string, string>;
-        data?: any;
+        data?: unknown;
     }) {
         // Ensure endpoint starts with /
         const endpoint = config.endpoint.startsWith("/") ? config.endpoint : `/${config.endpoint}`;
