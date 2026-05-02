@@ -16,16 +16,25 @@ import { stackServerApp } from "@/stack/server";
 import { eq } from "drizzle-orm";
 
 /**
- * Resolves the user ID from the session or the provided ID.
- * Automatically synchronizes the user from Stack Auth to the local database
- * to satisfy foreign key constraints.
- * Handles cases where the user's ID might have changed (e.g. migration) by merging data.
+ * Lightweight helper to get the current authenticated user ID from Stack Auth.
+ * Does NOT perform any database synchronization.
  */
-export async function resolveUserId(providedUserId?: string): Promise<string | null> {
+export async function getUserId(): Promise<string | null> {
+    const stackUser = await stackServerApp.getUser();
+    return stackUser?.id || null;
+}
+
+/**
+ * Resolves the user ID and optionally synchronizes the user from Stack Auth to the local database.
+ * @param skipSync If true, skips the database synchronization logic (useful for frequent calls like middleware).
+ */
+export async function resolveUserId(providedUserId?: string, skipSync = false): Promise<string | null> {
     const stackUser = await stackServerApp.getUser();
     const id = providedUserId || stackUser?.id;
     
     if (!id) return null;
+
+    if (skipSync) return id;
 
     // If we have a stackUser object, sync it to our local DB
     if (stackUser) {
