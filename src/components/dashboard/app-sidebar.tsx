@@ -8,7 +8,6 @@ import {
   Search,
   Database,
   Library,
-  Sparkles,
   ChartNoAxesCombined,
   Clock3,
   LogOut
@@ -28,7 +27,6 @@ import {
   SidebarGroupContent,
 } from "@/components/ui/sidebar"
 import Link from "next/link"
-import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useUser } from "@stackframe/stack"

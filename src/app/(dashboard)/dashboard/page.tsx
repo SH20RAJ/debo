@@ -164,7 +164,7 @@ export default async function DashboardPage() {
                 <div className="space-y-1">
                   <div className="text-sm font-semibold">Pro Tip</div>
                   <p className="text-xs leading-relaxed text-muted-foreground">
-                    Try asking "What was I worried about 3 months ago?" to see
+                    Try asking &quot;What was I worried about 3 months ago?&quot; to see
                     how your perspective has shifted.
                   </p>
                 </div>

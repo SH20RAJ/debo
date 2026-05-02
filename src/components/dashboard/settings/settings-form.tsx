@@ -174,7 +174,7 @@ export function SettingsForm({
                     <div className="rounded-2xl border border-border bg-muted/10 p-6 max-w-2xl">
                         <h3 className="text-sm font-semibold mb-2">System Info</h3>
                         <p className="text-xs text-muted-foreground leading-relaxed">
-                            We're using a fast cloud system for voice. More options are coming soon!
+                            We&apos;re using a fast cloud system for voice. More options are coming soon!
                         </p>
                     </div>
                 </TabsContent>
