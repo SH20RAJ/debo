@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Brain, Search, Sparkles, MessagesSquare } from "lucide-react";
+import { Brain, Search, Sparkles, MessagesSquare, Mic, Lock } from "lucide-react";
 
 export function Features() {
   return (
@@ -71,6 +71,27 @@ export function Features() {
             <CardContent>
               <p className="text-muted-foreground">Receive actionable nudges and advice based on your history.</p>
               <p className="mt-3 text-sm text-muted-foreground/80">Example: &quot;You do best work mornings; schedule focus blocks then.&quot;</p>
+            </CardContent>
+          </Card>
+          <Card className="rounded-2xl border-none shadow-sm bg-background">
+            <CardHeader>
+              <Mic className="w-8 h-8 text-primary mb-4" />
+              <CardTitle className="text-xl">Jarvis Voice Mode</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">Talk to your life naturally with sub-second voice interactions.</p>
+              <p className="mt-3 text-sm text-muted-foreground/80">Example: &quot;Hey Debo, what was my main win yesterday?&quot;</p>
+            </CardContent>
+          </Card>
+
+          <Card className="rounded-2xl border-none shadow-sm bg-background">
+            <CardHeader>
+              <Lock className="w-8 h-8 text-primary mb-4" />
+              <CardTitle className="text-xl">Privacy First</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">Your data is yours. Encrypted at rest and in transit, with full ownership of your memories.</p>
+              <p className="mt-3 text-sm text-muted-foreground/80">Example: full data export and deletion at any time.</p>
             </CardContent>
           </Card>
         </div>

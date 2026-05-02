@@ -54,6 +54,9 @@ Debo does more than react to questions. It can suggest patterns from your histor
 ### Citations
 
 Every answer is grounded in your data. Debo returns citations so you can inspect the journals and memories behind a response instead of trusting a black box.
+### Jarvis-style Voice Agent
+
+A real-time, low-latency ambient voice interface powered by LiveKit. Talk to your journal naturally—ask about your day, reflect on memories, or get proactive advice while on the move, with sub-second response times and full emotional context.
 
 ## UX Philosophy
 
