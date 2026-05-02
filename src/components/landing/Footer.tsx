@@ -7,6 +7,7 @@ export function Footer() {
         <p className="text-sm text-muted-foreground">
           © {new Date().getFullYear()} Debo. All rights reserved.
         </p>
+        <p className="text-xs italic tracking-[0.2em] uppercase opacity-50">hope to be human</p>
         <div className="flex items-center space-x-6 text-sm text-muted-foreground">
           <Link href="/foundation" className="hover:text-foreground transition-colors">Foundation</Link>
           <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>

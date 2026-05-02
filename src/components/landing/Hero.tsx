@@ -54,6 +54,9 @@ export function Hero({ isSignedIn = false }: HeroProps) {
         <p className="mt-4 text-sm text-muted-foreground">
           Built from your own data. Private by default. No noisy feed, no generic assistant.
         </p>
+        <div className="mt-12 flex justify-center opacity-40">
+          <p className="text-xs italic tracking-widest uppercase">hope to be human</p>
+        </div>
       </div>
     </section>
   );
