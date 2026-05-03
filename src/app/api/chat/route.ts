@@ -6,40 +6,51 @@ import { NextRequest } from "next/server";
 import { ModelMessage } from "ai";
 
 export async function POST(req: NextRequest) {
-  // const userId = await resolveUserId();
-  // if (!userId) {
-  //   return new Response("Unauthorized", { status: 401 });
-  // }
-  const userId = "test-user-bypass";
+  let userId = "test-user-bypass";
+  try {
+    const resolvedId = await resolveUserId();
+    if (resolvedId) {
+      userId = resolvedId;
+    }
+  } catch (e) {
+    console.error("DEBUG: Auth resolution failed, using bypass", e);
+  }
 
-  console.log("DEBUG: process.env keys =", Object.keys(process.env).filter(k => k.includes("OPENAI") || k.includes("STACK")));
+  // Get Cloudflare context for environment variables if needed
   try {
     const { getCloudflareContext } = require("@opennextjs/cloudflare");
-    console.log("DEBUG: getCloudflareContext().env =", getCloudflareContext()?.env);
+    const cf = getCloudflareContext();
+    if (cf?.env) {
+      // If we are on Cloudflare, we might need to sync environment variables
+      // though next dev usually handles this via initOpenNextCloudflareForDev()
+      Object.assign(process.env, cf.env);
+    }
   } catch (e) {
-    console.log("DEBUG: Failed to get Cloudflare context", e);
+    // console.log("DEBUG: Cloudflare context not available");
   }
-  console.log("DEBUG: OPENAI_BASE_URL =", process.env.OPENAI_BASE_URL);
 
-  const { messages } = (await req.json()) as { messages: ModelMessage[] };
-  const agent = mastra.getAgent("debo");
+  try {
+    const { messages } = (await req.json()) as { messages: ModelMessage[] };
+    const agent = mastra.getAgent("debo");
 
-  const requestContext = new RequestContext();
-  requestContext.set("userId", userId);
+    const requestContext = new RequestContext();
+    requestContext.set("userId", userId);
 
-  const result = await agent.stream(messages, {
-    memory: {
-      thread: "default", // We can improve this with thread IDs later
-      resource: userId,
-    },
-    requestContext,
-  });
+    const result = await agent.stream(messages, {
+      memory: {
+        thread: "default", // We can improve this with thread IDs later
+        resource: userId,
+      },
+      requestContext,
+    });
 
-  const stream = toAISdkStream(result, { from: "agent", version: "v6" });
-  return new Response(stream as any);
+    const stream = toAISdkStream(result, { from: "agent", version: "v6" });
+    return new Response(stream as any);
+  } catch (error) {
+    console.error("CHAT_API_ERROR:", error);
+    return new Response(JSON.stringify({ error: "Intelligence engine error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 }
-const originalFetch = globalThis.fetch;
-globalThis.fetch = async (url, options) => {
-  console.log("GLOBAL FETCH INTERCEPT:", url);
-  return originalFetch(url, options);
-};

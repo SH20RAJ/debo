@@ -1,128 +1,92 @@
-import { db } from "@/db";
-import { user, journals } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { neon } from '@neondatabase/serverless';
+import { drizzle } from 'drizzle-orm/neon-http';
+import { journals, user } from '../db/schema';
+import * as dotenv from 'dotenv';
+import { v4 as uuidv4 } from 'uuid';
 
-const SEED_DATA = [
-  {
-    title: "The Architecture of Debo",
-    content: "Today I spent a lot of time thinking about the architecture of Debo. It needs to be edge-ready, using Cloudflare Workers and Neon Serverless. The memory engine is the most exciting part — extracting facts and entities to build a long-term context for the user. I'm using Drizzle ORM which makes database interactions feel really smooth. One challenge is ensuring that the RAG pipeline is both fast and accurate. I'm exploring Qdrant for vector storage because of its high performance."
-  },
-  {
-    title: "Morning Routine and Focus",
-    content: "Started my morning with a deep work session on the journal's text editor. I'm using Tiptap because of its extensibility. It's important that the interface feels premium and alive. I've been experimenting with glassmorphism and subtle micro-animations to make the UI feel modern. I feel focused and motivated to get the core features stabilized by the end of the week. Drinking a lot of black coffee helps."
-  },
-  {
-    title: "Drizzle and Database Migrations",
-    content: "Ran into some tricky issues with drizzle-kit today. The interactive prompts for renaming columns can be a bit confusing if the database state has drifted. I ended up writing a manual stabilization script to apply unique indexes directly. This bypassed the limitations of the automated tools and got the memory engine working again. It's a good reminder that sometimes you need to go closer to the metal (or in this case, the SQL)."
-  },
-  {
-    title: "Cloudflare Workers AI",
-    content: "Integrated Cloudflare Workers AI into the extraction pipeline. The Llama 3.3 model is surprisingly fast and accurate for entity extraction. I'm also using the Qwen embedding model. There was an unauthorized error earlier because of environment variable overrides, but I managed to fix it by explicitly configuring the OpenAI client. The AI Gateway is a great way to manage and monitor these API calls."
-  },
-  {
-    title: "Gym and Physical Health",
-    content: "Hit the gym for a heavy leg day. Squats and deadlifts always clear my head after a long day of coding. It's easy to neglect physical health when you're deep in a project like Debo, but I've noticed that my cognitive performance is much better when I stay active. I'm aiming for at least 4 sessions a week now."
-  },
-  {
-    title: "Design System Thinking",
-    content: "Refining the design system for Debo. I'm sticking to Shadcn and Tailwind V4. The color palette is mostly dark with vibrant accents. I want the journal to feel like a sanctuary for thoughts — calm, organized, and beautiful. I'm avoiding generic AI aesthetics in favor of something more curated and premium. Typography is key, so I'm using Inter and Outfit."
-  },
-  {
-    title: "Vector Database Strategy",
-    content: "Qdrant is now set up and working. The integration with the journal's search feature is impressive. It can find entries not just by keywords, but by semantic meaning. This is exactly what a modern journal needs. I'm planning to implement a 'memory timeline' where users can see how their thoughts on a specific topic have evolved over time."
-  },
-  {
-    title: "Late Night Coding",
-    content: "There's something peaceful about coding at 2 AM. No notifications, just me and the code. I fixed the 'server-only' import issue that was blocking the test scripts. Now the memory engine verification is passing consistently. I feel a sense of relief getting this milestone done. Tomorrow I'll focus on the RAG retrieval logic."
-  },
-  {
-    title: "Learning Rust",
-    content: "I've started dabbling in Rust to understand how tools like Qdrant and Bun are built under the hood. The memory safety features are fascinating, though the borrow checker is definitely a hurdle at first. I don't think I'll use it for Debo's frontend, but maybe for some high-performance backend modules in the future."
-  },
-  {
-    title: "Product Launch Strategy",
-    content: "Thinking about how to launch Debo. I want to target the developer community first. They'll appreciate the technical stack and the open-source spirit of the project. I'll probably post on Product Hunt and Hacker News. The '30tools' community has also been a great source of inspiration for building useful, high-quality mini-apps."
-  },
-  {
-    title: "Meditation and Mental Clarity",
-    content: "Took 20 minutes to meditate this evening. My mind has been racing with feature ideas for Debo. Meditation helps me step back and prioritize what's actually important. Quality over quantity is my mantra for this week. I want the core journal experience to be flawless before I add more AI gimmicks."
-  },
-  {
-    title: "Debugging Edge Cases",
-    content: "Spent the afternoon debugging a weird edge case in the memory extraction where empty strings were being sent to the LLM. Added some robust normalization and filtering to handle that. It's these small details that make a product feel production-ready. The system now handles messy user input much more gracefully."
-  },
-  {
-    title: "Networking and Collaboration",
-    content: "Had a great call with Shaswat today. He gave me some feedback on the UI design. Collaboration is so important in the early stages of a project. He suggested making the 'Memories' section more interactive, maybe using a graph visualization. I love that idea, though it might take some time to implement correctly."
-  },
-  {
-    title: "The Importance of Logging",
-    content: "Implementing better logging across the application. Using the AI Gateway logs has been a lifesaver for debugging 401 errors. I'm also adding structured logs to the database operations. When things break at the edge, you need to know exactly why, and good logs are the only way to do that."
-  },
-  {
-    title: "Refactoring Server Actions",
-    content: "Cleaned up the server actions for journal creation. They were getting a bit bloated. I moved the memory storage and vector indexing into a background process logic. This keeps the UI responsive even when the AI processing takes a few seconds. Next.js server actions are powerful, but you have to use them carefully."
-  },
-  {
-    title: "Weekend Trip Plans",
-    content: "Planning a quick getaway this weekend to the mountains. I need a break from screens. A little bit of nature will do wonders for my creativity. I'll take a physical journal with me, ironically. Sometimes the best way to think about digital tools is to step away from them for a bit."
-  },
-  {
-    title: "The Future of AI Companions",
-    content: "Debo isn't just a journal; it's an evolving companion. I'm reading up on memory augmentation and how AI can help us remember things we'd otherwise forget. The goal is to create a 'second brain' that doesn't just store information, but actively helps you reflect and grow. It's an ambitious vision, but we're getting there step by step."
-  },
-  {
-    title: "Typography and Readability",
-    content: "Obsessing over the line-height and font-weight of the journal entries. If people are going to write their deepest thoughts here, the reading and writing experience has to be perfect. I switched to a slightly warmer background color to reduce eye strain during long writing sessions. It's much better now."
-  },
-  {
-    title: "Handling Large Documents",
-    content: "Tested the system with a 5000-word journal entry today. The chunking logic for vector storage worked well. I'm using a sliding window approach to ensure context isn't lost at the boundaries. The extraction engine still performs well, though I might need to implement parallel processing for extremely long texts."
-  },
-  {
-    title: "Grateful for Progress",
-    content: "Looking back at the code I wrote two weeks ago, the progress is clear. The system is so much more stable now. The memory engine is finally doing what it's supposed to do. I feel grateful for the tools and frameworks available to developers today. Building something like Debo would have taken months just a few years ago."
-  },
-  {
-    title: "Reflecting on One Year",
-    content: "It's been exactly a year since I started working on AI-driven apps. My first project was a simple chatbot, and now I'm building a complex memory-augmented journal. The learning curve has been steep, but incredibly rewarding. Debo is the culmination of everything I've learned about Next.js, Cloudflare, and Vector DBs."
-  }
+dotenv.config();
+
+const databaseUrl = process.env.DATABASE_URL;
+if (!databaseUrl) {
+  console.error("DATABASE_URL is not set");
+  process.exit(1);
+}
+
+const sql = neon(databaseUrl);
+const db = drizzle(sql);
+
+const sampleJournals = [
+  { title: "Monday Morning", content: "Started the week with a strong coffee. The commute was unusually smooth today. Had a productive meeting about the new project. Feeling optimistic." },
+  { title: "Grocery Run", content: "Stopped by the store on the way home. Forgot the milk, as usual. Picked up some fresh basil for the pasta tonight. The store was packed." },
+  { title: "Evening Walk", content: "Took a long walk around the neighborhood. The air is starting to feel like autumn. Saw a beautiful sunset over the park." },
+  { title: "Work Frustrations", content: "Spent three hours debugging a simple issue. Turned out to be a typo in the config file. Typical Tuesday. At least it's fixed now." },
+  { title: "Dinner with Sarah", content: "Met Sarah for Thai food. We talked about her upcoming trip to Japan. I'm a bit jealous, but happy for her. The green curry was spicy!" },
+  { title: "Lazy Sunday", content: "Spent the whole morning reading. Didn't even change out of my pajamas until noon. It was exactly what I needed after a busy week." },
+  { title: "Gym Session", content: "Hit the gym for the first time in two weeks. My muscles are going to be so sore tomorrow. But it felt good to move." },
+  { title: "Rainy Afternoon", content: "Stuck inside because of the heavy rain. Listened to some jazz and caught up on emails. There's something cozy about the sound of rain on the roof." },
+  { title: "Cooking Experiment", content: "Tried making sourdough bread for the first time. It didn't rise as much as I hoped, but it still tasted okay with some salted butter." },
+  { title: "Movie Night", content: "Watched that new sci-fi movie everyone's talking about. The visuals were stunning, but the plot was a bit confusing. Still, a good distraction." },
+  { title: "Cleaning Day", content: "Finally tackled the spare room. Found a box of old photos from college. Spent way too much time reminiscing instead of cleaning." },
+  { title: "Coffee Date", content: "Quick coffee with Mark. He's starting a new job next month. He seems excited but nervous. We promised to catch up more often." },
+  { title: "Gardening Progress", content: "The tomatoes are finally starting to turn red! The peppers are still small, but the herbs are thriving. Gardening is surprisingly therapeutic." },
+  { title: "Busy Thursday", content: "Back-to-back meetings all day. Barely had time for lunch. Feeling pretty drained tonight. Looking forward to the weekend." },
+  { title: "Art Gallery Visit", content: "Went to the local gallery after work. There was an interesting exhibit on modern photography. Some of the portraits were really powerful." },
+  { title: "Breakfast Ritual", content: "I love the quiet of the house in the morning before everyone else wakes up. Just me, my oatmeal, and the news. It's my favorite part of the day." },
+  { title: "Weekend Trip", content: "Drove out to the coast for the day. The ocean was grey and choppy, but the walk on the beach was refreshing. Had fish and chips for lunch." },
+  { title: "New Hobby?", content: "Bought a set of watercolors today. I haven't painted since high school. Let's see if I still have any skill. It's just for fun." },
+  { title: "Family Call", content: "Called my parents. They're doing well. Mom is busy with her garden, and Dad is still obsessed with his crossword puzzles. Same as always." },
+  { title: "Morning Run", content: "Managed to get out for a run before the sun got too high. The park was full of dog walkers. Feeling energized for the day ahead." },
+  { title: "Late Night Coding", content: "Got into a flow state tonight. Managed to finish the feature I've been working on. There's something about the quiet of the night that helps me focus." },
+  { title: "Library Trip", content: "Returned a bunch of overdue books and picked up a few new ones. I think I have enough reading material to last me the rest of the month." },
+  { title: "Small Wins", content: "Finally fixed the leaky faucet in the kitchen. It's been bothering me for weeks. It's amazing how much better I feel now that it's done." },
+  { title: "Lunch with Colleagues", content: "Went to that new sandwich shop with the team. The food was great, but the service was a bit slow. We ended up being late for our afternoon meeting." },
+  { title: "Sunset at the Lake", content: "Drove down to the lake to watch the sunset. The water was like glass. It was so peaceful. I really need to do this more often." },
+  { title: "Baking Cookies", content: "Made a batch of chocolate chip cookies. The house smells amazing. I might have eaten a bit too much cookie dough, though." },
+  { title: "Organizing the Bookshelf", content: "Spent the afternoon re-organizing my books by color. It looks much more aesthetic now, even if it's harder to find things." },
+  { title: "Planning the Garden", content: "Started sketching out ideas for the spring garden. I want to add more flowers this year to attract bees and butterflies." },
+  { title: "Meditation Session", content: "Tried a guided meditation this morning. It was hard to keep my mind from wandering, but I felt a bit calmer afterwards." },
+  { title: "Repairing the Fence", content: "Spent the morning fixing the loose board on the garden fence. It's not perfect, but it's much more secure now. Feeling productive." },
+  { title: "Visit to the Farmer's Market", content: "Picked up some fresh eggs, local honey, and the most beautiful peaches. I love supporting local growers. The atmosphere was so lively." },
+  { title: "Evening Reflection", content: "Sitting on the porch with a glass of tea. Thinking about how much has changed in the last year. Mostly for the better, I think." },
+  { title: "Yoga Class", content: "Went to a beginner yoga class. I'm definitely not flexible, but I enjoyed the focus on breathing. I'll probably go back next week." },
+  { title: "Sorting Old Clothes", content: "Finally went through my closet and pulled out everything I haven't worn in a year. Dropped two big bags off at the donation center." },
+  { title: "New Recipe Success", content: "Made a Moroccan tagine tonight. It was full of flavor and actually turned out exactly like the photo in the cookbook. A rare success!" },
+  { title: "Early Night", content: "Feeling a bit under the weather. Decided to skip the party and just go to bed early with a cup of tea and a good book. Hopefully I'll feel better tomorrow." },
+  { title: "Commute Observations", content: "Noticed a new mural being painted on the side of the old warehouse. It's really bright and colorful. It's nice to see some art in the industrial area." },
+  { title: "Desk Organization", content: "Cleaned off my workspace. It's amazing how much easier it is to focus when there isn't a pile of random papers staring at me." },
+  { title: "Unexpected Phone Call", content: "Got a call from an old friend I haven't spoken to in years. We talked for over an hour. It was so good to hear his voice and catch up on everything." },
+  { title: "Morning Mist", content: "The valley was completely filled with mist this morning. It looked like a scene from a movie. I wish I had my camera with me." },
+  { title: "Productive Saturday", content: "Got through my entire to-do list! Laundry, groceries, cleaning, and even squeezed in some time for my hobby. Feeling very accomplished." },
+  { title: "Quiet Evening", content: "Just sitting by the fire with a book. The house is so still. It's the perfect way to end a long week." }
 ];
 
-async function seedJournals() {
-  console.log("Starting journal seeding...");
-
+async function seed() {
   try {
-    const foundUser = await db.query.user.findFirst({
-      where: eq(user.email, "shaswatraj3@gmail.com")
-    });
+    // 1. Get the first user
+    const users = await db.select().from(user).limit(1);
+    if (users.length === 0) {
+      console.error("No users found in database. Please create a user first.");
+      return;
+    }
+    const userId = users[0].id;
+    console.log(`Seeding journals for user: ${users[0].name} (${userId})`);
 
-    if (!foundUser) {
-      console.error("User shaswatraj3@gmail.com not found. Seed the user first.");
-      process.exit(1);
+    // 2. Insert journals
+    for (const j of sampleJournals) {
+      await db.insert(journals).values({
+        id: uuidv4(),
+        userId: userId,
+        title: j.title,
+        content: j.content,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
     }
 
-    console.log(`Seeding 21 journals for user: ${foundUser.email}`);
-
-    // Batch insert for efficiency
-    const journalEntries = SEED_DATA.map((data, index) => ({
-      id: crypto.randomUUID(),
-      userId: foundUser.id,
-      title: data.title,
-      content: data.content,
-      // Spread them across the last month
-      createdAt: new Date(Date.now() - (21 - index) * 24 * 60 * 60 * 1000),
-      updatedAt: new Date(Date.now() - (21 - index) * 24 * 60 * 60 * 1000)
-    }));
-
-    await db.insert(journals).values(journalEntries);
-
-    console.log(`Successfully seeded ${journalEntries.length} journals.`);
-    process.exit(0);
+    console.log(`Successfully seeded ${sampleJournals.length} journals.`);
   } catch (error) {
-    console.error("Failed to seed journals:", error);
-    process.exit(1);
+    console.error("Error seeding journals:", error);
   }
 }
 
-seedJournals();
+seed();

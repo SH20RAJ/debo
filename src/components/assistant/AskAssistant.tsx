@@ -9,8 +9,8 @@ export function AskAssistant() {
         <h1 className="text-2xl font-semibold tracking-tight">Intelligence Assistant</h1>
         <p className="text-sm text-muted-foreground">Ask anything about your stored journals and memories.</p>
       </header>
-      <div className="flex-1 overflow-hidden px-4">
-        <div className="h-full max-w-4xl mx-auto">
+      <div className="flex-1 overflow-hidden px-4 aui-root">
+        <div className="h-full max-w-4xl mx-auto flex flex-col">
           <Thread 
             welcome={{
               message: "I'm ready to help you navigate your memories. What would you like to know?",
