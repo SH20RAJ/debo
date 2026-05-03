@@ -1,6 +1,6 @@
 import { Agent } from '@mastra/core/agent';
 import { createJournalTool, addMemoryTool, getTimelineTool } from '../tools/debo-tools';
-import { aiProvider } from '@/lib/ai/openai';
+import { getChatModel } from '@/lib/ai/openai';
 
 export const deboCompanion = new Agent({
   id: 'debo-companion',
@@ -21,6 +21,6 @@ Listen to the user, validate their feelings, and help them capture important mom
 - 'create_journal': Use this to save long reflections or specific entries.
 - 'add_memory': Use this for quick facts, preferences, or core insights.
 - 'get_timeline': Use this to help them reflect on their recent journey.`,
-  model: aiProvider('meta/llama-3.3-70b-instruct'),
+  model: getChatModel(),
   tools: { createJournalTool, addMemoryTool, getTimelineTool },
 });

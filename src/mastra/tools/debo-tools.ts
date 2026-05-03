@@ -1,15 +1,8 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
-import { saveJournal, deleteJournal, getJournals } from '@/actions/journals';
-import { addMemory, deleteMemory, getMemory, updateMemory } from '@/actions/memories';
-import { searchJournals, getRecentJournalCitations } from '@/lib/vector/search';
-import { getRelevantMemories } from '@/lib/memory/query';
-import { getLifeTimeline } from '@/lib/life/timeline';
-import { queryGraph } from '@/lib/life/graph';
 
-const contextSchema = z.object({
-  userId: z.string(),
-});
+// We use dynamic imports inside the execute functions to break circular dependencies
+// between tools -> actions -> mastra -> agents -> tools
 
 export const createJournalTool = createTool({
   id: 'create_journal',
@@ -19,6 +12,7 @@ export const createJournalTool = createTool({
     title: z.string().optional().describe('An optional title for the journal.'),
   }),
   execute: async (input, context) => {
+    const { saveJournal } = await import('@/actions/journals');
     const userId = context.requestContext?.all?.userId;
     if (!userId) throw new Error('Unauthorized');
     return await saveJournal(input.content, undefined, input.title, userId);
@@ -32,6 +26,7 @@ export const deleteJournalTool = createTool({
     id: z.string().describe('The ID of the journal to delete.'),
   }),
   execute: async (input, context) => {
+    const { deleteJournal } = await import('@/actions/journals');
     const userId = context.requestContext?.all?.userId;
     if (!userId) throw new Error('Unauthorized');
     return await deleteJournal(input.id, userId);
@@ -45,6 +40,7 @@ export const getJournalsTool = createTool({
     limit: z.number().optional().default(10).describe('Maximum number of journals to return.'),
   }),
   execute: async (input, context) => {
+    const { getJournals } = await import('@/actions/journals');
     const userId = context.requestContext?.all?.userId;
     if (!userId) throw new Error('Unauthorized');
     return await getJournals('desc', input.limit, 0, userId);
@@ -58,6 +54,7 @@ export const searchJournalsTool = createTool({
     query: z.string().describe('The semantic search query.'),
   }),
   execute: async (input, context) => {
+    const { searchJournals, getRecentJournalCitations } = await import('@/lib/vector/search');
     const userId = context.requestContext?.all?.userId;
     if (!userId) throw new Error('Unauthorized');
     try {
@@ -79,6 +76,7 @@ export const addMemoryTool = createTool({
     fact: z.string().describe('The memory content to store.'),
   }),
   execute: async (input, context) => {
+    const { addMemory } = await import('@/actions/memories');
     const userId = context.requestContext?.all?.userId;
     if (!userId) throw new Error('Unauthorized');
     return await addMemory(input.fact, userId);
@@ -93,10 +91,11 @@ export const getMemoriesTool = createTool({
     limit: z.number().optional().default(5).describe('Maximum number of memories to return.'),
   }),
   execute: async (input, context) => {
+    const { getRelevantMemories } = await import('@/lib/memory/query');
     const userId = context.requestContext?.all?.userId;
     if (!userId) throw new Error('Unauthorized');
     const memories = await getRelevantMemories(userId, input.query || '');
-    return memories.items.slice(0, input.limit).map((memory) => ({
+    return memories.items.slice(0, input.limit).map((memory: any) => ({
       id: memory.id,
       content: memory.content,
       date: memory.date,
@@ -112,6 +111,7 @@ export const getTimelineTool = createTool({
     grouping: z.enum(['daily', 'weekly', 'monthly']).optional().default('daily').describe('Grouping mode.'),
   }),
   execute: async (input, context) => {
+    const { getLifeTimeline } = await import('@/lib/life/timeline');
     const userId = context.requestContext?.all?.userId;
     if (!userId) throw new Error('Unauthorized');
     return await getLifeTimeline(userId, input.grouping);
@@ -131,12 +131,13 @@ export const queryGraphTool = createTool({
     suggestedAction: z.string().optional().describe('A suggested reflection or action for the user.'),
   }),
   execute: async (input, context) => {
+    const { queryGraph } = await import('@/lib/life/graph');
     const userId = context.requestContext?.all?.userId;
     if (!userId) throw new Error('Unauthorized');
     const result = await queryGraph(input.question, userId);
     return {
       insight: result.insights.join(' ') || 'No patterns discovered yet.',
-      evidence: result.nodes.slice(0, 5).map(n => n.id),
+      evidence: result.nodes.slice(0, 5).map((n: any) => n.id),
       sentiment: (result.topEmotions?.[0]?.name as any) || 'neutral',
       suggestedAction: 'Consider reflecting on this recurring pattern in your next journal entry.',
     };

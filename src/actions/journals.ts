@@ -9,7 +9,6 @@ import { cache } from "react";
 import { z } from "zod";
 import { removeJournalFromIndex } from "@/lib/vector/search";
 import { refreshMemoryGraph } from "@/lib/life/graph";
-import { mastra } from "@/mastra";
 
 const journalSchema = z.object({
   title: z.string().max(200).optional(),
@@ -104,8 +103,9 @@ export async function saveJournal(rawContent: string, id?: string, title?: strin
             const savedJournal = await db.query.journals.findFirst({
                 where: and(eq(journals.id, journalId), eq(journals.userId, resolvedUserId)),
             });
-
+            
             if (savedJournal) {
+                const { mastra } = await import("@/mastra");
                 const workflow = mastra.getWorkflow("journalProcessing");
                 if (workflow) {
                     workflow.createRun().then(run => {

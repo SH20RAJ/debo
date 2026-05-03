@@ -171,7 +171,10 @@ Always favor information stored in Debo over generic AI knowledge when discussin
   "mcpServers": {
     "debo": {
       "command": "npx",
-      "args": ["@modelcontextprotocol/server-http", "--url", "${mcpUrl}", "--token", "${key}"]
+      "args": ["mcp-remote", "${mcpUrl}"],
+      "headers": {
+        "Authorization": "Bearer ${key}"
+      }
     }
   }
 }`}
@@ -184,7 +187,10 @@ Always favor information stored in Debo over generic AI knowledge when discussin
   "mcpServers": {
     "debo": {
       "command": "npx",
-      "args": ["@modelcontextprotocol/server-http", "--url", "${mcpUrl}", "--token", "${key}"]
+      "args": ["mcp-remote", "${mcpUrl}"],
+      "headers": {
+        "Authorization": "Bearer ${key}"
+      }
     }
   }
 }`, "Config")}

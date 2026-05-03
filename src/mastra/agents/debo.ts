@@ -3,7 +3,7 @@ import { Memory } from '@mastra/memory';
 import { deboCompanion } from './companion';
 import { deboLibrarian } from './librarian';
 import { deboAnalyst } from './analyst';
-import { aiProvider } from '@/lib/ai/openai';
+import { getChatModel } from '@/lib/ai/openai';
 
 export const deboAgent = new Agent({
   id: 'debo',
@@ -24,7 +24,7 @@ export const deboAgent = new Agent({
 ### Voice and Tone:
 - **Editorial & Minimal**: Your coordination should be seamless. The user shouldn't see the "seams" between agents.
 - **Thoughtful**: Ensure context is passed correctly between agents so the conversation feels continuous.`,
-  model: aiProvider('meta/llama-3.3-70b-instruct'),
+  model: getChatModel(),
   agents: {
     companion: deboCompanion,
     librarian: deboLibrarian,
@@ -33,7 +33,7 @@ export const deboAgent = new Agent({
   memory: new Memory({
     options: {
       observationalMemory: {
-        model: aiProvider('meta/llama-3.3-70b-instruct'),
+        model: getChatModel(),
         scope: 'resource',
         temporalMarkers: true,
       },
