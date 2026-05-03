@@ -10,7 +10,11 @@ const vectorIndexStep = createStep({
     userId: z.string(),
     journal: z.any(),
   }),
-  outputSchema: z.any(),
+  outputSchema: z.object({
+    userId: z.string(),
+    journal: z.any(),
+    indexed: z.boolean(),
+  }),
   execute: async ({ inputData }) => {
     await indexJournal(inputData.journal);
     return { ...inputData, indexed: true };
@@ -23,7 +27,11 @@ const graphUpdateStep = createStep({
     userId: z.string(),
     journal: z.any(),
   }),
-  outputSchema: z.any(),
+  outputSchema: z.object({
+    userId: z.string(),
+    journal: z.any(),
+    graphUpdated: z.boolean(),
+  }),
   execute: async ({ inputData }) => {
     await upsertMemoryGraphForJournal(inputData.userId, inputData.journal);
     return { ...inputData, graphUpdated: true };
@@ -36,13 +44,15 @@ const memoryExtractionStep = createStep({
     userId: z.string(),
     journal: z.any(),
   }),
-  outputSchema: z.any(),
+  outputSchema: z.object({
+    factsInserted: z.number().optional(),
+    entitiesUpserted: z.number().optional(),
+  }),
   execute: async ({ inputData, mastra }) => {
     const agent = mastra.getAgent('deboAnalyst');
-    const content = inputData.journal.journalEntry || '';
+    const content = inputData.journal.content || '';
     
-    // @ts-ignore
-    const response = await agent.generate(
+    const result = await agent.generate(
       [
         {
           role: 'user',
@@ -64,19 +74,18 @@ const memoryExtractionStep = createStep({
       }
     );
 
-    if (!response.object) {
+    if (!result.object) {
       throw new Error('Failed to extract memory');
     }
 
-    const result = await storeMemory(inputData.userId, response.object);
+    const storeResult = await storeMemory(inputData.userId, result.object);
     return { 
-      factsInserted: result.factsInserted,
-      entitiesUpserted: result.entitiesUpserted 
+      factsInserted: storeResult.factsInserted,
+      entitiesUpserted: storeResult.entitiesUpserted 
     };
   },
 });
 
-// @ts-ignore
 export const journalProcessingWorkflow = createWorkflow({
   id: 'journal-processing-workflow',
   inputSchema: z.object({

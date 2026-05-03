@@ -2,6 +2,15 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
 	/* config options here */
+	serverExternalPackages: [
+		"@mastra/duckdb", 
+		"@duckdb/node-api",
+		"@duckdb/node-bindings-darwin-x64", 
+		"@duckdb/node-bindings-darwin-arm64",
+		"@duckdb/node-bindings-win32-x64",
+		"@duckdb/node-bindings-linux-x64",
+		"duckdb"
+	],
 };
 
 export default nextConfig;

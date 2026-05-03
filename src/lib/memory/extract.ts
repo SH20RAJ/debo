@@ -1,8 +1,4 @@
 import "server-only";
-
-import { generateText } from "ai";
-
-import { getChatModel } from "@/lib/ai/openai";
 import { mastra } from "@/mastra";
 import { z } from "zod";
 

@@ -7,10 +7,8 @@ import { eq, desc, asc, and, count } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { cache } from "react";
 import { z } from "zod";
-import { indexJournal, removeJournalFromIndex } from "@/lib/vector/search";
-import { refreshMemoryGraph, upsertMemoryGraphForJournal } from "@/lib/life/graph";
-import { extractMemory } from "@/lib/memory/extract";
-import { storeMemory } from "@/lib/memory/store";
+import { removeJournalFromIndex } from "@/lib/vector/search";
+import { refreshMemoryGraph } from "@/lib/life/graph";
 import { mastra } from "@/mastra";
 
 const journalSchema = z.object({
@@ -110,13 +108,15 @@ export async function saveJournal(rawContent: string, id?: string, title?: strin
             if (savedJournal) {
                 const workflow = mastra.getWorkflow("journalProcessing");
                 if (workflow) {
-                    (workflow as any).execute({
-                        triggerData: {
-                            userId: resolvedUserId,
-                            journal: savedJournal,
-                        }
-                    }).catch((err: any) => {
-                        console.error("Journal processing workflow failed:", err);
+                    workflow.createRun().then(run => {
+                        run.start({
+                            inputData: {
+                                userId: resolvedUserId,
+                                journal: savedJournal,
+                            }
+                        }).catch((err) => {
+                            console.error("Journal processing workflow failed:", err);
+                        });
                     });
                 }
             }
