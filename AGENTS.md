@@ -59,3 +59,16 @@ Top-level files define how your Mastra project is configured, built, and connect
 
 - [Mastra Documentation](https://mastra.ai/llms.txt)
 - [Mastra .well-known skills discovery](https://mastra.ai/.well-known/skills/index.json)
+
+## Models
+
+- **Model format:** Use the `provider/model-name` format everywhere (for example `openai/gpt-5.4`).
+- **Verify models:** Always run the provider registry before selecting a model:
+	- `node scripts/provider-registry.mjs --list`
+	- `node scripts/provider-registry.mjs --provider openai`
+- **Provider list:** See the available provider configs at [src/config/providers.ts](src/config/providers.ts).
+- **Default models and provider code:** Runtime helpers and defaults live in [src/lib/ai/openai.ts](src/lib/ai/openai.ts).
+- **User/provider storage:** User API keys, active provider, and configured providers are defined in the DB schema at [src/db/schema.ts](src/db/schema.ts) and managed by server actions in [src/actions/settings.ts](src/actions/settings.ts).
+- **UI for configuration:** The dashboard UI that lets users add providers and set the active provider is implemented at [src/components/dashboard/settings/provider-card.tsx](src/components/dashboard/settings/provider-card.tsx) and referenced by the settings page.
+- **Mastra guidance:** When writing Mastra agents or workflows, follow the repo's Mastra guidance in this file and the Mastra skill; prefer the provider registry and embedded docs over guessing model names.
+
