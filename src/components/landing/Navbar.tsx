@@ -13,14 +13,6 @@ export function Navbar({ isSignedIn = false }: NavbarProps) {
           <Link href="/" className="flex items-center space-x-2">
             <span className="font-bold text-xl tracking-tight">Debo</span>
           </Link>
-          <nav className="hidden md:flex items-center space-x-6">
-            <Link 
-              href="/foundation" 
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Foundation
-            </Link>
-          </nav>
         </div>
         <nav className="flex items-center space-x-4">
           {isSignedIn ? (

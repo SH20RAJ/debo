@@ -9,7 +9,8 @@ const nextConfig: NextConfig = {
 		"@duckdb/node-bindings-darwin-arm64",
 		"@duckdb/node-bindings-win32-x64",
 		"@duckdb/node-bindings-linux-x64",
-		"duckdb"
+		"duckdb",
+		"@ast-grep/napi"
 	],
 };
 

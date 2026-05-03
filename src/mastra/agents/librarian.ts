@@ -1,5 +1,6 @@
 import { Agent } from '@mastra/core/agent';
 import { getJournalsTool, searchJournalsTool, getMemoriesTool } from '../tools/debo-tools';
+import { aiProvider } from '@/lib/ai/openai';
 
 export const deboLibrarian = new Agent({
   id: 'debo-librarian',
@@ -20,6 +21,6 @@ Provide accurate and contextually relevant retrieval of past journals and memori
 - 'get_journals': List recent entries.
 - 'search_journals': Perform semantic/vector search for specific themes or events.
 - 'get_memories': Query the structured long-term memory.`,
-  model: { id: 'openai/meta/llama-3.3-70b-instruct' },
+  model: aiProvider('meta/llama-3.3-70b-instruct'),
   tools: { getJournalsTool, searchJournalsTool, getMemoriesTool },
 });
