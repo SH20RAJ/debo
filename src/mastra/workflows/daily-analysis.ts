@@ -15,6 +15,7 @@ const fetchRecentJournalsStep = createStep({
       content: z.string(),
       createdAt: z.date(),
     })),
+    userId: z.string(),
   }),
   execute: async ({ inputData }) => {
     const journals = await getJournals('desc', 5, 0, inputData.userId);
@@ -24,6 +25,7 @@ const fetchRecentJournalsStep = createStep({
         content: j.content,
         createdAt: j.createdAt || new Date(),
       })),
+      userId: inputData.userId,
     };
   },
 });
@@ -33,16 +35,17 @@ const analyzePatternsStep = createStep({
   inputSchema: z.object({
     userId: z.string(),
     journals: z.array(z.object({
-      id: z.string(),
       content: z.string(),
+      createdAt: z.date().optional(),
     })),
   }),
   outputSchema: z.object({
     insight: z.string(),
     sentiment: z.string(),
     significantFacts: z.array(z.string()),
+    userId: z.string(),
   }),
-  execute: async ({ inputData }) => {
+  execute: async ({ inputData, mastra }) => {
     const agent = mastra.getAgent('debo');
     const journalText = inputData.journals.map(j => j.content).join('\n\n');
     
@@ -55,15 +58,24 @@ const analyzePatternsStep = createStep({
       Journals:
       ${journalText}`,
       {
-        output: z.object({
-          insight: z.string(),
-          sentiment: z.string(),
-          significantFacts: z.array(z.string()),
-        }),
+        structuredOutput: {
+          schema: z.object({
+            insight: z.string(),
+            sentiment: z.string(),
+            significantFacts: z.array(z.string()),
+          }),
+        },
       }
     );
 
-    return response.object;
+    if (!response.object) {
+      throw new Error('Failed to generate analysis');
+    }
+
+    return {
+      ...response.object,
+      userId: inputData.userId,
+    };
   },
 });
 
@@ -72,6 +84,9 @@ const storeMemoriesStep = createStep({
   inputSchema: z.object({
     userId: z.string(),
     significantFacts: z.array(z.string()),
+  }),
+  outputSchema: z.object({
+    success: z.boolean(),
   }),
   execute: async ({ inputData }) => {
     for (const fact of inputData.significantFacts) {

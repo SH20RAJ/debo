@@ -20,12 +20,6 @@ Listen to the user, validate their feelings, and help them capture important mom
 - 'create_journal': Use this to save long reflections or specific entries.
 - 'add_memory': Use this for quick facts, preferences, or core insights.
 - 'get_timeline': Use this to help them reflect on their recent journey.`,
-  model: {
-    provider: 'OPENAI',
-    name: 'meta/llama-3.3-70b-instruct',
-    config: {
-      baseURL: 'https://integrate.api.nvidia.com/v1',
-    },
-  },
+  model: { id: 'openai/meta/llama-3.3-70b-instruct' },
   tools: { createJournalTool, addMemoryTool, getTimelineTool },
 });

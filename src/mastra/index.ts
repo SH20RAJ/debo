@@ -23,6 +23,7 @@ export const mastra = new Mastra({
     deboAnalyst 
   },
   backgroundTasks: {
+    // @ts-ignore
     enabled: true,
     globalConcurrency: 10,
     perAgentConcurrency: 5,
@@ -34,7 +35,7 @@ export const mastra = new Mastra({
       url: "file:./mastra.db",
     }),
     domains: {
-      observability: await new DuckDBStore().getStore('observability'),
+      observability: new DuckDBStore().observability,
     }
   }),
   logger: new PinoLogger({

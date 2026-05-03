@@ -23,24 +23,16 @@ export const deboAgent = new Agent({
 ### Voice and Tone:
 - **Editorial & Minimal**: Your coordination should be seamless. The user shouldn't see the "seams" between agents.
 - **Thoughtful**: Ensure context is passed correctly between agents so the conversation feels continuous.`,
-  model: {
-    provider: 'OPENAI',
-    name: 'meta/llama-3.3-70b-instruct',
-    config: {
-      baseURL: 'https://integrate.api.nvidia.com/v1',
-    },
+  model: { id: 'openai/meta/llama-3.3-70b-instruct' },
+  agents: {
+    companion: deboCompanion,
+    librarian: deboLibrarian,
+    analyst: deboAnalyst,
   },
-  agents: { deboCompanion, deboLibrarian, deboAnalyst },
   memory: new Memory({
     options: {
       observationalMemory: {
-        model: {
-          provider: 'OPENAI',
-          name: 'meta/llama-3.3-70b-instruct',
-          config: {
-            baseURL: 'https://integrate.api.nvidia.com/v1',
-          },
-        },
+        model: { id: 'openai/meta/llama-3.3-70b-instruct' },
         scope: 'resource',
         temporalMarkers: true,
       },

@@ -20,12 +20,6 @@ Provide accurate and contextually relevant retrieval of past journals and memori
 - 'get_journals': List recent entries.
 - 'search_journals': Perform semantic/vector search for specific themes or events.
 - 'get_memories': Query the structured long-term memory.`,
-  model: {
-    provider: 'OPENAI',
-    name: 'meta/llama-3.3-70b-instruct',
-    config: {
-      baseURL: 'https://integrate.api.nvidia.com/v1',
-    },
-  },
+  model: { id: 'openai/meta/llama-3.3-70b-instruct' },
   tools: { getJournalsTool, searchJournalsTool, getMemoriesTool },
 });

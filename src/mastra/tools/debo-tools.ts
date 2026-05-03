@@ -1,4 +1,4 @@
-import { createTool } from '@mastra/core/tool';
+import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 import { saveJournal, deleteJournal, getJournals } from '@/actions/journals';
 import { addMemory, deleteMemory, getMemory, updateMemory } from '@/actions/memories';
@@ -18,8 +18,8 @@ export const createJournalTool = createTool({
     content: z.string().describe('The content of the journal entry.'),
     title: z.string().optional().describe('An optional title for the journal.'),
   }),
-  execute: async ({ input, context }) => {
-    const userId = context?.requestContext?.get('userId') || (context as any).userId;
+  execute: async (input, context) => {
+    const userId = (context?.requestContext?.all as any)?.userId || (context as any).userId;
     if (!userId) throw new Error('Unauthorized');
     return await saveJournal(input.content, undefined, input.title, userId);
   },
@@ -31,8 +31,8 @@ export const deleteJournalTool = createTool({
   inputSchema: z.object({
     id: z.string().describe('The ID of the journal to delete.'),
   }),
-  execute: async ({ input, context }) => {
-    const userId = context?.requestContext?.get('userId') || (context as any).userId;
+  execute: async (input, context) => {
+    const userId = (context?.requestContext?.all as any)?.userId || (context as any).userId;
     if (!userId) throw new Error('Unauthorized');
     return await deleteJournal(input.id, userId);
   },
@@ -44,8 +44,8 @@ export const getJournalsTool = createTool({
   inputSchema: z.object({
     limit: z.number().optional().default(10).describe('Maximum number of journals to return.'),
   }),
-  execute: async ({ input, context }) => {
-    const userId = context?.requestContext?.get('userId') || (context as any).userId;
+  execute: async (input, context) => {
+    const userId = (context?.requestContext?.all as any)?.userId || (context as any).userId;
     if (!userId) throw new Error('Unauthorized');
     return await getJournals('desc', input.limit, 0, userId);
   },
@@ -57,8 +57,8 @@ export const searchJournalsTool = createTool({
   inputSchema: z.object({
     query: z.string().describe('The semantic search query.'),
   }),
-  execute: async ({ input, context }) => {
-    const userId = context?.requestContext?.get('userId') || (context as any).userId;
+  execute: async (input, context) => {
+    const userId = (context?.requestContext?.all as any)?.userId || (context as any).userId;
     if (!userId) throw new Error('Unauthorized');
     try {
       return await searchJournals(input.query, userId);
@@ -78,8 +78,8 @@ export const addMemoryTool = createTool({
   inputSchema: z.object({
     fact: z.string().describe('The memory content to store.'),
   }),
-  execute: async ({ input, context }) => {
-    const userId = context?.requestContext?.get('userId') || (context as any).userId;
+  execute: async (input, context) => {
+    const userId = (context?.requestContext?.all as any)?.userId || (context as any).userId;
     if (!userId) throw new Error('Unauthorized');
     return await addMemory(input.fact, userId);
   },
@@ -92,8 +92,8 @@ export const getMemoriesTool = createTool({
     query: z.string().optional().default('').describe('Optional memory search query.'),
     limit: z.number().optional().default(5).describe('Maximum number of memories to return.'),
   }),
-  execute: async ({ input, context }) => {
-    const userId = context?.requestContext?.get('userId') || (context as any).userId;
+  execute: async (input, context) => {
+    const userId = (context?.requestContext?.all as any)?.userId || (context as any).userId;
     if (!userId) throw new Error('Unauthorized');
     const memories = await getRelevantMemories(userId, input.query);
     return memories.items.slice(0, input.limit).map((memory) => ({
@@ -111,8 +111,8 @@ export const getTimelineTool = createTool({
   inputSchema: z.object({
     grouping: z.enum(['daily', 'weekly', 'monthly']).optional().default('daily').describe('Grouping mode.'),
   }),
-  execute: async ({ input, context }) => {
-    const userId = context?.requestContext?.get('userId') || (context as any).userId;
+  execute: async (input, context) => {
+    const userId = (context?.requestContext?.all as any)?.userId || (context as any).userId;
     if (!userId) throw new Error('Unauthorized');
     return await getLifeTimeline(userId, input.grouping);
   },
@@ -130,8 +130,8 @@ export const queryGraphTool = createTool({
     sentiment: z.enum(['positive', 'negative', 'neutral', 'growth']).describe('The overall sentiment of this pattern.'),
     suggestedAction: z.string().optional().describe('A suggested reflection or action for the user.'),
   }),
-  execute: async ({ input, context }) => {
-    const userId = context?.requestContext?.get('userId') || (context as any).userId;
+  execute: async (input, context) => {
+    const userId = (context?.requestContext?.all as any)?.userId || (context as any).userId;
     if (!userId) throw new Error('Unauthorized');
     return await queryGraph(input.question, userId);
   },

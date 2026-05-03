@@ -18,17 +18,9 @@ Analyze data to uncover trends in behavior, emotion, and life events.
 
 ### Tools:
 - 'detect_patterns': The primary tool for analyzing journals and memories for recurring themes and insights.`,
-  model: {
-    provider: 'OPENAI',
-    name: 'meta/llama-3.3-70b-instruct',
-    config: {
-      baseURL: 'https://integrate.api.nvidia.com/v1',
-    },
-  },
+  model: { id: 'openai/meta/llama-3.3-70b-instruct' },
   tools: { queryGraphTool },
   backgroundTasks: {
-    tools: {
-      detect_patterns: { enabled: true, timeoutMs: 300_000 },
-    },
+    tools: 'all',
   },
 });
