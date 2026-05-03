@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { RequestContext } from "@mastra/core/request-context";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { db } from "@/db";
@@ -56,11 +57,15 @@ server.setRequestHandler(CallToolRequestSchema, async (request, extra) => {
   }
 
   // Execute the tool with user context
-  const result = await tool.execute({
-      input: args as any,
-      context: {
-          requestContext: new Map([['userId', userId]]),
-      } as any
+  const requestContext = new RequestContext();
+  requestContext.set("userId", userId);
+
+  if (!tool.execute) {
+    throw new Error(`Tool ${name} does not have an execute function`);
+  }
+
+  const result = await tool.execute(args as any, {
+      requestContext,
   });
 
   return { 

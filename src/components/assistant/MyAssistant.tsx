@@ -1,6 +1,6 @@
 "use client";
 
-import { Thread, ThreadList } from "@assistant-ui/react";
+import { Thread, ThreadList } from "@assistant-ui/react-ui";
 import { 
   Popover, 
   PopoverContent, 
@@ -33,12 +33,13 @@ export function MyAssistant() {
             </div>
           </header>
           <div className="flex-1 overflow-hidden">
-            <Thread 
-              className="h-full"
-              welcome={{
-                message: "Hello! I'm Debo, your companion journal. How are you feeling today?",
-              }}
-            />
+            <div className="h-full">
+              <Thread 
+                welcome={{
+                  message: "Welcome to your personal intelligence. How can I help you today?",
+                }}
+              />
+            </div>
           </div>
         </div>
       </PopoverContent>

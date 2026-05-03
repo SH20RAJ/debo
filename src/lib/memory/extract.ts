@@ -3,6 +3,8 @@ import "server-only";
 import { generateText } from "ai";
 
 import { getChatModel } from "@/lib/ai/openai";
+import { mastra } from "@/mastra";
+import { z } from "zod";
 
 export type ExtractedMemory = {
   facts: string[];
@@ -75,20 +77,34 @@ export async function extractMemory(text: string): Promise<ExtractedMemory> {
   }
 
   try {
-    const result = await generateText({
-      model: getChatModel(),
-      temperature: 0,
-      system:
-        "Extract durable personal memory from the input. Return strict JSON with keys facts, entities, emotions, topics. facts should be short first-person or user-specific statements. entities should include people, projects, places, and named things. emotions and topics should be concise lower-case phrases.",
-      prompt: value,
-    });
+    const agent = mastra.getAgent('deboAnalyst');
+    const result = await agent.generate(
+      [
+        {
+          role: 'user',
+          content: `Extract durable personal memory from the input. Return a structured object with facts, entities, emotions, and topics.
+          
+          Input:
+          ${value}`,
+        },
+      ],
+      {
+        structuredOutput: {
+          schema: z.object({
+            facts: z.array(z.string()),
+            entities: z.array(z.string()),
+            emotions: z.array(z.string()),
+            topics: z.array(z.string()),
+          }),
+        },
+      }
+    );
 
-    const parsed = parseExtractionResult(result.text);
-    if (parsed) {
-      return normalizeExtraction(parsed);
+    if (result.object) {
+      return normalizeExtraction(result.object);
     }
   } catch (error) {
-    console.warn("Memory extraction LLM failed, using fallback heuristics:", error);
+    console.warn("Mastra memory extraction failed, using fallback heuristics:", error);
   }
 
   return fallbackExtract(value);

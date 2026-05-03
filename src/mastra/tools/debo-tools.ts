@@ -19,7 +19,7 @@ export const createJournalTool = createTool({
     title: z.string().optional().describe('An optional title for the journal.'),
   }),
   execute: async (input, context) => {
-    const userId = (context?.requestContext?.all as any)?.userId || (context as any).userId;
+    const userId = context.requestContext?.all?.userId;
     if (!userId) throw new Error('Unauthorized');
     return await saveJournal(input.content, undefined, input.title, userId);
   },
@@ -32,7 +32,7 @@ export const deleteJournalTool = createTool({
     id: z.string().describe('The ID of the journal to delete.'),
   }),
   execute: async (input, context) => {
-    const userId = (context?.requestContext?.all as any)?.userId || (context as any).userId;
+    const userId = context.requestContext?.all?.userId;
     if (!userId) throw new Error('Unauthorized');
     return await deleteJournal(input.id, userId);
   },
@@ -45,7 +45,7 @@ export const getJournalsTool = createTool({
     limit: z.number().optional().default(10).describe('Maximum number of journals to return.'),
   }),
   execute: async (input, context) => {
-    const userId = (context?.requestContext?.all as any)?.userId || (context as any).userId;
+    const userId = context.requestContext?.all?.userId;
     if (!userId) throw new Error('Unauthorized');
     return await getJournals('desc', input.limit, 0, userId);
   },
@@ -58,7 +58,7 @@ export const searchJournalsTool = createTool({
     query: z.string().describe('The semantic search query.'),
   }),
   execute: async (input, context) => {
-    const userId = (context?.requestContext?.all as any)?.userId || (context as any).userId;
+    const userId = context.requestContext?.all?.userId;
     if (!userId) throw new Error('Unauthorized');
     try {
       return await searchJournals(input.query, userId);
@@ -79,7 +79,7 @@ export const addMemoryTool = createTool({
     fact: z.string().describe('The memory content to store.'),
   }),
   execute: async (input, context) => {
-    const userId = (context?.requestContext?.all as any)?.userId || (context as any).userId;
+    const userId = context.requestContext?.all?.userId;
     if (!userId) throw new Error('Unauthorized');
     return await addMemory(input.fact, userId);
   },
@@ -93,9 +93,9 @@ export const getMemoriesTool = createTool({
     limit: z.number().optional().default(5).describe('Maximum number of memories to return.'),
   }),
   execute: async (input, context) => {
-    const userId = (context?.requestContext?.all as any)?.userId || (context as any).userId;
+    const userId = context.requestContext?.all?.userId;
     if (!userId) throw new Error('Unauthorized');
-    const memories = await getRelevantMemories(userId, input.query);
+    const memories = await getRelevantMemories(userId, input.query || '');
     return memories.items.slice(0, input.limit).map((memory) => ({
       id: memory.id,
       content: memory.content,
@@ -112,7 +112,7 @@ export const getTimelineTool = createTool({
     grouping: z.enum(['daily', 'weekly', 'monthly']).optional().default('daily').describe('Grouping mode.'),
   }),
   execute: async (input, context) => {
-    const userId = (context?.requestContext?.all as any)?.userId || (context as any).userId;
+    const userId = context.requestContext?.all?.userId;
     if (!userId) throw new Error('Unauthorized');
     return await getLifeTimeline(userId, input.grouping);
   },
@@ -131,9 +131,15 @@ export const queryGraphTool = createTool({
     suggestedAction: z.string().optional().describe('A suggested reflection or action for the user.'),
   }),
   execute: async (input, context) => {
-    const userId = (context?.requestContext?.all as any)?.userId || (context as any).userId;
+    const userId = context.requestContext?.all?.userId;
     if (!userId) throw new Error('Unauthorized');
-    return await queryGraph(input.question, userId);
+    const result = await queryGraph(input.question, userId);
+    return {
+      insight: result.insights.join(' ') || 'No patterns discovered yet.',
+      evidence: result.nodes.slice(0, 5).map(n => n.id),
+      sentiment: (result.topEmotions?.[0]?.name as any) || 'neutral',
+      suggestedAction: 'Consider reflecting on this recurring pattern in your next journal entry.',
+    };
   },
 });
 

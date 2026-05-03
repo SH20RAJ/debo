@@ -11,6 +11,7 @@ import { indexJournal, removeJournalFromIndex } from "@/lib/vector/search";
 import { refreshMemoryGraph, upsertMemoryGraphForJournal } from "@/lib/life/graph";
 import { extractMemory } from "@/lib/memory/extract";
 import { storeMemory } from "@/lib/memory/store";
+import { mastra } from "@/mastra";
 
 const journalSchema = z.object({
   title: z.string().max(200).optional(),
@@ -100,20 +101,27 @@ export async function saveJournal(rawContent: string, id?: string, title?: strin
             });
         }
 
-        // Keep vector indexing server-side so Qdrant credentials never reach the browser.
+        // Use Mastra Workflow for post-processing
         try {
             const savedJournal = await db.query.journals.findFirst({
                 where: and(eq(journals.id, journalId), eq(journals.userId, resolvedUserId)),
             });
 
             if (savedJournal) {
-                await indexJournal(savedJournal);
-                await upsertMemoryGraphForJournal(resolvedUserId, savedJournal);
-                const extractedMemory = await extractMemory(savedJournal.content);
-                await storeMemory(resolvedUserId, extractedMemory);
+                const workflow = mastra.getWorkflow("journalProcessing");
+                if (workflow) {
+                    (workflow as any).execute({
+                        triggerData: {
+                            userId: resolvedUserId,
+                            journal: savedJournal,
+                        }
+                    }).catch((err: any) => {
+                        console.error("Journal processing workflow failed:", err);
+                    });
+                }
             }
         } catch (err) {
-            console.error("Failed to index journal in Qdrant:", err);
+            console.error("Failed to trigger journal processing workflow:", err);
         }
 
         revalidatePath("/dashboard/journals");

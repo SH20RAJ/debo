@@ -1,6 +1,6 @@
 "use client";
 
-import { Thread } from "@assistant-ui/react";
+import { Thread } from "@assistant-ui/react-ui";
 
 export function AskAssistant() {
   return (
@@ -10,12 +10,13 @@ export function AskAssistant() {
         <p className="text-sm text-muted-foreground">Ask anything about your stored journals and memories.</p>
       </header>
       <div className="flex-1 overflow-hidden px-4">
-        <Thread 
-          className="h-full max-w-4xl mx-auto"
-          welcome={{
-            message: "I'm ready to help you navigate your memories. What would you like to know?",
-          }}
-        />
+        <div className="h-full max-w-4xl mx-auto">
+          <Thread 
+            welcome={{
+              message: "I'm ready to help you navigate your memories. What would you like to know?",
+            }}
+          />
+        </div>
       </div>
     </div>
   );
