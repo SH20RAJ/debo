@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { StackProvider, StackTheme } from "@stackframe/stack";
 import { stackClientApp } from "@/stack/client";
 import "./globals.css";
+import "@assistant-ui/react-ui/styles/index.css";
 
 const inter = Inter({
 	variable: "--font-inter",
