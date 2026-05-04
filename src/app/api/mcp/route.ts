@@ -175,6 +175,19 @@ export async function POST(req: NextRequest) {
                 };
             }
         }
+    } else if (body.method === "tools/list") {
+        const deboTools = await getTools();
+        const tools = Object.entries(deboTools).map(([id, tool]) => ({
+            name: (tool as any).id || id,
+            description: (tool as any).description || `Mastra tool: ${id}`,
+            inputSchema: (tool as any).inputSchema || { type: "object", properties: {} },
+        }));
+
+        jsonRpcResponse = {
+            jsonrpc: "2.0",
+            id: body.id,
+            result: { tools }
+        };
     } else {
         await (transport as any).onmessage(body);
     }
