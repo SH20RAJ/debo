@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-	/* config options here */
 	serverExternalPackages: [
 		"@mastra/duckdb", 
 		"@duckdb/node-api",
@@ -10,7 +9,11 @@ const nextConfig: NextConfig = {
 		"@duckdb/node-bindings-win32-x64",
 		"@duckdb/node-bindings-linux-x64",
 		"duckdb",
-		"@ast-grep/napi"
+		"@ast-grep/napi",
+		"@ast-grep/napi-darwin-arm64",
+		"@ast-grep/napi-darwin-x64",
+		"@ast-grep/napi-linux-x64-gnu",
+		"@ast-grep/napi-linux-arm64-gnu",
 	],
 };
 

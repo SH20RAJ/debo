@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
     }
 
     const userId = pref.userId;
-    const body = await req.json();
+    const body = await req.json() as any;
     
     let jsonRpcResponse: any = null;
     const transport = {
@@ -118,7 +118,6 @@ export async function POST(req: NextRequest) {
 
     // Inject userId into the request context for tools
     // We override execute to pass the userId
-    const originalRequestHandler = (server as any)._requestHandlers.get(CallToolRequestSchema.method);
     
     // We need to pass the userId to the tool execution.
     // The current server.setRequestHandler doesn't easily allow passing per-request context.
