@@ -26,9 +26,9 @@ export default async function DashboardLayout({
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset className="bg-background relative flex h-svh flex-col overflow-hidden">
-          <header className="flex h-14 shrink-0 items-center gap-2 px-6 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 glass-header sticky top-0 z-50">
-            <div className="flex items-center gap-2">
-              <SidebarTrigger className="-ml-1 text-muted-foreground hover:text-foreground transition-colors" />
+          <header className="absolute top-0 left-0 w-full flex items-center gap-2 p-4 z-50 pointer-events-none">
+            <div className="flex items-center gap-2 pointer-events-auto bg-background/50 backdrop-blur-md rounded-md p-1">
+              <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors" />
             </div>
           </header>
           <main className="flex-1 overflow-y-auto no-scrollbar scroll-smooth">
