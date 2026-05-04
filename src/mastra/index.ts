@@ -1,10 +1,5 @@
-
 import { Mastra } from '@mastra/core/mastra';
 import { PinoLogger } from '@mastra/loggers';
-import { LibSQLStore } from '@mastra/libsql';
-import { DuckDBStore } from "@mastra/duckdb";
-import { MastraCompositeStore } from '@mastra/core/storage';
-import { Observability, DefaultExporter, CloudExporter, SensitiveDataFilter } from '@mastra/observability';
 import { weatherWorkflow } from './workflows/weather-workflow';
 import { dailyAnalysisWorkflow } from './workflows/daily-analysis';
 import { journalProcessingWorkflow } from './workflows/journal-processing';
@@ -33,32 +28,12 @@ export const mastra = new Mastra({
     globalConcurrency: 10,
     perAgentConcurrency: 5,
   },
-  storage: new MastraCompositeStore({
-    id: 'composite-storage',
-    default: new LibSQLStore({
-      id: "mastra-storage",
-      url: "file:./mastra.db",
-    }),
-    domains: {
-      observability: new DuckDBStore().observability,
-    }
-  }),
   logger: new PinoLogger({
     name: 'Mastra',
     level: 'info',
   }),
-  observability: new Observability({
-    configs: {
-      default: {
-        serviceName: 'mastra',
-        exporters: [
-          new DefaultExporter(), // Persists traces to storage for Mastra Studio
-          new CloudExporter(), // Sends observability data to hosted Mastra Studio (if MASTRA_CLOUD_ACCESS_TOKEN is set)
-        ],
-        spanOutputProcessors: [
-          new SensitiveDataFilter(), // Redacts sensitive data like passwords, tokens, keys
-        ],
-      },
-    },
-  }),
+  // Note: Local file storage (LibSQL/DuckDB) has been disabled to support Cloudflare Workers 
+  // ephemeral filesystem and stop local .db files from generating.
+  // To persist memory in production on Cloudflare, you should install @mastra/cloudflare-d1 
+  // and pass the env.DB binding dynamically in your route handlers.
 });
