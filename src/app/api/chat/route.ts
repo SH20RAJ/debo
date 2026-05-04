@@ -45,10 +45,13 @@ export async function POST(req: NextRequest) {
     });
 
     const stream = toAISdkStream(result, { from: "agent", version: "v6" });
-    return new Response(stream as any);
+    const { createUIMessageStreamResponse } = require("ai");
+    return createUIMessageStreamResponse({
+      stream,
+    });
   } catch (error) {
     console.error("CHAT_API_ERROR:", error);
-    return new Response(JSON.stringify({ error: "Intelligence engine error" }), {
+    return new Response(JSON.stringify({ error: "Intelligence engine error", details: error instanceof Error ? error.message : String(error) }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
