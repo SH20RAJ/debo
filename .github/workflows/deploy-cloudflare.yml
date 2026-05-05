@@ -12,6 +12,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
@@ -44,4 +49,5 @@ jobs:
           LIVEKIT_URL: ${{ secrets.LIVEKIT_URL }}
           LIVEKIT_API_KEY: ${{ secrets.LIVEKIT_API_KEY }}
           LIVEKIT_API_SECRET: ${{ secrets.LIVEKIT_API_SECRET }}
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
         run: bun run deploy
