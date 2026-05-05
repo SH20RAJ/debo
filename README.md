@@ -1,186 +1,127 @@
-# Debo
+# Debo — Your Life intelligence System
 
 > [!IMPORTANT]
-> **Project Jarvis is officially announced!** We are moving beyond text to build a real-time, ambient voice intelligence layer that allows you to talk to your life context naturally. [Learn more about the vision.](https://github.com/SH20RAJ/debo/issues/36)
+> **Project Jarvis is live!** We've launched a real-time, ambient voice intelligence layer that allows you to talk to your life context naturally. [Learn more about the vision.](https://github.com/SH20RAJ/debo/issues/36)
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org/)
-[![Qdrant](https://img.shields.io/badge/Qdrant-Vector_DB-FF4D4D?logo=qdrant)](https://qdrant.tech/)
-[![AI](https://img.shields.io/badge/AI-Vercel_SDK_+_Cloudflare_Gateway-111827)](https://sdk.vercel.ai/)
+[![Mastra](https://img.shields.io/badge/Orchestration-Mastra-FF5733?logo=mastra)](https://mastra.ai/)
+[![NVIDIA NIM](https://img.shields.io/badge/AI-NVIDIA_NIM-76B900?logo=nvidia)](https://build.nvidia.com/)
+[![Qdrant](https://img.shields.io/badge/Vector_DB-Qdrant-FF4D4D?logo=qdrant)](https://qdrant.tech/)
 [![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Visitors](https://api.visitorbadge.io/api/combined?path=https%3A%2F%2Fgithub.com%2FSH20RAJ%2Fdebo&countColor=%23263759&style=flat)](https://visitorbadge.io/status?path=https%3A%2F%2Fgithub.com%2FSH20RAJ%2Fdebo)
 
-Your life, understood by AI.
-Live at: [debo.life](https://debo.life)
+Debo is not a journal with a chat box. It is a **Life Intelligence System**: a private layer that learns from your writing, retrieves your history with citations, detects patterns across time, and turns memory into useful guidance.
 
-Debo is not a journal with a chat box. It is a life intelligence system: a private layer that learns from your writing, retrieves your history with citations, detects patterns across time, and turns memory into useful guidance.
+Live at: [debo.life](https://debo.life)
 
 <img src="./public/logo-text.png" alt="Debo" width="100%" />
 
-## Vision
+## 🕯️ Vision: Editorial Calm
 
 Most journaling apps store text. Debo stores meaning.
 
-It is designed to learn the structure of your life over time: what matters to you, who shows up often, which emotions repeat, which projects create stress, and which habits lead to momentum. The result is an assistant that can answer questions about your past, surface relevant memories, and proactively point out patterns before they become obvious.
+It is designed to learn the structure of your life over time: what matters to you, who shows up often, which emotions repeat, and which habits lead to momentum. The result is an assistant that can answer questions about your past, surface relevant memories, and proactively point out patterns before they become obvious.
 
-Debo is built for three outcomes:
+Debo follows a philosophy of **Editorial Calm**:
+- **Warm Cream Canvas**: A distraction-free, magazine-like aesthetic (\`#f7f7f4\`).
+- **Typography-First**: Using premium sans-serifs and monospaced code for clarity.
+- **Quiet Confidence**: Minimal hairlines, no drop shadows, and generous breathing room.
 
-1. Preserve personal context.
-2. Make that context searchable and explainable.
-3. Turn memory into better decisions.
-
-## Core Features
+## 🚀 Core Features
 
 ### AI Memory Engine
-
-Debo learns from journal entries and stores durable memories through its first-party memory engine. It extracts facts, preferences, people, goals, and recurring details so the system can remember beyond any single conversation.
+Powered by **Mastra**, Debo extracts facts, preferences, people, and goals from your entries to build a durable, long-term memory that survives beyond a single session.
 
 ### Ask Your Life
+Ask "When was I happiest this year?" or "What helped me focus last month?" Debo retrieves journal evidence and memory context, answering with **clickable citations** grounded in your own data.
 
-Ask questions like "When did I last feel burned out?" or "What helped me focus during intense weeks?" Debo retrieves journal evidence and memory context, then answers with citations grounded in your own data.
+### Project Jarvis (Voice)
+A real-time, low-latency ambient voice interface powered by **LiveKit**. Talk to your journal naturally—ask about your day or reflect on memories while on the move with sub-second response times.
 
 ### Pattern Detection Engine
-
-Debo looks for repetition, not just keywords. It can highlight emotional trends, recurring stressors, common topics, and behavior loops so you can see patterns across weeks and months.
-
-### Life Timeline
-
-Your entries are organized into a structured timeline that makes it easy to review what happened on a day, week, or month. It is designed for reflection, not just storage.
+Debo looks for behavioral loops, recurring stressors, and emotional trends across weeks and months, highlighting them before they become obvious.
 
 ### Memory Graph
+See how people, topics, and emotions connect in your life. Understand who shows up in your progress stories and what topics are tied to high-stress periods.
 
-Debo connects people, events, emotions, and topics into a personal graph. This makes it easier to answer questions like "Which people are tied to high-stress periods?" or "What topics show up when I am making progress?"
-
-### Proactive AI Insights
-
-Debo does more than react to questions. It can suggest patterns from your history, such as stress before deadlines, deeper focus in the morning, or recurring themes around specific projects.
-
-### Citations
-
-Every answer is grounded in your data. Debo returns citations so you can inspect the journals and memories behind a response instead of trusting a black box.
-### Jarvis-style Voice Agent
-
-A real-time, low-latency ambient voice interface powered by LiveKit. Talk to your journal naturally—ask about your day, reflect on memories, or get proactive advice while on the move, with sub-second response times and full emotional context.
-
-### Copilot Agent
-
-Integrated **CopilotKit** intelligence that lives alongside your workspace. It can proactively suggest journal entries, help search your history as you type, and execute complex cross-platform actions to help you maintain momentum.
-
-## UX Philosophy
-
-The interface stays simple on purpose, utilizing a **premium glassmorphism aesthetic** that feels light and responsive.
-
-Debo uses a minimal, calm surface so the user can focus on writing, asking, and reviewing. The complexity lives underneath in retrieval, memory extraction, ranking, and orchestration. The product should feel light to use even when the system behind it is doing serious work.
-
-## Architecture Overview
+## 🏗️ Technical Architecture
 
 ```mermaid
 graph TD
-    User[User] --> UI[Next.js App Router UI]
-    UI --> JournalEditor[Journal Editor]
-    UI --> AskFlow[Ask Your Life]
-    UI --> Copilot[CopilotKit Agent]
+    User[User] --> UI[Next.js 16 App Router]
+    UI --> Editor[Tiptap/Novel Editor]
+    UI --> Chat[assistant-ui / Jarvis Voice]
     
-    subgraph Edge_Proxy[Performance Proxy]
-        UI --> Proxy[Decoupled Auth Proxy]
+    UI --> Server[Next.js Server Actions]
+    
+    subgraph Orchestration[Mastra Agent Layer]
+        Server --> Mastra[Mastra Hub]
+        Mastra --> DeboAgent[Debo Agent]
+        Mastra --> Analyst[Analyst Agent]
+        Mastra --> Librarian[Librarian Agent]
     end
 
-    JournalEditor --> JournalAPI[Server Actions]
-    AskFlow --> AskAction[askQuestionAction]
-    Copilot --> CopilotRuntime[CopilotKit Runtime]
+    Mastra --> Inference[NVIDIA NIM / Cloudflare AI]
+    
+    subgraph Storage[Data & Vector Layer]
+        Server --> Neon[(Neon Postgres)]
+        Server --> Qdrant[(Qdrant Vector DB)]
+        Mastra --> Memory[(Postgres Memory Store)]
+    end
 
-    JournalAPI --> DB[(Neon Postgres)]
-    JournalAPI --> EmbedJob[Chunk + Embed]
-    EmbedJob --> Qdrant[(Qdrant)]
-    JournalAPI --> MemoryIngest[Memory Extraction]
-    MemoryIngest --> MemoryStore[(Postgres Memory Tables)]
-
-    AskAction --> Orchestrator[AI Orchestration Layer]
-    CopilotRuntime --> Orchestrator
-    Orchestrator --> Tools[Retrieval Tools]
-    Tools --> Qdrant
-    Tools --> MemoryStore
-    Tools --> DB
-    Orchestrator --> Gateway[Cloudflare AI Gateway]
-    Gateway --> LLM[Model Provider]
-    LLM --> Response[Streaming Answer + Citations]
-    Response --> UI
+    Qdrant --> Retrieval[Semantic Search]
+    Memory --> Context[Long-term Memory]
 ```
 
-## Tech Stack
+## 🛠️ Tech Stack
 
-### Frontend
+- **Framework**: Next.js 16 (App Router), React 19
+- **Orchestration**: [Mastra](https://mastra.ai) (Multi-agent orchestration)
+- **AI Inference**: [NVIDIA NIM](https://build.nvidia.com/) (Meta Llama 3.3 70B)
+- **Vector Database**: [Qdrant](https://qdrant.tech/)
+- **Database**: [Neon](https://neon.tech/) (Serverless Postgres)
+- **Auth**: [Stack Auth](https://stack-auth.com/) (Open Source alternative to Clerk)
+- **Styling**: Tailwind CSS v4, shadcn/ui
+- **Voice**: [LiveKit](https://livekit.io/)
+- **Deployment**: [Cloudflare Workers](https://workers.cloudflare.com/) via OpenNext
 
-- **Framework**: Next.js 15 (App Router)
-- **Styling**: Tailwind CSS v4, Lucide Icons
-- **AI UI**: [assistant-ui](https://assistant-ui.com) for high-fidelity chat experiences
-- **Components**: shadcn/ui
+## 🏁 Getting Started
 
-### AI Orchestration
+### 1. Prerequisites
+- [Bun](https://bun.sh/)
+- A [Neon](https://neon.tech/) database
+- [Stack Auth](https://stack-auth.com/) project
+- [NVIDIA NIM](https://build.nvidia.com/) API Key (or OpenAI key)
+- [Qdrant](https://qdrant.tech/) Cluster
 
-- **Framework**: [Mastra](https://mastra.ai) — used for multi-agent orchestration, tools, and memory.
-- **Agents**: Orchestrator (Debo), Companion, Librarian, and Analyst.
-- **Streaming**: Vercel AI SDK integration via `@mastra/ai-sdk`.
-
-### Backend & Storage
-
-- **Database**: Neon (Postgres) with Drizzle ORM
-- **Auth**: Stack Auth (Open Source Clerk alternative)
-- **Deployment**: Cloudflare Workers via OpenNext
-
-## Getting Started
-
-### Install
-
-```bash
+### 2. Installation
+\`\`\`bash
 bun install
-```
+\`\`\`
 
-### Environment Setup
+### 3. Environment Setup
+Copy \`.env.example\` to \`.env.local\` and fill in the required keys.
 
-Copy `.env.example` to `.env` and set the required values for:
+### 4. Database Setup
+\`\`\`bash
+bun run db:push
+\`\`\`
 
-- `DATABASE_URL`
-- `STACK_PUBLISHABLE_KEY`
-- `STACK_SECRET_KEY`
-- `STACK_PROJECT_ID`
-- `QDRANT_URL`
-- `QDRANT_API_KEY`
-- `OPENAI_BASE_URL`
-- `OPENAI_API_KEY`
-
-If you use connectors or MCP tooling, also configure the Nango and LiveKit keys listed in `.env.example`.
-
-### Run Locally
-
-```bash
+### 5. Run Locally
+\`\`\`bash
 bun run dev
-```
+\`\`\`
 
-## Documentation
+## 🤝 Contributing
 
-- [Architecture](./docs/ARCHITECTURE.md)
-- [Features](./docs/FEATURES.md)
-- [AI System](./docs/AI_SYSTEM.md)
-- [Roadmap](./docs/ROADMAP.md)
+We welcome contributions! Whether you're fixing a bug, adding an agent tool, or improving documentation:
 
-## Future Vision
+1. **Fork the repo** and create your branch from \`main\`.
+2. Ensure your code follows the **Editorial Calm** design guidelines.
+3. Open a PR with a clear description of your changes.
 
-Debo is meant to grow into a predictive personal operating system.
+See our [Contributing Guide](./CONTRIBUTING.md) for full details.
 
-The near-term goal is better recall and stronger pattern detection. The long-term goal is a life co-pilot that can anticipate needs, summarize progress, warn about repeated mistakes, and help coordinate decisions across work, health, relationships, and creative work.
+## 📄 License
 
-## Contributing
-
-We welcome contributions! Whether you're fixing a bug, adding a tool, or improving the documentation:
-
-1. **Fork the repo** and create your branch from `main`.
-2. **Install dependencies**: `bun install`.
-3. **Set up env**: Copy `.env.example` to `.env.local` and add your keys.
-4. **Run dev**: `bun dev`.
-5. **Open a PR**: Describe your changes and link any related issues.
-
-See our [Contributing Guide](./CONTRIBUTING.md) for more details.
-
-## License
-
-MIT.
+MIT © [SH20RAJ](https://github.com/SH20RAJ)

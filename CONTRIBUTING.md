@@ -1,43 +1,77 @@
 # Contributing to Debo
 
-First off, thank you for considering contributing to Debo! It's people like you that make Debo such a great tool.
+First off, thank you for considering contributing to Debo! We value your help in building a better Life Intelligence System.
 
-## How Can I Contribute?
+## 🕯️ Our Philosophy: Editorial Calm
 
-### Reporting Bugs
-*   Check the [Issues](https://github.com/SH20RAJ/debo/issues) to see if the bug has already been reported.
-*   If not, open a new issue. Include as much detail as possible, including steps to reproduce, expected behavior, and actual behavior.
+Debo is designed to be a "quietly-confident" space for reflection. When contributing UI changes:
+- **Prioritize Typography**: Use large, readable headings and JetBrains Mono for metadata.
+- **Warm Aesthetics**: Avoid pure whites and blacks; use the cream canvas (\`#f7f7f4\`) and warm ink (\`#26251e\`).
+- **Minimal Depth**: No drop shadows. Use 1px hairlines for separation.
+- **Generous Rhythm**: Maintain an 80px vertical rhythm between major sections.
 
-### Suggesting Enhancements
-*   Open a new issue with the tag "enhancement".
-*   Explain the feature you'd like to see and why it would be useful.
+## 🛠️ Development Setup
 
-### Pull Requests
-1.  Fork the repository.
-2.  Create a new branch (`git checkout -b feature/amazing-feature`).
-3.  Make your changes.
-4.  Ensure your code follows the project's style (TypeScript, functional components, Tailwind v4).
-5.  Commit your changes (`git commit -m 'Add some amazing feature'`).
-6.  Push to the branch (`git push origin feature/amazing-feature`).
-7.  Open a Pull Request.
+### 1. Prerequisites
+- [Bun](https://bun.sh/) (Runtime & Package Manager)
+- [Neon](https://neon.tech/) (Postgres Database)
+- [Stack Auth](https://stack-auth.com/) (Authentication)
+- [NVIDIA NIM](https://build.nvidia.com/) (LLM Inference - OpenAI compatible)
+- [Qdrant](https://qdrant.tech/) (Vector Search)
 
-## Development Setup
+### 2. Initial Setup
+\`\`\`bash
+# Fork and clone the repository
+git clone https://github.com/YOUR_USERNAME/debo.git
+cd debo
 
-### Prerequisites
-*   [Bun](https://bun.sh/)
-*   A [Neon](https://neon.tech/) database (for Postgres)
-*   [Stack Auth](https://stack-auth.com/) account
-*   [NVIDIA NIM](https://build.nvidia.com/explore/discover) API Key (for LLM inference)
+# Install dependencies
+bun install
 
-### Setup Steps
-1.  Clone your fork.
-2.  `bun install`
-3.  `cp .env.example .env.local` and fill in your keys.
-4.  `bun run db:push` to sync your database schema.
-5.  `bun run dev` to start the development server.
+# Setup environment variables
+cp .env.example .env.local
+# Edit .env.local with your keys
+\`\`\`
 
-## Code of Conduct
-This project and everyone participating in it is governed by the [Code of Conduct](./CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
+### 3. Database & Auth
+\`\`\`bash
+# Sync your database schema
+bun run db:push
 
-## License
-By contributing, you agree that your contributions will be licensed under its MIT License.
+# Generate Cloudflare types (if working on workers)
+bun run cf-typegen
+\`\`\`
+
+### 4. Run Development Server
+\`\`\`bash
+bun run dev
+\`\`\`
+
+## 💻 Coding Standards
+
+- **React 19 & Next.js 16**: Use functional components, Server Components by default, and Server Actions for data mutations.
+- **TypeScript**: Strict type safety is required. Avoid \`any\`.
+- **Styling**: Tailwind CSS v4. Stick to the design tokens defined in \`tailwind.config.ts\`.
+- **Orchestration**: Agent logic should be added to \`src/mastra/agents\` and tools to \`src/mastra/tools\`.
+- **Database**: Use Drizzle ORM for all database operations.
+
+## 🌿 Branching & PRs
+
+1. Create a branch: \`git checkout -b feat/your-feature-name\` or \`fix/bug-name\`.
+2. Make your changes and ensure they follow the design philosophy.
+3. Run linting: \`bun run lint\`.
+4. Open a Pull Request against the \`main\` branch.
+5. Provide a clear description and screenshots (for UI changes).
+
+## 🚩 Reporting Issues
+
+- **Bug Reports**: Provide steps to reproduce, expected vs. actual behavior, and environment details.
+- **Feature Requests**: Explain the "Why" and "How" it fits into the Life Intelligence System.
+
+## 📜 Code of Conduct
+
+By participating in this project, you agree to abide by our [Code of Conduct](./CODE_OF_CONDUCT.md).
+
+## 📄 License
+
+By contributing, you agree that your contributions will be licensed under the [MIT License](./LICENSE).
