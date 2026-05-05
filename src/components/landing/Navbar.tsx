@@ -7,24 +7,24 @@ type NavbarProps = {
 
 export function Navbar({ isSignedIn = false }: NavbarProps) {
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
+    <header className="sticky top-0 z-50 w-full border-b-2 border-duo-swan bg-white">
+      <div className="container mx-auto flex h-20 max-w-5xl items-center justify-between px-6">
         <div className="flex items-center space-x-8">
           <Link href="/" className="flex items-center space-x-2">
-            <span className="font-bold text-xl tracking-tight">Debo</span>
+            <span className="font-heading font-black text-3xl tracking-tight text-duo-green">debo</span>
           </Link>
         </div>
         <nav className="flex items-center space-x-4">
           {isSignedIn ? (
-            <Button asChild className="rounded-full bg-primary text-primary-foreground shadow-sm shadow-primary/20 hover:bg-primary/90">
+            <Button asChild variant="duolingo" size="sm">
               <Link href="/dashboard">Enter Debo</Link>
             </Button>
           ) : (
             <>
-              <Button asChild variant="ghost" className="hidden md:inline-flex">
+              <Button asChild variant="ghost" className="hidden md:inline-flex text-duo-wolf font-bold hover:bg-duo-polar">
                 <Link href="/join">Sign In</Link>
               </Button>
-              <Button asChild className="rounded-full">
+              <Button asChild variant="duolingo" size="sm">
                 <Link href="/join">Get Started</Link>
               </Button>
             </>
@@ -34,3 +34,4 @@ export function Navbar({ isSignedIn = false }: NavbarProps) {
     </header>
   );
 }
+

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Outfit } from "next/font/google";
+import { Nunito, Nunito_Sans } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
@@ -9,14 +9,16 @@ import "./globals.css";
 import "@assistant-ui/react-ui/styles/index.css";
 import "@assistant-ui/react-ui/styles/themes/shadcn-extras.css";
 
-const inter = Inter({
-	variable: "--font-inter",
+const nunito = Nunito({
+	variable: "--font-display",
 	subsets: ["latin"],
+	weight: ["400", "500", "600", "700", "800", "900"],
 });
 
-const outfit = Outfit({
-	variable: "--font-outfit",
+const nunitoSans = Nunito_Sans({
+	variable: "--font-body",
 	subsets: ["latin"],
+	weight: ["300", "400", "500", "600", "700", "800", "900"],
 });
 
 export const metadata: Metadata = {
@@ -46,12 +48,12 @@ export default function RootLayout({
 			<head>
 				<link rel="icon" href="/logo.png" />
 			</head>
-			<body className={`${inter.variable} ${outfit.variable} font-sans antialiased selection:bg-primary/20 selection:text-primary`}>
+			<body className={`${nunito.variable} ${nunitoSans.variable} font-sans antialiased selection:bg-primary/20 selection:text-primary`}>
 				<StackProvider app={stackClientApp}>
 					<StackTheme>
 						<ThemeProvider
 							attribute="class"
-							defaultTheme="dark"
+							defaultTheme="light"
 							enableSystem
 							disableTransitionOnChange
 						>
@@ -66,3 +68,4 @@ export default function RootLayout({
 		</html>
 	);
 }
+

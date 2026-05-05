@@ -1,25 +1,25 @@
 "use client";
 
-import { User, Bot, Search, TrendingUp, Calendar, Sparkles } from "lucide-react";
+import { User, Bot, Calendar, Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface MessageProps {
   type: "user" | "bot";
   children: React.ReactNode;
-  typing?: boolean;
 }
 
-function Message({ type, children, typing }: MessageProps) {
+function Message({ type, children }: MessageProps) {
   const isUser = type === "user";
   return (
-    <div className={`flex items-start gap-4 ${typing ? "animate-in fade-in slide-in-from-bottom-2 duration-500" : ""}`}>
-      <div className={`shrink-0 p-2 rounded-full ${isUser ? "bg-muted" : "bg-primary/10"}`}>
+    <div className={`flex items-start gap-4 animate-in fade-in slide-in-from-bottom-2 duration-500`}>
+      <div className={`shrink-0 p-3 rounded-2xl border-2 ${isUser ? "bg-duo-polar border-duo-swan" : "bg-duo-green/10 border-duo-green"}`}>
         {isUser ? (
-          <User className="w-5 h-5" />
+          <User className="w-6 h-6 text-duo-wolf" />
         ) : (
-          <Bot className="w-5 h-5 text-primary" />
+          <Bot className="w-6 h-6 text-duo-green" />
         )}
       </div>
-      <div className={`px-4 py-3 rounded-2xl ${isUser ? "bg-muted rounded-tl-sm" : "bg-primary/5 border border-primary/10 rounded-tl-sm"}`}>
+      <div className={`relative px-5 py-4 rounded-2xl border-2 ${isUser ? "bg-white border-duo-swan" : "bg-white border-duo-green"} before:content-[''] before:absolute before:top-4 before:-left-[9px] before:w-4 before:h-4 before:bg-white before:border-l-2 before:border-b-2 ${isUser ? "before:border-duo-swan" : "before:border-duo-green"} before:rotate-45`}>
         {children}
       </div>
     </div>
@@ -28,92 +28,63 @@ function Message({ type, children, typing }: MessageProps) {
 
 export function Demo() {
   return (
-    <section id="demo" className="py-24 md:py-32 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-muted/30 via-transparent to-muted/30" />
-      <div className="absolute top-0 left-1/4 w-px h-32 bg-gradient-to-b from-primary/50 to-transparent" />
-      <div className="absolute top-0 right-1/4 w-px h-32 bg-gradient-to-b from-primary/50 to-transparent" />
-      
-      <div className="container mx-auto max-w-6xl px-6 relative">
-        <div className="mb-16 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary border border-primary/20 mb-6">
-            <Search className="w-4 h-4" />
-            <span className="text-sm font-medium">Live Demo</span>
-          </div>
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
-            Real queries. Real context. <span className="text-primary">Real evidence.</span>
+    <section id="demo" className="py-24 bg-white border-t-2 border-duo-swan">
+      <div className="container mx-auto max-w-4xl px-6">
+        <div className="mb-12 text-center">
+          <h2 className="text-3xl md:text-4xl font-heading font-black text-duo-eel mb-4">
+            Real queries. <span className="text-duo-blue">Real context.</span>
           </h2>
-          <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            Ask a question and get answers with citations from your history. This is what conversing with your past looks like.
-          </p>
+          <div className="w-full h-4 bg-duo-swan rounded-full overflow-hidden mb-8">
+            <div className="h-full bg-duo-green w-[75%] transition-all duration-1000" />
+          </div>
         </div>
 
-        <div className="max-w-3xl mx-auto">
-          <div className="rounded-3xl border border-border bg-background/80 backdrop-blur-sm p-8 shadow-2xl shadow-primary/5">
-            <div className="flex items-center gap-3 pb-6 border-b border-border/50 mb-6">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <Sparkles className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Debo Assistant</h3>
-                <p className="text-xs text-muted-foreground">Ready to explore your memories</p>
-              </div>
-              <div className="ml-auto flex gap-1">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-xs text-muted-foreground">Online</span>
-              </div>
-            </div>
-            
-            <div className="space-y-6">
-              <Message type="user">
-                <p className="text-foreground">What did I do last week?</p>
-              </Message>
+        <div className="bg-white rounded-3xl border-2 border-duo-swan p-8 md:p-12">
+          <div className="space-y-8 mb-12">
+            <Message type="user">
+              <p className="text-duo-eel font-bold text-lg">What did I do last week?</p>
+            </Message>
 
-              <Message type="bot">
-                <p className="text-foreground leading-relaxed">
-                  Last week, you focused on <span className="text-primary font-medium">finishing the new design system</span>. 
+            <Message type="bot">
+              <div className="space-y-3">
+                <p className="text-duo-eel font-bold text-lg leading-relaxed">
+                  Last week, you focused on <span className="text-duo-blue">finishing the new design system</span>. 
                   You noted burnout on Thursday but took a long hike Saturday, which helped.
                 </p>
-                <div className="mt-3 flex gap-2">
-                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded">
+                <div className="flex gap-2">
+                  <span className="inline-flex items-center gap-1 text-xs font-black text-duo-wolf bg-duo-polar px-2 py-1 rounded-lg uppercase tracking-wider">
                     <Calendar className="w-3 h-3" /> Apr 21
                   </span>
-                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded">
+                  <span className="inline-flex items-center gap-1 text-xs font-black text-duo-wolf bg-duo-polar px-2 py-1 rounded-lg uppercase tracking-wider">
                     <Calendar className="w-3 h-3" /> Apr 18
                   </span>
                 </div>
-              </Message>
+              </div>
+            </Message>
 
-              <Message type="user">
-                <p className="text-foreground">What patterns do I repeat?</p>
-              </Message>
+            <Message type="user">
+              <p className="text-duo-eel font-bold text-lg">What patterns do I repeat?</p>
+            </Message>
 
-              <Message type="bot">
-                <p className="text-foreground leading-relaxed">
-                  Over the past 6 months you're <span className="text-primary font-medium">most productive after morning workouts</span>. 
-                  A pattern shows skipped meals during high-stress weeks, often followed by poor sleep.
+            <Message type="bot">
+              <div className="space-y-3">
+                <p className="text-duo-eel font-bold text-lg leading-relaxed">
+                  Over the past 6 months you're <span className="text-duo-green">most productive after morning workouts</span>. 
+                  A pattern shows skipped meals during high-stress weeks.
                 </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded">
-                    <TrendingUp className="w-3 h-3" /> 3 sources
-                  </span>
-                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded">
-                    <Calendar className="w-3 h-3" /> Mar 12
-                  </span>
-                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded">
-                    <Calendar className="w-3 h-3" /> Feb 3
-                  </span>
-                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded">
-                    <Calendar className="w-3 h-3" /> Jan 7
+                <div className="flex flex-wrap gap-2">
+                   <span className="inline-flex items-center gap-1 text-xs font-black text-duo-wolf bg-duo-polar px-2 py-1 rounded-lg uppercase tracking-wider">
+                    <Check className="w-3 h-3" /> verified insight
                   </span>
                 </div>
-              </Message>
-            </div>
-            
-            <div className="mt-6 pt-6 border-t border-border/50">
-              <p className="text-xs text-muted-foreground text-center">
-                This is a demo. Your actual conversations will reference your own journal entries.
-              </p>
-            </div>
+              </div>
+            </Message>
+          </div>
+          
+          <div className="pt-8 border-t-2 border-duo-swan flex justify-center">
+            <Button variant="duolingo" size="lg" className="w-full max-w-sm">
+              CONTINUE SESSION
+            </Button>
           </div>
         </div>
       </div>

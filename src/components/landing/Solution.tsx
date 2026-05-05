@@ -1,59 +1,51 @@
 "use client";
 
-import { Sparkles, Brain, MessageCircle, Search, Check } from "lucide-react";
+import { Sparkles, Brain, MessageCircle, Search } from "lucide-react";
 
 const features = [
-  { icon: Brain, text: "Turns entries into durable memories" },
-  { icon: MessageCircle, text: "Natural language conversations with your past" },
-  { icon: Search, text: "Semantic search across everything" },
-  { icon: Sparkles, text: "Pattern detection and insights" },
+  { icon: Brain, text: "Turns entries into durable memories", color: "text-duo-green" },
+  { icon: MessageCircle, text: "Natural language conversations", color: "text-duo-blue" },
+  { icon: Search, text: "Semantic search across everything", color: "text-duo-orange" },
+  { icon: Sparkles, text: "Pattern detection and insights", color: "text-duo-purple" },
 ];
 
 export function Solution() {
   return (
-    <section className="relative py-24 md:py-32 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-t from-primary/5 via-transparent to-transparent" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl" />
-      
-      <div className="container mx-auto max-w-6xl px-6 relative">
-        <div className="max-w-3xl mx-auto text-center space-y-8">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary border border-primary/20">
-            <Sparkles className="w-4 h-4" />
-            <span className="text-sm font-medium">The Solution</span>
-          </div>
-          
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
-            Meet your <span className="bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">second brain.</span>
+    <section className="relative py-24 bg-white border-t-2 border-duo-swan">
+      <div className="container mx-auto max-w-5xl px-6">
+        <div className="max-w-3xl mx-auto text-center space-y-12">
+          <h2 className="text-4xl md:text-5xl font-heading font-black text-duo-eel">
+            Meet your <span className="text-duo-blue">second brain.</span>
           </h2>
           
-          <p className="text-xl text-muted-foreground leading-relaxed">
+          <p className="text-xl text-duo-wolf font-bold leading-relaxed">
             Debo connects your thoughts, remembers everything you write, and lets you ask your past anything. 
-            <span className="text-foreground font-medium"> Stop managing notes and start having conversations with your own mind.</span>
+            <span className="text-duo-eel"> Stop managing notes and start having conversations with your own mind.</span>
           </p>
           
-          <div className="grid sm:grid-cols-2 gap-4 pt-8 max-w-2xl mx-auto">
-            {features.map(({ icon: Icon, text }) => (
+          <div className="grid sm:grid-cols-2 gap-6 pt-8">
+            {features.map(({ icon: Icon, text, color }) => (
               <div 
                 key={text}
-                className="flex items-center gap-3 p-4 rounded-xl bg-muted/50 border border-border/50 hover:border-primary/30 hover:bg-primary/5 transition-colors text-left"
+                className="btn-3d btn-3d-white flex items-center gap-4 p-5 rounded-2xl border-2 border-duo-swan bg-white text-left"
               >
-                <div className="p-2 rounded-lg bg-primary/10 text-primary shrink-0">
-                  <Icon className="w-4 h-4" />
+                <div className={`p-3 rounded-xl bg-duo-polar ${color}`}>
+                  <Icon className="w-6 h-6" />
                 </div>
-                <span className="text-sm font-medium">{text}</span>
+                <span className="text-base font-black text-duo-eel">{text}</span>
               </div>
             ))}
           </div>
           
-          <div className="flex flex-wrap justify-center gap-6 pt-12">
+          <div className="flex flex-wrap justify-center gap-12 pt-12 border-t-2 border-duo-swan">
             {[
-              { value: "100%", label: "Your data" },
-              { value: "0", label: "Tags to manage" },
-              { value: "∞", label: "Questions to ask" },
-            ].map(({ value, label }) => (
+              { value: "100%", label: "Your data", color: "text-duo-green" },
+              { value: "0", label: "Tags to manage", color: "text-duo-red" },
+              { value: "∞", label: "Questions to ask", color: "text-duo-blue" },
+            ].map(({ value, label, color }) => (
               <div key={label} className="text-center">
-                <div className="text-3xl font-bold text-primary">{value}</div>
-                <div className="text-sm text-muted-foreground">{label}</div>
+                <div className={`text-4xl font-heading font-black ${color}`}>{value}</div>
+                <div className="text-sm font-black text-duo-wolf uppercase tracking-wider">{label}</div>
               </div>
             ))}
           </div>
@@ -62,3 +54,4 @@ export function Solution() {
     </section>
   );
 }
+
