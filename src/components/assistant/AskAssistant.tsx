@@ -4,6 +4,7 @@ import { Thread, ThreadList } from "@assistant-ui/react-ui";
 import {
   ThreadPrimitive,
   SuggestionPrimitive,
+  useAssistantRuntime,
 } from "@assistant-ui/react";
 import { DeboToolUIs } from "./DeboToolUIs";
 import { BookOpen, Brain, Search, Clock, TrendingUp, Sparkles } from "lucide-react";
@@ -77,6 +78,8 @@ function WelcomeScreen() {
 }
 
 export function AskAssistant() {
+  const runtime = useAssistantRuntime();
+
   return (
     <div className="flex h-full bg-background">
       {/* Thread List Sidebar */}
@@ -100,7 +103,7 @@ export function AskAssistant() {
           </div>
           <div className="flex items-center gap-4">
             <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest hidden sm:inline-block">
-              {runtime.threadId === "new" ? "New Session" : "Active Session"}
+              Active Session
             </span>
           </div>
         </header>
@@ -110,11 +113,7 @@ export function AskAssistant() {
             <DeboToolUIs />
             <Thread
               welcome={{
-                message: (
-                  <WelcomeScreen 
-                    onAction={(prompt) => runtime.append({ role: "user", content: [{ type: "text", text: prompt }] })} 
-                  />
-                ),
+                message: <WelcomeScreen />,
               }}
             />
           </div>
