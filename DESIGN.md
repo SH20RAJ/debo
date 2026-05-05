@@ -1,537 +1,714 @@
----
-version: alpha
-name: Cursor
-description: An AI-first code editor whose marketing site reads like a quietly-confident developer-tools brand with a warm-cream editorial canvas (`#f7f7f4`) instead of the typical dark IDE atmosphere. Near-black warm ink (`#26251e`) carries body and display alike — display sits at weight 400 with negative letter-spacing for a magazine feel rather than a bold tech voice. The single brand voltage is **Cursor Orange** (`#f54e00`) reserved for primary CTAs and the wordmark. A signature pastel timeline palette (peach, mint, blue, lavender, gold) marks AI-action stages (Thinking / Reading / Editing / Grepping / Done) — only inside in-product timeline visualizations. Cards use minimal hairlines, no shadows, generous 80px section rhythm. CursorGothic for display/body, JetBrains Mono on every code surface (which is roughly half the page).
+# 🦉 Duolingo Design System — Complete Reference
 
-colors:
-  primary: "#f54e00"
-  primary-active: "#d04200"
-  ink: "#26251e"
-  body: "#5a5852"
-  body-strong: "#26251e"
-  muted: "#807d72"
-  muted-soft: "#a09c92"
-  hairline: "#e6e5e0"
-  hairline-soft: "#efeee8"
-  hairline-strong: "#cfcdc4"
-  canvas: "#f7f7f4"
-  canvas-soft: "#fafaf7"
-  surface-card: "#ffffff"
-  surface-strong: "#e6e5e0"
-  on-primary: "#ffffff"
-  timeline-thinking: "#dfa88f"
-  timeline-grep: "#9fc9a2"
-  timeline-read: "#9fbbe0"
-  timeline-edit: "#c0a8dd"
-  timeline-done: "#c08532"
-  semantic-error: "#cf2d56"
-  semantic-success: "#1f8a65"
+> **Source**: [design.duolingo.com](https://design.duolingo.com/) + extensive research
+> **Last Updated**: May 2025
+> **Internal Codename**: "Hoo-Dini" / DDS (Duolingo Design System)
 
-typography:
-  display-mega:
-    fontFamily: "'CursorGothic', system-ui, 'Helvetica Neue', Helvetica, Arial, sans-serif"
-    fontSize: 72px
-    fontWeight: 400
-    lineHeight: 1.1
-    letterSpacing: -2.16px
-  display-lg:
-    fontFamily: "'CursorGothic', sans-serif"
-    fontSize: 36px
-    fontWeight: 400
-    lineHeight: 1.2
-    letterSpacing: -0.72px
-  display-md:
-    fontFamily: "'CursorGothic', sans-serif"
-    fontSize: 26px
-    fontWeight: 400
-    lineHeight: 1.25
-    letterSpacing: -0.325px
-  display-sm:
-    fontFamily: "'CursorGothic', sans-serif"
-    fontSize: 22px
-    fontWeight: 400
-    lineHeight: 1.3
-    letterSpacing: -0.11px
-  title-md:
-    fontFamily: "'CursorGothic', sans-serif"
-    fontSize: 18px
-    fontWeight: 600
-    lineHeight: 1.4
-    letterSpacing: 0
-  title-sm:
-    fontFamily: "'CursorGothic', sans-serif"
-    fontSize: 16px
-    fontWeight: 600
-    lineHeight: 1.4
-    letterSpacing: 0
-  body-md:
-    fontFamily: "'CursorGothic', sans-serif"
-    fontSize: 16px
-    fontWeight: 400
-    lineHeight: 1.5
-    letterSpacing: 0
-  body-tracked:
-    fontFamily: "'CursorGothic', sans-serif"
-    fontSize: 16px
-    fontWeight: 400
-    lineHeight: 1.5
-    letterSpacing: 0.08px
-  body-sm:
-    fontFamily: "'CursorGothic', sans-serif"
-    fontSize: 14px
-    fontWeight: 400
-    lineHeight: 1.5
-    letterSpacing: 0
-  caption:
-    fontFamily: "'CursorGothic', sans-serif"
-    fontSize: 13px
-    fontWeight: 400
-    lineHeight: 1.4
-    letterSpacing: 0
-  caption-uppercase:
-    fontFamily: "'CursorGothic', sans-serif"
-    fontSize: 11px
-    fontWeight: 600
-    lineHeight: 1.4
-    letterSpacing: 0.88px
-    textTransform: uppercase
-  code:
-    fontFamily: "'JetBrains Mono', 'Fira Code', monospace"
-    fontSize: 13px
-    fontWeight: 400
-    lineHeight: 1.5
-    letterSpacing: 0
-  button:
-    fontFamily: "'CursorGothic', sans-serif"
-    fontSize: 14px
-    fontWeight: 500
-    lineHeight: 1.0
-    letterSpacing: 0
-  nav-link:
-    fontFamily: "'CursorGothic', sans-serif"
-    fontSize: 14px
-    fontWeight: 500
-    lineHeight: 1.4
-    letterSpacing: 0
-
-rounded:
-  none: 0px
-  xs: 4px
-  sm: 6px
-  md: 8px
-  lg: 12px
-  xl: 16px
-  pill: 9999px
-  full: 9999px
-
-spacing:
-  xxs: 4px
-  xs: 8px
-  sm: 12px
-  base: 16px
-  md: 20px
-  lg: 24px
-  xl: 32px
-  xxl: 48px
-  section: 80px
-
-components:
-  top-nav:
-    backgroundColor: "{colors.canvas}"
-    textColor: "{colors.ink}"
-    typography: "{typography.nav-link}"
-    height: 64px
-  button-primary:
-    backgroundColor: "{colors.primary}"
-    textColor: "{colors.on-primary}"
-    typography: "{typography.button}"
-    rounded: "{rounded.md}"
-    padding: 10px 18px
-    height: 40px
-  button-primary-active:
-    backgroundColor: "{colors.primary-active}"
-    textColor: "{colors.on-primary}"
-    rounded: "{rounded.md}"
-  button-secondary:
-    backgroundColor: "{colors.surface-card}"
-    textColor: "{colors.ink}"
-    typography: "{typography.button}"
-    rounded: "{rounded.md}"
-    padding: 9px 17px
-    height: 40px
-  button-tertiary-text:
-    backgroundColor: transparent
-    textColor: "{colors.ink}"
-    typography: "{typography.button}"
-  button-download:
-    backgroundColor: "{colors.ink}"
-    textColor: "{colors.canvas}"
-    typography: "{typography.button}"
-    rounded: "{rounded.md}"
-    padding: 12px 20px
-    height: 44px
-  hero-band:
-    backgroundColor: "{colors.canvas}"
-    textColor: "{colors.ink}"
-    typography: "{typography.display-mega}"
-    padding: 80px
-  ide-mockup-card:
-    backgroundColor: "{colors.surface-card}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.lg}"
-    padding: 0
-  ide-pane:
-    backgroundColor: "{colors.canvas-soft}"
-    textColor: "{colors.body}"
-    typography: "{typography.code}"
-    rounded: "{rounded.md}"
-    padding: 16px
-  feature-card:
-    backgroundColor: "{colors.surface-card}"
-    textColor: "{colors.ink}"
-    typography: "{typography.title-md}"
-    rounded: "{rounded.lg}"
-    padding: 24px
-  comparison-card:
-    backgroundColor: "{colors.surface-card}"
-    textColor: "{colors.ink}"
-    typography: "{typography.body-md}"
-    rounded: "{rounded.lg}"
-    padding: 24px
-  timeline-pill-thinking:
-    backgroundColor: "{colors.timeline-thinking}"
-    textColor: "{colors.ink}"
-    typography: "{typography.caption-uppercase}"
-    rounded: "{rounded.pill}"
-    padding: 4px 10px
-  timeline-pill-grep:
-    backgroundColor: "{colors.timeline-grep}"
-    textColor: "{colors.ink}"
-    typography: "{typography.caption-uppercase}"
-    rounded: "{rounded.pill}"
-    padding: 4px 10px
-  timeline-pill-read:
-    backgroundColor: "{colors.timeline-read}"
-    textColor: "{colors.ink}"
-    typography: "{typography.caption-uppercase}"
-    rounded: "{rounded.pill}"
-    padding: 4px 10px
-  timeline-pill-edit:
-    backgroundColor: "{colors.timeline-edit}"
-    textColor: "{colors.ink}"
-    typography: "{typography.caption-uppercase}"
-    rounded: "{rounded.pill}"
-    padding: 4px 10px
-  timeline-pill-done:
-    backgroundColor: "{colors.timeline-done}"
-    textColor: "{colors.on-primary}"
-    typography: "{typography.caption-uppercase}"
-    rounded: "{rounded.pill}"
-    padding: 4px 10px
-  code-block:
-    backgroundColor: "{colors.surface-card}"
-    textColor: "{colors.ink}"
-    typography: "{typography.code}"
-    rounded: "{rounded.lg}"
-    padding: 20px
-  pricing-tier-card:
-    backgroundColor: "{colors.surface-card}"
-    textColor: "{colors.ink}"
-    typography: "{typography.body-md}"
-    rounded: "{rounded.lg}"
-    padding: 32px
-  pricing-tier-featured:
-    backgroundColor: "{colors.ink}"
-    textColor: "{colors.canvas}"
-    typography: "{typography.body-md}"
-    rounded: "{rounded.lg}"
-    padding: 32px
-  text-input:
-    backgroundColor: "{colors.surface-card}"
-    textColor: "{colors.ink}"
-    typography: "{typography.body-md}"
-    rounded: "{rounded.md}"
-    padding: 12px 16px
-    height: 44px
-  badge-pill:
-    backgroundColor: "{colors.surface-strong}"
-    textColor: "{colors.ink}"
-    typography: "{typography.caption-uppercase}"
-    rounded: "{rounded.pill}"
-    padding: 4px 10px
-  cta-band:
-    backgroundColor: "{colors.canvas}"
-    textColor: "{colors.ink}"
-    typography: "{typography.display-lg}"
-    padding: 96px
-  testimonial-card:
-    backgroundColor: "{colors.surface-card}"
-    textColor: "{colors.body}"
-    typography: "{typography.body-md}"
-    rounded: "{rounded.lg}"
-    padding: 24px
-  footer:
-    backgroundColor: "{colors.canvas}"
-    textColor: "{colors.body}"
-    typography: "{typography.body-sm}"
-    padding: 64px 48px
-  footer-link:
-    backgroundColor: transparent
-    textColor: "{colors.body}"
-    typography: "{typography.body-sm}"
 ---
 
-## Overview
+## Table of Contents
 
-Cursor's marketing site reads as a quietly-confident developer brand that believes in editorial calm over IDE-darkness. The base canvas is **warm cream** (`{colors.canvas}` — #f7f7f4) holding warm near-black ink (`{colors.ink}` — #26251e) for body and display alike. The single brand voltage is **Cursor Orange** (`{colors.primary}` — #f54e00) reserved for primary CTAs and the wordmark — used scarcely.
+1. [Design Philosophy](#1-design-philosophy)
+2. [Color System](#2-color-system)
+3. [Typography](#3-typography)
+4. [Buttons](#4-buttons)
+5. [Components](#5-components)
+6. [Illustration & Iconography](#6-illustration--iconography)
+7. [Motion & Animation](#7-motion--animation)
+8. [Logo & Brand Identity](#8-logo--brand-identity)
+9. [Photography](#9-photography)
+10. [Brand Voice & Tone](#10-brand-voice--tone)
+11. [Accessibility](#11-accessibility)
+12. [CSS Reference Implementation](#12-css-reference-implementation)
 
-Type runs **CursorGothic** as the single sans family. Display sits at weight 400 with negative letter-spacing — a magazine-editorial voice rather than tech-bombastic. JetBrains Mono carries every code surface (and code surfaces are roughly half the page).
+---
 
-The brand's strongest visual signature is the **AI-timeline pill palette**: five pastel pills (peach `{colors.timeline-thinking}`, mint `{colors.timeline-grep}`, blue `{colors.timeline-read}`, lavender `{colors.timeline-edit}`, gold `{colors.timeline-done}`) marking AI-action stages inside in-product timeline visualizations. Used only in product UI — never as system action colors.
+## 1. Design Philosophy
 
-**Key Characteristics:**
-- Warm cream canvas, not white. Ink is warm (#26251e), not pure black.
-- Single CTA color: `{colors.primary}` (Cursor Orange #f54e00). Used scarcely.
-- Display weight stays at 400 — never bold. Magazine voice.
-- AI timeline pastels: 5 dedicated tokens for in-product agent action stages.
-- Compact 8px CTA radius — developer dialect.
-- Hairline-only depth; no drop shadows.
-- 80px section rhythm.
+### Core Principles
 
-## Colors
+| Principle | Description |
+|-----------|-------------|
+| **Playful & Engaging** | Gamification drives engagement — streaks, leaderboards, achievements |
+| **Friendly & Approachable** | Rounded shapes, warm colors, no sharp edges |
+| **Simple & Clear** | Minimal cognitive load, learning content is the focal point |
+| **Rewarding & Motivating** | Immediate feedback loops for every interaction |
 
-### Brand & Accent
-- **Cursor Orange** (`{colors.primary}` — #f54e00): Primary CTA pills, wordmark, hero accent. Used scarcely.
-- **Cursor Orange Active** (`{colors.primary-active}` — #d04200): Press state.
+### Shape Language
 
-### Surface
-- **Canvas** (`{colors.canvas}` — #f7f7f4): Warm cream page floor.
-- **Canvas Soft** (`{colors.canvas-soft}` — #fafaf7): IDE-pane background inside mockups.
-- **Surface Card** (`{colors.surface-card}` — #ffffff): Pure white card surface — slight contrast against the cream canvas.
-- **Surface Strong** (`{colors.surface-strong}` — #e6e5e0): Badges, tag pills.
+Duolingo illustrations use **only three geometric shapes**:
 
-### Hairlines
-- **Hairline** (`{colors.hairline}` — #e6e5e0): 1px divider.
-- **Hairline Soft** (`{colors.hairline-soft}` — #efeee8): Lighter divider.
-- **Hairline Strong** (`{colors.hairline-strong}` — #cfcdc4): Stronger panel outline.
+- ✅ **Rounded Rectangle**
+- ✅ **Circle**
+- ✅ **Rounded Triangle**
+- ❌ No pointy/sharp edges — ever
 
-### Text
-- **Ink** (`{colors.ink}` — #26251e): Display, body emphasis. Warm near-black.
-- **Body** (`{colors.body}` — #5a5852): Default running-text.
-- **Body Strong** (`{colors.body-strong}` — #26251e): Same as ink.
-- **Muted** (`{colors.muted}` — #807d72): Sub-titles.
-- **Muted Soft** (`{colors.muted-soft}` — #a09c92): Disabled text.
-- **On Primary** (`{colors.on-primary}` — #ffffff): White text on Cursor Orange.
+### Atomic Design Structure
 
-### Timeline (AI-action signature)
-- **Thinking** (`{colors.timeline-thinking}` — #dfa88f): Peach. Used inside in-product agent timeline only.
-- **Grep** (`{colors.timeline-grep}` — #9fc9a2): Mint.
-- **Read** (`{colors.timeline-read}` — #9fbbe0): Pastel blue.
-- **Edit** (`{colors.timeline-edit}` — #c0a8dd): Lavender.
-- **Done** (`{colors.timeline-done}` — #c08532): Warm gold.
+| Level | Examples |
+|-------|---------|
+| **Atoms** | Colors, typography, icons, spacing tokens |
+| **Molecules** | Buttons, input fields, badges |
+| **Organisms** | Cards, headers, progress trackers, lesson screens |
 
-### Semantic
-- **Success** (`{colors.semantic-success}` — #1f8a65): Confirmation indicators.
-- **Error** (`{colors.semantic-error}` — #cf2d56): Validation errors.
+---
 
-## Typography
+## 2. Color System
 
-### Font Family
-**CursorGothic** is the licensed display + body family. Fallback: `system-ui, "Helvetica Neue", Helvetica, Arial, sans-serif`. Code surfaces switch to **JetBrains Mono**.
+### Core Brand Colors
 
-### Hierarchy
+| Name | Hex | RGB | Usage |
+|------|-----|-----|-------|
+| **Feather Green** | `#58CC02` | `rgb(88, 204, 2)` | Primary brand color, CTAs, success states |
+| **Mask Green** | `#89E219` | `rgb(137, 226, 25)` | Secondary green, mascot, layering |
 
-| Token | Size | Weight | Line Height | Letter Spacing | Use |
-|---|---|---|---|---|---|
-| `{typography.display-mega}` | 72px | 400 | 1.1 | -2.16px | Homepage hero h1 |
-| `{typography.display-lg}` | 36px | 400 | 1.2 | -0.72px | Section heads |
-| `{typography.display-md}` | 26px | 400 | 1.25 | -0.325px | Sub-section heads |
-| `{typography.display-sm}` | 22px | 400 | 1.3 | -0.11px | Card group titles |
-| `{typography.title-md}` | 18px | 600 | 1.4 | 0 | Component titles |
-| `{typography.title-sm}` | 16px | 600 | 1.4 | 0 | List labels |
-| `{typography.body-md}` | 16px | 400 | 1.5 | 0 | Default body |
-| `{typography.body-tracked}` | 16px | 400 | 1.5 | 0.08px | Tracked editorial body |
-| `{typography.body-sm}` | 14px | 400 | 1.5 | 0 | Footer body |
-| `{typography.caption}` | 13px | 400 | 1.4 | 0 | Photo captions |
-| `{typography.caption-uppercase}` | 11px | 600 | 1.4 | 0.88px | Section labels, timeline pill labels |
-| `{typography.code}` | 13px | 400 | 1.5 | 0 | Code blocks — JetBrains Mono |
-| `{typography.button}` | 14px | 500 | 1.0 | 0 | CTA pill labels |
-| `{typography.nav-link}` | 14px | 500 | 1.4 | 0 | Top-nav menu |
+### Secondary Palette
 
-### Principles
-- **Display weight stays at 400.** Magazine voice, never bold.
-- **Negative letter-spacing on display only.** -0.11px to -2.16px tracking.
-- **JetBrains Mono on every code surface.**
+| Name | Hex | RGB | Usage |
+|------|-----|-----|-------|
+| **Macaw** (Blue) | `#1CB0F6` | `rgb(28, 176, 246)` | Info states, links, highlights |
+| **Cardinal** (Red) | `#FF4B4B` | `rgb(255, 75, 75)` | Error states, hearts/lives, alerts |
+| **Bee** (Yellow) | `#FFC800` | `rgb(255, 200, 0)` | Warnings, streaks, celebrations |
+| **Fox** (Orange) | `#FF9600` | `rgb(255, 150, 0)` | Accents, notifications, warmth |
+| **Beetle** (Purple) | `#CE82FF` | `rgb(206, 130, 255)` | Premium, special features |
+| **Humpback** (Deep Blue) | `#2B70C9` | `rgb(43, 112, 201)` | Secondary info, depth |
 
-### Note on Font Substitutes
-CursorGothic is licensed. Open-source substitute: **Inter** at weight 400 with letter-spacing -1.5%. Or **GT Sectra** for a more editorial feel.
+### Neutral Palette
 
-## Layout
+| Name | Hex | RGB | Usage |
+|------|-----|-----|-------|
+| **Eel** | `#4B4B4B` | `rgb(75, 75, 75)` | Primary text, headings |
+| **Wolf** | `#777777` | `rgb(119, 119, 119)` | Secondary text |
+| **Hare** | `#AFAFAF` | `rgb(175, 175, 175)` | Placeholder text, disabled |
+| **Swan** | `#E5E5E5` | `rgb(229, 229, 229)` | Borders, dividers |
+| **Polar** | `#F7F7F7` | `rgb(247, 247, 247)` | Subtle backgrounds |
+| **Snow** | `#FFFFFF` | `rgb(255, 255, 255)` | Primary background |
 
-### Spacing System
-- **Base unit:** 4px.
-- **Tokens:** `{spacing.xxs}` 4px · `{spacing.xs}` 8px · `{spacing.sm}` 12px · `{spacing.base}` 16px · `{spacing.md}` 20px · `{spacing.lg}` 24px · `{spacing.xl}` 32px · `{spacing.xxl}` 48px · `{spacing.section}` 80px.
-- **Section padding:** 80px.
+### Duo Mascot Palette
 
-### Grid & Container
-- Max content width: ~1200px.
-- Editorial body: 12-column grid.
-- Feature card grids: 2-up at desktop for splits, 3-up for benefits.
-- Footer: 5-column at desktop.
+| Name | Hex | Usage |
+|------|-----|-------|
+| **Wing Overlay** | `#43C000` | Wing shadow/overlay |
+| **Beak Inner** | `#B66E28` | Inside of beak |
+| **Beak Lower / Feet** | `#F49000` | Lower beak, feet |
+| **Beak Upper** | `#FFC200` | Upper beak |
+| **Beak Highlight** | `#FFDE00` | Beak shine |
+| **Tongue Pink** | `#FFCAFF` | Tongue |
 
-### Whitespace Philosophy
-Generous editorial pacing — closer to a print magazine than a tech site. The cream canvas has plenty of breathing room; cards within bands sit close (16-24px gap).
+### Color Usage Rules
 
-## Elevation & Depth
+- ❌ **Never use pure gray** — considered "lifeless"
+- ✅ **Snow** (`#FFFFFF`) is the primary background
+- ✅ Use **Feather Green** for all primary actions
+- ✅ Secondary colors add "splashes of delight"
+- ✅ **Eel** for all primary typography
 
-The system uses **hairline-only depth**. No drop shadows, no elevation tiers. Cards float above the canvas via 1px hairlines and the slight white-on-cream contrast.
+### Button Color Mapping
 
-| Level | Treatment | Use |
-|---|---|---|
-| Flat (canvas) | `{colors.canvas}` (#f7f7f4) | Body bands, footer |
-| Card | `{colors.surface-card}` (#ffffff) | Content cards |
-| Hairline border | 1px `{colors.hairline}` | Card outlines, dividers |
-| IDE pane | `{colors.canvas-soft}` (#fafaf7) | Inside IDE mockup cards |
+| Button Type | Background | Shadow/Border | Text |
+|-------------|-----------|---------------|------|
+| Primary (Green) | `#58CC02` | `#46A302` | `#FFFFFF` |
+| Danger (Red) | `#FF4B4B` | `#E53535` | `#FFFFFF` |
+| Info (Blue) | `#1CB0F6` | `#1899D6` | `#FFFFFF` |
+| Secondary | `#FFFFFF` | `#E5E5E5` | `#4B4B4B` |
+| Disabled | `#E5E5E5` | none | `#AFAFAF` |
 
-### Decorative Depth
-- **IDE-mockup cards** are the only "elevated" element. White card on cream canvas with internal pane structure mimicking the actual Cursor editor.
-- **Timeline pastel pills** add chromatic depth without surface elevation.
+---
 
-## Shapes
+## 3. Typography
 
-### Border Radius Scale
+### Font Families
 
-| Token | Value | Use |
-|---|---|---|
-| `{rounded.none}` | 0px | Reserved |
-| `{rounded.xs}` | 4px | Inline tags |
-| `{rounded.sm}` | 6px | Compact rows |
-| `{rounded.md}` | 8px | CTA buttons, form inputs |
-| `{rounded.lg}` | 12px | Cards, IDE panes |
-| `{rounded.xl}` | 16px | Larger feature cards (rare) |
-| `{rounded.pill}` | 9999px | Timeline pills, badges |
-| `{rounded.full}` | 9999px | Avatars (rare) |
+#### Feather Bold (Display / Headlines)
 
-## Components
+- **Type**: Custom bespoke typeface
+- **Designer**: Krista Radoeva at Fontsmith (now Monotype), 2019
+- **Collaboration**: Johnson Banks agency
+- **Availability**: ❌ Proprietary — not publicly available
+- **Inspired by**: Duo the owl's feathered forms, rounded terminals
+- **Free Alternative**: [Nunito](https://fonts.google.com/specimen/Nunito) (Google Fonts)
 
-### Top Navigation
+#### DIN Next Rounded (UI / Body)
 
-**`top-nav`** — Background `{colors.canvas}`, text `{colors.ink}`, height 64px. Layout: Cursor wordmark left, primary horizontal menu (Pricing / Features / Enterprise / Blog / Forum / Careers), Sign In + Download primary CTA right.
+- **Type**: Commercial geometric sans-serif (Monotype)
+- **Character**: Friendly, softened, highly readable
+- **Free Alternative**: [Nunito Sans](https://fonts.google.com/specimen/Nunito+Sans) or [Varela Round](https://fonts.google.com/specimen/Varela+Round)
 
-### Buttons
+### Feather Bold Specifications
 
-**`button-primary`** — The signature Cursor Orange CTA. Background `{colors.primary}`, text `{colors.on-primary}`, type `{typography.button}` (14px / 500), padding 10px × 18px, height 40px, rounded `{rounded.md}` (8px).
+| Property | Value |
+|----------|-------|
+| **Usage** | Headlines, short statements (≤10 words) |
+| **Case** | Always lowercase (capitalize only proper nouns) |
+| **Alignment** | Always left-aligned, never justified |
+| **Line Height** | 100–110% |
+| **Tracking** | -20 |
+| **Kerning** | 0, optical |
+| **Min Size (Print)** | 30pt |
+| **Min Size (Screen)** | 30px |
 
-**`button-primary-active`** — Press state. Background `{colors.primary-active}`.
+### DIN Next Rounded Specifications
 
-**`button-secondary`** — White card pill on cream canvas. Background `{colors.surface-card}`, text `{colors.ink}`, 1px `{colors.hairline-strong}` border.
+| Property | Value |
+|----------|-------|
+| **Usage** | Body copy, subheadings, UI text, long headlines (>10 words) |
+| **Line Height** | 140% |
+| **Tracking** | 0 |
+| **Kerning** | 0, optical |
+| **Min Size (Print)** | 14pt |
+| **Min Size (Screen)** | 14px |
 
-**`button-tertiary-text`** — Inline ink text link.
+### Combining Typefaces
 
-**`button-download`** — Larger ink-canvas CTA. Background `{colors.ink}`, text `{colors.canvas}`, padding 12px × 20px, height 44px. Used for "Download for macOS" type CTAs.
+| Rule | Detail |
+|------|--------|
+| **Size Ratio** | Feather Bold should be ~150% larger than DIN Next Rounded |
+| **Same Sentence** | ❌ Never combine both fonts in the same sentence |
+| **Hierarchy** | DIN Next Rounded must never be larger than Feather Bold |
+| **Separator** | Use colons or periods between heading and body |
+| **Leading** | Use equal leading throughout a block when combining |
 
-### Hero & IDE Mockups
+### Suggested Type Scale (Web Implementation)
 
-**`hero-band`** — Background `{colors.canvas}`, full-width display headline in `{typography.display-mega}` (72px / 400 / -2.16px), subhead in `{typography.body-md}`, two CTAs (`button-download` + `button-tertiary-text`), and a centered IDE-mockup card below the hero copy.
+```
+Display:    48px / line-height: 1.05  (Feather Bold)
+H1:         40px / line-height: 1.1   (Feather Bold)
+H2:         32px / line-height: 1.1   (Feather Bold)
+H3:         24px / line-height: 1.2   (DIN Next Rounded Bold)
+H4:         20px / line-height: 1.3   (DIN Next Rounded Bold)
+Body:       16px / line-height: 1.4   (DIN Next Rounded)
+Body Small: 14px / line-height: 1.4   (DIN Next Rounded)
+Caption:    12px / line-height: 1.4   (DIN Next Rounded)
+```
 
-**`ide-mockup-card`** — A white card containing a multi-pane IDE mockup (sidebar + main editor + chat panel + terminal). Background `{colors.surface-card}`, rounded `{rounded.lg}` (12px), 1px `{colors.hairline}` border, no padding (panes fill the card edge-to-edge).
+---
 
-**`ide-pane`** — Individual IDE pane inside the mockup. Background `{colors.canvas-soft}`, text `{colors.body}` in `{typography.code}` (JetBrains Mono 13px), rounded `{rounded.md}` (8px), padding 16px.
+## 4. Buttons
+
+### Signature 3D Button Effect
+
+The hallmark of Duolingo's UI — pill-shaped buttons with a tactile, raised appearance.
+
+#### Structure
+
+```
+┌─────────────────────────┐
+│                         │  ← Background color
+│      BUTTON TEXT        │
+│                         │
+└─────────────────────────┘
+▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ← box-shadow (darker shade, 4-6px)
+```
+
+#### CSS Implementation
+
+```css
+/* === PRIMARY BUTTON === */
+.btn-primary {
+  padding: 13px 24px;
+  border: none;
+  border-radius: 16px;           /* Pill shape */
+  background-color: #58CC02;     /* Feather Green */
+  color: #FFFFFF;
+  font-family: 'DIN Next Rounded', 'Nunito', sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 5px 0 #46A302;  /* 3D edge — darker green */
+  transition: transform 0.1s, box-shadow 0.1s;
+  user-select: none;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.05);
+}
+
+.btn-primary:active {
+  transform: translateY(5px);    /* Press down */
+  box-shadow: none;              /* Remove edge */
+}
+
+.btn-primary:disabled {
+  background-color: #E5E5E5;
+  color: #AFAFAF;
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+```
+
+### Button Variants
+
+#### Secondary Button
+```css
+.btn-secondary {
+  padding: 13px 24px;
+  border: 2px solid #E5E5E5;
+  border-radius: 16px;
+  background-color: #FFFFFF;
+  color: #4B4B4B;
+  font-weight: 800;
+  box-shadow: 0 5px 0 #E5E5E5;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.btn-secondary:hover { background-color: #F7F7F7; }
+.btn-secondary:active {
+  transform: translateY(5px);
+  box-shadow: none;
+}
+```
+
+#### Danger Button
+```css
+.btn-danger {
+  background-color: #FF4B4B;
+  color: #FFFFFF;
+  box-shadow: 0 5px 0 #E53535;
+  border-radius: 16px;
+  border: none;
+  padding: 13px 24px;
+  font-weight: 800;
+}
+```
+
+#### Ghost / Outline Button
+```css
+.btn-ghost {
+  background: transparent;
+  color: #1CB0F6;
+  border: 2px solid #1CB0F6;
+  border-radius: 16px;
+  padding: 13px 24px;
+  font-weight: 800;
+  box-shadow: none;
+}
+.btn-ghost:hover { background-color: #EEF9FF; }
+```
+
+### Button State Matrix
+
+| State | Transform | Shadow | Background | Cursor |
+|-------|-----------|--------|------------|--------|
+| Default | `none` | `0 5px 0 [darker]` | Brand color | `pointer` |
+| Hover | `none` | `0 5px 0 [darker]` | `brightness(1.05)` | `pointer` |
+| Active | `translateY(5px)` | `none` | Brand color | `pointer` |
+| Focus | `none` | `0 5px 0 [darker]` + outline ring | Brand color | `pointer` |
+| Disabled | `none` | `none` | `#E5E5E5` | `not-allowed` |
+
+---
+
+## 5. Components
 
 ### Cards
+```css
+.duo-card {
+  background: #FFFFFF;
+  border: 2px solid #E5E5E5;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 2px 0 #E5E5E5;
+}
+```
 
-**`feature-card`** — Background `{colors.surface-card}`, text `{colors.ink}`, type `{typography.title-md}`, rounded `{rounded.lg}`, padding 24px. 1px `{colors.hairline}` border.
+### Progress Bar
+```css
+.progress-track {
+  background: #E5E5E5;
+  border-radius: 999px;
+  height: 16px;
+  overflow: hidden;
+}
+.progress-fill {
+  background: linear-gradient(to right, #58CC02, #89E219);
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.6s ease;
+}
+```
 
-**`comparison-card`** — Side-by-side "Cursor vs other tools" card. Same surface and rounding; internally split into 2 columns.
+### Input Fields
+```css
+.duo-input {
+  padding: 14px 16px;
+  border: 2px solid #E5E5E5;
+  border-radius: 16px;
+  font-family: 'DIN Next Rounded', 'Nunito', sans-serif;
+  font-size: 16px;
+  color: #4B4B4B;
+  background: #FFFFFF;
+  transition: border-color 0.2s;
+}
+.duo-input:focus {
+  border-color: #1CB0F6;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(28, 176, 246, 0.2);
+}
+.duo-input::placeholder { color: #AFAFAF; }
+```
 
-**`testimonial-card`** — Quote card. Background `{colors.surface-card}`, text `{colors.body}`, rounded `{rounded.lg}`, padding 24px.
+### Toggle Switch
+```css
+.duo-toggle {
+  width: 48px; height: 28px;
+  background: #E5E5E5;
+  border-radius: 999px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.duo-toggle.active { background: #58CC02; }
+.duo-toggle-knob {
+  width: 24px; height: 24px;
+  background: #FFFFFF;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px; left: 2px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  transition: transform 0.2s;
+}
+.duo-toggle.active .duo-toggle-knob {
+  transform: translateX(20px);
+}
+```
 
-### AI Timeline (signature)
+### Badges / XP Chips
+```css
+.duo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+  background: #FFC800;
+  color: #4B4B4B;
+}
+```
 
-**`timeline-pill-thinking`** — Peach pill. Background `{colors.timeline-thinking}`, text `{colors.ink}`, type `{typography.caption-uppercase}` (11px / 600 / 0.88px tracking, uppercase), rounded `{rounded.pill}`, padding 4px × 10px. Marks "Thinking" stage in product timeline.
+### Streak Counter
+```css
+.duo-streak {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #FF9600;
+  font-weight: 800;
+  font-size: 17px;
+}
+.duo-streak-flame { font-size: 24px; }
+```
 
-**`timeline-pill-grep`** — Mint pill. Same shape, background `{colors.timeline-grep}`. Marks "Grepping" stage.
+### Gamification Elements
 
-**`timeline-pill-read`** — Pastel-blue pill. Background `{colors.timeline-read}`. Marks "Reading" stage.
+| Element | Icon | Color | Purpose |
+|---------|------|-------|---------|
+| **Streak** | 🔥 Flame | `#FF9600` Fox | Daily retention |
+| **XP** | ⭐ Star | `#FFC800` Bee | Progress reward |
+| **Hearts** | ❤️ Heart | `#FF4B4B` Cardinal | Lives/mistakes |
+| **Gems** | 💎 Diamond | `#1CB0F6` Macaw | Currency |
+| **Crown** | 👑 Crown | `#FFC800` Bee | Mastery level |
 
-**`timeline-pill-edit`** — Lavender pill. Background `{colors.timeline-edit}`. Marks "Editing" stage.
+---
 
-**`timeline-pill-done`** — Gold pill. Background `{colors.timeline-done}`, text `{colors.on-primary}` white. Marks "Done" stage.
+## 6. Illustration & Iconography
 
-### Code
+### Construction Rules
 
-**`code-block`** — Inline code block. Background `{colors.surface-card}`, text `{colors.ink}` in `{typography.code}`, rounded `{rounded.lg}`, padding 20px, 1px `{colors.hairline}` border.
+| Rule | Detail |
+|------|--------|
+| **Shapes Used** | Rounded rectangle, circle, rounded triangle only |
+| **Target** | ~15 shapes per illustration |
+| **Edges** | Always rounded — never pointy |
+| **Perspective** | Flat — depth via line of sight, not 3D |
+| **Shadows** | Pill-shaped shadows only |
+| **Simplicity** | Use fewest shapes to communicate the idea |
+| **Rhythm** | Vary size and placement to avoid predictability |
 
-### Pricing
+### Duo Mascot Proportions
 
-**`pricing-tier-card`** — Background `{colors.surface-card}`, rounded `{rounded.lg}`, padding 32px, 1px `{colors.hairline}` border.
+- Body aligns with the loop of the "g" in the logotype
+- Head aligns with the top of the "l"
+- Wings, mask, feet follow specific proportion guides
+- Modular construction allows thousands of unique poses
 
-**`pricing-tier-featured`** — Featured tier inverts to ink. Background `{colors.ink}`, text `{colors.canvas}`. Same shape, dark inversion signals "highlighted" without colored ribbon.
+### Icon Style
 
-### Forms & Tags
+- Geometric, rounded construction matching illustration language
+- Solid fill preferred over outlined
+- Consistent stroke width when outline is used
+- Minimum touch target: 44×44px
 
-**`text-input`** — Background `{colors.surface-card}`, text `{colors.ink}`, rounded `{rounded.md}` (8px), padding 12px × 16px, height 44px.
+---
 
-**`badge-pill`** — Small uppercase pill. Background `{colors.surface-strong}`, text `{colors.ink}`, type `{typography.caption-uppercase}`, rounded `{rounded.pill}`, padding 4px × 10px.
+## 7. Motion & Animation
 
-### CTA / Footer
+### Principles
 
-**`cta-band`** — Pre-footer "Try Cursor now" band. Background `{colors.canvas}`, centered display headline in `{typography.display-lg}`, single Cursor Orange CTA. 96px vertical padding.
+| Principle | Description |
+|-----------|-------------|
+| **State-Driven** | Animations respond to app state (progress, success, failure) |
+| **Functional** | Every animation serves a purpose — feedback, guidance, celebration |
+| **Performant** | Lightweight vector animations, no pre-rendered video |
+| **Behavioral** | Logic-driven (idle, active, encouragement) not hardcoded sequences |
 
-**`footer`** — Closing footer. Background `{colors.canvas}`, text `{colors.body}`. 5-column link list. 64×48px padding.
+### Implementation: Rive
 
-**`footer-link`** — Background transparent, text `{colors.body}`, type `{typography.body-sm}`.
+Duolingo uses **Rive** (rive.app) for all character animations:
+- State Machine logic for interactive, real-time responses
+- Additive blend states for lip-syncing
+- Single lightweight runtime file ships directly in app
+- No design-to-engineering handoff friction
 
-## Do's and Don'ts
+### Timing Guidelines
 
-### Do
-- Reserve `{colors.primary}` (Cursor Orange) for primary CTAs and brand wordmark.
-- Keep display weight at 400. The editorial voice depends on this.
-- Use the cream `{colors.canvas}` page floor — never pure white.
-- Render every code surface (inline, blocks, IDE panes) in JetBrains Mono.
-- Use timeline pastels only inside in-product agent visualizations — never as system action colors.
+| Animation Type | Duration | Easing |
+|---------------|----------|--------|
+| Button press | 100ms | `ease` |
+| Page transition | 300ms | `ease-in-out` |
+| Progress fill | 600ms | `ease` |
+| Celebration | 800-1200ms | `ease-out` |
+| Micro-feedback | 150-200ms | `ease` |
 
-### Don't
-- Don't introduce a secondary brand action color. Cursor Orange is the only one.
-- Don't drop display to bold weights (700+). Magazine voice depends on 400.
-- Don't add drop shadows. Hairlines + ink-on-cream contrast carry the depth.
-- Don't use timeline pastels on non-timeline UI. They're scoped to the agent timeline only.
-- Don't extract a CTA color from a third-party widget (cookie consent, OneTrust). The brand's CTA is what appears on actual product CTAs.
+---
 
-## Responsive Behavior
+## 8. Logo & Brand Identity
 
-### Breakpoints
+### Logo Colors
 
-| Name | Width | Key Changes |
-|---|---|---|
-| Mobile | < 640px | Hero h1 72→32px; IDE mockup collapses to single pane preview; feature grid 1-up; nav hamburger. |
-| Tablet | 640–1024px | Hero h1 56px; IDE mockup compresses; feature grid 2-up. |
-| Desktop | 1024–1280px | Full hero h1 72px; full multi-pane IDE mockup; feature grid 3-up. |
-| Wide | > 1280px | Content caps at 1200px. |
+The logotype can appear in only three colors:
+- **Feather Green** (`#58CC02`)
+- **White** (`#FFFFFF`)
+- **Gray** (neutral)
 
-### Touch Targets
-- Primary CTA at 40px height — at WCAG AA, padded for AAA.
-- Download CTA at 44px — at AAA.
+### Clear Space
 
-### Collapsing Strategy
-- Top nav switches to hamburger below 768px.
-- IDE mockup multi-pane collapses to a single primary pane preview on mobile.
-- Feature grid: 3-up → 2-up → 1-up.
+- Clear space = **½ × x-height** between Duo and logotype
+- Duo's body bottom aligns with the "g" loop
+- Duo's head side aligns with top of "l"
 
-## Iteration Guide
+### Minimum Sizes
 
-1. Focus on a single component at a time.
-2. CTAs default to `{rounded.md}` (8px). Cards use `{rounded.lg}` (12px).
-3. Variants live as separate entries inside `components:`.
-4. Use `{token.refs}` everywhere — never inline hex.
-5. Hover state never documented.
-6. CursorGothic 400 for display, 400/500/600 for body. JetBrains Mono on every code surface.
-7. Cursor Orange stays scarce.
-8. Timeline pastels stay scoped to in-product agent visualizations.
+| Medium | Minimum Size |
+|--------|-------------|
+| **Screen** | 100px wide |
+| **Print** | 35mm (1.375") |
 
-## Known Gaps
+### Placement Rules
 
-- CursorGothic is a licensed typeface; Inter is the substitute.
-- Animation timings (timeline pill entrance, IDE pane reveal) out of scope.
-- In-app surfaces (code editor, chat panel, agent timeline) only partially captured via marketing IDE mockups.
-- Form validation states beyond focus not visible on captured surfaces.
+- Place in one of four corners OR centered on vertical axis
+- Should be at least ⅓ of canvas width
+- Default orientation: horizontal (0° rotation)
+- ❌ Never fill logo with images or gradients
+- ❌ Never place over busy backgrounds
+
+---
+
+## 9. Photography
+
+### Style Guidelines
+
+| Aspect | Guideline |
+|--------|-----------|
+| **Subject** | Authentic, diverse, real people |
+| **Setting** | Real-life environments (commuting, traveling, socializing) |
+| **Color** | Include Duolingo green in clothing/environment when possible |
+| **Purpose** | Bridge between illustration world and reality |
+| **Role** | Supporting — illustration is the primary visual language |
+
+---
+
+## 10. Brand Voice & Tone
+
+### Four Voice Pillars
+
+| Pillar | Description | Do | Don't |
+|--------|-------------|-----|-------|
+| **Expressive** | Simple, direct, active language | Brief, excited | Long-winded, passive |
+| **Playful** | Creative energy and fun | Friendly, clever | Sarcastic, smug, mean |
+| **Embracing** | User's #1 cheerleader | Supportive, use contractions | Condescending |
+| **Worldly** | Broad, knowledgeable perspective | Interested, inclusive | Stereotyping |
+
+### Duo's Personality
+
+- **Is**: Helpful, motivating, persistent, positive, slightly awkward, melodramatic
+- **Is NOT**: Threatening, truly angry, violent, overly creepy
+- Acts as a "clingy cheerleader" — users don't want to disappoint him
+- Thrives on tension between charming and "mildly menacing"
+
+### Notification Style
+
+- Goal-oriented: form routines, protect streaks
+- Self-aware: references the fact that they are notifications
+- "Reasonable balance between nice and mean"
+- Examples:
+  - *"Your Spanish lessons won't take themselves."*
+  - *"These reminders don't seem to be working. We'll stop sending them."*
+  - *"You made Duo sad."*
+
+### Tone Adaptation
+
+| Context | Tone |
+|---------|------|
+| **Milestone** | Exuberant, exclamation points, emojis |
+| **Error/Failure** | Encouraging, safe, "try again" |
+| **Serious Topics** | Empathetic, respectful, toned down |
+| **Daily Reminder** | Playful guilt, persistent |
+
+---
+
+## 11. Accessibility
+
+### Standards
+
+| Area | Approach |
+|------|----------|
+| **Touch Targets** | Minimum 44×44px |
+| **Color Contrast** | High contrast between text and background |
+| **Text Scaling** | UI scales with user font size preferences |
+| **Exercise Options** | Users can disable listening or speaking exercises |
+| **Focus States** | Visible focus rings on all interactive elements |
+| **Feedback** | Failure feels safe — encouraging, not punishing |
+
+### Ongoing Focus Areas
+
+- Enhanced WCAG compliance for color contrast
+- Improved screen reader compatibility
+- Text/UI component scalability
+
+---
+
+## 12. CSS Reference Implementation
+
+### Complete Design Tokens
+
+```css
+:root {
+  /* === CORE BRAND === */
+  --duo-feather:    #58CC02;
+  --duo-mask:       #89E219;
+
+  /* === SECONDARY === */
+  --duo-macaw:      #1CB0F6;
+  --duo-cardinal:   #FF4B4B;
+  --duo-bee:        #FFC800;
+  --duo-fox:        #FF9600;
+  --duo-beetle:     #CE82FF;
+  --duo-humpback:   #2B70C9;
+
+  /* === NEUTRALS === */
+  --duo-eel:        #4B4B4B;
+  --duo-wolf:       #777777;
+  --duo-hare:       #AFAFAF;
+  --duo-swan:       #E5E5E5;
+  --duo-polar:      #F7F7F7;
+  --duo-snow:       #FFFFFF;
+
+  /* === SHADOW COLORS (darkened variants) === */
+  --duo-feather-shadow:   #46A302;
+  --duo-macaw-shadow:     #1899D6;
+  --duo-cardinal-shadow:  #E53535;
+  --duo-bee-shadow:       #E6B400;
+  --duo-fox-shadow:       #E68600;
+  --duo-beetle-shadow:    #B86CE6;
+
+  /* === TYPOGRAPHY === */
+  --font-display:   'Feather Bold', 'Nunito', sans-serif;
+  --font-body:      'DIN Next Rounded', 'Nunito Sans', 'Varela Round', sans-serif;
+
+  /* === SPACING === */
+  --space-xs:  4px;
+  --space-sm:  8px;
+  --space-md:  16px;
+  --space-lg:  24px;
+  --space-xl:  32px;
+  --space-2xl: 48px;
+
+  /* === BORDER RADIUS === */
+  --radius-sm:   8px;
+  --radius-md:   12px;
+  --radius-lg:   16px;
+  --radius-pill: 999px;
+
+  /* === SHADOWS === */
+  --shadow-btn:    0 5px 0;
+  --shadow-card:   0 2px 0;
+  --shadow-subtle: 0 1px 3px rgba(0,0,0,0.1);
+
+  /* === TRANSITIONS === */
+  --ease-btn:   transform 0.1s ease, box-shadow 0.1s ease;
+  --ease-fast:  all 0.15s ease;
+  --ease-med:   all 0.3s ease-in-out;
+  --ease-slow:  all 0.6s ease;
+}
+```
+
+### Full Button System
+
+```css
+.duo-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 24px;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  cursor: pointer;
+  user-select: none;
+  transition: var(--ease-btn);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Variants */
+.duo-btn--primary   { background: var(--duo-feather);  color: #fff; box-shadow: var(--shadow-btn) var(--duo-feather-shadow); }
+.duo-btn--danger    { background: var(--duo-cardinal);  color: #fff; box-shadow: var(--shadow-btn) var(--duo-cardinal-shadow); }
+.duo-btn--info      { background: var(--duo-macaw);     color: #fff; box-shadow: var(--shadow-btn) var(--duo-macaw-shadow); }
+.duo-btn--premium   { background: var(--duo-beetle);    color: #fff; box-shadow: var(--shadow-btn) var(--duo-beetle-shadow); }
+.duo-btn--secondary { background: var(--duo-snow); color: var(--duo-eel); border: 2px solid var(--duo-swan); box-shadow: var(--shadow-btn) var(--duo-swan); }
+.duo-btn--ghost     { background: transparent; color: var(--duo-macaw); border: 2px solid var(--duo-macaw); box-shadow: none; }
+
+/* States */
+.duo-btn:hover          { filter: brightness(1.05); }
+.duo-btn:active         { transform: translateY(5px); box-shadow: none !important; }
+.duo-btn:focus-visible  { outline: 3px solid var(--duo-macaw); outline-offset: 2px; }
+.duo-btn:disabled       { background: var(--duo-swan); color: var(--duo-hare); box-shadow: none; cursor: not-allowed; transform: none; filter: none; }
+```
+
+---
+
+## Quick Reference Card
+
+```
+┌────────────────────────────────────────────────┐
+│  DUOLINGO DESIGN QUICK REFERENCE               │
+├────────────────────────────────────────────────┤
+│  Primary Green:  #58CC02                        │
+│  Blue:           #1CB0F6                        │
+│  Red:            #FF4B4B                        │
+│  Yellow:         #FFC800                        │
+│  Orange:         #FF9600                        │
+│  Purple:         #CE82FF                        │
+│  Text:           #4B4B4B                        │
+│  Background:     #FFFFFF                        │
+│  Border:         #E5E5E5                        │
+├────────────────────────────────────────────────┤
+│  Display Font:   Feather Bold (Nunito alt)      │
+│  Body Font:      DIN Next Rounded (Nunito Sans) │
+│  Border Radius:  16px (buttons) / 999px (pills) │
+│  Button Shadow:  0 5px 0 [darker-shade]         │
+│  Button Press:   translateY(5px) + no shadow    │
+│  Min Touch:      44×44px                        │
+└────────────────────────────────────────────────┘
+```
+
+---
+
+> **Note**: Feather Bold is a proprietary typeface. For personal/open-source projects, use **Nunito** (display) and **Nunito Sans** or **Varela Round** (body) from Google Fonts as close alternatives.
