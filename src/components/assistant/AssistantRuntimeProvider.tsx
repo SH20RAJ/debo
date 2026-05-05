@@ -1,53 +1,65 @@
 "use client";
 
 import { AssistantRuntimeProvider } from "@assistant-ui/react";
-import type { ThreadHistoryAdapter } from "@assistant-ui/react";
 import { useChatRuntime, AssistantChatTransport } from "@assistant-ui/react-ai-sdk";
-import { ReactNode } from "react";
-
-/**
- * ThreadHistoryAdapter that persists messages to our Postgres DB
- * via the /api/chat/history endpoints.
- */
-const historyAdapter: ThreadHistoryAdapter = {
-  async load() {
-    return { headId: null, messages: [] };
-  },
-  async append() {},
-
-  withFormat: (fmt) => ({
-    async load() {
-      // The threadId is managed by the runtime — for initial load we return empty
-      // The chat transport handles message delivery; history is supplementary
-      return { messages: [] };
-    },
-    async append(item) {
-      try {
-        await fetch("/api/chat/history", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id: fmt.getId(item.message),
-            parent_id: item.parentId,
-            format: fmt.format,
-            content: fmt.encode(item),
-            threadId: "current", // The server will resolve
-          }),
-        });
-      } catch (e) {
-        console.error("Failed to persist message:", e);
-      }
-    },
-  }),
-};
+import { ReactNode, useMemo } from "react";
 
 export function MyAssistantRuntimeProvider({ children }: { children: ReactNode }) {
+  const historyAdapter = useMemo(() => ({
+    async load({ threadId }: { threadId: string }) {
+      if (!threadId || threadId === "new") return { messages: [] };
+      try {
+        const res = await fetch(`/api/chat/history?threadId=${threadId}`);
+        if (!res.ok) return { messages: [] };
+        const messages = await res.json();
+        return { messages };
+      } catch (e) {
+        console.error("Failed to load history:", e);
+        return { messages: [] };
+      }
+    },
+    withFormat: (fmt: any) => ({
+      async load({ threadId }: { threadId: string }) {
+        if (!threadId || threadId === "new") return { messages: [] };
+        try {
+          const res = await fetch(`/api/chat/history?threadId=${threadId}`);
+          if (!res.ok) return { messages: [] };
+          const messages = await res.json();
+          return { messages };
+        } catch (e) {
+          console.error("Failed to load history:", e);
+          return { messages: [] };
+        }
+      },
+      async append(item: any) {
+        // Try to get threadId from metadata or item
+        // In assistant-ui, we can't easily get the current threadId here
+        // so the server will have to resolve it or we use a convention.
+        try {
+          await fetch("/api/chat/history", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id: fmt.getId(item.message),
+              parent_id: item.parentId,
+              format: fmt.format,
+              content: fmt.encode(item),
+              threadId: "current", // Resolved by session on server
+            }),
+          });
+        } catch (e) {
+          console.error("Failed to persist message:", e);
+        }
+      },
+    }),
+  }), []);
+
   const runtime = useChatRuntime({
     transport: new AssistantChatTransport({
       api: "/api/chat",
     }),
     adapters: {
-      history: historyAdapter,
+      history: historyAdapter as any,
     },
   });
 

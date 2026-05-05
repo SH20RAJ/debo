@@ -81,8 +81,8 @@ export function AskAssistant() {
     <div className="flex h-full bg-background">
       {/* Thread List Sidebar */}
       <div className="w-[280px] border-r border-border/40 flex flex-col bg-muted/20 shrink-0 overflow-hidden">
-        <div className="p-4 pt-14">
-          <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground/50 mb-3 px-1">
+        <div className="p-4 pt-10">
+          <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/40 mb-3 px-1">
             Conversations
           </h2>
         </div>
@@ -91,15 +91,30 @@ export function AskAssistant() {
         </div>
       </div>
 
-      {/* Main Thread Area */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="flex-1 overflow-hidden aui-root">
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col h-full relative overflow-hidden bg-background">
+        <header className="h-14 border-b border-border/40 flex items-center justify-between px-6 bg-background/50 backdrop-blur-md z-10">
+          <div className="flex items-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+            <h1 className="text-sm font-semibold tracking-tight text-foreground/80">Debo Intelligence</h1>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest hidden sm:inline-block">
+              {runtime.threadId === "new" ? "New Session" : "Active Session"}
+            </span>
+          </div>
+        </header>
+
+        <div className="flex-1 overflow-y-auto no-scrollbar scroll-smooth">
           <div className="h-full max-w-3xl mx-auto flex flex-col">
             <DeboToolUIs />
             <Thread
               welcome={{
-                message:
-                  "I'm ready to help you navigate your memories, save new journals, and uncover patterns in your life. What's on your mind?",
+                message: (
+                  <WelcomeScreen 
+                    onAction={(prompt) => runtime.append({ role: "user", content: [{ type: "text", text: prompt }] })} 
+                  />
+                ),
               }}
             />
           </div>

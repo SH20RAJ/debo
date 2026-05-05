@@ -1,21 +1,43 @@
 # Contributing to Debo
 
-First off, thank you for considering contributing to Debo! We value community contributions and strive to make this process as smooth as possible.
+First off, thank you for considering contributing to Debo! It's people like you that make Debo such a great tool.
 
-## 🚀 How to Contribute
-1. Fork the repository and create your branch from `main`.
-2. Follow the codebase architecture outlined in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
-3. If you've modified Next.js or Cloudflare code, run tests and ensure the Next.js build passes.
-4. Issue a Pull Request clearly explaining your change.
+## How Can I Contribute?
 
-## 🛠 Guidelines
-* Keep PRs concise. One logical change per PR.
-* Write components modularly. Keep `page.tsx` and `layout.tsx` strictly server components; push interactive state to client components deeper in the tree.
-* Avoid custom CSS unless absolutely necessary; utilize pure Tailwind V4 / Shadcn utilities.
+### Reporting Bugs
+*   Check the [Issues](https://github.com/SH20RAJ/debo/issues) to see if the bug has already been reported.
+*   If not, open a new issue. Include as much detail as possible, including steps to reproduce, expected behavior, and actual behavior.
 
-## 💡 Reporting Bugs
-If you find a bug, please create an Issue using the GitHub issue tracker. Ensure you include:
-1. Steps to reproduce
-2. Expected behavior
-3. Actual behavior
-4. Environment details (OS, Browser, Node version)
+### Suggesting Enhancements
+*   Open a new issue with the tag "enhancement".
+*   Explain the feature you'd like to see and why it would be useful.
+
+### Pull Requests
+1.  Fork the repository.
+2.  Create a new branch (`git checkout -b feature/amazing-feature`).
+3.  Make your changes.
+4.  Ensure your code follows the project's style (TypeScript, functional components, Tailwind v4).
+5.  Commit your changes (`git commit -m 'Add some amazing feature'`).
+6.  Push to the branch (`git push origin feature/amazing-feature`).
+7.  Open a Pull Request.
+
+## Development Setup
+
+### Prerequisites
+*   [Bun](https://bun.sh/)
+*   A [Neon](https://neon.tech/) database (for Postgres)
+*   [Stack Auth](https://stack-auth.com/) account
+*   [NVIDIA NIM](https://build.nvidia.com/explore/discover) API Key (for LLM inference)
+
+### Setup Steps
+1.  Clone your fork.
+2.  `bun install`
+3.  `cp .env.example .env.local` and fill in your keys.
+4.  `bun run db:push` to sync your database schema.
+5.  `bun run dev` to start the development server.
+
+## Code of Conduct
+This project and everyone participating in it is governed by the [Code of Conduct](./CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
+
+## License
+By contributing, you agree that your contributions will be licensed under its MIT License.

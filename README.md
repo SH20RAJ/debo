@@ -110,23 +110,22 @@ graph TD
 
 ### Frontend
 
-Next.js 16 App Router, React 19, Tailwind CSS v4, shadcn/ui, and the Vercel AI SDK UI primitives.
+- **Framework**: Next.js 15 (App Router)
+- **Styling**: Tailwind CSS v4, Lucide Icons
+- **AI UI**: [assistant-ui](https://assistant-ui.com) for high-fidelity chat experiences
+- **Components**: shadcn/ui
 
-### Backend
+### AI Orchestration
 
-Next.js Server Actions, route handlers, Stack Auth, and Drizzle ORM on top of Neon Postgres.
+- **Framework**: [Mastra](https://mastra.ai) — used for multi-agent orchestration, tools, and memory.
+- **Agents**: Orchestrator (Debo), Companion, Librarian, and Analyst.
+- **Streaming**: Vercel AI SDK integration via `@mastra/ai-sdk`.
 
-### AI
+### Backend & Storage
 
-Vercel AI SDK, the first-party memory engine, Qdrant, and Cloudflare AI Gateway for provider routing.
-
-### Storage
-
-Neon Postgres for application data, Qdrant for vector search, and structured memory tables for persistent extraction and retrieval.
-
-### Infra
-
-Cloudflare Workers/OpenNext deployment, Wrangler configuration, and edge-friendly AI integration.
+- **Database**: Neon (Postgres) with Drizzle ORM
+- **Auth**: Stack Auth (Open Source Clerk alternative)
+- **Deployment**: Cloudflare Workers via OpenNext
 
 ## Getting Started
 
@@ -169,6 +168,18 @@ bun run dev
 Debo is meant to grow into a predictive personal operating system.
 
 The near-term goal is better recall and stronger pattern detection. The long-term goal is a life co-pilot that can anticipate needs, summarize progress, warn about repeated mistakes, and help coordinate decisions across work, health, relationships, and creative work.
+
+## Contributing
+
+We welcome contributions! Whether you're fixing a bug, adding a tool, or improving the documentation:
+
+1. **Fork the repo** and create your branch from `main`.
+2. **Install dependencies**: `bun install`.
+3. **Set up env**: Copy `.env.example` to `.env.local` and add your keys.
+4. **Run dev**: `bun dev`.
+5. **Open a PR**: Describe your changes and link any related issues.
+
+See our [Contributing Guide](./CONTRIBUTING.md) for more details.
 
 ## License
 

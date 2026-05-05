@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { chats, messages } from "@/db/schema";
 import { resolveUserId } from "@/actions/auth-sync";
-import { eq, and, asc } from "drizzle-orm";
+import { eq, and, asc, desc } from "drizzle-orm";
 
 // GET /api/chat/history?threadId=xxx — Load messages for a thread
 export async function GET(req: NextRequest) {
@@ -72,7 +72,15 @@ export async function POST(req: NextRequest) {
       content: any;
       threadId: string;
     };
-    const { id, parent_id, format, content, threadId } = body;
+    let { id, parent_id, format, content, threadId } = body;
+    
+    if (threadId === "current") {
+      const lastChat = await db.query.chats.findFirst({
+        where: eq(chats.userId, userId),
+        orderBy: [desc(chats.updatedAt)],
+      });
+      threadId = lastChat?.id || "default";
+    }
 
     if (!threadId || !id) {
       return NextResponse.json({ error: "Missing threadId or id" }, { status: 400 });
@@ -87,7 +95,7 @@ export async function POST(req: NextRequest) {
       await db.insert(chats).values({
         id: threadId,
         userId,
-        title: null, // Will be set by the chat route
+        title: null,
       });
     }
 
