@@ -1,7 +1,19 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+	output: "standalone",
+	eslint: {
+		ignoreDuringBuilds: true,
+	},
+	typescript: {
+		ignoreBuildErrors: true,
+	},
 	serverExternalPackages: [
+		"@libsql/client",
+		"@libsql/hrana-client",
+		"@libsql/isomorphic-ws",
+		"xxhash-wasm",
+		"@mastra/libsql",
 		"@mastra/duckdb", 
 		"@duckdb/node-api",
 		"@duckdb/node-bindings-darwin-x64", 

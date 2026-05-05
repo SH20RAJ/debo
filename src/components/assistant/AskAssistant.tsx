@@ -1,21 +1,108 @@
 "use client";
 
-import { Thread } from "@assistant-ui/react-ui";
+import { Thread, ThreadList } from "@assistant-ui/react-ui";
+import {
+  ThreadPrimitive,
+  SuggestionPrimitive,
+} from "@assistant-ui/react";
+import { DeboToolUIs } from "./DeboToolUIs";
+import { BookOpen, Brain, Search, Clock, TrendingUp, Sparkles } from "lucide-react";
+
+const suggestions = [
+  {
+    icon: BookOpen,
+    title: "Save a journal",
+    prompt: "I want to write a new journal entry about my day",
+  },
+  {
+    icon: Brain,
+    title: "Recall memories",
+    prompt: "What do you remember about me?",
+  },
+  {
+    icon: Search,
+    title: "Search journals",
+    prompt: "Search my journals for entries about work",
+  },
+  {
+    icon: Clock,
+    title: "View timeline",
+    prompt: "Show me my timeline from this week",
+  },
+  {
+    icon: TrendingUp,
+    title: "Find patterns",
+    prompt: "What patterns do you see in my recent entries?",
+  },
+  {
+    icon: Sparkles,
+    title: "Daily check-in",
+    prompt: "Let's do a daily check-in. How should I start?",
+  },
+];
+
+function WelcomeScreen() {
+  return (
+    <div className="flex flex-col items-center justify-center h-full px-6 py-12 text-center">
+      <div className="mb-2">
+        <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-primary/10 mb-4">
+          <Sparkles className="h-7 w-7 text-primary" />
+        </div>
+      </div>
+      <h1 className="text-2xl font-semibold tracking-tight mb-1">
+        Debo Intelligence
+      </h1>
+      <p className="text-sm text-muted-foreground mb-8 max-w-sm">
+        Your personal companion for journaling, memories, and life insights. Start a conversation or pick a suggestion below.
+      </p>
+      <div className="grid grid-cols-2 gap-3 max-w-lg w-full">
+        {suggestions.map((s, i) => (
+          <ThreadPrimitive.Suggestion
+            key={i}
+            prompt={s.prompt}
+            autoSend
+            asChild
+          >
+            <button className="group flex items-start gap-3 rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-4 text-left hover:bg-muted/50 hover:border-border transition-all duration-200">
+              <s.icon className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0 group-hover:text-primary transition-colors" />
+              <span className="text-sm font-medium text-foreground">
+                {s.title}
+              </span>
+            </button>
+          </ThreadPrimitive.Suggestion>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export function AskAssistant() {
   return (
-    <div className="flex-1 h-full bg-background flex flex-col">
-      <header className="pt-12 pb-4 px-6 flex flex-col items-center justify-center text-center">
-        <h1 className="text-2xl font-semibold tracking-tight">Intelligence Assistant</h1>
-        <p className="text-sm text-muted-foreground mt-1">Ask anything about your stored journals and memories.</p>
-      </header>
-      <div className="flex-1 overflow-hidden px-4 aui-root">
-        <div className="h-full max-w-4xl mx-auto flex flex-col">
-          <Thread 
-            welcome={{
-              message: "I'm ready to help you navigate your memories. What would you like to know?",
-            }}
-          />
+    <div className="flex h-full bg-background">
+      {/* Thread List Sidebar */}
+      <div className="w-[280px] border-r border-border/40 flex flex-col bg-muted/20 shrink-0 overflow-hidden">
+        <div className="p-4 pt-14">
+          <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground/50 mb-3 px-1">
+            Conversations
+          </h2>
+        </div>
+        <div className="flex-1 overflow-y-auto px-2 pb-4">
+          <ThreadList />
+        </div>
+      </div>
+
+      {/* Main Thread Area */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 overflow-hidden aui-root">
+          <div className="h-full max-w-3xl mx-auto flex flex-col">
+            <DeboToolUIs />
+            <Thread
+              welcome={{
+                message:
+                  "I'm ready to help you navigate your memories, save new journals, and uncover patterns in your life. What's on your mind?",
+              }}
+            />
+          </div>
         </div>
       </div>
     </div>

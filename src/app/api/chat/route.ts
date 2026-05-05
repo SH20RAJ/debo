@@ -3,34 +3,37 @@ import { resolveUserId } from "@/actions/auth-sync";
 import { RequestContext } from "@mastra/core/request-context";
 import { toAISdkStream } from "@mastra/ai-sdk";
 import { NextRequest } from "next/server";
-import { ModelMessage } from "ai";
+import { ModelMessage, createUIMessageStreamResponse } from "ai";
 
 export async function POST(req: NextRequest) {
-  let userId = "test-user-bypass";
+  let userId = "anonymous";
   try {
     const resolvedId = await resolveUserId();
     if (resolvedId) {
       userId = resolvedId;
     }
   } catch (e) {
-    console.error("DEBUG: Auth resolution failed, using bypass", e);
+    console.error("DEBUG: Auth resolution failed, using fallback", e);
   }
 
-  // Get Cloudflare context for environment variables if needed
+  // Cloudflare context sync
   try {
     const { getCloudflareContext } = require("@opennextjs/cloudflare");
     const cf = getCloudflareContext();
     if (cf?.env) {
-      // If we are on Cloudflare, we might need to sync environment variables
-      // though next dev usually handles this via initOpenNextCloudflareForDev()
       Object.assign(process.env, cf.env);
     }
-  } catch (e) {
-    // console.log("DEBUG: Cloudflare context not available");
+  } catch {
+    // Not on Cloudflare
   }
 
   try {
-    const { messages } = (await req.json()) as { messages: ModelMessage[] };
+    const body = await req.json();
+    const { messages, id: threadId } = body as { messages: ModelMessage[]; id?: string };
+    
+    // Use the threadId from assistant-ui, fallback to a default
+    const resolvedThreadId = threadId || "default";
+
     const agent = mastra.getAgent("debo");
 
     const requestContext = new RequestContext();
@@ -38,22 +41,27 @@ export async function POST(req: NextRequest) {
 
     const result = await agent.stream(messages, {
       memory: {
-        thread: "default", // We can improve this with thread IDs later
+        thread: resolvedThreadId,
         resource: userId,
       },
       requestContext,
     });
 
     const stream = toAISdkStream(result, { from: "agent", version: "v6" });
-    const { createUIMessageStreamResponse } = require("ai");
     return createUIMessageStreamResponse({
       stream,
     });
   } catch (error) {
     console.error("CHAT_API_ERROR:", error);
-    return new Response(JSON.stringify({ error: "Intelligence engine error", details: error instanceof Error ? error.message : String(error) }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({
+        error: "Intelligence engine error",
+        details: error instanceof Error ? error.message : String(error),
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   }
 }

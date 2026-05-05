@@ -1,0 +1,128 @@
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/db";
+import { chats, messages } from "@/db/schema";
+import { resolveUserId } from "@/actions/auth-sync";
+import { eq, and, asc } from "drizzle-orm";
+
+// GET /api/chat/history?threadId=xxx — Load messages for a thread
+export async function GET(req: NextRequest) {
+  try {
+    const userId = await resolveUserId();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const threadId = req.nextUrl.searchParams.get("threadId");
+    if (!threadId) {
+      return NextResponse.json({ error: "Missing threadId" }, { status: 400 });
+    }
+
+    // Verify ownership
+    const chat = await db.query.chats.findFirst({
+      where: and(eq(chats.id, threadId), eq(chats.userId, userId)),
+    });
+    if (!chat) {
+      return NextResponse.json({ error: "Thread not found" }, { status: 404 });
+    }
+
+    const rows = await db.query.messages.findMany({
+      where: eq(messages.chatId, threadId),
+      orderBy: [asc(messages.createdAt)],
+    });
+
+    // Return messages in the format assistant-ui expects
+    return NextResponse.json(
+      rows.map((row) => {
+        try {
+          const content = JSON.parse(row.content);
+          return {
+            id: row.id,
+            parent_id: row.metadata ? JSON.parse(row.metadata).parentId || null : null,
+            format: row.metadata ? JSON.parse(row.metadata).format || "ai-sdk/v6" : "ai-sdk/v6",
+            content,
+          };
+        } catch {
+          return {
+            id: row.id,
+            parent_id: null,
+            format: "ai-sdk/v6",
+            content: { role: row.role, content: row.content },
+          };
+        }
+      })
+    );
+  } catch (error) {
+    console.error("GET /api/chat/history error:", error);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+  }
+}
+
+// POST /api/chat/history — Persist a message (called by ThreadHistoryAdapter)
+export async function POST(req: NextRequest) {
+  try {
+    const userId = await resolveUserId();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await req.json() as {
+      id: string;
+      parent_id: string | null;
+      format: string;
+      content: any;
+      threadId: string;
+    };
+    const { id, parent_id, format, content, threadId } = body;
+
+    if (!threadId || !id) {
+      return NextResponse.json({ error: "Missing threadId or id" }, { status: 400 });
+    }
+
+    // Ensure the thread exists, create if not
+    const existingChat = await db.query.chats.findFirst({
+      where: and(eq(chats.id, threadId), eq(chats.userId, userId)),
+    });
+
+    if (!existingChat) {
+      await db.insert(chats).values({
+        id: threadId,
+        userId,
+        title: null, // Will be set by the chat route
+      });
+    }
+
+    // Determine role from content
+    let role = "user";
+    if (content && typeof content === "object") {
+      role = content.role || "user";
+    }
+
+    // Insert the message
+    await db.insert(messages).values({
+      id,
+      chatId: threadId,
+      role,
+      content: JSON.stringify(content),
+      metadata: JSON.stringify({ parentId: parent_id, format }),
+    });
+
+    // Update the chat's updatedAt timestamp
+    await db.update(chats).set({ updatedAt: new Date() }).where(eq(chats.id, threadId));
+
+    // Auto-generate title from first user message if title is null
+    if (!existingChat?.title && role === "user") {
+      const textContent = typeof content === "string"
+        ? content
+        : content?.content || content?.parts?.[0]?.text || "";
+      if (textContent) {
+        const title = textContent.slice(0, 80) + (textContent.length > 80 ? "…" : "");
+        await db.update(chats).set({ title }).where(eq(chats.id, threadId));
+      }
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("POST /api/chat/history error:", error);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+  }
+}
