@@ -72,28 +72,28 @@ export function JournalEditor({
     }, [content, id, title, handleSave, initialContent, initialTitle]);
 
     return (
-        <div className="w-full flex flex-col min-h-screen">
+        <div className="w-full flex flex-col min-h-screen bg-white">
             {/* Header */}
-            <div className="max-w-screen-xl mx-auto w-full px-6 py-8 flex items-center justify-between">
+            <div className="max-w-screen-xl mx-auto w-full px-6 py-10 flex items-center justify-between">
                 <Button 
-                    variant="ghost" 
+                    variant="duolingo-outline" 
                     size="icon" 
                     onClick={() => router.push("/dashboard/journals")}
-                    className="rounded-full hover:bg-muted"
+                    className="rounded-2xl hover-bounce h-12 w-12"
                 >
-                    <ArrowLeft className="h-5 w-5" />
+                    <ArrowLeft className="h-6 w-6 text-duo-eel" />
                 </Button>
 
-                <div className="flex items-center gap-2 text-sm text-muted-foreground font-medium">
+                <div className="flex items-center gap-4">
                     {saveStatus === "saving" && (
-                        <div className="flex items-center gap-2">
-                            <Loader2 className="h-3 w-3 animate-spin" />
+                        <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-duo-macaw animate-pulse">
+                            <Loader2 className="h-4 w-4 animate-spin" />
                             <span>Syncing...</span>
                         </div>
                     )}
                     {saveStatus === "saved" && (
-                        <div className="flex items-center gap-2 text-primary">
-                            <Check className="h-3 w-3" />
+                        <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-duo-green animate-in fade-in zoom-in duration-300">
+                            <Check className="h-4 w-4" />
                             <span>Saved</span>
                         </div>
                     )}
@@ -101,17 +101,17 @@ export function JournalEditor({
             </div>
 
             {/* Content Area */}
-            <main className="max-w-4xl mx-auto w-full px-6 flex-1 pb-40">
-                <div className="space-y-8">
+            <main className="max-w-4xl mx-auto w-full px-6 flex-1 pb-40 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <div className="space-y-12">
                     <input
                         type="text"
                         placeholder="What's on your mind?"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
-                        className="w-full text-5xl font-bold tracking-tight bg-transparent border-none outline-none placeholder:text-muted-foreground/20 px-0"
+                        className="w-full text-5xl font-heading font-black tracking-tight bg-transparent border-none outline-none placeholder:text-duo-swan text-duo-eel px-0"
                     />
                     
-                    <div className="min-h-[60vh]">
+                    <div className="min-h-[60vh] duo-editor-container">
                         <BlockEditor 
                             initialContent={content} 
                             onChange={(markdown) => setContent(markdown)} 
@@ -121,4 +121,5 @@ export function JournalEditor({
             </main>
         </div>
     );
+
 }

@@ -35,7 +35,7 @@ export default function BlockEditor({ initialContent, onChange }: BlockEditorPro
             keydown: (_view, event) => handleCommandNavigation(event),
           },
           attributes: {
-            class: `prose prose-lg dark:prose-invert focus:outline-none max-w-full min-h-[500px] prose-headings:font-semibold prose-p:text-foreground/90 selection:bg-primary/20`,
+            class: `prose prose-lg focus:outline-none max-w-full min-h-[500px] prose-headings:font-heading prose-headings:font-black prose-headings:text-duo-eel prose-p:font-bold prose-p:text-duo-wolf selection:bg-duo-macaw/30`,
           },
         }}
         onUpdate={({ editor }) => {

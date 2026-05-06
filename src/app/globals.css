@@ -19,6 +19,14 @@
 	--color-duo-yellow: var(--duo-bee);
 	--color-duo-orange: var(--duo-fox);
 	--color-duo-purple: var(--duo-beetle);
+	--color-duo-mask: var(--duo-mask);
+	--color-duo-humpback: var(--duo-humpback);
+	--color-duo-eel: var(--duo-eel);
+	--color-duo-wolf: var(--duo-wolf);
+	--color-duo-hare: var(--duo-hare);
+	--color-duo-swan: var(--duo-swan);
+	--color-duo-polar: var(--duo-polar);
+	--color-duo-snow: var(--duo-snow);
 }
 
 :root {
@@ -99,15 +107,66 @@
 	}
 }
 
+@utility btn-3d {
+	@apply relative transition-all duration-100 active:translate-y-[4px] active:shadow-none;
+	box-shadow: 0 4px 0 var(--shadow-color, transparent);
+}
+
+@utility btn-3d-green {
+	--shadow-color: var(--duo-feather-shadow);
+}
+
+@utility btn-3d-blue {
+	--shadow-color: var(--duo-macaw-shadow);
+}
+
+@utility btn-3d-red {
+	--shadow-color: var(--duo-cardinal-shadow);
+}
+
+@utility btn-3d-white {
+	--shadow-color: var(--duo-swan);
+}
+
+@utility hover-bounce {
+	@apply transition-transform duration-200 hover:scale-105 active:scale-95;
+}
+
+@utility duo-card {
+	@apply rounded-2xl border-2 border-duo-swan bg-white p-6 transition-all hover:bg-duo-polar hover:border-duo-swan;
+	/* Instead of applying btn-3d, we repeat the logic or use standard CSS */
+	@apply relative duration-100 active:translate-y-[4px] active:shadow-none;
+	box-shadow: 0 4px 0 var(--duo-swan);
+}
+
 @layer components {
-	/* Signature Duolingo 3D Button Utility */
-	.btn-3d {
-		@apply relative transition-all duration-100 active:translate-y-[4px] active:shadow-none;
-		box-shadow: 0 4px 0 var(--shadow-color);
+	/* Animations */
+	.animate-float {
+		animation: float 3s ease-in-out infinite;
 	}
 
-	.btn-3d-green { --shadow-color: var(--duo-feather-shadow); }
-	.btn-3d-blue { --shadow-color: var(--duo-macaw-shadow); }
-	.btn-3d-red { --shadow-color: var(--duo-cardinal-shadow); }
-	.btn-3d-white { --shadow-color: var(--duo-swan); }
+	.animate-bounce-subtle {
+		animation: bounce-subtle 2s ease-in-out infinite;
+	}
+}
+
+
+@keyframes float {
+	0%, 100% { transform: translateY(0); }
+	50% { transform: translateY(-10px); }
+}
+
+@keyframes bounce-subtle {
+	0%, 100% { transform: translateY(0); }
+	50% { transform: translateY(-5px); }
+}
+
+@keyframes wiggle {
+	0%, 100% { transform: rotate(0deg); }
+	25% { transform: rotate(3deg); }
+	75% { transform: rotate(-3deg); }
+}
+
+.animate-wiggle {
+	animation: wiggle 0.3s ease-in-out infinite;
 }

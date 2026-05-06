@@ -40,57 +40,60 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     {
       title: "Core",
       items: [
-        { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-        { title: "Ask Life", href: "/dashboard/ask", icon: Search },
-        { title: "Journal", href: "/dashboard/journal/new", icon: Plus },
-        { title: "Timeline", href: "/dashboard/timeline", icon: Clock3 },
-        { title: "Insights", href: "/dashboard/insights", icon: ChartNoAxesCombined },
+        { title: "Home", href: "/dashboard", icon: LayoutDashboard, color: "text-duo-green" },
+        { title: "Ask Life", href: "/dashboard/ask", icon: Search, color: "text-duo-blue" },
+        { title: "Journal", href: "/dashboard/journal/new", icon: Plus, color: "text-duo-orange" },
+        { title: "Timeline", href: "/dashboard/timeline", icon: Clock3, color: "text-duo-purple" },
+        { title: "Insights", href: "/dashboard/insights", icon: ChartNoAxesCombined, color: "text-duo-red" },
       ]
     },
     {
       title: "Library",
       items: [
-        { title: "Archive", href: "/dashboard/journals", icon: Library },
-        { title: "Memories", href: "/dashboard/memories", icon: Database },
+        { title: "Archive", href: "/dashboard/journals", icon: Library, color: "text-duo-blue" },
+        { title: "Memories", href: "/dashboard/memories", icon: Database, color: "text-duo-green" },
       ]
     },
     {
       title: "Connectivity",
       items: [
-        { title: "MCP", href: "/dashboard/mcp", icon: Cpu },
+        { title: "MCP", href: "/dashboard/mcp", icon: Cpu, color: "text-duo-blue" },
       ]
     }
   ]
 
   return (
-    <Sidebar variant="inset" collapsible="icon" {...props} className="border-r border-border/40">
-      <SidebarHeader className="h-20 flex items-center px-6">
-        <Link href="/dashboard" className="flex items-center gap-3 font-semibold w-full overflow-hidden whitespace-nowrap">
-          <span className="tracking-tight text-xl group-data-[collapsible=icon]:hidden">
-            Debo
+    <Sidebar variant="inset" collapsible="icon" {...props} className="border-r-2 border-duo-swan bg-white">
+      <SidebarHeader className="h-24 flex items-center px-6">
+        <Link href="/dashboard" className="flex items-center gap-3 w-full overflow-hidden whitespace-nowrap">
+          <span className="font-heading font-black text-3xl tracking-tight text-duo-green group-data-[collapsible=icon]:hidden">
+            debo
           </span>
+          <div className="size-8 rounded-lg bg-duo-green hidden group-data-[collapsible=icon]:block" />
         </Link>
       </SidebarHeader>
 
-      <SidebarContent className="px-3 gap-6">
+      <SidebarContent className="px-4 gap-8">
         {items.map((group) => (
           <SidebarGroup key={group.title} className="p-0">
-            <SidebarGroupLabel className="px-4 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 group-data-[collapsible=icon]:hidden mb-2">
+            <SidebarGroupLabel className="px-2 text-xs font-black uppercase tracking-[0.2em] text-duo-swan group-data-[collapsible=icon]:hidden mb-4">
                 {group.title}
             </SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu className="gap-1">
+              <SidebarMenu className="gap-2">
                 {group.items.map((item) => (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton 
                       asChild 
                       isActive={pathname === item.href}
                       tooltip={item.title}
-                      className="h-10 rounded-lg transition-all hover:bg-muted/50 data-[active=true]:bg-muted data-[active=true]:text-foreground"
+                      className={`h-12 rounded-2xl transition-all border-2 border-transparent uppercase font-black text-xs tracking-wider
+                        hover:bg-duo-polar hover:border-duo-swan
+                        data-[active=true]:bg-duo-blue/10 data-[active=true]:text-duo-blue data-[active=true]:border-duo-macaw`}
                     >
                       <Link href={item.href}>
-                        <item.icon className="h-4 w-4" />
-                        <span className="text-sm font-medium">{item.title}</span>
+                        <item.icon className={`h-5 w-5 ${item.color} group-data-[active=true]:text-duo-blue`} />
+                        <span>{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -102,17 +105,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
 
       <SidebarFooter className="p-4 pt-0 space-y-4">
-        <SidebarMenu>
+        <SidebarMenu className="gap-2">
             <SidebarMenuItem>
                 <SidebarMenuButton 
                     asChild 
                     isActive={pathname === "/dashboard/settings"}
                     tooltip="Settings"
-                    className="h-10 rounded-lg transition-all hover:bg-muted/50 data-[active=true]:bg-muted"
+                    className="h-12 rounded-2xl transition-all border-2 border-transparent uppercase font-black text-xs tracking-wider hover:bg-duo-polar hover:border-duo-swan data-[active=true]:bg-duo-polar data-[active=true]:border-duo-swan"
                 >
                     <Link href="/dashboard/settings">
-                        <Settings className="h-4 w-4" />
-                        <span className="text-sm font-medium">Settings</span>
+                        <Settings className="h-5 w-5 text-duo-wolf" />
+                        <span>Settings</span>
                     </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
@@ -121,19 +124,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <SidebarMenuButton 
                     onClick={() => user?.signOut()}
                     tooltip="Sign Out"
-                    className="h-10 rounded-lg transition-all hover:bg-muted/50 text-muted-foreground hover:text-destructive"
+                    className="h-12 rounded-2xl transition-all border-2 border-transparent uppercase font-black text-xs tracking-wider hover:bg-duo-red/10 hover:border-duo-cardinal hover:text-duo-red text-duo-wolf"
                 >
-                    <LogOut className="h-4 w-4" />
-                    <span className="text-sm font-medium">Sign Out</span>
+                    <LogOut className="h-5 w-5" />
+                    <span>Sign Out</span>
                 </SidebarMenuButton>
             </SidebarMenuItem>
         </SidebarMenu>
 
-        <div className="flex items-center justify-between w-full group-data-[collapsible=icon]:justify-center px-2">
-          <ThemeToggle />
-          <div className="flex items-center gap-2 group-data-[collapsible=icon]:hidden">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30">Synced</span>
-            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500/50" />
+        <div className="flex flex-col gap-4 p-2">
+          <div className="flex items-center justify-between w-full group-data-[collapsible=icon]:justify-center">
+            <ThemeToggle />
+            <div className="flex items-center gap-2 group-data-[collapsible=icon]:hidden">
+              <div className="h-3 w-3 rounded-full bg-duo-green animate-pulse shadow-[0_0_8px_rgba(88,204,2,0.5)]" />
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-duo-green">Synced</span>
+            </div>
           </div>
         </div>
       </SidebarFooter>
@@ -141,3 +146,4 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     </Sidebar>
   )
 }
+

@@ -8,6 +8,7 @@ import { LifeInsights } from "@/components/dashboard/life/life-insights";
 import { BarChart3, BookOpen, Plus, Search, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import Image from "next/image";
 import { getJournalsCount } from "@/actions/journals";
 import { stackServerApp } from "@/stack/server";
 
@@ -41,81 +42,103 @@ export default async function DashboardPage() {
   const recentEntryCount = recentTimeline.length;
 
   return (
-    <div className="relative flex-1 bg-background">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-6 py-12 lg:px-8">
+    <div className="relative flex-1 bg-white">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-12 px-6 py-12 lg:px-8">
         <header className="flex flex-col gap-10">
-          <div className="inline-flex items-center gap-2 self-start rounded-full border border-border bg-muted/30 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-            <Sparkles className="h-3 w-3" />
-            AI is Ready
+          <div className="inline-flex items-center gap-2 self-start rounded-xl border-2 border-duo-swan bg-duo-polar px-4 py-1.5 text-xs font-black uppercase tracking-[0.2em] text-duo-wolf animate-in fade-in slide-in-from-left-4 duration-500">
+            <Sparkles className="h-4 w-4 text-duo-blue animate-bounce-subtle" />
+            AI IS READY
           </div>
 
-          <div className="grid gap-12 xl:grid-cols-[1fr_400px]">
-            <div className="space-y-8">
-              <h1 className="text-4xl font-semibold tracking-tight text-foreground md:text-5xl lg:text-6xl">
+          <div className="grid gap-12 lg:grid-cols-[1fr_400px]">
+            <div className="space-y-8 text-center lg:text-left">
+              <h1 className="text-4xl font-heading font-black tracking-tight text-duo-eel md:text-5xl lg:text-6xl leading-[1.1] animate-in fade-in slide-in-from-bottom-4 duration-700">
                 Your <br />
-                <span className="text-muted-foreground/40">Memory Engine.</span>
+                <span className="text-duo-swan">Memory Engine.</span>
               </h1>
-              <p className="max-w-xl text-lg leading-relaxed text-muted-foreground">
+              <p className="max-w-xl text-xl font-bold leading-relaxed text-duo-wolf animate-in fade-in slide-in-from-bottom-6 duration-700">
                 Welcome back, {firstName}. Debo found patterns in your recent notes.
               </p>
 
-              <div className="flex flex-wrap gap-3 pt-2">
+              <div className="flex flex-wrap justify-center lg:justify-start gap-4 pt-2 animate-in fade-in slide-in-from-bottom-8 duration-700">
                 <Button
                   asChild
+                  variant="duolingo"
                   size="lg"
-                  className="h-12 rounded-xl px-6 text-sm font-medium transition-all hover:opacity-90 active:scale-[0.98]"
+                  className="w-full sm:w-auto"
                 >
                   <Link href="/dashboard/ask">
-                    <Search className="mr-2 h-4 w-4" />
+                    <Search className="mr-2 h-5 w-5" />
                     Ask Questions
                   </Link>
                 </Button>
                 <Button
                   asChild
-                  variant="outline"
+                  variant="duolingo-outline"
                   size="lg"
-                  className="h-12 rounded-xl border-border bg-background px-6 text-sm font-medium transition-all hover:bg-muted/50 active:scale-[0.98]"
+                  className="w-full sm:w-auto"
                 >
                   <Link href="/dashboard/journal/new">
-                    <Plus className="mr-2 h-4 w-4" />
+                    <Plus className="mr-2 h-5 w-5" />
                     New Entry
                   </Link>
                 </Button>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <StatCard
-                icon={<BarChart3 className="h-4 w-4" />}
-                label="Memories"
-                value={journalCount.toString()}
-                description="Total notes"
-              />
-              <StatCard
-                icon={<Sparkles className="h-4 w-4" />}
-                label="Recent"
-                value={recentEntryCount.toString()}
-                description="Recent notes"
-              />
-              <StatCard
-                icon={<BookOpen className="h-4 w-4" />}
-                label="Patterns"
-                value={graph.patterns.length.toString()}
-                description="Life themes"
-              />
-              <StatCard
-                icon={<Search className="h-4 w-4" />}
-                label="Signals"
-                value={(
-                  graph.topPeople.length +
-                  graph.topTopics.length +
-                  graph.topEmotions.length
-                ).toString()}
-                description="Total facts"
-              />
+            <div className="flex flex-col items-center justify-center space-y-6">
+              <div className="relative w-48 h-48 animate-float">
+                <Image 
+                  src="/mascot.png" 
+                  alt="Debo Mascot" 
+                  fill 
+                  className="object-contain"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4 w-full">
+                <StatCard
+                  icon={<BarChart3 className="h-6 w-6" />}
+                  label="Memories"
+                  value={journalCount.toString()}
+                  description="Total notes"
+                  color="text-duo-green"
+                  borderColor="border-duo-feather"
+                />
+                <StatCard
+                  icon={<Sparkles className="h-6 w-6" />}
+                  label="Recent"
+                  value={recentEntryCount.toString()}
+                  description="Recent notes"
+                  color="text-duo-blue"
+                  borderColor="border-duo-macaw"
+                />
+              </div>
             </div>
           </div>
         </header>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-bottom-10 duration-700">
+          <StatCard
+            icon={<BookOpen className="h-6 w-6" />}
+            label="Patterns"
+            value={graph.patterns.length.toString()}
+            description="Life themes"
+            color="text-duo-purple"
+            borderColor="border-duo-beetle"
+          />
+          <StatCard
+            icon={<Search className="h-6 w-6" />}
+            label="Signals"
+            value={(
+              graph.topPeople.length +
+              graph.topTopics.length +
+              graph.topEmotions.length
+            ).toString()}
+            description="Total facts"
+            color="text-duo-orange"
+            borderColor="border-duo-fox"
+          />
+        </div>
 
         <LifeInsights
           insights={graph.insights}
@@ -125,46 +148,49 @@ export default async function DashboardPage() {
           patterns={graph.patterns}
         />
 
-        <section className="grid gap-12 xl:grid-cols-[1fr_400px]">
+        <section className="grid gap-12 lg:grid-cols-[1fr_360px]">
           <LifeTimeline entries={recentTimeline} title="Recent Notes" />
 
           <div className="flex flex-col gap-8">
             <div className="space-y-6">
               <div className="space-y-1">
-                <h3 className="text-lg font-semibold tracking-tight">
-                  Explore
+                <h3 className="text-xl font-heading font-black text-duo-eel uppercase tracking-wider">
+                  Quick Access
                 </h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-base font-bold text-duo-wolf">
                   Check your memories.
                 </p>
               </div>
-              <div className="grid gap-2">
+              <div className="grid gap-3">
                 <ShortcutLink
                   href="/dashboard/insights"
                   title="Insights"
                   description="Life patterns"
+                  iconColor="text-duo-purple"
                 />
                 <ShortcutLink
                   href="/dashboard/journals"
                   title="Archive"
                   description="View old notes"
+                  iconColor="text-duo-blue"
                 />
                 <ShortcutLink
                   href="/dashboard/ask"
                   title="Ask AI"
                   description="Chat with AI"
+                  iconColor="text-duo-green"
                 />
               </div>
             </div>
 
-            <div className="rounded-2xl border border-border bg-muted/20 p-6">
+            <div className="duo-card hover-bounce">
               <div className="flex items-start gap-4">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-background border border-border text-primary">
-                  <Sparkles className="h-5 w-5" />
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white border-2 border-duo-swan text-duo-blue">
+                  <Sparkles className="h-6 w-6 animate-bounce-subtle" />
                 </div>
                 <div className="space-y-1">
-                  <div className="text-sm font-semibold">Pro Tip</div>
-                  <p className="text-xs leading-relaxed text-muted-foreground">
+                  <div className="text-base font-black text-duo-eel uppercase tracking-wider">Pro Tip</div>
+                  <p className="text-sm font-bold leading-relaxed text-duo-wolf">
                     Try asking &quot;What was I worried about 3 months ago?&quot; to see
                     how your perspective has shifted.
                   </p>
@@ -189,23 +215,27 @@ function StatCard({
   label,
   value,
   description,
+  color,
+  borderColor,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
   description: string;
+  color: string;
+  borderColor: string;
 }) {
   return (
-    <div className="group space-y-3 rounded-2xl glass-card p-5 transition-all">
-      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/5 text-foreground transition-colors group-hover:bg-primary/10 group-hover:text-primary">
+    <div className="duo-card hover-bounce flex flex-col items-center justify-center p-6 text-center group">
+      <div className={`p-3 rounded-xl bg-duo-polar border-2 ${borderColor} ${color} mb-4 transition-transform group-hover:scale-110 group-hover:animate-wiggle`}>
         {icon}
       </div>
       <div className="space-y-1">
-        <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 transition-colors group-hover:text-primary/70">
+        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-duo-swan">
           {label}
         </div>
-        <div className="text-2xl font-semibold tracking-tight">{value}</div>
-        <div className="text-[10px] text-muted-foreground/40 italic">
+        <div className="text-3xl font-heading font-black text-duo-eel">{value}</div>
+        <div className="text-[10px] font-black text-duo-wolf uppercase tracking-wider">
           {description}
         </div>
       </div>
@@ -217,23 +247,26 @@ function ShortcutLink({
   href,
   title,
   description,
+  iconColor,
 }: {
   href: string;
   title: string;
   description: string;
+  iconColor: string;
 }) {
   return (
     <Link
       href={href}
-      className="group flex items-center justify-between rounded-xl border border-border bg-background p-4 transition-all hover:border-primary/20 hover:bg-muted/30"
+      className="duo-card hover-bounce group flex items-center justify-between p-5"
     >
       <div className="space-y-0.5">
-        <div className="text-sm font-semibold tracking-tight">{title}</div>
-        <div className="text-[11px] text-muted-foreground/70">
+        <div className="text-base font-black text-duo-eel uppercase tracking-wider">{title}</div>
+        <div className="text-xs font-bold text-duo-wolf">
           {description}
         </div>
       </div>
-      <Plus className="h-3.5 w-3.5 text-muted-foreground/30 transition-all group-hover:translate-x-0.5 group-hover:text-primary" />
+      <Plus className={`h-5 w-5 ${iconColor} opacity-50 transition-all group-hover:translate-x-1 group-hover:opacity-100`} />
     </Link>
   );
 }
+

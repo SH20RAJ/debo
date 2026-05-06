@@ -22,22 +22,24 @@ export default async function TimelinePage({
   const timeline = await getLifeTimeline(user.id, grouping);
 
   return (
-    <div className="flex-1 bg-background">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 py-12 lg:px-8">
+    <div className="flex-1 bg-white">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-12 px-6 py-12 lg:px-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
         <header className="space-y-6">
-          <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
-            Timeline
+          <div className="inline-flex items-center gap-2 self-start rounded-xl border-2 border-duo-swan bg-duo-polar px-4 py-1.5 text-xs font-black uppercase tracking-[0.2em] text-duo-wolf">
+            <Sparkles className="h-4 w-4 text-duo-purple animate-bounce-subtle" />
+            TIMELINE
           </div>
-          <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+          <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
             <div className="space-y-2">
-              <h1 className="text-4xl font-semibold tracking-tight">
-                Your life, arranged by time
+              <h1 className="text-4xl font-heading font-black tracking-tight text-duo-eel md:text-5xl lg:text-6xl leading-[1.1]">
+                Your life, <br />
+                <span className="text-duo-swan">by time.</span>
               </h1>
-              <p className="max-w-2xl text-lg text-muted-foreground">
+              <p className="max-w-2xl text-xl font-bold text-duo-wolf">
                 Debo organizes your notes by day, week, and month.
               </p>
             </div>
-            <div className="flex items-center rounded-xl glass p-1">
+            <div className="flex items-center rounded-2xl border-2 border-duo-swan p-1 bg-duo-polar self-start lg:self-end">
               <GroupingButton current={grouping} value="daily" />
               <GroupingButton current={grouping} value="weekly" />
               <GroupingButton current={grouping} value="monthly" />
@@ -80,12 +82,11 @@ function GroupingButton({
     <Button
       asChild
       variant="ghost"
-      size="sm"
       className={cn(
-        "rounded-lg px-4 text-xs font-medium transition-all",
+        "rounded-xl px-6 h-10 text-xs font-black uppercase tracking-wider transition-all",
         isActive
-          ? "bg-background text-foreground shadow-sm"
-          : "text-muted-foreground hover:bg-background/50 hover:text-foreground",
+          ? "bg-white text-duo-blue shadow-[0_2px_0_var(--duo-swan)] border-2 border-duo-swan"
+          : "text-duo-swan hover:text-duo-wolf",
       )}
     >
       <Link href={`/dashboard/timeline?group=${value}`}>{value}</Link>

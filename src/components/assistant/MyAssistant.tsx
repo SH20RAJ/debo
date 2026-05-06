@@ -22,21 +22,21 @@ export function MyAssistant() {
       <PopoverTrigger asChild>
         <Button
           size="icon"
-          className="fixed bottom-6 right-6 h-12 w-12 rounded-full shadow-2xl bg-primary hover:bg-primary/90 transition-all duration-300 scale-100 hover:scale-105 active:scale-95 z-50"
+          className="fixed bottom-8 right-8 h-16 w-16 rounded-full shadow-2xl bg-duo-green hover:brightness-105 transition-all duration-300 btn-3d btn-3d-green z-50 animate-bounce-subtle"
         >
-          <Sparkles className="h-6 w-6 text-primary-foreground" />
+          <Sparkles className="h-8 w-8 text-white" />
         </Button>
       </PopoverTrigger>
       <PopoverContent
         side="top"
         align="end"
-        className="w-[420px] h-[620px] p-0 border-none bg-transparent shadow-none mb-4 overflow-hidden"
+        className="w-[420px] h-[620px] p-0 border-none bg-transparent shadow-none mb-6 overflow-hidden animate-in fade-in zoom-in-95 slide-in-from-bottom-8 duration-300"
       >
-        <div className="flex flex-col h-full bg-card/80 backdrop-blur-xl border border-border/50 rounded-2xl overflow-hidden shadow-2xl ring-1 ring-black/5">
-          <header className="px-4 py-3 border-b border-border/50 bg-background/50 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-              <span className="text-sm font-medium tracking-tight">
+        <div className="flex flex-col h-full bg-white border-2 border-duo-swan rounded-3xl overflow-hidden shadow-2xl">
+          <header className="px-6 py-4 border-b-2 border-duo-swan bg-white flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-3 w-3 rounded-full bg-duo-green animate-pulse" />
+              <span className="font-heading font-black text-duo-eel uppercase tracking-wider">
                 Debo Assistant
               </span>
             </div>
@@ -57,3 +57,4 @@ export function MyAssistant() {
     </Popover>
   );
 }
+

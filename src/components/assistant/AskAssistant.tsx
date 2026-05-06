@@ -44,19 +44,22 @@ const suggestions = [
 
 function WelcomeScreen() {
   return (
-    <div className="flex flex-col items-center justify-center h-full px-6 py-12 text-center">
-      <div className="mb-2">
-        <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-primary/10 mb-4">
-          <Sparkles className="h-7 w-7 text-primary" />
-        </div>
+    <div className="flex flex-col items-center justify-center h-full px-6 py-12 text-center animate-in fade-in slide-in-from-bottom-8 duration-700">
+      <div className="mb-6 relative w-32 h-32 animate-float">
+        <Image 
+          src="/mascot.png" 
+          alt="Debo Mascot" 
+          fill 
+          className="object-contain"
+        />
       </div>
-      <h1 className="text-2xl font-semibold tracking-tight mb-1">
+      <h1 className="text-4xl font-heading font-black tracking-tight text-duo-eel mb-2">
         Debo Intelligence
       </h1>
-      <p className="text-sm text-muted-foreground mb-8 max-w-sm">
-        Your personal companion for journaling, memories, and life insights. Start a conversation or pick a suggestion below.
+      <p className="text-lg font-bold text-duo-wolf mb-10 max-w-sm">
+        Your personal companion for journaling, memories, and life insights.
       </p>
-      <div className="grid grid-cols-2 gap-3 max-w-lg w-full">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl w-full">
         {suggestions.map((s, i) => (
           <ThreadPrimitive.Suggestion
             key={i}
@@ -64,9 +67,11 @@ function WelcomeScreen() {
             autoSend
             asChild
           >
-            <button className="group flex items-start gap-3 rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm p-4 text-left hover:bg-muted/50 hover:border-border transition-all duration-200">
-              <s.icon className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0 group-hover:text-primary transition-colors" />
-              <span className="text-sm font-medium text-foreground">
+            <button className="duo-card hover-bounce group flex items-center gap-4 text-left p-5">
+              <div className="p-2 rounded-xl bg-duo-polar border-2 border-duo-swan group-hover:border-duo-macaw transition-colors">
+                <s.icon className="h-6 w-6 text-duo-blue" />
+              </div>
+              <span className="text-base font-black text-duo-eel uppercase tracking-wider">
                 {s.title}
               </span>
             </button>
@@ -81,35 +86,35 @@ export function AskAssistant() {
   const runtime = useAssistantRuntime();
 
   return (
-    <div className="flex h-full bg-background">
+    <div className="flex h-full bg-white">
       {/* Thread List Sidebar */}
-      <div className="w-[280px] border-r border-border/40 flex flex-col bg-muted/20 shrink-0 overflow-hidden">
-        <div className="p-4 pt-10">
-          <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/40 mb-3 px-1">
+      <div className="w-[300px] border-r-2 border-duo-swan flex flex-col bg-white shrink-0 overflow-hidden">
+        <div className="p-6 pt-12">
+          <h2 className="text-xs font-black uppercase tracking-[0.2em] text-duo-swan mb-4 px-2">
             Conversations
           </h2>
         </div>
-        <div className="flex-1 overflow-y-auto px-2 pb-4">
+        <div className="flex-1 overflow-y-auto px-4 pb-6">
           <ThreadList />
         </div>
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col h-full relative overflow-hidden bg-background">
-        <header className="h-14 border-b border-border/40 flex items-center justify-between px-6 bg-background/50 backdrop-blur-md z-10">
-          <div className="flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            <h1 className="text-sm font-semibold tracking-tight text-foreground/80">Debo Intelligence</h1>
+      <div className="flex-1 flex flex-col h-full relative overflow-hidden bg-white">
+        <header className="h-20 border-b-2 border-duo-swan flex items-center justify-between px-8 bg-white z-10">
+          <div className="flex items-center gap-3">
+            <div className="h-3 w-3 rounded-full bg-duo-green animate-pulse" />
+            <h1 className="font-heading font-black text-xl tracking-tight text-duo-eel uppercase tracking-wider">Debo Intelligence</h1>
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest hidden sm:inline-block">
+            <span className="text-xs font-black text-duo-swan uppercase tracking-[0.2em] hidden sm:inline-block">
               Active Session
             </span>
           </div>
         </header>
 
         <div className="flex-1 overflow-y-auto no-scrollbar scroll-smooth">
-          <div className="h-full max-w-3xl mx-auto flex flex-col">
+          <div className="h-full max-w-4xl mx-auto flex flex-col p-6">
             <DeboToolUIs />
             <Thread
               welcome={{
@@ -122,3 +127,4 @@ export function AskAssistant() {
     </div>
   );
 }
+

@@ -27,57 +27,59 @@ export default async function InsightsPage() {
   }
 
   return (
-    <div className="flex-1 bg-background">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-6 py-12 lg:px-8">
+    <div className="flex-1 bg-white">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-12 px-6 py-12 lg:px-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
         <header className="flex flex-col gap-10">
-          <div className="inline-flex items-center gap-2 self-start rounded-full border border-border bg-muted/30 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-            Life Insights
+          <div className="inline-flex items-center gap-2 self-start rounded-xl border-2 border-duo-swan bg-duo-polar px-4 py-1.5 text-xs font-black uppercase tracking-[0.2em] text-duo-wolf">
+            <Sparkles className="h-4 w-4 text-duo-macaw animate-bounce-subtle" />
+            LIFE INSIGHTS
           </div>
           <div className="space-y-6">
-              <h1 className="text-4xl font-semibold tracking-tight text-foreground md:text-5xl lg:text-6xl">
+              <h1 className="text-4xl font-heading font-black tracking-tight text-duo-eel md:text-5xl lg:text-6xl leading-[1.1]">
                 Your Memory <br />
-                <span className="text-muted-foreground/40">Patterns.</span>
+                <span className="text-duo-swan">Patterns.</span>
               </h1>
-              <p className="max-w-2xl text-lg text-muted-foreground leading-relaxed">
+              <p className="max-w-2xl text-xl font-bold text-duo-wolf leading-relaxed">
                 Debo looks at your daily notes to show you the people, topics, and feelings that appear most often.
               </p>
           </div>
 
-          <div className="flex flex-wrap gap-3 pt-2">
+          <div className="flex flex-wrap gap-4 pt-2">
             <Button
               asChild
-              variant="outline"
-              size="sm"
-              className="h-10 rounded-xl border-border bg-background px-6 text-xs font-medium transition-all hover:bg-muted/50"
+              variant="duolingo-outline"
+              size="lg"
             >
               <Link href="/dashboard/ask">Ask AI</Link>
             </Button>
             <Button
               asChild
-              variant="outline"
-              size="sm"
-              className="h-10 rounded-xl border-border bg-background px-6 text-xs font-medium transition-all hover:bg-muted/50"
+              variant="duolingo-outline"
+              size="lg"
             >
               <Link href="/dashboard/timeline">Open Timeline</Link>
             </Button>
           </div>
         </header>
 
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-6 sm:grid-cols-3">
           <MiniStat
             label="Journal Entries"
             value={journalCount.toString()}
             description="Total notes"
+            color="text-duo-green"
           />
           <MiniStat
             label="People & Places"
             value={graph.topPeople.length.toString()}
-            description="People you mention often"
+            description="People you mention"
+            color="text-duo-blue"
           />
           <MiniStat
             label="Patterns"
             value={graph.patterns.length.toString()}
-            description="Recurring themes found"
+            description="Recurring themes"
+            color="text-duo-purple"
           />
         </div>
 
@@ -103,21 +105,23 @@ function MiniStat({
   label,
   value,
   description,
+  color,
 }: {
   label: string;
   value: string;
   description: string;
+  color: string;
 }) {
   return (
-    <div className="group space-y-4 rounded-2xl glass-card p-6 transition-all">
+    <div className="duo-card hover-bounce flex flex-col items-center justify-center p-8 text-center group">
       <div className="space-y-1">
-        <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 transition-colors group-hover:text-primary/70">
+        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-duo-swan mb-2">
           {label}
         </div>
-        <div className="text-3xl font-semibold tracking-tight transition-transform group-hover:translate-x-0.5">
+        <div className={`text-4xl font-heading font-black ${color} group-hover:scale-110 transition-transform`}>
           {value}
         </div>
-        <div className="text-[10px] text-muted-foreground/40 italic">
+        <div className="text-[10px] font-black text-duo-wolf uppercase tracking-wider">
           {description}
         </div>
       </div>
