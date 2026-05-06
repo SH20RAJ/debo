@@ -28,7 +28,7 @@ const problems = [
 
 export function Problem() {
   return (
-    <section className="py-20 bg-white border-t-2 border-duo-swan">
+    <section className="py-20 bg-background border-t-2 border-duo-swan">
       <div className="container mx-auto max-w-5xl px-6">
         <div className="mb-16 text-center">
           <h2 className="text-3xl md:text-4xl font-heading font-black text-duo-eel">
@@ -45,9 +45,9 @@ export function Problem() {
             return (
               <div 
                 key={problem.title}
-                className={`p-8 rounded-2xl border-2 border-duo-swan bg-white hover:bg-duo-polar transition-colors text-center flex flex-col items-center`}
+                className={`p-8 rounded-2xl border-2 border-duo-swan bg-background hover:bg-muted transition-colors text-center flex flex-col items-center`}
               >
-                <div className={`p-4 rounded-2xl bg-white border-2 ${problem.borderColor} ${problem.color} mb-6`}>
+                <div className={`p-4 rounded-2xl bg-background border-2 ${problem.borderColor} ${problem.color} mb-6`}>
                   <Icon className="w-8 h-8" />
                 </div>
                 

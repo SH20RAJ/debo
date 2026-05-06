@@ -10,7 +10,7 @@ type HeroProps = {
 
 export function Hero({ isSignedIn = false }: HeroProps) {
   return (
-    <section className="relative overflow-hidden py-12 md:py-24 bg-white">
+    <section className="relative overflow-hidden py-12 md:py-24 bg-background">
       <div className="container mx-auto max-w-5xl px-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-12">
           {/* Left Side: Mascot */}
