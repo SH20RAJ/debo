@@ -17,7 +17,7 @@ export function MyAssistantRuntimeProvider({ children }: { children: ReactNode }
             cache: "no-store",
           });
           if (!res.ok) return { messages: [] };
-          const rows = await res.json();
+          const rows = (await res.json()) as Array<{ id: string }>;
           return {
             headId: rows.at(-1)?.id ?? null,
             messages: rows.map((row: any) => fmt.decode(row)),
