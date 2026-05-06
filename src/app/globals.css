@@ -116,8 +116,12 @@
 }
 
 @utility btn-3d {
-	@apply relative transition-all duration-100 active:translate-y-[4px] active:shadow-none;
+	@apply relative transition-all duration-200 hover:-translate-y-0.5 active:translate-y-[4px] active:shadow-none;
 	box-shadow: 0 4px 0 var(--shadow-color, transparent);
+	
+	&:hover {
+		box-shadow: 0 6px 0 var(--shadow-color, transparent);
+	}
 }
 
 @utility btn-3d-green {
@@ -140,11 +144,23 @@
 	@apply transition-transform duration-200 hover:scale-105 active:scale-95;
 }
 
+@utility hover-pop {
+	@apply transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)];
+	@apply hover:-translate-y-2 hover:scale-[1.01] active:translate-y-1 active:scale-[0.98];
+}
+
 @utility duo-card {
-	@apply rounded-2xl border-2 border-duo-swan bg-duo-snow p-6 transition-all hover:bg-duo-polar hover:border-duo-swan;
-	/* Instead of applying btn-3d, we repeat the logic or use standard CSS */
-	@apply relative duration-100 active:translate-y-[4px] active:shadow-none;
+	@apply rounded-2xl border-2 border-duo-swan bg-duo-snow p-6 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)];
+	@apply relative hover:-translate-y-2 hover:bg-duo-polar hover:border-duo-hare active:translate-y-1 active:shadow-none;
 	box-shadow: 0 4px 0 var(--duo-swan);
+
+	&:hover {
+		box-shadow: 0 8px 0 var(--duo-swan);
+	}
+
+	&:active {
+		box-shadow: 0 0px 0 var(--duo-swan);
+	}
 }
 
 @utility glass {
