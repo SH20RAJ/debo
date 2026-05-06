@@ -16,26 +16,30 @@ const BlockEditor = dynamic(() => import("./block-editor"), {
 export function JournalEditor({ 
     initialContent = "", 
     initialId = "", 
-    initialTitle = "" 
+    initialTitle = "",
+    initialTags = []
 }: { 
     initialContent?: string, 
     initialId?: string, 
-    initialTitle?: string 
+    initialTitle?: string,
+    initialTags?: string[]
 }) {
     const [content, setContent] = useState(initialContent);
     const [title, setTitle] = useState(initialTitle);
+    const [tags, setTags] = useState<string[]>(initialTags);
+    const [tagInput, setTagInput] = useState("");
     const [id, setId] = useState(initialId);
     const [isSaving, setIsSaving] = useState(false);
     const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
     const router = useRouter();
     const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    const handleSave = useCallback(async (currentContent: string, currentId: string, currentTitle: string) => {
+    const handleSave = useCallback(async (currentContent: string, currentId: string, currentTitle: string, currentTags: string[]) => {
         if (!currentContent.trim() && !currentTitle.trim()) return currentId;
         
         setSaveStatus("saving");
         try {
-            const result = await saveJournal(currentContent, currentId || undefined, currentTitle || undefined);
+            const result = await saveJournal(currentContent, currentId || undefined, currentTitle || undefined, undefined, currentTags);
             
             if (result.success && result.data) {
                 const newId = result.data;
@@ -57,22 +61,37 @@ export function JournalEditor({
     }, []);
 
     useEffect(() => {
-        if (content === initialContent && title === initialTitle && id) return;
+        if (content === initialContent && title === initialTitle && JSON.stringify(tags) === JSON.stringify(initialTags) && id) return;
         if (!content.trim() && !title.trim() && !id) return;
 
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
         timeoutRef.current = setTimeout(() => {
-            handleSave(content, id, title);
+            handleSave(content, id, title, tags);
         }, 1500);
 
         return () => {
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
         };
-    }, [content, id, title, handleSave, initialContent, initialTitle]);
+    }, [content, id, title, tags, handleSave, initialContent, initialTitle, initialTags]);
+
+    const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter' || e.key === ',') {
+            e.preventDefault();
+            const newTag = tagInput.trim().replace(/^#/, '');
+            if (newTag && !tags.includes(newTag)) {
+                setTags([...tags, newTag]);
+            }
+            setTagInput("");
+        }
+    };
+
+    const removeTag = (tagToRemove: string) => {
+        setTags(tags.filter(tag => tag !== tagToRemove));
+    };
 
     return (
-        <div className="w-full flex flex-col min-h-screen bg-white">
+        <div className="w-full flex flex-col min-h-screen bg-background">
             {/* Header */}
             <div className="max-w-screen-xl mx-auto w-full px-6 py-10 flex items-center justify-between">
                 <Button 
@@ -102,7 +121,7 @@ export function JournalEditor({
 
             {/* Content Area */}
             <main className="max-w-4xl mx-auto w-full px-6 flex-1 pb-40 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <div className="space-y-12">
+                <div className="space-y-6">
                     <input
                         type="text"
                         placeholder="What's on your mind?"
@@ -110,8 +129,28 @@ export function JournalEditor({
                         onChange={(e) => setTitle(e.target.value)}
                         className="w-full text-5xl font-heading font-black tracking-tight bg-transparent border-none outline-none placeholder:text-duo-swan text-duo-eel px-0"
                     />
+
+                    {/* Tags UI */}
+                    <div className="flex flex-wrap items-center gap-2">
+                        {tags.map(tag => (
+                            <span key={tag} className="inline-flex items-center gap-1 rounded-lg bg-primary/10 text-primary px-2.5 py-1 text-xs font-bold tracking-wider uppercase border border-primary/20">
+                                #{tag}
+                                <button onClick={() => removeTag(tag)} className="hover:bg-primary/20 rounded-full p-0.5 ml-1 transition-colors text-primary/70 hover:text-primary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                                </button>
+                            </span>
+                        ))}
+                        <input
+                            type="text"
+                            placeholder={tags.length === 0 ? "Add tags (e.g. #work, #health)..." : "Add tag..."}
+                            value={tagInput}
+                            onChange={(e) => setTagInput(e.target.value)}
+                            onKeyDown={handleAddTag}
+                            className="bg-transparent border-none outline-none text-sm text-duo-wolf font-bold placeholder:text-duo-swan min-w-[120px]"
+                        />
+                    </div>
                     
-                    <div className="min-h-[60vh] duo-editor-container">
+                    <div className="min-h-[60vh] duo-editor-container pt-6 border-t border-duo-swan">
                         <BlockEditor 
                             initialContent={content} 
                             onChange={(markdown) => setContent(markdown)} 

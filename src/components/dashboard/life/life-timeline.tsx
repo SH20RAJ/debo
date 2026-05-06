@@ -14,7 +14,7 @@ export function LifeTimeline({
   if (!entries.length) {
     return (
       <div className="rounded-3xl border-2 border-dashed border-duo-swan bg-duo-polar px-6 py-20 text-center animate-in fade-in zoom-in duration-500">
-        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-white border-2 border-duo-swan text-duo-swan mb-6 animate-bounce-subtle">
+        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-background border-2 border-duo-swan text-duo-swan mb-6 animate-bounce-subtle">
           <CalendarClock className="h-10 w-10" />
         </div>
         <h3 className="text-2xl font-heading font-black text-duo-eel uppercase tracking-wider">No timeline yet</h3>
@@ -43,7 +43,7 @@ export function LifeTimeline({
         {entries.map((entry) => (
           <details key={`${entry.grouping}-${entry.date}`} className="group relative">
             <summary className="list-none cursor-pointer">
-              <div className="absolute -left-[54px] top-8 flex h-4 w-4 items-center justify-center rounded-full border-2 border-duo-swan bg-white transition-all group-hover:border-duo-macaw group-open:border-duo-macaw group-open:bg-duo-macaw" />
+              <div className="absolute -left-[54px] top-8 flex h-4 w-4 items-center justify-center rounded-full border-2 border-duo-swan bg-background transition-all group-hover:border-duo-macaw group-open:border-duo-macaw group-open:bg-duo-macaw" />
 
               <div className="duo-card hover-bounce p-0 overflow-hidden">
                 <div className="p-8 flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
@@ -75,7 +75,7 @@ export function LifeTimeline({
                   <TimelineList label="Thematic Focus" items={entry.topics} tone="green" />
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-6 rounded-2xl border-2 border-duo-swan bg-white p-6">
+                <div className="flex flex-wrap items-center justify-between gap-6 rounded-2xl border-2 border-duo-swan bg-background p-6">
                   <div className="space-y-1">
                     <div className="text-[10px] font-black uppercase tracking-[0.2em] text-duo-swan">Source Evidence</div>
                     <div className="text-sm font-bold text-duo-wolf">Linked to {entry.journalIds.length} recorded moments</div>
@@ -87,7 +87,7 @@ export function LifeTimeline({
                         <Link
                           key={id}
                           href={`/dashboard/journal/${id}`}
-                          className="btn-3d btn-3d-white inline-flex items-center gap-2 rounded-2xl border-2 border-duo-swan bg-white px-5 py-2 text-xs font-black uppercase tracking-wider transition-all hover:bg-duo-polar"
+                          className="btn-3d btn-3d-white inline-flex items-center gap-2 rounded-2xl border-2 border-duo-swan bg-background px-5 py-2 text-xs font-black uppercase tracking-wider transition-all hover:bg-duo-polar"
                         >
                           Open Journal
                           <ChevronRight className="h-4 w-4" />

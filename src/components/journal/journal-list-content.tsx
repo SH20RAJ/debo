@@ -40,7 +40,7 @@ export function JournalListContent({ initialJournals }: { initialJournals: Journ
                         placeholder="Search your memories..." 
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-14 h-14 rounded-2xl border-2 border-duo-swan bg-white text-lg font-bold text-duo-eel focus-visible:ring-0 focus-visible:border-duo-macaw transition-colors"
+                        className="pl-14 h-14 rounded-2xl border-2 border-duo-swan bg-background text-lg font-bold text-duo-eel focus-visible:ring-0 focus-visible:border-duo-macaw transition-colors"
                     />
                 </div>
                 <Button 
@@ -86,7 +86,7 @@ export function JournalListContent({ initialJournals }: { initialJournals: Journ
                     ))
                 ) : (
                     <div className="py-24 text-center space-y-6 bg-duo-polar rounded-3xl border-2 border-dashed border-duo-swan">
-                        <div className="mx-auto h-20 w-20 rounded-2xl bg-white border-2 border-duo-swan flex items-center justify-center animate-bounce-subtle">
+                        <div className="mx-auto h-20 w-20 rounded-2xl bg-background border-2 border-duo-swan flex items-center justify-center animate-bounce-subtle">
                             <Search className="h-8 w-8 text-duo-swan" />
                         </div>
                         <div className="space-y-2">

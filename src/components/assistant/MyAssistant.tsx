@@ -32,8 +32,8 @@ export function MyAssistant() {
         align="end"
         className="w-[420px] h-[620px] p-0 border-none bg-transparent shadow-none mb-6 overflow-hidden animate-in fade-in zoom-in-95 slide-in-from-bottom-8 duration-300"
       >
-        <div className="flex flex-col h-full bg-white border-2 border-duo-swan rounded-3xl overflow-hidden shadow-2xl">
-          <header className="px-6 py-4 border-b-2 border-duo-swan bg-white flex items-center justify-between">
+        <div className="flex flex-col h-full bg-background border-2 border-duo-swan rounded-3xl overflow-hidden shadow-2xl">
+          <header className="px-6 py-4 border-b-2 border-duo-swan bg-background flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="h-3 w-3 rounded-full bg-duo-green animate-pulse" />
               <span className="font-heading font-black text-duo-eel uppercase tracking-wider">

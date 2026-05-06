@@ -22,6 +22,7 @@ export default async function JournalPage({ params }: { params: Promise<{ id: st
     let initialContent = "";
     let initialId = "";
     let initialTitle = "";
+    let initialTags: string[] = [];
 
     if (!isNew) {
         try {
@@ -32,12 +33,13 @@ export default async function JournalPage({ params }: { params: Promise<{ id: st
             initialContent = journal.content;
             initialId = journal.id;
             initialTitle = journal.title || "";
+            initialTags = journal.tags || [];
         } catch (error) {
             notFound();
         }
     }
 
     return (
-        <JournalEditor initialContent={initialContent} initialId={initialId} initialTitle={initialTitle} />
+        <JournalEditor initialContent={initialContent} initialId={initialId} initialTitle={initialTitle} initialTags={initialTags} />
     );
 }

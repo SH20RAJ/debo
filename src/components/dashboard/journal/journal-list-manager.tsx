@@ -219,7 +219,7 @@ export function JournalListManager({
   );
 }
 
-function JournalCard({ journal, isDeleting, onDelete }: { journal: JournalProps, isDeleting: boolean, onDelete: (id: string) => void }) {
+function JournalCard({ journal, isDeleting, onDelete }: { journal: JournalProps & { tags?: string[] }, isDeleting: boolean, onDelete: (id: string) => void }) {
     return (
         <Card className="group border-none bg-muted/30 hover:bg-muted/50 transition-all duration-300 relative overflow-hidden rounded-3xl shadow-sm">
             <CardContent className="p-0">
@@ -260,6 +260,15 @@ function JournalCard({ journal, isDeleting, onDelete }: { journal: JournalProps,
                         <div className="prose prose-sm dark:prose-invert max-w-none line-clamp-4 text-foreground/70 leading-relaxed font-medium">
                             <ReactMarkdown remarkPlugins={[remarkGfm]}>{journal.content}</ReactMarkdown>
                         </div>
+                        {journal.tags && journal.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-2 pt-2">
+                                {journal.tags.map(tag => (
+                                    <Badge key={tag} variant="outline" className="bg-primary/5 text-primary border-primary/20 text-[10px] tracking-wider">
+                                        #{tag}
+                                    </Badge>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </Link>
                 </div>

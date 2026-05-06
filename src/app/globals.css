@@ -82,14 +82,22 @@
 }
 
 .dark {
-	--background: #131f24;
-	--foreground: #ffffff;
-	--card: #131f24;
-	--card-foreground: #ffffff;
+	/* Override Brand Vars for Dark Mode */
+	--duo-snow: #131f24;
+	--duo-eel: #ffffff;
+	--duo-polar: #1a2c34;
+	--duo-wolf: #84949b;
+	--duo-swan: #37464f;
+	--duo-hare: #52656d;
+
+	--background: var(--duo-snow);
+	--foreground: var(--duo-eel);
+	--card: var(--duo-snow);
+	--card-foreground: var(--duo-eel);
 	--primary: var(--duo-feather);
-	--muted: #1a2c34;
-	--muted-foreground: #84949b;
-	--border: #37464f;
+	--muted: var(--duo-polar);
+	--muted-foreground: var(--duo-wolf);
+	--border: var(--duo-swan);
 }
 
 @layer base {
@@ -133,10 +141,18 @@
 }
 
 @utility duo-card {
-	@apply rounded-2xl border-2 border-duo-swan bg-white p-6 transition-all hover:bg-duo-polar hover:border-duo-swan;
+	@apply rounded-2xl border-2 border-duo-swan bg-duo-snow p-6 transition-all hover:bg-duo-polar hover:border-duo-swan;
 	/* Instead of applying btn-3d, we repeat the logic or use standard CSS */
 	@apply relative duration-100 active:translate-y-[4px] active:shadow-none;
 	box-shadow: 0 4px 0 var(--duo-swan);
+}
+
+@utility glass {
+	@apply bg-white/5 backdrop-blur-md border border-white/10;
+}
+
+@utility glass-card {
+	@apply bg-white/5 backdrop-blur-lg border border-white/5 shadow-xl;
 }
 
 @layer components {

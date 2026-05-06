@@ -63,7 +63,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   ]
 
   return (
-    <Sidebar variant="inset" collapsible="icon" {...props} className="border-r-2 border-duo-swan bg-white">
+    <Sidebar variant="inset" collapsible="icon" {...props} className="border-r-2 border-duo-swan bg-background">
       <SidebarHeader className="h-24 flex items-center px-6">
         <Link href="/dashboard" className="flex items-center gap-3 w-full overflow-hidden whitespace-nowrap">
           <span className="font-heading font-black text-3xl tracking-tight text-duo-green group-data-[collapsible=icon]:hidden">

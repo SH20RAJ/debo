@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     const stream = await handleChatStream({
       mastra,
       agentId: "debo",
-      params: body,
+      params: body as any,
       version: "v6",
       defaultOptions: {
         memory: {

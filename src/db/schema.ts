@@ -1,4 +1,5 @@
 import { pgTable, text, timestamp, boolean, index, uniqueIndex, integer } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 export const user = pgTable("user", {
 	id: text("id").primaryKey(),
@@ -51,6 +52,7 @@ export const journals = pgTable("journal", {
     userId: text("user_id").notNull().references(() => user.id),
     title: text("title"),
     content: text("content").notNull(),
+    tags: text("tags").array().default(sql`'{}'::text[]`),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => ({

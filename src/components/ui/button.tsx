@@ -20,7 +20,7 @@ const buttonVariants = cva(
           "bg-destructive text-destructive-foreground hover:brightness-105",
         link: "text-primary underline-offset-4 hover:underline",
         duolingo: "btn-3d btn-3d-green bg-duo-green text-white uppercase tracking-wider",
-        "duolingo-outline": "btn-3d btn-3d-white bg-white text-duo-eel border-duo-swan uppercase tracking-wider hover:bg-duo-polar",
+        "duolingo-outline": "btn-3d btn-3d-white bg-background text-duo-eel border-duo-swan uppercase tracking-wider hover:bg-duo-polar",
         "duolingo-blue": "btn-3d btn-3d-blue bg-duo-blue text-white uppercase tracking-wider",
       },
       size: {

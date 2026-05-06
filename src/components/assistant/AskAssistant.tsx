@@ -6,6 +6,7 @@ import {
   SuggestionPrimitive,
   useAssistantRuntime,
 } from "@assistant-ui/react";
+import Image from "next/image";
 import { DeboToolUIs } from "./DeboToolUIs";
 import { BookOpen, Brain, Search, Clock, TrendingUp, Sparkles } from "lucide-react";
 
@@ -86,9 +87,9 @@ export function AskAssistant() {
   const runtime = useAssistantRuntime();
 
   return (
-    <div className="flex h-full bg-white">
+    <div className="flex h-full bg-background">
       {/* Thread List Sidebar */}
-      <div className="w-[300px] border-r-2 border-duo-swan flex flex-col bg-white shrink-0 overflow-hidden">
+      <div className="w-[300px] border-r-2 border-duo-swan flex flex-col bg-background shrink-0 overflow-hidden">
         <div className="p-6 pt-12">
           <h2 className="text-xs font-black uppercase tracking-[0.2em] text-duo-swan mb-4 px-2">
             Conversations
@@ -100,8 +101,8 @@ export function AskAssistant() {
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col h-full relative overflow-hidden bg-white">
-        <header className="h-20 border-b-2 border-duo-swan flex items-center justify-between px-8 bg-white z-10">
+      <div className="flex-1 flex flex-col h-full relative overflow-hidden bg-background">
+        <header className="h-20 border-b-2 border-duo-swan flex items-center justify-between px-8 bg-background z-10">
           <div className="flex items-center gap-3">
             <div className="h-3 w-3 rounded-full bg-duo-green animate-pulse" />
             <h1 className="font-heading font-black text-xl tracking-tight text-duo-eel uppercase tracking-wider">Debo Intelligence</h1>
@@ -118,7 +119,7 @@ export function AskAssistant() {
             <DeboToolUIs />
             <Thread
               welcome={{
-                message: <WelcomeScreen />,
+                message: <WelcomeScreen /> as any,
               }}
             />
           </div>

@@ -7,6 +7,7 @@ import { queryGraph, refreshMemoryGraph } from "@/lib/life/graph";
 import { getJournalsCount } from "@/actions/journals";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Sparkles } from "lucide-react";
 
 export default async function InsightsPage() {
   const user = await stackServerApp.getUser();
@@ -27,7 +28,7 @@ export default async function InsightsPage() {
   }
 
   return (
-    <div className="flex-1 bg-white">
+    <div className="flex-1 bg-background">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-12 px-6 py-12 lg:px-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
         <header className="flex flex-col gap-10">
           <div className="inline-flex items-center gap-2 self-start rounded-xl border-2 border-duo-swan bg-duo-polar px-4 py-1.5 text-xs font-black uppercase tracking-[0.2em] text-duo-wolf">

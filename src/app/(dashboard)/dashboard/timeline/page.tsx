@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { getLifeTimeline, type TimelineGrouping } from "@/lib/life/timeline";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { Sparkles } from "lucide-react";
 
 export default async function TimelinePage({
   searchParams,
@@ -22,7 +23,7 @@ export default async function TimelinePage({
   const timeline = await getLifeTimeline(user.id, grouping);
 
   return (
-    <div className="flex-1 bg-white">
+    <div className="flex-1 bg-background">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-12 px-6 py-12 lg:px-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
         <header className="space-y-6">
           <div className="inline-flex items-center gap-2 self-start rounded-xl border-2 border-duo-swan bg-duo-polar px-4 py-1.5 text-xs font-black uppercase tracking-[0.2em] text-duo-wolf">
@@ -85,7 +86,7 @@ function GroupingButton({
       className={cn(
         "rounded-xl px-6 h-10 text-xs font-black uppercase tracking-wider transition-all",
         isActive
-          ? "bg-white text-duo-blue shadow-[0_2px_0_var(--duo-swan)] border-2 border-duo-swan"
+          ? "bg-background text-duo-blue shadow-[0_2px_0_var(--duo-swan)] border-2 border-duo-swan"
           : "text-duo-swan hover:text-duo-wolf",
       )}
     >

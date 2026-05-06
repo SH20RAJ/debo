@@ -35,6 +35,7 @@ type JournalForIndex = {
   userId: string;
   title?: string | null;
   content: string;
+  tags?: string[] | null;
   createdAt: Date | string;
 };
 
@@ -103,7 +104,11 @@ const UUID_NAMESPACE = "6ba7b810-9dad-11d1-80b4-00c04fd430c8";
 
 export async function indexJournal(journal: JournalForIndex) {
   const { splitIntoChunks } = await import("@/lib/ai/chunking");
-  const chunks = splitIntoChunks(journal.content);
+  const fullContent = journal.tags && journal.tags.length > 0 
+    ? `${journal.title ? journal.title + "\n" : ""}${journal.content}\n\nTags: ${journal.tags.map(t => `#${t}`).join(" ")}`
+    : `${journal.title ? journal.title + "\n" : ""}${journal.content}`;
+    
+  const chunks = splitIntoChunks(fullContent);
 
   if (chunks.length === 0) {
     return;
