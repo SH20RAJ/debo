@@ -66,7 +66,7 @@ export function Features() {
             return (
               <div
                 key={feature.title}
-                className="btn-3d btn-3d-white p-8 rounded-2xl border-2 border-duo-swan bg-background flex flex-col items-center text-center group"
+                className="duo-card p-8 flex flex-col items-center text-center group"
               >
                 <div className={`p-4 rounded-2xl bg-muted border-2 ${feature.borderColor} ${feature.color} mb-6 transition-transform group-hover:scale-110`}>
                   <Icon className="w-8 h-8" />
@@ -84,4 +84,3 @@ export function Features() {
     </section>
   );
 }
-

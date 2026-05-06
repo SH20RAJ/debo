@@ -6,50 +6,32 @@ import { ReactNode, useMemo } from "react";
 
 export function MyAssistantRuntimeProvider({ children }: { children: ReactNode }) {
   const historyAdapter = useMemo(() => ({
-    async load({ threadId }: { threadId: string }) {
-      if (!threadId || threadId === "new") return { messages: [] };
-      try {
-        const res = await fetch(`/api/chat/history?threadId=${threadId}`);
-        if (!res.ok) return { messages: [] };
-        const messages = await res.json();
-        return { messages };
-      } catch (e) {
-        console.error("Failed to load history:", e);
-        return { messages: [] };
-      }
+    async load() {
+      return { headId: null, messages: [] };
     },
+    async append() {},
     withFormat: (fmt: any) => ({
-      async load({ threadId }: { threadId: string }) {
-        if (!threadId || threadId === "new") return { messages: [] };
+      async load() {
         try {
-          const res = await fetch(`/api/chat/history?threadId=${threadId}`);
+          const res = await fetch("/api/chat/history?threadId=current", {
+            cache: "no-store",
+          });
           if (!res.ok) return { messages: [] };
-          const messages = await res.json();
-          return { messages };
+          const rows = await res.json();
+          return {
+            headId: rows.at(-1)?.id ?? null,
+            messages: rows.map((row: any) => fmt.decode(row)),
+          };
         } catch (e) {
           console.error("Failed to load history:", e);
           return { messages: [] };
         }
       },
       async append(item: any) {
-        // Try to get threadId from metadata or item
-        // In assistant-ui, we can't easily get the current threadId here
-        // so the server will have to resolve it or we use a convention.
-        try {
-          await fetch("/api/chat/history", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              id: fmt.getId(item.message),
-              parent_id: item.parentId,
-              format: fmt.format,
-              content: fmt.encode(item),
-              threadId: "current", // Resolved by session on server
-            }),
-          });
-        } catch (e) {
-          console.error("Failed to persist message:", e);
-        }
+        await persistHistoryItem(fmt, item);
+      },
+      async update(item: any) {
+        await persistHistoryItem(fmt, item);
       },
     }),
   }), []);
@@ -68,4 +50,26 @@ export function MyAssistantRuntimeProvider({ children }: { children: ReactNode }
       {children}
     </AssistantRuntimeProvider>
   );
+}
+
+async function persistHistoryItem(fmt: any, item: any) {
+  try {
+    const res = await fetch("/api/chat/history", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: fmt.getId(item.message),
+        parent_id: item.parentId,
+        format: fmt.format,
+        content: fmt.encode(item),
+        threadId: "current",
+      }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`History API returned ${res.status}`);
+    }
+  } catch (e) {
+    console.error("Failed to persist message:", e);
+  }
 }

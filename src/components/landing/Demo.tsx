@@ -19,7 +19,7 @@ function Message({ type, children }: MessageProps) {
           <Bot className="w-6 h-6 text-duo-green" />
         )}
       </div>
-      <div className={`relative px-5 py-4 rounded-2xl border-2 ${isUser ? "bg-background border-duo-swan" : "bg-background border-duo-green"} before:content-[''] before:absolute before:top-4 before:-left-[9px] before:w-4 before:h-4 before:bg-background before:border-l-2 before:border-b-2 ${isUser ? "before:border-duo-swan" : "before:border-duo-green"} before:rotate-45`}>
+      <div className={`hover-pop relative px-5 py-4 rounded-2xl border-2 ${isUser ? "bg-background border-duo-swan" : "bg-background border-duo-green"} before:content-[''] before:absolute before:top-4 before:-left-[9px] before:w-4 before:h-4 before:bg-background before:border-l-2 before:border-b-2 ${isUser ? "before:border-duo-swan" : "before:border-duo-green"} before:rotate-45`}>
         {children}
       </div>
     </div>
@@ -91,5 +91,3 @@ export function Demo() {
     </section>
   );
 }
-
-

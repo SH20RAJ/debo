@@ -27,7 +27,7 @@ export function Solution() {
             {features.map(({ icon: Icon, text, color }) => (
               <div 
                 key={text}
-                className="btn-3d btn-3d-white flex items-center gap-4 p-5 rounded-2xl border-2 border-duo-swan bg-background text-left"
+                className="duo-card flex items-center gap-4 p-5 text-left"
               >
                 <div className={`p-3 rounded-xl bg-muted ${color}`}>
                   <Icon className="w-6 h-6" />

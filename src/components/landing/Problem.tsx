@@ -45,7 +45,7 @@ export function Problem() {
             return (
               <div 
                 key={problem.title}
-                className={`p-8 rounded-2xl border-2 border-duo-swan bg-background hover:bg-muted transition-colors text-center flex flex-col items-center`}
+                className="duo-card p-8 text-center flex flex-col items-center"
               >
                 <div className={`p-4 rounded-2xl bg-background border-2 ${problem.borderColor} ${problem.color} mb-6`}>
                   <Icon className="w-8 h-8" />

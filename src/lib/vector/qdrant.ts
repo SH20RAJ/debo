@@ -22,7 +22,7 @@ type UpsertVectorInput = {
   payload: QdrantVectorPayload;
 };
 
-class QdrantRequestError extends Error {
+export class QdrantRequestError extends Error {
   constructor(
     message: string,
     readonly status: number
@@ -30,6 +30,14 @@ class QdrantRequestError extends Error {
     super(message);
     this.name = "QdrantRequestError";
   }
+}
+
+export function isQdrantAuthError(error: unknown) {
+  return error instanceof QdrantRequestError && (error.status === 401 || error.status === 403);
+}
+
+export function getQdrantErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : String(error);
 }
 
 function getQdrantConfig() {

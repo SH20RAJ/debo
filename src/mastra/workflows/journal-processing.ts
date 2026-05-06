@@ -1,6 +1,7 @@
 import { createWorkflow, createStep } from '@mastra/core/workflows';
 import { z } from 'zod';
 import { indexJournal } from '@/lib/vector/search';
+import { getQdrantErrorMessage, isQdrantAuthError } from '@/lib/vector/qdrant';
 import { upsertMemoryGraphForJournal } from '@/lib/life/graph';
 import { storeMemory } from '@/lib/memory/store';
 
@@ -14,10 +15,21 @@ const vectorIndexStep = createStep({
     userId: z.string(),
     journal: z.any(),
     indexed: z.boolean(),
+    vectorIndexError: z.string().optional(),
   }),
   execute: async ({ inputData }) => {
-    await indexJournal(inputData.journal);
-    return { ...inputData, indexed: true };
+    try {
+      await indexJournal(inputData.journal);
+      return { ...inputData, indexed: true };
+    } catch (error) {
+      const message = getQdrantErrorMessage(error);
+      const reason = isQdrantAuthError(error)
+        ? "Qdrant credentials rejected. Journal saved; vector search skipped."
+        : `Vector index skipped: ${message}`;
+
+      console.warn(`[JournalProcessing] ${reason}`);
+      return { ...inputData, indexed: false, vectorIndexError: message };
+    }
   },
 });
 

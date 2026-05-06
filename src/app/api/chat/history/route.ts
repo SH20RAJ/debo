@@ -2,7 +2,56 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { chats, messages } from "@/db/schema";
 import { resolveUserId } from "@/actions/auth-sync";
-import { eq, and, asc, desc } from "drizzle-orm";
+import { eq, and, asc } from "drizzle-orm";
+
+const ACTIVE_THREAD_COOKIE = "debo_active_chat_thread";
+
+function readActiveThreadId(req: NextRequest) {
+  const value = req.cookies.get(ACTIVE_THREAD_COOKIE)?.value;
+  if (!value) return null;
+
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
+function resolveRequestedThreadId(req: NextRequest, threadId: string | null) {
+  if (!threadId || threadId === "new") return null;
+  if (threadId === "current") return readActiveThreadId(req);
+  return threadId;
+}
+
+function getMessageText(content: unknown): string {
+  if (typeof content === "string") return content;
+  if (!content || typeof content !== "object") return "";
+
+  const value = content as {
+    content?: unknown;
+    parts?: unknown;
+    text?: unknown;
+  };
+
+  if (typeof value.text === "string") return value.text;
+  if (typeof value.content === "string") return value.content;
+
+  const parts = Array.isArray(value.parts)
+    ? value.parts
+    : Array.isArray(value.content)
+      ? value.content
+      : [];
+
+  return parts
+    .map((part) => {
+      if (!part || typeof part !== "object") return "";
+      const text = (part as { text?: unknown }).text;
+      return typeof text === "string" ? text : "";
+    })
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+}
 
 // GET /api/chat/history?threadId=xxx — Load messages for a thread
 export async function GET(req: NextRequest) {
@@ -12,9 +61,12 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const threadId = req.nextUrl.searchParams.get("threadId");
+    const threadId = resolveRequestedThreadId(
+      req,
+      req.nextUrl.searchParams.get("threadId")
+    );
     if (!threadId) {
-      return NextResponse.json({ error: "Missing threadId" }, { status: 400 });
+      return NextResponse.json([]);
     }
 
     // Verify ownership
@@ -73,14 +125,8 @@ export async function POST(req: NextRequest) {
       threadId: string;
     };
     let { id, parent_id, format, content, threadId } = body;
-    
-    if (threadId === "current") {
-      const lastChat = await db.query.chats.findFirst({
-        where: eq(chats.userId, userId),
-        orderBy: [desc(chats.updatedAt)],
-      });
-      threadId = lastChat?.id || "default";
-    }
+
+    threadId = resolveRequestedThreadId(req, threadId) || crypto.randomUUID();
 
     if (!threadId || !id) {
       return NextResponse.json({ error: "Missing threadId or id" }, { status: 400 });
@@ -92,11 +138,14 @@ export async function POST(req: NextRequest) {
     });
 
     if (!existingChat) {
-      await db.insert(chats).values({
-        id: threadId,
-        userId,
-        title: null,
-      });
+      await db
+        .insert(chats)
+        .values({
+          id: threadId,
+          userId,
+          title: null,
+        })
+        .onConflictDoNothing();
     }
 
     // Determine role from content
@@ -105,25 +154,36 @@ export async function POST(req: NextRequest) {
       role = content.role || "user";
     }
 
-    // Insert the message
-    await db.insert(messages).values({
-      id,
-      chatId: threadId,
-      role,
-      content: JSON.stringify(content),
-      metadata: JSON.stringify({ parentId: parent_id, format }),
-    });
+    const storedContent = JSON.stringify(content);
+    const storedMetadata = JSON.stringify({ parentId: parent_id, format });
+
+    await db
+      .insert(messages)
+      .values({
+        id,
+        chatId: threadId,
+        role,
+        content: storedContent,
+        metadata: storedMetadata,
+      })
+      .onConflictDoUpdate({
+        target: messages.id,
+        set: {
+          chatId: threadId,
+          role,
+          content: storedContent,
+          metadata: storedMetadata,
+        },
+      });
 
     // Update the chat's updatedAt timestamp
     await db.update(chats).set({ updatedAt: new Date() }).where(eq(chats.id, threadId));
 
     // Auto-generate title from first user message if title is null
     if (!existingChat?.title && role === "user") {
-      const textContent = typeof content === "string"
-        ? content
-        : content?.content || content?.parts?.[0]?.text || "";
+      const textContent = getMessageText(content);
       if (textContent) {
-        const title = textContent.slice(0, 80) + (textContent.length > 80 ? "…" : "");
+        const title = textContent.slice(0, 80) + (textContent.length > 80 ? "..." : "");
         await db.update(chats).set({ title }).where(eq(chats.id, threadId));
       }
     }

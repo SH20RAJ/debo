@@ -33,8 +33,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { id: threadId } = body as { id?: string };
 
-    // Use the threadId from assistant-ui, fallback to a default
-    const resolvedThreadId = threadId || "default";
+    const resolvedThreadId = threadId || crypto.randomUUID();
     let requestContext: RequestContext<{ userId: string }> | undefined;
     if (authenticatedUserId) {
       requestContext = new RequestContext<{ userId: string }>();
@@ -121,7 +120,13 @@ export async function POST(req: NextRequest) {
       },
     }));
 
-    return createUIMessageStreamResponse({ stream: transformedStream });
+    const response = createUIMessageStreamResponse({ stream: transformedStream });
+    response.headers.append(
+      "Set-Cookie",
+      `debo_active_chat_thread=${encodeURIComponent(resolvedThreadId)}; Path=/; SameSite=Lax; Max-Age=86400`
+    );
+
+    return response;
   } catch (error) {
     console.error("CHAT_API_CRASH:", error);
     return new Response(

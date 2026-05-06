@@ -183,7 +183,7 @@ export default async function DashboardPage() {
               </div>
             </div>
 
-            <div className="duo-card hover-bounce">
+            <div className="duo-card">
               <div className="flex items-start gap-4">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-background border-2 border-duo-swan text-duo-blue">
                   <Sparkles className="h-6 w-6 animate-bounce-subtle" />
@@ -226,7 +226,7 @@ function StatCard({
   borderColor: string;
 }) {
   return (
-    <div className="duo-card hover-bounce flex flex-col items-center justify-center p-6 text-center group">
+    <div className="duo-card flex flex-col items-center justify-center p-6 text-center group">
       <div className={`p-3 rounded-xl bg-duo-polar border-2 ${borderColor} ${color} mb-4 transition-transform group-hover:scale-110 group-hover:animate-wiggle`}>
         {icon}
       </div>
@@ -257,7 +257,7 @@ function ShortcutLink({
   return (
     <Link
       href={href}
-      className="duo-card hover-bounce group flex items-center justify-between p-5"
+      className="duo-card group flex items-center justify-between p-5"
     >
       <div className="space-y-0.5">
         <div className="text-base font-black text-duo-eel uppercase tracking-wider">{title}</div>
@@ -269,4 +269,3 @@ function ShortcutLink({
     </Link>
   );
 }
-
