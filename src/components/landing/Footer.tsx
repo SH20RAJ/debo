@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export function Footer() {
   return (
-    <footer className="py-12 border-t-2 border-duo-swan bg-white">
+    <footer className="py-12 border-t-2 border-duo-swan bg-background">
       <div className="container mx-auto max-w-5xl px-6 flex flex-col md:flex-row items-center justify-between gap-6">
         <p className="text-sm font-black text-duo-wolf">
           © {new Date().getFullYear()} DEBO. ALL RIGHTS RESERVED.

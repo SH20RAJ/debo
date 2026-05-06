@@ -12,7 +12,7 @@ const benefits = [
 
 export function CTA() {
   return (
-    <section className="relative overflow-hidden py-32 bg-white border-t-2 border-duo-swan">
+    <section className="relative overflow-hidden py-32 bg-background border-t-2 border-duo-swan">
       <div className="container relative z-10 mx-auto max-w-5xl px-6 flex flex-col items-center text-center">
         <h2 className="text-4xl sm:text-5xl md:text-6xl font-heading font-black text-duo-eel mb-12">
           Start understanding <br className="hidden sm:block" />

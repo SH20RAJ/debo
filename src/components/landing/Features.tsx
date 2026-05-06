@@ -49,7 +49,7 @@ const features = [
 
 export function Features() {
   return (
-    <section className="py-24 bg-duo-polar border-t-2 border-duo-swan">
+    <section className="py-24 bg-muted border-t-2 border-duo-swan">
       <div className="container mx-auto max-w-5xl px-6 relative">
         <div className="mb-16 text-center">
           <h2 className="text-3xl md:text-4xl font-heading font-black text-duo-eel">
@@ -66,9 +66,9 @@ export function Features() {
             return (
               <div
                 key={feature.title}
-                className="btn-3d btn-3d-white p-8 rounded-2xl border-2 border-duo-swan bg-white flex flex-col items-center text-center group"
+                className="btn-3d btn-3d-white p-8 rounded-2xl border-2 border-duo-swan bg-background flex flex-col items-center text-center group"
               >
-                <div className={`p-4 rounded-2xl bg-duo-polar border-2 ${feature.borderColor} ${feature.color} mb-6 transition-transform group-hover:scale-110`}>
+                <div className={`p-4 rounded-2xl bg-muted border-2 ${feature.borderColor} ${feature.color} mb-6 transition-transform group-hover:scale-110`}>
                   <Icon className="w-8 h-8" />
                 </div>
                 
