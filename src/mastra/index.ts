@@ -33,13 +33,11 @@ export const mastra = new Mastra({
     name: 'Mastra',
     level: 'info',
   }),
-  // storage: new LibSQLStore({
-  //   id: "mastra-storage",
-  //   url: ":memory:",
-  // }),
-  // Note: Local file storage (LibSQL/DuckDB) has been disabled to support Cloudflare Workers 
-  // ephemeral filesystem and stop local .db files from generating.
-  // We use `:memory:` here to satisfy the Memory provider requirements locally.
+  storage: new LibSQLStore({
+    id: "mastra-storage",
+    url: ":memory:",
+  }),
+  // In-memory LibSQL satisfies Mastra Memory without generating local database files.
   // To persist memory in production on Cloudflare, you should install @mastra/cloudflare-d1 
   // and pass the env.DB binding dynamically in your route handlers.
 });
