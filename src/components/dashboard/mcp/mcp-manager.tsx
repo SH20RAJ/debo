@@ -42,7 +42,7 @@ export function McpManager({ initialKey }: McpManagerProps) {
             const result = await rotateMcpKey()
             setKey(result.mcpKey)
             toast.success("MCP Key rotated successfully")
-        } catch (error) {
+        } catch {
             toast.error("Failed to rotate key")
         } finally {
             setIsRotating(false)

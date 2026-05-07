@@ -12,6 +12,16 @@ import {
   Loader2,
 } from "lucide-react";
 
+type ToolResultRecord = Record<string, unknown>;
+
+function textValue(value: unknown) {
+  return typeof value === "string" ? value : "";
+}
+
+function recordValue(value: unknown): ToolResultRecord {
+  return value && typeof value === "object" ? value as ToolResultRecord : {};
+}
+
 // ── Journal Created ──
 export const CreateJournalToolUI = makeAssistantToolUI({
   toolName: "createJournalTool",
@@ -64,7 +74,7 @@ export const AddMemoryToolUI = makeAssistantToolUI({
 export const GetTimelineToolUI = makeAssistantToolUI({
   toolName: "getTimelineTool",
   render: ({ args, result: _r }) => {
-    const result = _r as any;
+    const result = _r as unknown;
     return (
     <div className="my-2 rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden">
       <div className="flex items-center gap-2 px-4 py-2.5 bg-blue-500/10 border-b border-border/30">
@@ -78,7 +88,7 @@ export const GetTimelineToolUI = makeAssistantToolUI({
           <Loader2 className="h-3.5 w-3.5 text-muted-foreground ml-auto animate-spin" />
         )}
       </div>
-      {result && (
+      {Boolean(result) && (
         <div className="px-4 py-3 text-xs text-muted-foreground">
           {Array.isArray(result) ? `${result.length} events loaded` : "Timeline loaded"}
         </div>
@@ -92,13 +102,14 @@ export const GetTimelineToolUI = makeAssistantToolUI({
 export const SearchJournalsToolUI = makeAssistantToolUI({
   toolName: "searchJournalsTool",
   render: ({ args, result: _r }) => {
-    const result = _r as any;
+    const result = _r as unknown;
+    const results = Array.isArray(result) ? result as ToolResultRecord[] : [];
     return (
     <div className="my-2 rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden">
       <div className="flex items-center gap-2 px-4 py-2.5 bg-amber-500/10 border-b border-border/30">
         <Search className="h-4 w-4 text-amber-500" />
         <span className="text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
-          Searching: "{String(args?.query || "")}"
+          Searching: &quot;{String(args?.query || "")}&quot;
         </span>
         {result ? (
           <CheckCircle2 className="h-3.5 w-3.5 text-amber-500 ml-auto" />
@@ -106,13 +117,13 @@ export const SearchJournalsToolUI = makeAssistantToolUI({
           <Loader2 className="h-3.5 w-3.5 text-muted-foreground ml-auto animate-spin" />
         )}
       </div>
-      {result && Array.isArray(result) && result.length > 0 && (
+      {results.length > 0 && (
         <div className="px-4 py-2 space-y-1.5">
-          {result.slice(0, 3).map((r: any, i: number) => (
+          {results.slice(0, 3).map((r, i) => (
             <div key={i} className="flex items-start gap-2 py-1">
               <div className="h-1.5 w-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0" />
               <p className="text-xs text-muted-foreground line-clamp-1">
-                {r.content || r.title || JSON.stringify(r).slice(0, 80)}
+                {textValue(r.content) || textValue(r.title) || JSON.stringify(r).slice(0, 80)}
               </p>
             </div>
           ))}
@@ -127,7 +138,8 @@ export const SearchJournalsToolUI = makeAssistantToolUI({
 export const GetMemoriesToolUI = makeAssistantToolUI({
   toolName: "getMemoriesTool",
   render: ({ args, result: _r }) => {
-    const result = _r as any;
+    const result = _r as unknown;
+    const results = Array.isArray(result) ? result as ToolResultRecord[] : [];
     return (
     <div className="my-2 rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden">
       <div className="flex items-center gap-2 px-4 py-2.5 bg-violet-500/10 border-b border-border/30">
@@ -141,14 +153,14 @@ export const GetMemoriesToolUI = makeAssistantToolUI({
           <Loader2 className="h-3.5 w-3.5 text-muted-foreground ml-auto animate-spin" />
         )}
       </div>
-      {result && Array.isArray(result) && result.length > 0 && (
+      {results.length > 0 && (
         <div className="px-4 py-2 flex flex-wrap gap-1.5">
-          {result.slice(0, 5).map((m: any, i: number) => (
+          {results.slice(0, 5).map((m, i) => (
             <span
               key={i}
               className="inline-flex items-center rounded-full px-2.5 py-1 text-xs bg-violet-500/10 text-violet-700 dark:text-violet-300 border border-violet-500/20"
             >
-              {m.content?.slice(0, 40) || "Memory"}
+              {textValue(m.content).slice(0, 40) || "Memory"}
             </span>
           ))}
         </div>
@@ -162,7 +174,9 @@ export const GetMemoriesToolUI = makeAssistantToolUI({
 export const DetectPatternsToolUI = makeAssistantToolUI({
   toolName: "queryGraphTool",
   render: ({ args, result: rawResult }) => {
-    const result = rawResult as any;
+    const result = recordValue(rawResult);
+    const sentiment = textValue(result.sentiment);
+    const suggestedAction = textValue(result.suggestedAction);
     const sentimentColors: Record<string, string> = {
       positive: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20",
       negative: "text-rose-500 bg-rose-500/10 border-rose-500/20",
@@ -183,21 +197,21 @@ export const DetectPatternsToolUI = makeAssistantToolUI({
             <Loader2 className="h-3.5 w-3.5 text-muted-foreground ml-auto animate-spin" />
           )}
         </div>
-        {result && (
+        {Boolean(rawResult) && (
           <div className="px-4 py-3 space-y-2">
-            <p className="text-sm text-foreground">{result.insight}</p>
-            {result.sentiment && (
+            <p className="text-sm text-foreground">{textValue(result.insight)}</p>
+            {sentiment && (
               <span
                 className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium border ${
-                  sentimentColors[result.sentiment] || sentimentColors.neutral
+                  sentimentColors[sentiment] || sentimentColors.neutral
                 }`}
               >
-                {result.sentiment}
+                {sentiment}
               </span>
             )}
-            {result.suggestedAction && (
+            {suggestedAction && (
               <p className="text-xs text-muted-foreground italic">
-                💡 {result.suggestedAction}
+                💡 {suggestedAction}
               </p>
             )}
           </div>

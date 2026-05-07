@@ -24,7 +24,6 @@ export const mastra = new Mastra({
     deboAnalyst 
   },
   backgroundTasks: {
-    // @ts-ignore
     enabled: true,
     globalConcurrency: 10,
     perAgentConcurrency: 5,

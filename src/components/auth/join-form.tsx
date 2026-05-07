@@ -11,7 +11,6 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export function JoinForm() {
@@ -24,8 +23,8 @@ export function JoinForm() {
 
     try {
       await stackClientApp.signInWithOAuth("google");
-    } catch (err: any) {
-      setError(err?.message || "An unexpected error occurred");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "An unexpected error occurred");
       setLoading(false);
     }
   };

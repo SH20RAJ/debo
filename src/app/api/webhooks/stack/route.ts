@@ -30,14 +30,14 @@ export async function POST(req: Request) {
 
   const wh = new Webhook(STACK_WEBHOOK_SECRET);
 
-  let evt: { type: string; data: any }; // Using any for data as it's a dynamic webhook payload
+  let evt: { type: string; data: unknown };
 
   try {
     evt = wh.verify(body, {
       "svix-id": svix_id,
       "svix-timestamp": svix_timestamp,
       "svix-signature": svix_signature,
-    }) as { type: string; data: any };
+    }) as { type: string; data: unknown };
   } catch (err) {
     console.error("Error verifying webhook:", err);
     return new Response("Error occurred", {
@@ -82,7 +82,10 @@ export async function POST(req: Request) {
   }
 
   if (type === "user.deleted") {
-    await db.delete(user).where(eq(user.id, data.id));
+    const stackUser = data as { id?: string };
+    if (stackUser.id) {
+      await db.delete(user).where(eq(user.id, stackUser.id));
+    }
   }
 
   return new Response("Success", { status: 200 });

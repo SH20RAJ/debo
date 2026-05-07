@@ -32,6 +32,8 @@ type GraphNodeResult = {
   id?: unknown;
 };
 
+type GraphSentiment = 'positive' | 'negative' | 'neutral' | 'growth';
+
 function toDeboToolContext(context: unknown): DeboToolContext {
   return (context ?? {}) as DeboToolContext;
 }
@@ -113,7 +115,7 @@ export const searchJournalsTool = createTool({
     const userId = requireUserId(context);
     try {
       return await searchJournals(input.query, userId);
-    } catch (error) {
+    } catch {
       const fallback = await getRecentJournalCitations(userId, 30, 5);
       return {
         error: 'Journal vector search is temporarily unavailable.',
@@ -188,16 +190,18 @@ export const queryGraphTool = createTool({
     const userId = requireUserId(context);
     const result = await queryGraph(input.question, userId);
     const sentiment = result.topEmotions?.[0]?.name;
+    const normalizedSentiment: GraphSentiment =
+      sentiment === 'positive' ||
+      sentiment === 'negative' ||
+      sentiment === 'neutral' ||
+      sentiment === 'growth'
+        ? sentiment
+        : 'neutral';
+
     return {
       insight: result.insights.join(' ') || 'No patterns discovered yet.',
       evidence: (result.nodes as GraphNodeResult[]).slice(0, 5).map((node) => String(node.id ?? '')),
-      sentiment:
-        sentiment === 'positive' ||
-        sentiment === 'negative' ||
-        sentiment === 'neutral' ||
-        sentiment === 'growth'
-          ? sentiment
-          : 'neutral',
+      sentiment: normalizedSentiment,
       suggestedAction: 'Consider reflecting on this recurring pattern in your next journal entry.',
     };
   },

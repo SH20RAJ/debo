@@ -3,7 +3,11 @@
 import {
   AssistantRuntimeProvider,
   useRemoteThreadListRuntime,
+  type MessageFormatAdapter,
+  type MessageFormatItem,
+  type MessageStorageEntry,
   type RemoteThreadListAdapter,
+  type ThreadHistoryAdapter,
 } from "@assistant-ui/react";
 import { useChat, type UIMessage } from "@ai-sdk/react";
 import { useAui, useAuiState } from "@assistant-ui/store";
@@ -23,18 +27,6 @@ type ChatHistoryRow = {
   parent_id: string | null;
   format: string;
   content: Record<string, unknown>;
-};
-
-type HistoryItem = {
-  parentId: string | null;
-  message: UIMessage;
-};
-
-type StorageFormatter = {
-  format: string;
-  encode(item: HistoryItem): Record<string, unknown>;
-  decode(row: ChatHistoryRow): HistoryItem;
-  getId(message: UIMessage): string;
 };
 
 export function MyAssistantRuntimeProvider({
@@ -98,13 +90,15 @@ export function ChatThreadUrlSync() {
   return null;
 }
 
-function createHistoryAdapter(aui: ReturnType<typeof useAui>) {
+function createHistoryAdapter(aui: ReturnType<typeof useAui>): ThreadHistoryAdapter {
   return {
     async load() {
       return { headId: null, messages: [] };
     },
     async append() {},
-    withFormat: (fmt: StorageFormatter) => ({
+    withFormat: <TMessage, TStorageFormat extends Record<string, unknown>>(
+      fmt: MessageFormatAdapter<TMessage, TStorageFormat>
+    ) => ({
       async load() {
         try {
           const threadId = aui.threadListItem().getState().remoteId;
@@ -117,19 +111,21 @@ function createHistoryAdapter(aui: ReturnType<typeof useAui>) {
           const rows = (await res.json()) as ChatHistoryRow[];
           return {
             headId: rows.at(-1)?.id ?? null,
-            messages: rows.map((row) => fmt.decode(row)),
+            messages: rows.map((row) =>
+              fmt.decode(row as MessageStorageEntry<TStorageFormat>)
+            ),
           };
         } catch (e) {
           console.error("Failed to load history:", e);
           return { messages: [] };
         }
       },
-      async append(item: HistoryItem) {
+      async append(item: MessageFormatItem<TMessage>) {
         const { remoteId } = await aui.threadListItem().initialize();
         setBrowserActiveThreadId(remoteId);
         await persistHistoryItem(fmt, item, remoteId);
       },
-      async update(item: HistoryItem) {
+      async update(item: MessageFormatItem<TMessage>) {
         const remoteId = aui.threadListItem().getState().remoteId;
         if (!remoteId) return;
         await persistHistoryItem(fmt, item, remoteId);
@@ -332,9 +328,9 @@ function createThreadListAdapter(): RemoteThreadListAdapter {
   };
 }
 
-async function persistHistoryItem(
-  fmt: StorageFormatter,
-  item: HistoryItem,
+async function persistHistoryItem<TMessage, TStorageFormat extends Record<string, unknown>>(
+  fmt: MessageFormatAdapter<TMessage, TStorageFormat>,
+  item: MessageFormatItem<TMessage>,
   threadId: string
 ) {
   try {

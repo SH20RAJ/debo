@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
           const runId = typeof value.id === 'string' ? value.id : agentId;
           const fullText = data.text;
           
-          if (runId && typeof fullText === 'string') {
+          if (typeof runId === "string" && typeof fullText === 'string') {
             const lastText = lastTexts[runId] || "";
             const delta = fullText.slice(lastText.length);
             

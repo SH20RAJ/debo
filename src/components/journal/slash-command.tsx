@@ -2,8 +2,6 @@ import React, {
   useState,
   useEffect,
   useCallback,
-  useRef,
-  useLayoutEffect,
 } from "react";
 import { Editor, Range, Extension } from "@tiptap/core";
 import Suggestion from "@tiptap/suggestion";
@@ -16,11 +14,37 @@ import {
   Text,
   Code,
   CheckSquare,
-  Type,
   Minus,
 } from "lucide-react";
 import { ReactRenderer } from "@tiptap/react";
-import tippy from "tippy.js";
+import tippy, { type Instance } from "tippy.js";
+
+type EditorCommandChain = ReturnType<Editor["chain"]> & {
+  toggleTaskList(): EditorCommandChain;
+  toggleBulletList(): EditorCommandChain;
+  toggleOrderedList(): EditorCommandChain;
+  setHorizontalRule(): EditorCommandChain;
+  toggleCodeBlock(): EditorCommandChain;
+};
+
+type SlashCommandProps = {
+  editor: Editor;
+  range: Range;
+  props: CommandItemProps;
+};
+
+type SlashRendererProps = {
+  editor: Editor;
+  clientRect: () => DOMRect;
+};
+
+type CommandListRef = {
+  onKeyDown?: (props: { event: KeyboardEvent }) => boolean;
+};
+
+function commandChain(editor: Editor) {
+  return editor.chain() as EditorCommandChain;
+}
 
 interface CommandItemProps {
   title: string;
@@ -51,7 +75,7 @@ export const suggestionItems: CommandItemProps[] = [
     searchTerms: ["todo", "task", "list", "check", "checkbox"],
     icon: <CheckSquare className="w-4 h-4" />,
     command: ({ editor, range }) => {
-      (editor as any).chain().focus().deleteRange(range).toggleTaskList().run();
+      commandChain(editor).focus().deleteRange(range).toggleTaskList().run();
     },
   },
   {
@@ -60,8 +84,7 @@ export const suggestionItems: CommandItemProps[] = [
     searchTerms: ["title", "big", "large"],
     icon: <Heading1 className="w-4 h-4" />,
     command: ({ editor, range }) => {
-      (editor as any)
-        .chain()
+      commandChain(editor)
         .focus()
         .deleteRange(range)
         .setNode("heading", { level: 1 })
@@ -74,8 +97,7 @@ export const suggestionItems: CommandItemProps[] = [
     searchTerms: ["subtitle", "medium"],
     icon: <Heading2 className="w-4 h-4" />,
     command: ({ editor, range }) => {
-      (editor as any)
-        .chain()
+      commandChain(editor)
         .focus()
         .deleteRange(range)
         .setNode("heading", { level: 2 })
@@ -88,8 +110,7 @@ export const suggestionItems: CommandItemProps[] = [
     searchTerms: ["subtitle", "small"],
     icon: <Heading3 className="w-4 h-4" />,
     command: ({ editor, range }) => {
-      (editor as any)
-        .chain()
+      commandChain(editor)
         .focus()
         .deleteRange(range)
         .setNode("heading", { level: 3 })
@@ -102,7 +123,7 @@ export const suggestionItems: CommandItemProps[] = [
     searchTerms: ["unordered", "point"],
     icon: <List className="w-4 h-4" />,
     command: ({ editor, range }) => {
-      (editor as any).chain().focus().deleteRange(range).toggleBulletList().run();
+      commandChain(editor).focus().deleteRange(range).toggleBulletList().run();
     },
   },
   {
@@ -111,7 +132,7 @@ export const suggestionItems: CommandItemProps[] = [
     searchTerms: ["ordered"],
     icon: <ListOrdered className="w-4 h-4" />,
     command: ({ editor, range }) => {
-      (editor as any).chain().focus().deleteRange(range).toggleOrderedList().run();
+      commandChain(editor).focus().deleteRange(range).toggleOrderedList().run();
     },
   },
   {
@@ -120,7 +141,7 @@ export const suggestionItems: CommandItemProps[] = [
     searchTerms: ["line", "hr", "horizontal"],
     icon: <Minus className="w-4 h-4" />,
     command: ({ editor, range }) => {
-      (editor as any).chain().focus().deleteRange(range).setHorizontalRule().run();
+      commandChain(editor).focus().deleteRange(range).setHorizontalRule().run();
     },
   },
   {
@@ -129,7 +150,7 @@ export const suggestionItems: CommandItemProps[] = [
     searchTerms: ["codeblock"],
     icon: <Code className="w-4 h-4" />,
     command: ({ editor, range }) => {
-      (editor as any).chain().focus().deleteRange(range).toggleCodeBlock().run();
+      commandChain(editor).focus().deleteRange(range).toggleCodeBlock().run();
     },
   },
 ];
@@ -139,7 +160,7 @@ export const CommandList = ({
   command,
 }: {
   items: CommandItemProps[];
-  command: any;
+  command: (item: CommandItemProps) => void;
 }) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -213,7 +234,7 @@ export const slashCommand = Extension.create({
     return {
       suggestion: {
         char: "/",
-        command: ({ editor, range, props }: any) => {
+        command: ({ editor, range, props }: SlashCommandProps) => {
           props.command({ editor, range });
         },
       },
@@ -231,10 +252,10 @@ export const slashCommand = Extension.create({
 
 export const renderItems = () => {
   let component: ReactRenderer | null = null;
-  let popup: any | null = null;
+  let popup: Instance | null = null;
 
   return {
-    onStart: (props: { editor: Editor; clientRect: DOMRect }) => {
+    onStart: (props: SlashRendererProps) => {
       component = new ReactRenderer(CommandList, {
         props,
         editor: props.editor,
@@ -242,8 +263,7 @@ export const renderItems = () => {
 
       const { element } = component;
 
-      // @ts-ignore
-      popup = tippy("body", {
+      popup = tippy(document.body, {
         getReferenceClientRect: props.clientRect,
         appendTo: () => document.body,
         content: element,
@@ -253,27 +273,25 @@ export const renderItems = () => {
         placement: "bottom-start",
       });
     },
-    onUpdate: (props: { editor: Editor; clientRect: DOMRect }) => {
+    onUpdate: (props: SlashRendererProps) => {
       component?.updateProps(props);
 
-      popup?.[0].setProps({
+      popup?.setProps({
         getReferenceClientRect: props.clientRect,
       });
     },
     onKeyDown: (props: { event: KeyboardEvent }) => {
       if (props.event.key === "Escape") {
-        popup?.[0].hide();
+        popup?.hide();
 
         return true;
       }
 
-      // @ts-ignore
-      return component?.ref?.onKeyDown(props);
+      const ref = component?.ref as CommandListRef | null;
+      return ref?.onKeyDown?.(props) ?? false;
     },
     onExit: () => {
-      if (popup?.[0]) {
-        popup[0].destroy();
-      }
+      popup?.destroy();
       if (component) {
         component.destroy();
       }

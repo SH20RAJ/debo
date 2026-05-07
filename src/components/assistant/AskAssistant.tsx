@@ -170,7 +170,7 @@ export function AskAssistant() {
                 },
               }}
               welcome={{
-                message: <WelcomeScreen />,
+                message: <WelcomeScreen /> as unknown as string,
               }}
             />
             <div className="pointer-events-none absolute bottom-5 right-6 hidden items-center gap-2 rounded-full border border-white/10 bg-black/35 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.22em] text-white/45 backdrop-blur xl:flex">
