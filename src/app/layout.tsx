@@ -9,6 +9,7 @@ import { StackEventTrackerGuard } from "@/components/stack-event-tracker-guard";
 import "./globals.css";
 import "@assistant-ui/react-ui/styles/index.css";
 import "@assistant-ui/react-ui/styles/themes/shadcn-extras.css";
+import "@livekit/components-styles";
 
 const nunito = Nunito({
 	variable: "--font-display",

@@ -3,7 +3,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { stackServerApp } from "@/stack/server";
 import { resolveUserId } from "@/actions/auth-sync";
 
-export async function GET(_req: NextRequest) {
+function toRoomSafeId(value: string) {
+  return value.replace(/[^a-zA-Z0-9_-]/g, "-").slice(0, 72);
+}
+
+export async function GET(req: NextRequest) {
   try {
     const userId = await resolveUserId();
     if (!userId) {
@@ -14,12 +18,16 @@ export async function GET(_req: NextRequest) {
     const participantName = user?.displayName || "Debo User";
     const participantIdentity = userId;
 
-    const roomName = "debo-agent-room"; // Keep this consistent for the agent to join
+    const requestedRoom = req.nextUrl.searchParams.get("room");
+    const roomName = requestedRoom
+      ? toRoomSafeId(requestedRoom)
+      : `debo-${toRoomSafeId(userId)}`;
 
     const apiKey = process.env.LIVEKIT_API_KEY;
     const apiSecret = process.env.LIVEKIT_API_SECRET;
+    const serverUrl = process.env.LIVEKIT_URL || process.env.NEXT_PUBLIC_LIVEKIT_URL;
 
-    if (!apiKey || !apiSecret) {
+    if (!apiKey || !apiSecret || !serverUrl) {
       return NextResponse.json(
         { error: "LiveKit is not configured" },
         { status: 500 },
@@ -32,13 +40,19 @@ export async function GET(_req: NextRequest) {
     });
 
     at.addGrant({
+      roomCreate: true,
       roomJoin: true,
       room: roomName,
       canPublish: true,
       canSubscribe: true,
+      canPublishData: true,
     });
 
-    return NextResponse.json({ token: await at.toJwt() });
+    return NextResponse.json({
+      token: await at.toJwt(),
+      serverUrl,
+      roomName,
+    });
   } catch (error) {
     console.error("Error generating LiveKit token:", error);
     return NextResponse.json(

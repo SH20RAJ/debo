@@ -41,15 +41,31 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json() as { id?: string; title?: string };
     const threadId = body.id || crypto.randomUUID();
-    const title = body.title || null;
+    const title = body.title?.trim() || null;
 
-    await db.insert(chats).values({
-      id: threadId,
-      userId,
-      title,
+    await db
+      .insert(chats)
+      .values({
+        id: threadId,
+        userId,
+        title,
+      })
+      .onConflictDoNothing({ target: chats.id });
+
+    const thread = await db.query.chats.findFirst({
+      where: and(eq(chats.id, threadId), eq(chats.userId, userId)),
     });
 
-    return NextResponse.json({ id: threadId, title });
+    if (!thread) {
+      return NextResponse.json({ error: "Thread id already exists" }, { status: 409 });
+    }
+
+    return NextResponse.json({
+      id: thread.id,
+      title: thread.title || "New Chat",
+      createdAt: thread.createdAt,
+      updatedAt: thread.updatedAt,
+    });
   } catch (error) {
     console.error("POST /api/chat/threads error:", error);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
@@ -109,7 +125,7 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Thread not found" }, { status: 404 });
     }
 
-    await db.update(chats).set({ title, updatedAt: new Date() }).where(eq(chats.id, id));
+    await db.update(chats).set({ title: title?.trim() || null, updatedAt: new Date() }).where(eq(chats.id, id));
 
     return NextResponse.json({ success: true });
   } catch (error) {

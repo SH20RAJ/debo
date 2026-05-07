@@ -132,8 +132,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing threadId or id" }, { status: 400 });
     }
 
-    // Ensure the thread exists, create if not
-    const existingChat = await db.query.chats.findFirst({
+    // Ensure the thread exists and belongs to the current user.
+    let existingChat = await db.query.chats.findFirst({
       where: and(eq(chats.id, threadId), eq(chats.userId, userId)),
     });
 
@@ -146,6 +146,14 @@ export async function POST(req: NextRequest) {
           title: null,
         })
         .onConflictDoNothing();
+
+      existingChat = await db.query.chats.findFirst({
+        where: and(eq(chats.id, threadId), eq(chats.userId, userId)),
+      });
+    }
+
+    if (!existingChat) {
+      return NextResponse.json({ error: "Thread id already exists" }, { status: 409 });
     }
 
     // Determine role from content

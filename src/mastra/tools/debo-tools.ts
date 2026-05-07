@@ -4,6 +4,51 @@ import { z } from 'zod';
 // We use dynamic imports inside the execute functions to break circular dependencies
 // between tools -> actions -> mastra -> agents -> tools
 
+type DeboToolContext = {
+  requestContext?: {
+    all?: {
+      userId?: unknown;
+    };
+    get?: (key: string) => unknown;
+  };
+  mcp?: {
+    extra?: {
+      authInfo?: {
+        userId?: unknown;
+      } & Record<string, unknown>;
+    };
+  };
+};
+
+function toDeboToolContext(context: unknown): DeboToolContext {
+  return (context ?? {}) as DeboToolContext;
+}
+
+function readContextValue(context: DeboToolContext, key: string) {
+  const requestContext = context.requestContext;
+  if (!requestContext) return undefined;
+
+  if (typeof requestContext.get === 'function') {
+    return requestContext.get(key);
+  }
+
+  return requestContext.all?.[key as keyof typeof requestContext.all];
+}
+
+function requireUserId(context: unknown) {
+  const toolContext = toDeboToolContext(context);
+  const userId =
+    readContextValue(toolContext, 'userId') ??
+    toolContext.requestContext?.all?.userId ??
+    toolContext.mcp?.extra?.authInfo?.userId;
+
+  if (typeof userId !== 'string' || userId.length === 0) {
+    throw new Error('Unauthorized');
+  }
+
+  return userId;
+}
+
 export const createJournalTool = createTool({
   id: 'create_journal',
   description: 'Create a new journal entry.',
@@ -13,8 +58,7 @@ export const createJournalTool = createTool({
   }),
   execute: async (input, context) => {
     const { saveJournal } = await import('@/actions/journals');
-    const userId = context.requestContext?.all?.userId;
-    if (!userId) throw new Error('Unauthorized');
+    const userId = requireUserId(context);
     return await saveJournal(input.content, undefined, input.title, userId);
   },
 });
@@ -27,8 +71,7 @@ export const deleteJournalTool = createTool({
   }),
   execute: async (input, context) => {
     const { deleteJournal } = await import('@/actions/journals');
-    const userId = context.requestContext?.all?.userId;
-    if (!userId) throw new Error('Unauthorized');
+    const userId = requireUserId(context);
     return await deleteJournal(input.id, userId);
   },
 });
@@ -41,8 +84,7 @@ export const getJournalsTool = createTool({
   }),
   execute: async (input, context) => {
     const { getJournals } = await import('@/actions/journals');
-    const userId = context.requestContext?.all?.userId;
-    if (!userId) throw new Error('Unauthorized');
+    const userId = requireUserId(context);
     return await getJournals('desc', input.limit, 0, userId);
   },
 });
@@ -55,8 +97,7 @@ export const searchJournalsTool = createTool({
   }),
   execute: async (input, context) => {
     const { searchJournals, getRecentJournalCitations } = await import('@/lib/vector/search');
-    const userId = context.requestContext?.all?.userId;
-    if (!userId) throw new Error('Unauthorized');
+    const userId = requireUserId(context);
     try {
       return await searchJournals(input.query, userId);
     } catch (error) {
@@ -77,8 +118,7 @@ export const addMemoryTool = createTool({
   }),
   execute: async (input, context) => {
     const { addMemory } = await import('@/actions/memories');
-    const userId = context.requestContext?.all?.userId;
-    if (!userId) throw new Error('Unauthorized');
+    const userId = requireUserId(context);
     return await addMemory(input.fact, userId);
   },
 });
@@ -92,8 +132,7 @@ export const getMemoriesTool = createTool({
   }),
   execute: async (input, context) => {
     const { getRelevantMemories } = await import('@/lib/memory/query');
-    const userId = context.requestContext?.all?.userId;
-    if (!userId) throw new Error('Unauthorized');
+    const userId = requireUserId(context);
     const memories = await getRelevantMemories(userId, input.query || '');
     return memories.items.slice(0, input.limit).map((memory: any) => ({
       id: memory.id,
@@ -112,8 +151,7 @@ export const getTimelineTool = createTool({
   }),
   execute: async (input, context) => {
     const { getLifeTimeline } = await import('@/lib/life/timeline');
-    const userId = context.requestContext?.all?.userId;
-    if (!userId) throw new Error('Unauthorized');
+    const userId = requireUserId(context);
     return await getLifeTimeline(userId, input.grouping);
   },
 });
@@ -132,8 +170,7 @@ export const queryGraphTool = createTool({
   }),
   execute: async (input, context) => {
     const { queryGraph } = await import('@/lib/life/graph');
-    const userId = context.requestContext?.all?.userId;
-    if (!userId) throw new Error('Unauthorized');
+    const userId = requireUserId(context);
     const result = await queryGraph(input.question, userId);
     return {
       insight: result.insights.join(' ') || 'No patterns discovered yet.',

@@ -3,6 +3,7 @@ import {
   LATEST_PROTOCOL_VERSION,
   SUPPORTED_PROTOCOL_VERSIONS,
 } from "@modelcontextprotocol/sdk/types.js";
+import { RequestContext } from "@mastra/core/request-context";
 import { db } from "@/db";
 import { userPreferences } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -244,13 +245,18 @@ async function handleRequest(
 
       try {
         const input = parseToolInput(tool, params.arguments);
+        const requestContext = new RequestContext<Record<string, unknown>>();
+        requestContext.set("userId", auth.userId);
+        requestContext.set("mcp.extra", {
+          authInfo: {
+            token: auth.mcpKey,
+            userId: auth.userId,
+          },
+        });
+
         const output = await tool.execute(input, {
           abortSignal: req.signal,
-          requestContext: {
-            all: {
-              userId: auth.userId,
-            },
-          },
+          requestContext,
           mcp: {
             extra: {
               authInfo: {

@@ -1,7 +1,11 @@
 import { mastra } from "@/mastra";
 import { resolveUserId } from "@/actions/auth-sync";
 import { handleChatStream } from "@mastra/ai-sdk";
-import { RequestContext } from "@mastra/core/request-context";
+import {
+  MASTRA_RESOURCE_ID_KEY,
+  MASTRA_THREAD_ID_KEY,
+  RequestContext,
+} from "@mastra/core/request-context";
 import { createUIMessageStreamResponse } from "ai";
 import { NextRequest } from "next/server";
 
@@ -34,10 +38,12 @@ export async function POST(req: NextRequest) {
     const { id: threadId } = body as { id?: string };
 
     const resolvedThreadId = threadId || crypto.randomUUID();
-    let requestContext: RequestContext<{ userId: string }> | undefined;
+    let requestContext: RequestContext<Record<string, unknown>> | undefined;
     if (authenticatedUserId) {
-      requestContext = new RequestContext<{ userId: string }>();
+      requestContext = new RequestContext<Record<string, unknown>>();
       requestContext.set("userId", authenticatedUserId);
+      requestContext.set(MASTRA_RESOURCE_ID_KEY, authenticatedUserId);
+      requestContext.set(MASTRA_THREAD_ID_KEY, resolvedThreadId);
     }
 
     const stream = await handleChatStream({

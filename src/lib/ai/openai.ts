@@ -1,8 +1,10 @@
 import "server-only";
 import { createOpenAI } from "@ai-sdk/openai";
 
-export const DEFAULT_CHAT_MODEL = "meta/llama-3.3-70b-instruct";
-export const DEFAULT_EMBEDDING_MODEL = "nvidia/nv-embedqa-e5-v5";
+export const DEFAULT_CHAT_MODEL =
+  process.env.DEBO_CHAT_MODEL || "meta/llama-3.3-70b-instruct";
+export const DEFAULT_EMBEDDING_MODEL =
+  process.env.DEBO_EMBEDDING_MODEL || "nvidia/llama-embed-nemotron-8b";
 
 // Prioritize NVIDIA_API_KEY, fallback to OPENAI_API_KEY
 // This prevents collisions if the user has a global OPENAI_API_KEY set

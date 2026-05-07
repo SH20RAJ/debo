@@ -5,6 +5,7 @@ import { ThreadPrimitive } from "@assistant-ui/react";
 import Image from "next/image";
 import Link from "next/link";
 import { DeboToolUIs } from "./DeboToolUIs";
+import { DeboVoiceDock } from "./DeboVoiceDock";
 import {
   BookOpen,
   Brain,
@@ -139,6 +140,7 @@ export function AskAssistant() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <DeboVoiceDock />
             <Link
               href="/dashboard"
               aria-label="Open command center"

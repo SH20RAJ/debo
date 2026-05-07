@@ -1,6 +1,6 @@
 import { Agent } from '@mastra/core/agent';
 import { queryGraphTool } from '../tools/debo-tools';
-import { aiProvider } from '@/lib/ai/openai';
+import { getChatModel } from '@/lib/ai/openai';
 
 export const deboAnalyst = new Agent({
   id: 'debo-analyst',
@@ -19,7 +19,7 @@ Analyze data to uncover trends in behavior, emotion, and life events.
 
 ### Tools:
 - 'detect_patterns': The primary tool for analyzing journals and memories for recurring themes and insights.`,
-  model: aiProvider('meta/llama-3.3-70b-instruct'),
+  model: getChatModel(),
   tools: { queryGraphTool },
   backgroundTasks: {
     tools: 'all',

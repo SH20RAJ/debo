@@ -6,12 +6,8 @@ import {
     RefreshCw, 
     Eye, 
     EyeOff, 
-    Terminal, 
-    BookOpen, 
-    Cable,
     Check,
     Cpu,
-    ExternalLink,
     Code2,
     Shield,
     Sparkles
@@ -66,6 +62,15 @@ Use the provided Debo tools to:
 3. Detect patterns in the user's notes to provide proactive insights.
 
 Always favor information stored in Debo over generic AI knowledge when discussing the user's personal context. When you learn something significant, proactively store it as a memory using add_memory.`
+
+    const httpProbe = `curl -s ${JSON.stringify(mcpUrl)} \\
+  -H "Authorization: Bearer ${key}" \\
+  -H "Content-Type: application/json" \\
+  -d '${JSON.stringify({
+      jsonrpc: "2.0",
+      id: "tools",
+      method: "tools/list",
+    })}'`
 
     return (
         <div className="grid gap-8 lg:grid-cols-12 pb-20">
@@ -157,8 +162,7 @@ Always favor information stored in Debo over generic AI knowledge when discussin
                             <TabsList className="w-full justify-start rounded-none border-b border-border/50 bg-muted/10 h-12 px-2">
                                 <TabsTrigger value="claude" className="text-xs data-[state=active]:bg-background">Claude</TabsTrigger>
                                 <TabsTrigger value="cursor" className="text-xs data-[state=active]:bg-background">Cursor</TabsTrigger>
-                                <TabsTrigger value="openai" className="text-xs data-[state=active]:bg-background">OpenAI</TabsTrigger>
-                                <TabsTrigger value="langchain" className="text-xs data-[state=active]:bg-background">LangChain</TabsTrigger>
+                                <TabsTrigger value="http" className="text-xs data-[state=active]:bg-background">HTTP Test</TabsTrigger>
                             </TabsList>
                             <TabsContent value="claude" className="p-6 space-y-4">
                                 <div className="space-y-2">
@@ -208,8 +212,9 @@ Always favor information stored in Debo over generic AI knowledge when discussin
                                     {[
                                         "Open Settings (Cmd + Shift + J)",
                                         "Features > MCP > Add New MCP Server",
-                                        "Name: Debo | Type: SSE",
-                                        `URL: ${mcpUrl}`
+                                        "Name: Debo | Type: Streamable HTTP",
+                                        `URL: ${mcpUrl}`,
+                                        "Header: Authorization = Bearer your MCP key"
                                     ].map((step, i) => (
                                         <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-muted/20 border border-border/30">
                                             <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary border border-primary/20">
@@ -220,37 +225,26 @@ Always favor information stored in Debo over generic AI knowledge when discussin
                                     ))}
                                 </div>
                             </TabsContent>
-                            <TabsContent value="openai" className="p-6 space-y-4">
+                            <TabsContent value="http" className="p-6 space-y-4">
                                 <div className="space-y-2">
-                                    <h4 className="text-sm font-medium">Custom GPT Action</h4>
-                                    <p className="text-xs text-muted-foreground">Create a Custom GPT and add an Action with this schema:</p>
+                                    <h4 className="text-sm font-medium">Smoke Test</h4>
+                                    <p className="text-xs text-muted-foreground">
+                                        This calls the MCP server's <code className="text-foreground">tools/list</code> method directly.
+                                    </p>
                                 </div>
-                                <div className="bg-amber-500/5 border border-amber-500/10 p-3 rounded-lg text-[11px] text-amber-500/80 mb-2">
-                                    Note: You'll need to wrap the MCP endpoint in an OpenAPI spec for GPT Actions.
+                                <div className="relative group">
+                                    <pre className="bg-zinc-950 p-5 rounded-xl text-[11px] text-zinc-300 overflow-x-auto font-mono border border-white/5 shadow-2xl">
+{httpProbe}
+                                    </pre>
+                                    <Button
+                                        variant="secondary"
+                                        size="sm"
+                                        className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity h-7 text-[10px]"
+                                        onClick={() => copyToClipboard(httpProbe, "HTTP test")}
+                                    >
+                                        Copy cURL
+                                    </Button>
                                 </div>
-                                <Button variant="outline" size="sm" className="w-full h-9 text-xs" asChild>
-                                    <a href={`${mcpUrl}/openapi.json`} target="_blank" rel="noreferrer">
-                                        View OpenAPI Schema <ExternalLink className="ml-2 h-3 w-3" />
-                                    </a>
-                                </Button>
-                            </TabsContent>
-                            <TabsContent value="langchain" className="p-6 space-y-4">
-                                <div className="space-y-2">
-                                    <h4 className="text-sm font-medium">LangChain / Python Implementation</h4>
-                                    <p className="text-xs text-muted-foreground">Use the following snippet in your agent scripts:</p>
-                                </div>
-                                <pre className="bg-zinc-950 p-5 rounded-xl text-[11px] text-zinc-300 overflow-x-auto font-mono border border-white/5 shadow-2xl">
-{`from langchain_community.tools.mcp import MCPTool
-from langchain_openai import ChatOpenAI
-
-tools = MCPTool.from_url(
-    url="${mcpUrl}",
-    token="${key}"
-)
-
-agent = create_react_agent(ChatOpenAI(), tools)
-agent.invoke({"input": "What did I learn today?"})`}
-                                </pre>
                             </TabsContent>
                         </Tabs>
                     </Card>
@@ -314,7 +308,7 @@ agent.invoke({"input": "What did I learn today?"})`}
                         </CardContent>
                         <CardFooter className="bg-muted/10 p-4">
                             <p className="text-[10px] text-muted-foreground italic text-center w-full">
-                                Tools are automatically updated based on your subscription and connected apps.
+                                These are the active tools exposed by Debo's MCP server.
                             </p>
                         </CardFooter>
                     </Card>

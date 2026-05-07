@@ -55,7 +55,6 @@ export async function deleteMemory(memoryId: string, userId?: string) {
     }
 
     revalidatePath("/dashboard/memories");
-    revalidatePath("/dashboard/experimental/memories");
     return { success: true };
   } catch (error) {
     console.error("Delete memory error:", error);
@@ -109,7 +108,6 @@ export async function updateMemory(memoryId: string, content: string, userId?: s
         .where(and(eq(memoryFacts.id, memoryId), eq(memoryFacts.userId, resolvedUserId)));
 
       revalidatePath("/dashboard/memories");
-      revalidatePath("/dashboard/experimental/memories");
       return { success: true, data: memoryId };
     }
 
@@ -128,7 +126,6 @@ export async function updateMemory(memoryId: string, content: string, userId?: s
         .where(and(eq(memoryEntities.id, memoryId), eq(memoryEntities.userId, resolvedUserId)));
 
       revalidatePath("/dashboard/memories");
-      revalidatePath("/dashboard/experimental/memories");
       return { success: true, data: memoryId };
     }
 
@@ -152,7 +149,6 @@ export async function addMemory(fact: string, userId?: string) {
       topics: extracted.topics,
     });
     revalidatePath("/dashboard/memories");
-    revalidatePath("/dashboard/experimental/memories");
     return { success: true, data: result };
   } catch (error) {
     console.error("Add memory error:", error);
@@ -184,7 +180,6 @@ export async function importMemories(jsonContent: string) {
     }
 
     revalidatePath("/dashboard/memories");
-    revalidatePath("/dashboard/experimental/memories");
     return { success: true };
   } catch (error) {
     console.error("Import memories error:", error);

@@ -243,7 +243,23 @@ function createThreadListAdapter(): RemoteThreadListAdapter {
         threads?: Array<{ id: string; title?: string | null }>;
       };
       const thread = data.threads?.find((item) => item.id === threadId);
-      if (!thread) throw new Error("Thread not found");
+      if (!thread) {
+        const createRes = await fetch("/api/chat/threads", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: threadId }),
+        });
+
+        if (!createRes.ok) throw new Error("Thread not found");
+
+        setBrowserActiveThreadId(threadId);
+        return {
+          remoteId: threadId,
+          externalId: threadId,
+          status: "regular" as const,
+          title: "New Chat",
+        };
+      }
 
       setBrowserActiveThreadId(thread.id);
       return {
