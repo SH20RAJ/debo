@@ -77,7 +77,7 @@ export function Demo() {
             <Message type="bot">
               <div className="space-y-3">
                 <p className="text-duo-eel font-bold text-lg leading-relaxed">
-                  Over the past 6 months you're <span className="text-duo-green">most productive after morning workouts</span>. 
+                  Over the past 6 months you&apos;re <span className="text-duo-green">most productive after morning workouts</span>. 
                   A pattern shows skipped meals during high-stress weeks.
                 </p>
                 <div className="flex flex-wrap gap-2">

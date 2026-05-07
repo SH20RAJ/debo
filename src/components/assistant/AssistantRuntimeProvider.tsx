@@ -8,6 +8,7 @@ import {
 import { useChat, type UIMessage } from "@ai-sdk/react";
 import { useAui, useAuiState } from "@assistant-ui/store";
 import { AssistantChatTransport, useAISDKRuntime } from "@assistant-ui/react-ai-sdk";
+import { createAssistantStream } from "assistant-stream";
 import type { ChatTransport } from "ai";
 import { ReactNode, useEffect, useMemo, useRef, type MutableRefObject } from "react";
 import { usePathname, useRouter } from "next/navigation";
@@ -15,6 +16,25 @@ import { usePathname, useRouter } from "next/navigation";
 type MyAssistantRuntimeProviderProps = {
   children: ReactNode;
   initialThreadId?: string | null;
+};
+
+type ChatHistoryRow = {
+  id: string;
+  parent_id: string | null;
+  format: string;
+  content: Record<string, unknown>;
+};
+
+type HistoryItem = {
+  parentId: string | null;
+  message: UIMessage;
+};
+
+type StorageFormatter = {
+  format: string;
+  encode(item: HistoryItem): Record<string, unknown>;
+  decode(row: ChatHistoryRow): HistoryItem;
+  getId(message: UIMessage): string;
 };
 
 export function MyAssistantRuntimeProvider({
@@ -28,10 +48,6 @@ export function MyAssistantRuntimeProvider({
     activeThreadIdRef.current = initialThreadId;
     setBrowserActiveThreadId(initialThreadId);
   }, [initialThreadId]);
-
-  const historyAdapter = useMemo(() => createHistoryAdapter(() => (
-    activeThreadIdRef.current ?? readBrowserActiveThreadId()
-  )), []);
 
   const transport = useMemo(
     () =>
@@ -49,7 +65,7 @@ export function MyAssistantRuntimeProvider({
 
   const runtime = useRemoteThreadListRuntime({
     runtimeHook: function RuntimeHook() {
-      return useDeboChatThreadRuntime(transport, historyAdapter, activeThreadIdRef);
+      return useDeboChatThreadRuntime(transport, activeThreadIdRef);
     },
     adapter: threadListAdapter,
     initialThreadId: runtimeInitialThreadId,
@@ -82,37 +98,41 @@ export function ChatThreadUrlSync() {
   return null;
 }
 
-function createHistoryAdapter(getActiveThreadId: () => string | null) {
+function createHistoryAdapter(aui: ReturnType<typeof useAui>) {
   return {
     async load() {
       return { headId: null, messages: [] };
     },
     async append() {},
-    withFormat: (fmt: any) => ({
+    withFormat: (fmt: StorageFormatter) => ({
       async load() {
         try {
-          const threadId = getActiveThreadId();
+          const threadId = aui.threadListItem().getState().remoteId;
           if (!threadId) return { messages: [] };
 
           const res = await fetch(`/api/chat/history?threadId=${encodeURIComponent(threadId)}`, {
             cache: "no-store",
           });
           if (!res.ok) return { messages: [] };
-          const rows = (await res.json()) as Array<{ id: string }>;
+          const rows = (await res.json()) as ChatHistoryRow[];
           return {
             headId: rows.at(-1)?.id ?? null,
-            messages: rows.map((row: any) => fmt.decode(row)),
+            messages: rows.map((row) => fmt.decode(row)),
           };
         } catch (e) {
           console.error("Failed to load history:", e);
           return { messages: [] };
         }
       },
-      async append(item: any) {
-        await persistHistoryItem(fmt, item, getActiveThreadId);
+      async append(item: HistoryItem) {
+        const { remoteId } = await aui.threadListItem().initialize();
+        setBrowserActiveThreadId(remoteId);
+        await persistHistoryItem(fmt, item, remoteId);
       },
-      async update(item: any) {
-        await persistHistoryItem(fmt, item, getActiveThreadId);
+      async update(item: HistoryItem) {
+        const remoteId = aui.threadListItem().getState().remoteId;
+        if (!remoteId) return;
+        await persistHistoryItem(fmt, item, remoteId);
       },
     }),
   };
@@ -140,28 +160,30 @@ function useDynamicChatTransport<UI_MESSAGE extends UIMessage = UIMessage>(
 }
 
 function useDeboChatThreadRuntime(
-  transport: AssistantChatTransport<any>,
-  historyAdapter: Record<string, unknown>,
+  transport: AssistantChatTransport<UIMessage>,
   activeThreadIdRef: MutableRefObject<string | null>
 ) {
-  const dynamicTransport = useDynamicChatTransport(transport as ChatTransport<any>);
+  const dynamicTransport = useDynamicChatTransport(transport as ChatTransport<UIMessage>);
   const id = useAuiState((state) => state.threadListItem.id);
+  const remoteId = useAuiState((state) => state.threadListItem.remoteId);
   const aui = useAui();
+  const historyAdapter = useMemo(() => createHistoryAdapter(aui), [aui]);
 
   useEffect(() => {
-    if (!id) return;
-    activeThreadIdRef.current = id;
-    setBrowserActiveThreadId(id);
-  }, [activeThreadIdRef, id]);
+    const nextThreadId = remoteId ?? id;
+    if (!nextThreadId) return;
+    activeThreadIdRef.current = nextThreadId;
+    setBrowserActiveThreadId(nextThreadId);
+  }, [activeThreadIdRef, id, remoteId]);
 
   const chat = useChat({
-    id: id ?? activeThreadIdRef.current ?? undefined,
+    id: remoteId ?? id ?? activeThreadIdRef.current ?? undefined,
     transport: dynamicTransport,
   });
 
   const runtime = useAISDKRuntime(chat, {
     adapters: {
-      history: historyAdapter as any,
+      history: historyAdapter,
     },
   });
 
@@ -192,8 +214,10 @@ function setBrowserActiveThreadId(threadId: string) {
   )}; path=/; max-age=86400; samesite=lax`;
 }
 
-function createEmptyAssistantStream() {
-  return new ReadableStream();
+function clearBrowserActiveThreadId(threadId: string) {
+  if (typeof document === "undefined") return;
+  if (readBrowserActiveThreadId() !== threadId) return;
+  document.cookie = "debo_active_chat_thread=; path=/; max-age=0; samesite=lax";
 }
 
 function createThreadListAdapter(): RemoteThreadListAdapter {
@@ -219,8 +243,8 @@ function createThreadListAdapter(): RemoteThreadListAdapter {
         return { threads: [] };
       }
     },
-    async initialize() {
-      const remoteId = crypto.randomUUID();
+    async initialize(localId) {
+      const remoteId = localId || crypto.randomUUID();
       setBrowserActiveThreadId(remoteId);
 
       const res = await fetch("/api/chat/threads", {
@@ -229,21 +253,22 @@ function createThreadListAdapter(): RemoteThreadListAdapter {
         body: JSON.stringify({ id: remoteId }),
       });
 
-      if (!res.ok && res.status !== 401) {
+      if (!res.ok) {
         throw new Error(`Thread create failed with ${res.status}`);
       }
 
-      return { remoteId, externalId: remoteId };
+      const thread = await res.json() as { id?: string };
+      const resolvedId = thread.id || remoteId;
+      setBrowserActiveThreadId(resolvedId);
+
+      return { remoteId: resolvedId, externalId: resolvedId };
     },
     async fetch(threadId) {
-      const res = await fetch("/api/chat/threads", { cache: "no-store" });
-      if (!res.ok) throw new Error("Thread not found");
+      const res = await fetch(`/api/chat/threads?id=${encodeURIComponent(threadId)}`, {
+        cache: "no-store",
+      });
 
-      const data = (await res.json()) as {
-        threads?: Array<{ id: string; title?: string | null }>;
-      };
-      const thread = data.threads?.find((item) => item.id === threadId);
-      if (!thread) {
+      if (res.status === 404) {
         const createRes = await fetch("/api/chat/threads", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -252,15 +277,19 @@ function createThreadListAdapter(): RemoteThreadListAdapter {
 
         if (!createRes.ok) throw new Error("Thread not found");
 
+        const thread = await createRes.json() as { id: string; title?: string | null };
         setBrowserActiveThreadId(threadId);
         return {
-          remoteId: threadId,
-          externalId: threadId,
+          remoteId: thread.id,
+          externalId: thread.id,
           status: "regular" as const,
-          title: "New Chat",
+          title: thread.title || "New Chat",
         };
       }
 
+      if (!res.ok) throw new Error("Thread not found");
+
+      const thread = (await res.json()) as { id: string; title?: string | null };
       setBrowserActiveThreadId(thread.id);
       return {
         remoteId: thread.id,
@@ -270,34 +299,45 @@ function createThreadListAdapter(): RemoteThreadListAdapter {
       };
     },
     async rename(remoteId, newTitle) {
-      await fetch("/api/chat/threads", {
+      const res = await fetch("/api/chat/threads", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: remoteId, title: newTitle }),
       });
+      if (!res.ok) throw new Error(`Thread rename failed with ${res.status}`);
     },
     async archive() {},
     async unarchive() {},
     async delete(remoteId) {
-      await fetch(`/api/chat/threads?id=${encodeURIComponent(remoteId)}`, {
+      const res = await fetch(`/api/chat/threads?id=${encodeURIComponent(remoteId)}`, {
         method: "DELETE",
       });
+      if (!res.ok && res.status !== 404) {
+        throw new Error(`Thread delete failed with ${res.status}`);
+      }
+      clearBrowserActiveThreadId(remoteId);
     },
-    async generateTitle() {
-      return createEmptyAssistantStream();
+    async generateTitle(remoteId, unstableMessages) {
+      const title = createTitleFromMessages(unstableMessages);
+      await fetch("/api/chat/threads", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: remoteId, title }),
+      });
+
+      return createAssistantStream((controller) => {
+        controller.appendText(title);
+      });
     },
   };
 }
 
 async function persistHistoryItem(
-  fmt: any,
-  item: any,
-  getActiveThreadId: () => string | null
+  fmt: StorageFormatter,
+  item: HistoryItem,
+  threadId: string
 ) {
   try {
-    const threadId = getActiveThreadId();
-    if (!threadId) return;
-
     const res = await fetch("/api/chat/history", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -316,4 +356,34 @@ async function persistHistoryItem(
   } catch (e) {
     console.error("Failed to persist message:", e);
   }
+}
+
+function createTitleFromMessages(messages: unknown) {
+  const list = Array.isArray(messages) ? messages : [];
+  const firstUserText =
+    list.map(readMessageText).find((text) => text.trim().length > 0) || "New Chat";
+  const title = firstUserText.replace(/\s+/g, " ").trim();
+  return title.length > 80 ? `${title.slice(0, 80)}...` : title;
+}
+
+function readMessageText(message: unknown): string {
+  if (!message || typeof message !== "object") return "";
+  const value = message as { content?: unknown; parts?: unknown; text?: unknown };
+  if (typeof value.text === "string") return value.text;
+  if (typeof value.content === "string") return value.content;
+
+  const parts = Array.isArray(value.parts)
+    ? value.parts
+    : Array.isArray(value.content)
+      ? value.content
+      : [];
+
+  return parts
+    .map((part) => {
+      if (!part || typeof part !== "object") return "";
+      const text = (part as { text?: unknown }).text;
+      return typeof text === "string" ? text : "";
+    })
+    .filter(Boolean)
+    .join(" ");
 }

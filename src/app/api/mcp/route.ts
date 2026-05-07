@@ -31,8 +31,8 @@ const MCP_HEADERS = {
 };
 
 async function getTools() {
-  const { deboTools } = await import("@/mastra/tools/debo-tools");
-  return deboTools;
+  const { mcpDeboTools } = await import("@/mastra/tools/debo-tools");
+  return mcpDeboTools;
 }
 
 function json(data: unknown, status = 200) {
@@ -109,6 +109,7 @@ async function listMcpTools() {
     const typedTool = tool as {
       description?: unknown;
       inputSchema?: unknown;
+      outputSchema?: unknown;
       mcp?: {
         annotations?: unknown;
         _meta?: unknown;
@@ -124,6 +125,7 @@ async function listMcpTools() {
           ? typedTool.description
           : `Debo tool: ${name}`,
       inputSchema: schemaToJsonSchema(typedTool.inputSchema),
+      ...(typedTool.outputSchema ? { outputSchema: schemaToJsonSchema(typedTool.outputSchema) } : {}),
       ...(typedTool.mcp?.annotations ? { annotations: typedTool.mcp.annotations } : {}),
       ...(typedTool.mcp?._meta ? { _meta: typedTool.mcp._meta } : {}),
     };
@@ -274,6 +276,7 @@ async function handleRequest(
               text: typeof output === "string" ? output : JSON.stringify(output, null, 2),
             },
           ],
+          ...(typeof output === "object" && output !== null ? { structuredContent: output } : {}),
         });
       } catch (callError) {
         return result(id, {
@@ -289,13 +292,238 @@ async function handleRequest(
     }
 
     case "resources/list":
-      return result(id, { resources: [] });
+      return result(id, { resources: listMcpResources() });
+
+    case "resources/read": {
+      const uri = typeof message.params?.uri === "string" ? message.params.uri : "";
+      if (!uri) {
+        return error(id, -32602, "Invalid params: resources/read requires uri");
+      }
+
+      try {
+        return result(id, { contents: await readMcpResource(uri, auth.userId) });
+      } catch (resourceError) {
+        return error(
+          id,
+          -32602,
+          resourceError instanceof Error ? resourceError.message : "Resource not found"
+        );
+      }
+    }
 
     case "prompts/list":
-      return result(id, { prompts: [] });
+      return result(id, { prompts: listMcpPrompts() });
+
+    case "prompts/get": {
+      const name = typeof message.params?.name === "string" ? message.params.name : "";
+      if (!name) {
+        return error(id, -32602, "Invalid params: prompts/get requires name");
+      }
+
+      const prompt = getMcpPrompt(name, message.params?.arguments);
+      if (!prompt) return error(id, -32602, `Prompt ${name} not found`);
+      return result(id, prompt);
+    }
 
     default:
       return error(id, -32601, `Method not found: ${message.method}`);
+  }
+}
+
+function listMcpResources() {
+  return [
+    {
+      uri: "debo://profile",
+      name: "Debo profile",
+      description: "How external agents should use Debo as the user's personal context layer.",
+      mimeType: "text/markdown",
+    },
+    {
+      uri: "debo://chat/threads",
+      name: "Debo chat threads",
+      description: "Recent Debo /chat threads for the authenticated user.",
+      mimeType: "application/json",
+    },
+    {
+      uri: "debo://journals/recent",
+      name: "Recent journals",
+      description: "Recent journal entries saved in Debo.",
+      mimeType: "application/json",
+    },
+    {
+      uri: "debo://memories/recent",
+      name: "Recent memories",
+      description: "Relevant persistent memories available to Debo.",
+      mimeType: "application/json",
+    },
+  ];
+}
+
+async function readMcpResource(uri: string, userId: string) {
+  if (uri === "debo://profile") {
+    return [
+      {
+        uri,
+        mimeType: "text/markdown",
+        text: [
+          "# Debo Context Layer",
+          "",
+          "Use Debo when the user asks about their journals, memories, personal history, commitments, recurring patterns, or life context.",
+          "Prefer `ask_debo` for natural chat, `search_journals` for retrieval, `import_ai_context` for exported AI context, and `add_memory` only for durable facts the user wants remembered.",
+          "Do not expose tool internals to the user. Speak like a steady personal assistant with evidence-backed context.",
+        ].join("\n"),
+      },
+    ];
+  }
+
+  if (uri === "debo://chat/threads") {
+    const { listChatThreads } = await import("@/lib/chat/server");
+    const threads = await listChatThreads(userId, 25);
+    return [
+      {
+        uri,
+        mimeType: "application/json",
+        text: JSON.stringify(
+          threads.map((thread) => ({
+            id: thread.id,
+            title: thread.title || "New Chat",
+            createdAt: thread.createdAt,
+            updatedAt: thread.updatedAt,
+          })),
+          null,
+          2
+        ),
+      },
+    ];
+  }
+
+  if (uri.startsWith("debo://chat/thread/")) {
+    const threadId = decodeURIComponent(uri.replace("debo://chat/thread/", ""));
+    const { extractMessageText, getChatThread, listChatMessages } = await import("@/lib/chat/server");
+    const thread = await getChatThread(userId, threadId);
+    if (!thread) throw new Error("Thread not found");
+    const rows = await listChatMessages(userId, thread.id);
+    return [
+      {
+        uri,
+        mimeType: "application/json",
+        text: JSON.stringify(
+          {
+            id: thread.id,
+            title: thread.title || "New Chat",
+            messages: (rows ?? []).map((message) => ({
+              id: message.id,
+              role: message.role,
+              text: extractMessageText(safeJson(message.content, message.content)),
+              createdAt: message.createdAt,
+            })),
+          },
+          null,
+          2
+        ),
+      },
+    ];
+  }
+
+  if (uri === "debo://journals/recent") {
+    const { getJournals } = await import("@/actions/journals");
+    const journals = await getJournals("desc", 10, 0, userId);
+    return [
+      {
+        uri,
+        mimeType: "application/json",
+        text: JSON.stringify(journals, null, 2),
+      },
+    ];
+  }
+
+  if (uri === "debo://memories/recent") {
+    const { getRelevantMemories } = await import("@/lib/memory/query");
+    const memories = await getRelevantMemories(userId, "");
+    return [
+      {
+        uri,
+        mimeType: "application/json",
+        text: JSON.stringify(memories.items.slice(0, 20), null, 2),
+      },
+    ];
+  }
+
+  throw new Error("Resource not found");
+}
+
+function listMcpPrompts() {
+  return [
+    {
+      name: "debo-homie",
+      title: "Debo homie mode",
+      description: "Make an external agent use Debo as a warm, evidence-backed personal assistant.",
+      arguments: [
+        {
+          name: "task",
+          description: "What the agent should help the user accomplish.",
+          required: false,
+        },
+      ],
+    },
+    {
+      name: "debo-context-import",
+      title: "Import AI context",
+      description: "Guide an external agent to import ChatGPT, Claude, IDE, or Gemini context into Debo.",
+      arguments: [
+        {
+          name: "source",
+          description: "Source app name, such as ChatGPT or Claude.",
+          required: false,
+        },
+      ],
+    },
+  ];
+}
+
+function getMcpPrompt(name: string, args: unknown) {
+  const input = args && typeof args === "object" ? args as Record<string, unknown> : {};
+  const task = typeof input.task === "string" ? input.task : "help the user with life-context-aware work";
+  const source = typeof input.source === "string" ? input.source : "the external AI app";
+
+  if (name === "debo-homie") {
+    return {
+      description: "Use Debo's MCP server as the user's private context layer.",
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: `Use Debo tools whenever personal context matters. For ${task}, call ask_debo for natural chat, search_journals/get_memories for evidence, and add_memory only when the user explicitly wants a durable fact saved. Keep the final answer warm, concise, and user-facing.`,
+          },
+        },
+      ],
+    };
+  }
+
+  if (name === "debo-context-import") {
+    return {
+      description: "Import exported AI context into Debo.",
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: `When the user provides an export from ${source}, pass the raw JSON, markdown, or text into import_ai_context with the best source value. Then call ask_debo to summarize what was imported and suggest the next useful question.`,
+          },
+        },
+      ],
+    };
+  }
+
+  return null;
+}
+
+function safeJson(value: string, fallback: unknown) {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return fallback;
   }
 }
 

@@ -13,6 +13,8 @@ The core system already has the right shape:
 - durable memory is handled by the in-house memory engine,
 - answers are orchestrated through the Vercel AI SDK,
 - model traffic can be routed through Cloudflare AI Gateway.
+- `/chat` owns addressable threads and can import exported AI context into retrievable journal context.
+- Debo MCP exposes chat, import, journal, memory, resource, and prompt surfaces for external agents.
 
 The product focus now is improving retrieval quality, memory quality, and the clarity of the user experience.
 
@@ -23,6 +25,8 @@ The product focus now is improving retrieval quality, memory quality, and the cl
 - **Modern Glassmorphism UI**: A fluid, premium interface that breathes with the user's data.
 - **Predictive Burnout Detection**: Proactive nudges based on sentiment and pattern shifts.
 - **Chat URL Ownership**: Route chat through `/chat` and keep every thread addressable by URL ID.
+- **AI Context Import**: Let users import ChatGPT, Claude, Cursor, Codex, Gemini, markdown, or plain text exports through `/chat`.
+- **MCP Chat Surface**: Let external agents call `ask_debo`, `import_ai_context`, and chat thread readers through Debo MCP.
 
 ### Phase 2: Memory Synthesis
 - **AI Legacy Mode**: Synthesizing years of context into a structured "Life Philosophy" book.

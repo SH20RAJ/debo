@@ -10,7 +10,9 @@ import {
     Cpu,
     Code2,
     Shield,
-    Sparkles
+    Sparkles,
+    MessageSquareText,
+    DatabaseZap
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
@@ -57,9 +59,10 @@ export function McpManager({ initialKey }: McpManagerProps) {
     const samplePrompt = `You are a personal AI companion with deep integration into the user's life via the Debo Intelligence Graph. 
 
 Use the provided Debo tools to:
-1. Fetch historical journals to understand context.
-2. Search and store persistent memories about the user's preferences, goals, and history.
-3. Detect patterns in the user's notes to provide proactive insights.
+1. Call ask_debo for natural Debo chat backed by the same /chat memory.
+2. Fetch historical journals and memories when personal context matters.
+3. Import exported ChatGPT, Claude, Cursor, Codex, or Gemini context with import_ai_context.
+4. Detect patterns in notes and store durable memories only when the user wants that.
 
 Always favor information stored in Debo over generic AI knowledge when discussing the user's personal context. When you learn something significant, proactively store it as a memory using add_memory.`
 
@@ -70,6 +73,21 @@ Always favor information stored in Debo over generic AI knowledge when discussin
       jsonrpc: "2.0",
       id: "tools",
       method: "tools/list",
+    })}'`
+
+    const askProbe = `curl -s ${JSON.stringify(mcpUrl)} \\
+  -H "Authorization: Bearer ${key}" \\
+  -H "Content-Type: application/json" \\
+  -d '${JSON.stringify({
+      jsonrpc: "2.0",
+      id: "ask",
+      method: "tools/call",
+      params: {
+        name: "ask_debo",
+        arguments: {
+          message: "Give me a concise Debo check-in.",
+        },
+      },
     })}'`
 
     return (
@@ -162,6 +180,7 @@ Always favor information stored in Debo over generic AI knowledge when discussin
                             <TabsList className="w-full justify-start rounded-none border-b border-border/50 bg-muted/10 h-12 px-2">
                                 <TabsTrigger value="claude" className="text-xs data-[state=active]:bg-background">Claude</TabsTrigger>
                                 <TabsTrigger value="cursor" className="text-xs data-[state=active]:bg-background">Cursor</TabsTrigger>
+                                <TabsTrigger value="agents" className="text-xs data-[state=active]:bg-background">Agents</TabsTrigger>
                                 <TabsTrigger value="http" className="text-xs data-[state=active]:bg-background">HTTP Test</TabsTrigger>
                             </TabsList>
                             <TabsContent value="claude" className="p-6 space-y-4">
@@ -225,11 +244,33 @@ Always favor information stored in Debo over generic AI knowledge when discussin
                                     ))}
                                 </div>
                             </TabsContent>
+                            <TabsContent value="agents" className="p-6 space-y-4">
+                                <div className="space-y-2">
+                                    <h4 className="text-sm font-medium">Codex, Gemini CLI, and custom agents</h4>
+                                    <p className="text-xs text-muted-foreground">Use the streamable HTTP endpoint with bearer auth. The key tools are <code className="text-foreground">ask_debo</code>, <code className="text-foreground">import_ai_context</code>, and journal retrieval.</p>
+                                </div>
+                                <div className="grid gap-3">
+                                    {[
+                                        `Endpoint: ${mcpUrl}`,
+                                        "Transport: Streamable HTTP / JSON-RPC 2.0",
+                                        "Header: Authorization = Bearer your MCP key",
+                                        "Resource: debo://profile for behavior instructions",
+                                        "Prompt: debo-homie for Debo-style orchestration"
+                                    ].map((step, i) => (
+                                        <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-muted/20 border border-border/30">
+                                            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary border border-primary/20">
+                                                {i + 1}
+                                            </div>
+                                            <span className="text-xs font-medium">{step}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </TabsContent>
                             <TabsContent value="http" className="p-6 space-y-4">
                                 <div className="space-y-2">
                                     <h4 className="text-sm font-medium">Smoke Test</h4>
                                     <p className="text-xs text-muted-foreground">
-                                        This calls the MCP server's <code className="text-foreground">tools/list</code> method directly.
+                                        This calls the MCP server&apos;s <code className="text-foreground">tools/list</code> method directly.
                                     </p>
                                 </div>
                                 <div className="relative group">
@@ -241,6 +282,22 @@ Always favor information stored in Debo over generic AI knowledge when discussin
                                         size="sm"
                                         className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity h-7 text-[10px]"
                                         onClick={() => copyToClipboard(httpProbe, "HTTP test")}
+                                    >
+                                        Copy cURL
+                                    </Button>
+                                </div>
+                                <div className="space-y-2 pt-2">
+                                    <h4 className="text-sm font-medium">Ask Debo through MCP</h4>
+                                </div>
+                                <div className="relative group">
+                                    <pre className="bg-zinc-950 p-5 rounded-xl text-[11px] text-zinc-300 overflow-x-auto font-mono border border-white/5 shadow-2xl">
+{askProbe}
+                                    </pre>
+                                    <Button
+                                        variant="secondary"
+                                        size="sm"
+                                        className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity h-7 text-[10px]"
+                                        onClick={() => copyToClipboard(askProbe, "Ask test")}
                                     >
                                         Copy cURL
                                     </Button>
@@ -264,7 +321,7 @@ Always favor information stored in Debo over generic AI knowledge when discussin
                         <CardContent>
                             <div className="relative group">
                                 <div className="p-4 rounded-xl bg-background/50 text-[11px] leading-relaxed text-muted-foreground italic border border-border/30">
-                                    "{samplePrompt}"
+                                    {samplePrompt}
                                 </div>
                                 <Button 
                                     variant="secondary" 
@@ -289,26 +346,35 @@ Always favor information stored in Debo over generic AI knowledge when discussin
                         <CardContent className="p-0">
                             <div className="divide-y divide-border/50">
                                 {[
+                                    { name: "ask_debo", desc: "Full /chat-style Debo reply", icon: MessageSquareText },
+                                    { name: "import_ai_context", desc: "Import AI exports into memory", icon: DatabaseZap },
+                                    { name: "list_chat_threads", desc: "Browse Debo chat threads", icon: MessageSquareText },
                                     { name: "create_journal", desc: "Save new life entries" },
                                     { name: "search_journals", desc: "Semantic history search" },
                                     { name: "add_memory", desc: "Store persistent facts" },
                                     { name: "get_memories", desc: "Recall user context" },
                                     { name: "get_timeline", desc: "Chronological timeline" },
                                     { name: "detect_patterns", desc: "AI pattern analysis" },
-                                ].map(tool => (
+                                ].map(tool => {
+                                    const ToolIcon = "icon" in tool ? tool.icon : null
+                                    return (
                                     <div key={tool.name} className="p-4 hover:bg-muted/30 transition-colors group">
                                         <div className="flex items-center justify-between mb-1">
-                                            <code className="text-[10px] font-bold text-primary font-mono">{tool.name}</code>
+                                            <div className="flex items-center gap-2">
+                                                {ToolIcon ? <ToolIcon className="h-3.5 w-3.5 text-primary" /> : null}
+                                                <code className="text-[10px] font-bold text-primary font-mono">{tool.name}</code>
+                                            </div>
                                             <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                                         </div>
                                         <p className="text-[10px] text-muted-foreground leading-tight">{tool.desc}</p>
                                     </div>
-                                ))}
+                                    )
+                                })}
                             </div>
                         </CardContent>
                         <CardFooter className="bg-muted/10 p-4">
                             <p className="text-[10px] text-muted-foreground italic text-center w-full">
-                                These are the active tools exposed by Debo's MCP server.
+                                These are the active tools exposed by Debo&apos;s MCP server.
                             </p>
                         </CardFooter>
                     </Card>

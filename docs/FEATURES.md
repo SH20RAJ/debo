@@ -141,3 +141,23 @@ Debo uses Mastra agents, tools, workflows, memory, and retrieval pipelines as th
 ### Why it matters
 
 The product should feel instant even when the intelligence layer is doing real work. Good orchestration keeps capture fast, retrieval grounded, and connector actions reliable.
+
+## 15. AI Context Import
+
+### How it works
+
+The `/chat` interface accepts exported context from ChatGPT, Claude, Cursor, Codex, Gemini, markdown, or plain text. Debo parses common JSON export shapes, formats the conversations into journal-sized chunks, saves them with `imported-context` tags, and drops a visible receipt into the active chat thread.
+
+### Why it matters
+
+Users already have useful context trapped in other AI tools. Importing it gives Debo a faster starting point without forcing the user to manually rewrite their history.
+
+## 16. Debo MCP Chat
+
+### How it works
+
+Debo exposes MCP tools, resources, and prompts. External agents can call `ask_debo` to talk through the same Debo agent used by `/chat`, call `import_ai_context` to ingest exports, read recent resources such as `debo://chat/threads`, and use prompts like `debo-homie` for correct orchestration.
+
+### Why it matters
+
+Debo becomes the user's portable personal context layer. Claude, Cursor, Codex, Gemini CLI, or a custom agent can ask Debo instead of rebuilding memory from scratch.

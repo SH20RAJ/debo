@@ -99,6 +99,10 @@ FEATURES (High-impact)
    - Benefit: Authorized apps become useful action surfaces, not passive data dumps.
    - Example: while recording a vlog, say "make me remember I have to attend the product review today at 5" and Debo prepares a calendar event for approval.
 
+9) AI Context Import
+   - Benefit: Start Debo with context you already built elsewhere.
+   - Example: import a ChatGPT, Claude, Cursor, Codex, Gemini, markdown, or text export from `/chat` and continue the thread with Debo.
+
 - UI hints:
   - Keep each card tight and claim-based. Hover reveals a micro-example or citation.
   - Add a small badge: "Cited from your journal" for features that return evidence.
@@ -113,6 +117,7 @@ CAPTURE LAYER (Roadmap preview)
   - Audio journaling: quick voice notes while walking, driving, or decompressing.
   - Video journaling: private vlog entries with transcript and memory extraction.
   - Image journaling: uploads of diary pages, handwritten notes, whiteboards, and photos.
+  - AI context import: exported conversations from ChatGPT, Claude, Cursor, Codex, Gemini, markdown, or plain text.
 - Connector example:
   - User records: "Make me remember that I have to attend X meeting today."
   - Debo extracts the task, checks connected calendar context, drafts an event, and asks for confirmation before writing.

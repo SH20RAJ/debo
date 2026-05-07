@@ -6,24 +6,21 @@ import {
   MASTRA_THREAD_ID_KEY,
   RequestContext,
 } from "@mastra/core/request-context";
+import { ensureChatThread } from "@/lib/chat/server";
 import { createUIMessageStreamResponse } from "ai";
 import { NextRequest } from "next/server";
 
 export async function POST(req: NextRequest) {
-  let userId = "anonymous";
-  let authenticatedUserId: string | undefined;
-  try {
-    const resolvedId = await resolveUserId();
-    if (resolvedId) {
-      userId = resolvedId;
-      authenticatedUserId = resolvedId;
-    }
-  } catch (e) {
-    console.error("DEBUG: Auth resolution failed, using fallback", e);
+  const userId = await resolveUserId();
+  if (!userId) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
-  // Cloudflare context sync
   try {
+    // Cloudflare context sync
     const { getCloudflareContext } = await import("@opennextjs/cloudflare");
     const cf = getCloudflareContext();
     if (cf?.env) {
@@ -37,19 +34,17 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { id: threadId } = body as { id?: string };
 
-    const resolvedThreadId = threadId || crypto.randomUUID();
-    let requestContext: RequestContext<Record<string, unknown>> | undefined;
-    if (authenticatedUserId) {
-      requestContext = new RequestContext<Record<string, unknown>>();
-      requestContext.set("userId", authenticatedUserId);
-      requestContext.set(MASTRA_RESOURCE_ID_KEY, authenticatedUserId);
-      requestContext.set(MASTRA_THREAD_ID_KEY, resolvedThreadId);
-    }
+    const thread = await ensureChatThread(userId, threadId);
+    const resolvedThreadId = thread.id;
+    const requestContext = new RequestContext<Record<string, unknown>>();
+    requestContext.set("userId", userId);
+    requestContext.set(MASTRA_RESOURCE_ID_KEY, userId);
+    requestContext.set(MASTRA_THREAD_ID_KEY, resolvedThreadId);
 
     const stream = await handleChatStream({
       mastra,
       agentId: "debo",
-      params: body as any,
+      params: body as never,
       version: "v6",
       defaultOptions: {
         memory: {
@@ -84,9 +79,10 @@ export async function POST(req: NextRequest) {
 
         // Handle sub-agent streaming text
         if (value.type === "data-tool-agent" && value.data && typeof value.data === 'object') {
-          const agentId = (value.data as any).id;
+          const data = value.data as Record<string, unknown>;
+          const agentId = data.id;
           const runId = typeof value.id === 'string' ? value.id : agentId;
-          const fullText = (value.data as any).text;
+          const fullText = data.text;
           
           if (runId && typeof fullText === 'string') {
             const lastText = lastTexts[runId] || "";
@@ -135,6 +131,12 @@ export async function POST(req: NextRequest) {
     return response;
   } catch (error) {
     console.error("CHAT_API_CRASH:", error);
+    const status =
+      error instanceof Error &&
+      (error.message.includes("another user") || error.message.includes("already exists"))
+        ? 409
+        : 500;
+
     return new Response(
       JSON.stringify({
         error: "Intelligence engine error",
@@ -142,7 +144,7 @@ export async function POST(req: NextRequest) {
         stack: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.stack : undefined) : undefined
       }),
       {
-        status: 500,
+        status,
         headers: { "Content-Type": "application/json" },
       }
     );

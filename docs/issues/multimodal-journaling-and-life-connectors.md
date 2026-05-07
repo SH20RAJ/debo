@@ -10,6 +10,7 @@ Add audio journaling, video journaling, and image journaling so users can captur
 - Debo transcribes the recording, extracts the meeting, checks connected calendar context, drafts a calendar event, and asks for approval before saving it.
 - A user uploads handwritten diary pages. Debo OCRs them, stores the original images, creates journal text, and adds memories from the content.
 - A user uploads an old voice memo. Debo turns it into a dated journal entry and makes it available in Ask/Chat.
+- A user imports exported ChatGPT/Claude/AI IDE context. Debo stores it as retrievable context and can cite or summarize it later.
 
 ## Scope
 
@@ -21,6 +22,7 @@ Add audio journaling, video journaling, and image journaling so users can captur
 - Memory extraction from transcripts/OCR text.
 - Calendar/task/note/email connector actions exposed to chat and LiveKit voice after user authorization.
 - Onboarding and settings flows for connecting social accounts and productivity tools.
+- AI context import for ChatGPT, Claude, Cursor, Codex, Gemini, markdown, and text exports.
 - Human approval before external write actions.
 
 ## Orchestration

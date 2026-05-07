@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "deploy": "NODE_OPTIONS=--import=./scripts/register-opennext-ast-patch.mjs opennextjs-cloudflare build && node scripts/patch-opennext-worker.mjs && opennextjs-cloudflare deploy",
     "upload": "NODE_OPTIONS=--import=./scripts/register-opennext-ast-patch.mjs opennextjs-cloudflare build && node scripts/patch-opennext-worker.mjs && opennextjs-cloudflare upload",
     "preview": "NODE_OPTIONS=--import=./scripts/register-opennext-ast-patch.mjs opennextjs-cloudflare build && node scripts/patch-opennext-worker.mjs && opennextjs-cloudflare preview",

@@ -1,21 +1,37 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/db";
-import { chats, messages } from "@/db/schema";
 import { resolveUserId } from "@/actions/auth-sync";
-import { eq, and, desc } from "drizzle-orm";
+import {
+  deleteChatThread,
+  ensureChatThread,
+  getChatThread,
+  listChatThreads,
+  renameChatThread,
+} from "@/lib/chat/server";
 
 // GET /api/chat/threads — List all threads for the current user
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const userId = await resolveUserId();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const threads = await db.query.chats.findMany({
-      where: eq(chats.userId, userId),
-      orderBy: [desc(chats.updatedAt)],
-    });
+    const requestedId = req.nextUrl.searchParams.get("id");
+    if (requestedId) {
+      const thread = await getChatThread(userId, requestedId);
+      if (!thread) {
+        return NextResponse.json({ error: "Thread not found" }, { status: 404 });
+      }
+
+      return NextResponse.json({
+        id: thread.id,
+        title: thread.title || "New Chat",
+        createdAt: thread.createdAt,
+        updatedAt: thread.updatedAt,
+      });
+    }
+
+    const threads = await listChatThreads(userId);
 
     return NextResponse.json({
       threads: threads.map((t) => ({
@@ -40,25 +56,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json() as { id?: string; title?: string };
-    const threadId = body.id || crypto.randomUUID();
-    const title = body.title?.trim() || null;
-
-    await db
-      .insert(chats)
-      .values({
-        id: threadId,
-        userId,
-        title,
-      })
-      .onConflictDoNothing({ target: chats.id });
-
-    const thread = await db.query.chats.findFirst({
-      where: and(eq(chats.id, threadId), eq(chats.userId, userId)),
-    });
-
-    if (!thread) {
-      return NextResponse.json({ error: "Thread id already exists" }, { status: 409 });
-    }
+    const thread = await ensureChatThread(userId, body.id, body.title);
 
     return NextResponse.json({
       id: thread.id,
@@ -68,6 +66,13 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error("POST /api/chat/threads error:", error);
+    if (
+      error instanceof Error &&
+      (error.message.includes("another user") || error.message.includes("already exists"))
+    ) {
+      return NextResponse.json({ error: error.message }, { status: 409 });
+    }
+
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }
@@ -85,17 +90,10 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "Missing thread id" }, { status: 400 });
     }
 
-    // Verify ownership
-    const chat = await db.query.chats.findFirst({
-      where: and(eq(chats.id, threadId), eq(chats.userId, userId)),
-    });
-    if (!chat) {
+    const deleted = await deleteChatThread(userId, threadId);
+    if (!deleted) {
       return NextResponse.json({ error: "Thread not found" }, { status: 404 });
     }
-
-    // Delete messages first (foreign key), then the chat
-    await db.delete(messages).where(eq(messages.chatId, threadId));
-    await db.delete(chats).where(eq(chats.id, threadId));
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -118,16 +116,17 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Missing thread id" }, { status: 400 });
     }
 
-    const chat = await db.query.chats.findFirst({
-      where: and(eq(chats.id, id), eq(chats.userId, userId)),
-    });
-    if (!chat) {
+    const thread = await renameChatThread(userId, id, title);
+    if (!thread) {
       return NextResponse.json({ error: "Thread not found" }, { status: 404 });
     }
 
-    await db.update(chats).set({ title: title?.trim() || null, updatedAt: new Date() }).where(eq(chats.id, id));
-
-    return NextResponse.json({ success: true });
+    return NextResponse.json({
+      success: true,
+      id: thread.id,
+      title: thread.title || "New Chat",
+      updatedAt: thread.updatedAt,
+    });
   } catch (error) {
     console.error("PATCH /api/chat/threads error:", error);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });

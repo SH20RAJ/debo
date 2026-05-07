@@ -20,6 +20,7 @@ Debo exposes tools for three retrieval tasks:
 - Search journal entries.
 - Retrieve persistent memories.
 - Fetch recent entries.
+- Import external AI context and chat through Debo via MCP.
 
 These tools are intentionally narrow. They return evidence, not freeform prose, so the model stays grounded in the user's actual history.
 
@@ -109,3 +110,13 @@ When connector tools are enabled, Debo can transform captured context into draft
 Before any data is sent to the LLM via the Cloudflare AI Gateway:
 - **PII Scrubbing (Optional)**: In high-privacy mode, the system can scrub sensitive identifiers, replacing them with tokens that are mapped back locally.
 - **Context Truncation**: Only the most relevant snippets are sent, minimizing the amount of personal data exposed to the model provider.
+
+## 15. Imported AI Context
+
+Imported ChatGPT, Claude, Cursor, Codex, Gemini, markdown, or text exports become a first-class context source. The importer parses common export shapes, converts messages into journal-sized chunks, tags them as `imported-context`, and stores a chat receipt in `/chat`.
+
+The assistant should treat imported material as useful user-provided context, not automatically verified life memory. It can search, summarize, and cite imported context, but durable memory facts should still come from clear user intent or repeated evidence.
+
+## 16. MCP Chat Surface
+
+External agents can call Debo through MCP instead of rebuilding context. The MCP server exposes `ask_debo`, `import_ai_context`, chat thread readers, journal tools, memory tools, resources, and prompts. `ask_debo` uses the same Mastra Debo agent, request context, thread ID, resource ID, and app chat persistence path as `/chat`.

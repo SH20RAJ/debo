@@ -6,6 +6,8 @@ import { extractEntities } from "@/lib/ai/extract";
 import { embed } from "@/lib/ai/embeddings";
 import {
   deleteVectorsByFilter,
+  getQdrantErrorMessage,
+  isQdrantAuthError,
   searchVector as searchQdrantVector,
   upsertVector,
   type QdrantMatch,
@@ -103,56 +105,67 @@ import { v5 as uuidv5 } from "uuid";
 const UUID_NAMESPACE = "6ba7b810-9dad-11d1-80b4-00c04fd430c8";
 
 export async function indexJournal(journal: JournalForIndex) {
-  const { splitIntoChunks } = await import("@/lib/ai/chunking");
-  const fullContent = journal.tags && journal.tags.length > 0 
-    ? `${journal.title ? journal.title + "\n" : ""}${journal.content}\n\nTags: ${journal.tags.map(t => `#${t}`).join(" ")}`
-    : `${journal.title ? journal.title + "\n" : ""}${journal.content}`;
-    
-  const chunks = splitIntoChunks(fullContent);
+  try {
+    const { splitIntoChunks } = await import("@/lib/ai/chunking");
+    const fullContent = journal.tags && journal.tags.length > 0 
+      ? `${journal.title ? journal.title + "\n" : ""}${journal.content}\n\nTags: ${journal.tags.map(t => `#${t}`).join(" ")}`
+      : `${journal.title ? journal.title + "\n" : ""}${journal.content}`;
+      
+    const chunks = splitIntoChunks(fullContent);
 
-  if (chunks.length === 0) {
-    return;
+    if (chunks.length === 0) {
+      return;
+    }
+
+    await deleteVectorsByFilter({
+      must: [
+        {
+          key: "journalId",
+          match: {
+            value: journal.id,
+          },
+        },
+        {
+          key: "userId",
+          match: {
+            value: journal.userId,
+          },
+        },
+      ],
+    });
+
+    const createdAt = toDateString(journal.createdAt) || new Date().toISOString();
+
+    await Promise.all(
+      chunks.map(async (chunk, chunkIndex) => {
+        const vector = await embed(chunk);
+        const pointId = uuidv5(`${journal.id}_${chunkIndex}`, UUID_NAMESPACE);
+
+        await upsertVector({
+          id: pointId,
+          vector,
+          payload: {
+            userId: journal.userId,
+            journalId: journal.id,
+            title: journal.title,
+            content: chunk,
+            createdAt,
+            chunkIndex,
+            chunkCount: chunks.length,
+          },
+        });
+      })
+    );
+  } catch (error) {
+    if (isQdrantAuthError(error)) {
+      console.warn(
+        `[Vector] Skipping Qdrant indexing for journal ${journal.id}: ${getQdrantErrorMessage(error)}`
+      );
+      return;
+    }
+
+    throw error;
   }
-
-  await deleteVectorsByFilter({
-    must: [
-      {
-        key: "journalId",
-        match: {
-          value: journal.id,
-        },
-      },
-      {
-        key: "userId",
-        match: {
-          value: journal.userId,
-        },
-      },
-    ],
-  });
-
-  const createdAt = toDateString(journal.createdAt) || new Date().toISOString();
-
-  await Promise.all(
-    chunks.map(async (chunk, chunkIndex) => {
-      const vector = await embed(chunk);
-      const pointId = uuidv5(`${journal.id}_${chunkIndex}`, UUID_NAMESPACE);
-
-      await upsertVector({
-        id: pointId,
-        vector,
-        payload: {
-          userId: journal.userId,
-          journalId: journal.id,
-          title: journal.title,
-          content: chunk,
-          createdAt,
-          chunkIndex,
-          chunkCount: chunks.length,
-        },
-      });
-    })
-  );
 }
 
 export async function removeJournalFromIndex(journalId: string, userId?: string) {

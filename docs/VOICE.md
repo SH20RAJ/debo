@@ -17,6 +17,7 @@ Debo leverages **LiveKit** to power "Project Jarvis"—a real-time, zero-latency
 ### 1. The Voice Agent Worker
 We will deploy a dedicated **LiveKit Agent** (Node.js) that joins a LiveKit room whenever a user initiates a voice session.
 - **Context Injection**: The agent queries the user's memories, Qdrant journal index, recent chat context, and authorized connector context before answering.
+- **Imported Context**: The agent can also rely on AI-context imports from `/chat`, such as ChatGPT, Claude, Cursor, Codex, Gemini, markdown, or text exports.
 - **Tool Access**: The agent receives a safe tool surface for calendar, notes, tasks, email, and other connected accounts. Write actions should be previewed or confirmed before execution.
 - **Capture Events**: Voice sessions can become audio journals. Transcripts are saved, indexed, and passed through the memory extraction workflow.
 

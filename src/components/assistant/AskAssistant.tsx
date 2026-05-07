@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { DeboToolUIs } from "./DeboToolUIs";
 import { DeboVoiceDock } from "./DeboVoiceDock";
+import { ContextImportDialog } from "./ContextImportDialog";
 import {
   BookOpen,
   Brain,
@@ -94,6 +95,7 @@ function WelcomeScreen() {
             </button>
           </ThreadPrimitive.Suggestion>
         ))}
+        <ContextImportDialog variant="panel" />
       </span>
     </span>
   );
@@ -140,6 +142,7 @@ export function AskAssistant() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <ContextImportDialog />
             <DeboVoiceDock />
             <Link
               href="/dashboard"
@@ -167,7 +170,7 @@ export function AskAssistant() {
                 },
               }}
               welcome={{
-                message: <WelcomeScreen /> as any,
+                message: <WelcomeScreen />,
               }}
             />
             <div className="pointer-events-none absolute bottom-5 right-6 hidden items-center gap-2 rounded-full border border-white/10 bg-black/35 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.22em] text-white/45 backdrop-blur xl:flex">

@@ -36,9 +36,9 @@ const captureModes = [
 
 const actionExamples = [
   "Transcribe recordings into journal entries",
+  "Import ChatGPT and Claude exports",
   "Extract memories, people, dates, and tasks",
   "Create calendar events after you approve",
-  "Use connected apps as context for Debo",
 ];
 
 export function Capture() {
@@ -108,8 +108,8 @@ export function Capture() {
                     Recording
                   </div>
                   <p className="text-base font-bold leading-relaxed text-duo-eel">
-                    "Make me remember that I have to attend the product review
-                    meeting today at 5."
+                    &quot;Make me remember that I have to attend the product review
+                    meeting today at 5.&quot;
                   </p>
                 </div>
 
@@ -147,8 +147,8 @@ export function Capture() {
                 <div className="flex items-center gap-3 rounded-xl border-2 border-duo-swan bg-background p-4">
                   <UploadCloud className="h-5 w-5 text-duo-orange" />
                   <p className="text-sm font-bold text-duo-wolf">
-                    Upload recordings, images, and diary pages now in the
-                    roadmap so future context capture can happen in minutes.
+                    Upload recordings, images, diary pages, or exported AI
+                    chats so future context capture can happen in minutes.
                   </p>
                 </div>
               </div>

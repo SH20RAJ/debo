@@ -53,12 +53,26 @@ MCP unlocks infinite, protocol-level extensibility for Debo.
 ### The Debo Server (The Egress)
 *   Debo will expose a standard HTTP/SSE MCP API at `debo.app/api/mcp`.
 *   An external AI agent (like Claude Desktop) connecting to this URL will be able to call:
-    *   `read_journal_entries({ date_range })`
-    *   `create_journal_entry({ text })`
-    *   `get_memories_summary()`
+    *   `ask_debo({ message, threadId })`
+    *   `import_ai_context({ content, source })`
+    *   `search_journals({ query })`
+    *   `create_journal({ content })`
+    *   `get_memories({ query })`
+    *   `list_chat_threads()` and `get_chat_thread({ threadId })`
 *   This turns the user's journaling habit into a queryable data source for their entire OS-level AI setup.
+*   MCP resources such as `debo://profile`, `debo://chat/threads`, `debo://journals/recent`, and `debo://memories/recent` give external agents a lightweight way to inspect context.
+*   MCP prompts such as `debo-homie` and `debo-context-import` help external agents use Debo without leaking implementation details to the user.
 
-## 5. Orchestration Layer
+## 5. AI Context Import
+
+Users can import existing AI context through `/chat` or MCP.
+
+*   **Supported sources**: ChatGPT exports, Claude exports, Cursor/Codex/Gemini context dumps, markdown, and plain text.
+*   **Storage model**: Imported content is converted into journal-sized chunks with `imported-context` tags so retrieval, citations, and memory extraction can reuse the same pipelines as normal journal entries.
+*   **Thread continuity**: Each import creates or updates a Debo chat thread with a short receipt so the user can continue the conversation immediately.
+*   **Safety**: Imported AI context is treated as user-provided context, not verified truth. Debo should search and summarize it, but avoid turning every imported line into a durable fact unless the user confirms it.
+
+## 6. Orchestration Layer
 
 Debo should use Mastra as the product orchestration layer:
 

@@ -14,6 +14,7 @@
 *   **Conversational Interface**: Interactive chat interface powered by `assistant-ui` (similar to LobeHub) acting as a life companion.
 *   **Smart Retrieval**: AI search over past journal entries using Qdrant-backed semantic search (RAG).
 *   **Long-Term Memory Optimization**: A first-party memory engine to extract and naturally remember specific facts, preferences, and details about the user's life automatically.
+*   **AI Context Import**: Users can import exported context from ChatGPT, Claude, Cursor, Codex, Gemini, or plain markdown/text through `/chat`. Debo stores the import as retrievable journal context and creates a chat receipt so the user can continue from that thread.
 
 ### 2.3 BYOK (Bring Your Own Key) & AI Agnosticism
 *   **Default Engine**: Powered by Cloudflare Workers AI (fast, edge-based inference) out of the box.
@@ -22,7 +23,7 @@
 ### 2.4 Ecosystem Integrations (Connectors)
 *   **App Integrations**: Native connectors for pulling data from Gmail, Notion, Calendar, tasks, social accounts, and other user-approved sources, allowing the AI to contextualize the journal against real-world events.
 *   **Custom MCP URLs**: Capability to add arbitrary Model Context Protocol (MCP) servers to allow the AI to read metadata from other tools via standard protocols.
-*   **Debo MCP**: An exposed MCP server by Debo, allowing users to connect their journaling data to external AI tools (Cursor, Claude Desktop, etc.).
+*   **Debo MCP**: An exposed MCP server by Debo, allowing users to connect their journaling data and `/chat` flow to external AI tools (Cursor, Claude Desktop, Codex, Gemini CLI, etc.). Key tools include `ask_debo`, `import_ai_context`, journal search, memory lookup, and chat thread reads.
 *   **Connector Actions**: Authorized tools can draft calendar events, reminders, tasks, and notes from chat or voice context after user approval.
 
 ### 2.5 Project Jarvis

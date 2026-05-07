@@ -5,6 +5,7 @@ import {
   CalendarCheck,
   GitBranch,
   Images,
+  Import,
   MessagesSquare,
   Mic2,
   PlugZap,
@@ -83,6 +84,13 @@ const features = [
     description: "Mention a meeting in a recording and Debo can prepare a calendar event for approval.",
     color: "text-duo-blue",
     borderColor: "border-duo-macaw",
+  },
+  {
+    icon: Import,
+    title: "AI Context Import",
+    description: "Bring in ChatGPT, Claude, Cursor, Codex, or Gemini exports so Debo starts with your existing context.",
+    color: "text-duo-green",
+    borderColor: "border-duo-feather",
   },
 ];
 

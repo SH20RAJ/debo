@@ -20,6 +20,18 @@ type DeboToolContext = {
   };
 };
 
+type MemoryResultItem = {
+  id?: unknown;
+  content?: unknown;
+  date?: unknown;
+  label?: unknown;
+  sourceType?: unknown;
+};
+
+type GraphNodeResult = {
+  id?: unknown;
+};
+
 function toDeboToolContext(context: unknown): DeboToolContext {
   return (context ?? {}) as DeboToolContext;
 }
@@ -85,7 +97,8 @@ export const getJournalsTool = createTool({
   execute: async (input, context) => {
     const { getJournals } = await import('@/actions/journals');
     const userId = requireUserId(context);
-    return await getJournals('desc', input.limit, 0, userId);
+    const limit = typeof input.limit === 'number' ? input.limit : 10;
+    return await getJournals('desc', limit, 0, userId);
   },
 });
 
@@ -136,7 +149,7 @@ export const getMemoriesTool = createTool({
     const query = typeof input.query === 'string' ? input.query : '';
     const limit = typeof input.limit === 'number' ? input.limit : 5;
     const memories = await getRelevantMemories(userId, query);
-    return memories.items.slice(0, limit).map((memory: any) => ({
+    return (memories.items as MemoryResultItem[]).slice(0, limit).map((memory) => ({
       id: memory.id,
       content: memory.content,
       date: memory.date,
@@ -174,16 +187,163 @@ export const queryGraphTool = createTool({
     const { queryGraph } = await import('@/lib/life/graph');
     const userId = requireUserId(context);
     const result = await queryGraph(input.question, userId);
+    const sentiment = result.topEmotions?.[0]?.name;
     return {
       insight: result.insights.join(' ') || 'No patterns discovered yet.',
-      evidence: result.nodes.slice(0, 5).map((n: any) => n.id),
-      sentiment: (result.topEmotions?.[0]?.name as any) || 'neutral',
+      evidence: (result.nodes as GraphNodeResult[]).slice(0, 5).map((node) => String(node.id ?? '')),
+      sentiment:
+        sentiment === 'positive' ||
+        sentiment === 'negative' ||
+        sentiment === 'neutral' ||
+        sentiment === 'growth'
+          ? sentiment
+          : 'neutral',
       suggestedAction: 'Consider reflecting on this recurring pattern in your next journal entry.',
     };
   },
 });
 
-export const deboTools = {
+export const askDeboTool = createTool({
+  id: 'ask_debo',
+  description: 'Ask Debo a chat question through the same memory and tool orchestration used by /chat.',
+  inputSchema: z.object({
+    message: z.string().min(1).describe('The message to send to Debo.'),
+    threadId: z.string().optional().describe('Optional Debo chat thread ID to continue.'),
+    title: z.string().optional().describe('Optional title for a new MCP-backed thread.'),
+    maxSteps: z.coerce.number().min(1).max(8).optional().default(4),
+    saveToChat: z.boolean().optional().default(true).describe('Persist the exchange so it appears in Debo chat history.'),
+  }),
+  outputSchema: z.object({
+    threadId: z.string(),
+    text: z.string(),
+  }),
+  execute: async (input, context) => {
+    const userId = requireUserId(context);
+    const { mastra } = await import('@/mastra');
+    const {
+      MASTRA_RESOURCE_ID_KEY,
+      MASTRA_THREAD_ID_KEY,
+      RequestContext,
+    } = await import('@mastra/core/request-context');
+    const { ensureChatThread, persistPlainChatExchange } = await import('@/lib/chat/server');
+
+    const thread = await ensureChatThread(userId, input.threadId, input.title || 'MCP chat');
+    const requestContext = new RequestContext<Record<string, unknown>>();
+    requestContext.set('userId', userId);
+    requestContext.set(MASTRA_RESOURCE_ID_KEY, userId);
+    requestContext.set(MASTRA_THREAD_ID_KEY, thread.id);
+    requestContext.set('mcp.extra', toDeboToolContext(context).mcp?.extra ?? {});
+
+    const agent = mastra.getAgent('debo');
+    const maxSteps = typeof input.maxSteps === 'number' ? input.maxSteps : 4;
+    const response = await agent.generate(input.message, {
+      memory: {
+        thread: thread.id,
+        resource: userId,
+      },
+      requestContext,
+      maxSteps,
+    });
+    const text = typeof response.text === 'string' ? response.text : JSON.stringify(response);
+
+    if (input.saveToChat) {
+      await persistPlainChatExchange({
+        userId,
+        threadId: thread.id,
+        userText: input.message,
+        assistantText: text,
+        title: thread.title || input.title || 'MCP chat',
+        source: 'mcp',
+      });
+    }
+
+    return {
+      threadId: thread.id,
+      text,
+    };
+  },
+});
+
+export const importAiContextTool = createTool({
+  id: 'import_ai_context',
+  description: 'Import exported context from ChatGPT, Claude, Cursor, Codex, Gemini, or plain text into Debo memory.',
+  inputSchema: z.object({
+    content: z.string().min(1).max(2_000_000).describe('Exported JSON, Markdown, or plain text context.'),
+    source: z.enum(['auto', 'chatgpt', 'claude', 'cursor', 'codex', 'gemini', 'other']).optional().default('auto'),
+    title: z.string().optional(),
+    threadId: z.string().optional(),
+  }),
+  execute: async (input, context) => {
+    const userId = requireUserId(context);
+    const { importAiContext } = await import('@/lib/chat/context-import');
+    return importAiContext({
+      userId,
+      content: input.content,
+      source: input.source,
+      title: input.title,
+      threadId: input.threadId,
+    });
+  },
+});
+
+export const listChatThreadsTool = createTool({
+  id: 'list_chat_threads',
+  description: 'List Debo chat threads for the authenticated user.',
+  inputSchema: z.object({
+    limit: z.coerce.number().min(1).max(100).optional().default(20),
+  }),
+  execute: async (input, context) => {
+    const userId = requireUserId(context);
+    const { listChatThreads } = await import('@/lib/chat/server');
+    const limit = typeof input.limit === 'number' ? input.limit : 20;
+    const threads = await listChatThreads(userId, limit);
+    return threads.map((thread) => ({
+      id: thread.id,
+      title: thread.title || 'New Chat',
+      createdAt: thread.createdAt,
+      updatedAt: thread.updatedAt,
+    }));
+  },
+});
+
+export const getChatThreadTool = createTool({
+  id: 'get_chat_thread',
+  description: 'Read a Debo chat thread and optionally include visible messages.',
+  inputSchema: z.object({
+    threadId: z.string().describe('Debo chat thread ID.'),
+    includeMessages: z.boolean().optional().default(true),
+  }),
+  execute: async (input, context) => {
+    const userId = requireUserId(context);
+    const { extractMessageText, getChatThread, listChatMessages } = await import('@/lib/chat/server');
+    const thread = await getChatThread(userId, input.threadId);
+    if (!thread) throw new Error('Thread not found');
+
+    const rows = input.includeMessages ? await listChatMessages(userId, thread.id) : [];
+    return {
+      id: thread.id,
+      title: thread.title || 'New Chat',
+      createdAt: thread.createdAt,
+      updatedAt: thread.updatedAt,
+      messages: (rows ?? []).map((message) => ({
+        id: message.id,
+        role: message.role,
+        text: extractMessageText(safeParse(message.content) ?? message.content),
+        createdAt: message.createdAt,
+      })),
+    };
+  },
+});
+
+function safeParse(value: string) {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
+}
+
+export const agentDeboTools = {
   createJournalTool,
   deleteJournalTool,
   getJournalsTool,
@@ -193,3 +353,13 @@ export const deboTools = {
   getTimelineTool,
   queryGraphTool,
 };
+
+export const mcpDeboTools = {
+  ...agentDeboTools,
+  askDeboTool,
+  importAiContextTool,
+  listChatThreadsTool,
+  getChatThreadTool,
+};
+
+export const deboTools = agentDeboTools;
