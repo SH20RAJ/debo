@@ -101,3 +101,43 @@ Debo supports a default AI provider path and user-configurable overrides through
 ### Why it matters
 
 Users and teams should not be locked into one model provider. Configurability makes the system more durable over time.
+
+## 11. Multimodal Journaling
+
+### How it works
+
+Debo should accept text, audio, video, and image-based journal inputs. Audio and video uploads are transcribed into text. Diary page images, notebook scans, and whiteboard photos are processed through OCR. The generated transcript becomes the primary journal text, while the original media remains attached for review.
+
+### Why it matters
+
+Typing is not always the fastest way to journal. A user can record a private vlog, upload a meeting reflection, or photograph handwritten pages and still build useful AI context without manually rewriting everything.
+
+## 12. Live Capture to Memory
+
+### How it works
+
+LiveKit voice sessions should create structured capture events. When the user speaks, Debo can transcribe the session, identify durable facts, extract tasks, and store the transcript as journal context after user confirmation.
+
+### Why it matters
+
+This makes journaling ambient. The user can capture context in the moment instead of waiting for a quiet writing session.
+
+## 13. Connector Actions
+
+### How it works
+
+When users connect accounts during onboarding or settings, Debo can expose approved connector tools to the assistant. Calendar, email, notes, tasks, and social context should be available only after explicit authorization. Action tools should draft or preview high-impact changes before committing them.
+
+### Why it matters
+
+A full assistant needs context and the ability to act. If a user says in a recording, "remind me that I have to attend X meeting today," Debo should be able to turn that into a calendar draft instead of leaving it as plain text.
+
+## 14. Orchestration and Speed
+
+### How it works
+
+Debo uses Mastra agents, tools, workflows, memory, and retrieval pipelines as the orchestration layer. Fast paths should stream immediately and defer expensive indexing, transcription, OCR, and graph refreshes to background workflows. Context should be ranked and packed before model calls.
+
+### Why it matters
+
+The product should feel instant even when the intelligence layer is doing real work. Good orchestration keeps capture fast, retrieval grounded, and connector actions reliable.

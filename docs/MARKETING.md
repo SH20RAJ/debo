@@ -49,3 +49,11 @@
 ### Project Jarvis
 **The Vision:** Moving beyond text to ambient, real-time voice intelligence.
 **Goal:** Ambient life context available via sub-second voice interaction.
+
+### Multimodal Journaling
+**The Vision:** Capture life in the format it happens.
+**Goal:** Let users record live, upload voice/video, or scan diary pages. Debo transcribes, OCRs, extracts memories, and makes the context searchable.
+
+### Connector-Aware Assistant
+**The Vision:** Debo understands the user's actual life systems.
+**Goal:** During onboarding or settings, users connect calendar, email, notes, tasks, and social accounts. Debo can then draft useful actions, such as creating a calendar event from a spoken reminder in a vlog.

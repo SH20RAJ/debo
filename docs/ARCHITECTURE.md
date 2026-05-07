@@ -4,8 +4,9 @@ Debo is built as a **Privacy-First Life Intelligence System**, architected for e
 
 1. **Ambient Interface Layer**: Next.js App Router for web, and **LiveKit** for real-time, low-latency Jarvis-style voice interactions.
 2. **Edge Execution Layer**: Runs on **Cloudflare Workers** (OpenNext) for sub-second global response times and AI Gateway management.
-3. **Intelligence & Retrieval Layer**: Dual-store strategy using **Qdrant** for semantic search and **Neon (Postgres)** for structured, durable memories.
-4. **Impact Layer**: The **Radical Transparency Portal** that connects journal activity to real-world philanthropic outcomes.
+3. **Orchestration Layer**: Mastra agents, tools, and workflows coordinate chat, retrieval, transcription, OCR, memory extraction, connector actions, and background processing.
+4. **Intelligence & Retrieval Layer**: Dual-store strategy using **Qdrant** for semantic search and **Neon (Postgres)** for structured, durable memories.
+5. **Impact Layer**: The **Radical Transparency Portal** that connects journal activity to real-world philanthropic outcomes.
 
 ```mermaid
 graph TD
@@ -14,16 +15,23 @@ graph TD
     
     subgraph Edge_Execution[Cloudflare Edge Layer]
         Web --> Actions[Server Actions]
-        Web --> Copilot[CopilotKit V2 Runtime]
+        Web --> ChatRoute[Assistant UI Chat Runtime]
         Voice --> VoiceLogic[Voice Activity Detection + TTS/STT]
         Actions --> AIGateway[Cloudflare AI Gateway]
-        Copilot --> AIGateway
+        ChatRoute --> AIGateway
         VoiceLogic --> AIGateway
     end
 
+    subgraph Orchestration[Mastra Orchestration]
+        ChatRoute --> Agents[Agents]
+        VoiceLogic --> Agents
+        Agents --> Tools[Tools]
+        Tools --> Workflows[Workflows]
+    end
+
     subgraph Intelligence_Layer[Intelligence & Retrieval]
-        Actions --> DB[(Neon Postgres)]
-        Actions --> Qdrant[(Qdrant Vector DB)]
+        Workflows --> DB[(Neon Postgres)]
+        Workflows --> Qdrant[(Qdrant Vector DB)]
         
         subgraph Memory_Engine[Debo Memory Engine]
             DB --> Facts[Structured Facts]
@@ -169,11 +177,15 @@ A graph structure makes it possible to ask richer questions than search alone ca
 
 ## 8. AI Orchestration
 
-Debo uses the Vercel AI SDK for prompt execution, tool calling, and streaming responses.
+Debo uses Mastra as the orchestration layer and the AI SDK for streaming model responses.
 
 ### Tool Calling
 
 The assistant can call tools for journal search, memory retrieval, and recent entries. Tools keep retrieval out of the prompt until it is needed, which reduces noise and improves grounding.
+
+### Workflows
+
+Structured background jobs should run as Mastra workflows. Journal indexing, memory extraction, graph updates, transcription, OCR, and connector action drafting are deterministic pipelines, not loose chat behavior.
 
 ### Streaming
 
@@ -187,16 +199,14 @@ Before generation, the system builds a compact context block containing ranked s
 
 Model traffic is routed through Cloudflare AI Gateway so providers can be managed consistently. This helps with observability, provider switching, and future failover strategies.
 
-### CopilotKit V2 Integration
-
-Debo uses **CopilotKit V2** for deep agentic integration within the dashboard. The runtime is hosted at `/api/copilotkit` using the `copilotRuntimeNextJSAppRouterEndpoint` handler. This allows the AI agent to interact directly with the frontend state and execute client-side actions (like searching journals or creating entries) with high reliability and zero-configuration routing.
-
 ## 9. Performance & Edge Proxy
 
 To maintain high performance in a global environment, Debo employs a specialized **Edge Proxy Layer**:
 
 - **Decoupled Auth Sync**: Session validation is separated from database synchronization. The system uses a lightweight `getUserId` helper to verify identity in milliseconds, while heavy synchronization tasks (like updating user profiles in the DB) are deferred or skipped during latency-sensitive operations.
 - **Node.js Proxy Runtime**: The proxy runs on the standard Node.js runtime to maintain compatibility with heavy libraries while leveraging Cloudflare's global network for routing and security.
+- **Fast Capture Path**: User input is saved first. Expensive tasks such as embedding, transcription, OCR, memory extraction, and graph refreshes run after the user gets confirmation.
+- **Context Packing**: Retrieval output is ranked, deduplicated, and compressed before model calls to reduce latency and token cost.
 
 ## 10. Voice Architecture (Jarvis Agent)
 
@@ -206,6 +216,8 @@ The voice layer is built for **human-parity latency** using LiveKit's real-time 
 2. **STT (Speech-to-Text)**: High-speed transcription using Deepgram or Whisper.
 3. **Intelligence Loop**: Transcripts are piped into the `askQuestionAction` flow, retrieving personal memory and generating a response.
 4. **TTS (Text-to-Speech)**: Expressive voice synthesis (Cartesia/OpenAI) that streams audio back to the user via a LiveKit Room.
+5. **Connector Tools**: Authorized tools can draft calendar events, reminders, notes, and tasks from spoken context after user approval.
+6. **Journal Capture**: Audio/video sessions can be saved as journal records, transcribed, indexed, and summarized.
 
 ## 11. Security & Privacy Architecture
 
@@ -214,7 +226,7 @@ Debo is built on a **Zero-Trust for Data** model:
 - **E2E Encryption Vision**: Future versions will support client-side encryption for the primary journal store, where the server only sees encrypted blobs.
 - **Data Sovereignty**: Users can export their entire Postgres and Vector store at any time.
 - **Provider Isolation**: By using the Cloudflare AI Gateway, we can obfuscate PII before it reaches 3rd-party LLM providers.
-- **Auth Security**: Powered by **Better-Auth** with secure session management and multi-factor support.
+- **Auth Security**: Powered by Stack Auth with secure session management.
 
 ## 12. Impact-Driven Philanthropy
 
@@ -223,9 +235,10 @@ The architecture includes a "Philanthropy Hook":
 - **Automatic Allocation**: A portion of platform proceeds is tracked through the **Transparency Portal**, showing real-time updates on projects like "Building Wells in Rajasthan" or "School Funding in Bihar".
 - **Verifiable Proof**: Every philanthropic project is documented with photos, coordinates, and cost-breakdowns linked to the blockchain (future vision) for absolute transparency.
 
-## 13. Growth & Outreach Engine
+## 13. Growth & Community Engine
 
-Debo utilizes an automated **Outreach & Community Engine** powered by **Composio**:
-- **Targeted Engagement**: Programmatic search for top GitHub contributors across specific tech stacks (TS, Rust, Go).
-- **Personalized Outreach**: High-volume, personalized email sequences delivered via the Gmail API to invite top developers to contribute to the open-source mission.
-- **Analytics-Driven**: Tracking of community engagement metrics (stars, forks, issues) to measure the impact of outreach efforts.
+Debo should keep community growth simple and transparent:
+
+- **GitHub Roadmap**: Use issues and discussions to track public product direction.
+- **Contributor Context**: Keep docs, architecture notes, and AGENTS guidance current so contributors can move quickly.
+- **Privacy-First Outreach**: Avoid automated spam systems. Invite contributors through opt-in community surfaces and transparent calls for help.

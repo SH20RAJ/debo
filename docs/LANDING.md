@@ -91,9 +91,32 @@ FEATURES (High-impact)
    - Benefit: Advice and nudges based on your history.
    - Example: "You do your best work in the morning; schedule focus blocks then."
 
+7) Multimodal Journaling (Roadmap)
+   - Benefit: Capture life faster than typing.
+   - Example: record a private vlog, upload a voice note, or scan diary pages; Debo transcribes/OCRs the source and extracts memories later.
+
+8) Connector Actions (Roadmap)
+   - Benefit: Authorized apps become useful action surfaces, not passive data dumps.
+   - Example: while recording a vlog, say "make me remember I have to attend the product review today at 5" and Debo prepares a calendar event for approval.
+
 - UI hints:
   - Keep each card tight and claim-based. Hover reveals a micro-example or citation.
   - Add a small badge: "Cited from your journal" for features that return evidence.
+
+---
+
+CAPTURE LAYER (Roadmap preview)
+
+- Header: Journal faster than typing.
+- Lead: Record live, upload audio/video, or scan diary pages. Debo turns raw capture into transcribed, searchable, cited life context.
+- Modes:
+  - Audio journaling: quick voice notes while walking, driving, or decompressing.
+  - Video journaling: private vlog entries with transcript and memory extraction.
+  - Image journaling: uploads of diary pages, handwritten notes, whiteboards, and photos.
+- Connector example:
+  - User records: "Make me remember that I have to attend X meeting today."
+  - Debo extracts the task, checks connected calendar context, drafts an event, and asks for confirmation before writing.
+- Trust note: connector actions require explicit user authorization and should be reversible when possible.
 
 ---
 
@@ -104,6 +127,8 @@ DEMO (Live example)
 - Example flow (copy):
   - User: "What stresses me the most?"
   - Debo: "Deadlines two days before releases — you mention 'deadline' 8 times in the past 3 months. Citations: Apr 5, Mar 12, Feb 28. Pattern: stress rises before final reviews. Advice: Try micro-deadlines 5 days earlier."
+  - User uploads a commute recording: "Make me remember the 5 PM product review."
+  - Debo: "I found one reminder and can draft a calendar event once your calendar connector is enabled."
 
 - Visual hint: left: small chat timeline; right: stacked citation cards + tiny sparkline/heatmap.
 

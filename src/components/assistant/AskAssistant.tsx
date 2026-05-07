@@ -54,9 +54,9 @@ const suggestions = [
 
 function WelcomeScreen() {
   return (
-    <div className="mx-auto flex h-full w-full max-w-3xl flex-col justify-center px-5 py-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="mb-8 flex items-center gap-4">
-        <div className="relative h-16 w-16 shrink-0 rounded-lg border border-white/10 bg-white/5 p-2 shadow-sm">
+    <span className="mx-auto flex h-full w-full max-w-3xl flex-col justify-center px-5 py-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <span className="mb-8 flex items-center gap-4">
+        <span className="relative h-16 w-16 shrink-0 rounded-lg border border-white/10 bg-white/5 p-2 shadow-sm">
           <Image
             src="/mascot.png"
             alt="Debo"
@@ -65,18 +65,18 @@ function WelcomeScreen() {
             sizes="64px"
             priority
           />
-        </div>
-        <div className="min-w-0">
-          <p className="text-xs font-black uppercase tracking-[0.28em] text-emerald-300">
+        </span>
+        <span className="min-w-0">
+          <span className="block text-xs font-black uppercase tracking-[0.28em] text-emerald-300">
             Debo online
-          </p>
-          <h1 className="mt-1 text-3xl font-black tracking-normal text-white sm:text-4xl">
+          </span>
+          <span className="mt-1 block text-3xl font-black tracking-normal text-white sm:text-4xl">
             What shall we inspect?
-          </h1>
-        </div>
-      </div>
+          </span>
+        </span>
+      </span>
 
-      <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2">
+      <span className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2">
         {suggestions.map((s, i) => (
           <ThreadPrimitive.Suggestion
             key={i}
@@ -85,17 +85,17 @@ function WelcomeScreen() {
             asChild
           >
             <button className="group flex min-h-16 items-center gap-3 rounded-lg border border-white/10 bg-white/[0.04] px-4 py-3 text-left transition hover:border-emerald-300/40 hover:bg-white/[0.07] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/50">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-white/10 bg-black/25 text-emerald-300 transition group-hover:text-amber-200">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-white/10 bg-black/25 text-emerald-300 transition group-hover:text-amber-200">
                 <s.icon className="h-4 w-4" />
-              </div>
+              </span>
               <span className="text-sm font-black uppercase tracking-[0.14em] text-white/85">
                 {s.title}
               </span>
             </button>
           </ThreadPrimitive.Suggestion>
         ))}
-      </div>
-    </div>
+      </span>
+    </span>
   );
 }
 

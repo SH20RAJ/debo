@@ -1,6 +1,6 @@
 "use client";
 
-import { User, Bot, Calendar, Check } from "lucide-react";
+import { User, Bot, Calendar, Check, Mic2, CalendarPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface MessageProps {
@@ -42,21 +42,29 @@ export function Demo() {
         <div className="bg-background rounded-3xl border-2 border-duo-swan p-8 md:p-12">
           <div className="space-y-8 mb-12">
             <Message type="user">
-              <p className="text-duo-eel font-bold text-lg">What did I do last week?</p>
+              <div className="space-y-2">
+                <p className="text-duo-eel font-bold text-lg">
+                  I uploaded a voice note from my commute.
+                </p>
+                <div className="inline-flex items-center gap-2 rounded-lg bg-muted px-2 py-1 text-xs font-black uppercase tracking-wider text-duo-wolf">
+                  <Mic2 className="h-3 w-3 text-duo-green" />
+                  03:12 recording
+                </div>
+              </div>
             </Message>
 
             <Message type="bot">
               <div className="space-y-3">
                 <p className="text-duo-eel font-bold text-lg leading-relaxed">
-                  Last week, you focused on <span className="text-duo-blue">finishing the new design system</span>. 
-                  You noted burnout on Thursday but took a long hike Saturday, which helped.
+                  I found one reminder in it: <span className="text-duo-blue">attend the product review meeting today at 5 PM</span>. 
+                  I can draft the calendar event once your calendar connector is enabled.
                 </p>
                 <div className="flex gap-2">
                   <span className="inline-flex items-center gap-1 text-xs font-black text-duo-wolf bg-muted px-2 py-1 rounded-lg uppercase tracking-wider">
-                    <Calendar className="w-3 h-3" /> Apr 21
+                    <CalendarPlus className="w-3 h-3" /> calendar draft
                   </span>
                   <span className="inline-flex items-center gap-1 text-xs font-black text-duo-wolf bg-muted px-2 py-1 rounded-lg uppercase tracking-wider">
-                    <Calendar className="w-3 h-3" /> Apr 18
+                    <Calendar className="w-3 h-3" /> from recording
                   </span>
                 </div>
               </div>

@@ -80,7 +80,7 @@ export const getJournalsTool = createTool({
   id: 'get_journals',
   description: "List the user's journals.",
   inputSchema: z.object({
-    limit: z.number().optional().default(10).describe('Maximum number of journals to return.'),
+    limit: z.coerce.number().optional().default(10).describe('Maximum number of journals to return.'),
   }),
   execute: async (input, context) => {
     const { getJournals } = await import('@/actions/journals');
@@ -128,13 +128,15 @@ export const getMemoriesTool = createTool({
   description: 'Query persistent memories and facts about the user.',
   inputSchema: z.object({
     query: z.string().optional().default('').describe('Optional memory search query.'),
-    limit: z.number().optional().default(5).describe('Maximum number of memories to return.'),
+    limit: z.coerce.number().optional().default(5).describe('Maximum number of memories to return.'),
   }),
   execute: async (input, context) => {
     const { getRelevantMemories } = await import('@/lib/memory/query');
     const userId = requireUserId(context);
-    const memories = await getRelevantMemories(userId, input.query || '');
-    return memories.items.slice(0, input.limit).map((memory: any) => ({
+    const query = typeof input.query === 'string' ? input.query : '';
+    const limit = typeof input.limit === 'number' ? input.limit : 5;
+    const memories = await getRelevantMemories(userId, query);
+    return memories.items.slice(0, limit).map((memory: any) => ({
       id: memory.id,
       content: memory.content,
       date: memory.date,

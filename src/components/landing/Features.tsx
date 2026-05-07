@@ -1,6 +1,17 @@
 "use client";
 
-import { Brain, Search, Sparkles, MessagesSquare, Mic, Lock, GitBranch, TrendingUp, Zap } from "lucide-react";
+import {
+  Brain,
+  CalendarCheck,
+  GitBranch,
+  Images,
+  MessagesSquare,
+  Mic2,
+  PlugZap,
+  Search,
+  Sparkles,
+  TrendingUp,
+} from "lucide-react";
 
 const features = [
   {
@@ -44,6 +55,34 @@ const features = [
     description: "Receive actionable nudges and advice based on your history.",
     color: "text-duo-red",
     borderColor: "border-duo-cardinal",
+  },
+  {
+    icon: Mic2,
+    title: "Voice Capture",
+    description: "Record thoughts live and turn them into searchable journal context.",
+    color: "text-duo-green",
+    borderColor: "border-duo-feather",
+  },
+  {
+    icon: Images,
+    title: "Image Journaling",
+    description: "Upload diary pages, notes, and images for later OCR and memory extraction.",
+    color: "text-duo-orange",
+    borderColor: "border-duo-fox",
+  },
+  {
+    icon: PlugZap,
+    title: "Connector Actions",
+    description: "Connect calendars and apps so Debo can draft actions from your life context.",
+    color: "text-duo-purple",
+    borderColor: "border-duo-beetle",
+  },
+  {
+    icon: CalendarCheck,
+    title: "Calendar Memory",
+    description: "Mention a meeting in a recording and Debo can prepare a calendar event for approval.",
+    color: "text-duo-blue",
+    borderColor: "border-duo-macaw",
   },
 ];
 

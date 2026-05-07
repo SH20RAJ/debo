@@ -22,13 +22,26 @@ The product focus now is improving retrieval quality, memory quality, and the cl
 - **Jarvis-style Voice Agent**: Real-time voice interaction using LiveKit and sub-second latency STT/TTS.
 - **Modern Glassmorphism UI**: A fluid, premium interface that breathes with the user's data.
 - **Predictive Burnout Detection**: Proactive nudges based on sentiment and pattern shifts.
+- **Chat URL Ownership**: Route chat through `/chat` and keep every thread addressable by URL ID.
 
 ### Phase 2: Memory Synthesis
 - **AI Legacy Mode**: Synthesizing years of context into a structured "Life Philosophy" book.
 - **Weekly Growth Podcasts**: Automated private audio reflections generated from weekly journal entries.
 - **Gratitude Jar & Zen Mode**: Interactive UI components for micro-journaling and deep focus.
+- **Multimodal Journaling**: Audio journaling, video journaling, and image journaling for uploaded diary pages, handwritten notes, and visual context.
+- **Transcription and OCR Pipeline**: Convert recordings and diary scans into journal text, extract durable memories, and attach the original media.
 
-### Phase 3: Radical Transparency
+### Phase 3: Connector-Aware Assistant
+- **Onboarding Connectors**: Let users connect calendar, email, notes, tasks, and social accounts during onboarding or in settings.
+- **LiveKit Voice Actions**: Give the voice agent safe access to approved connector tools so it can draft calendar events, reminders, tasks, and context lookups.
+- **Human Approval Layer**: Require confirmation for actions that write to external systems.
+
+### Phase 4: Performance and Orchestration
+- **Mastra Workflow Orchestration**: Use deterministic workflows for indexing, OCR, transcription, memory extraction, graph refreshes, and connector actions.
+- **Fast Capture Path**: Save first, stream status quickly, and move heavy AI work to background jobs.
+- **Context Packing**: Rank and compress journal, memory, connector, and media-derived context before model calls.
+
+### Phase 5: Radical Transparency
 - **Foundation Portal**: Real-time tracking of philanthropic impact (wells, schools) linked to platform milestones.
 - **Zero-Knowledge Privacy**: End-to-end encrypted journal storage where only the user holds the key.
 

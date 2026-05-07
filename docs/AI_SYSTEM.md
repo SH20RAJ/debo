@@ -88,7 +88,23 @@ With the integration of LiveKit, the AI system now handles a **Real-time Loop**:
 - **Interruption Handling**: If the user interrupts, the AI orchestration layer immediately halts generation and resets the retrieval state for the new input.
 - **Emotional Mirroring**: The system prompt includes "Voice Tone" instructions that dynamically adjust based on the sentiment of the user's audio input.
 
-## 12. Privacy-Aware Retrieval
+## 12. Multimodal Journaling Context
+
+Audio, video, and image journals should become normal context sources.
+
+1. Audio/video is transcribed.
+2. Diary images and scanned pages are OCR'd.
+3. The transcript is saved as journal text with a link to the original media.
+4. Memory extraction identifies durable facts, people, dates, tasks, and preferences.
+5. Retrieval treats these derived entries like any other cited journal source.
+
+This lets a user record a private vlog or upload handwritten pages without losing the benefits of search, memory, and citations.
+
+## 13. Connector-Aware Actions
+
+When connector tools are enabled, Debo can transform captured context into draft actions. Example: a user says, "make me remember that I have to attend X meeting today." The system should extract the meeting, check calendar context, draft an event, and ask for confirmation before writing to the external calendar.
+
+## 14. Privacy-Aware Retrieval
 
 Before any data is sent to the LLM via the Cloudflare AI Gateway:
 - **PII Scrubbing (Optional)**: In high-privacy mode, the system can scrub sensitive identifiers, replacing them with tokens that are mapped back locally.
