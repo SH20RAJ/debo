@@ -1,5 +1,5 @@
-import { AskAssistant } from "@/components/assistant/AskAssistant";
 import { Metadata } from "next";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "Ask",
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function AskPage() {
-  return <AskAssistant />;
+  redirect("/chat");
 }

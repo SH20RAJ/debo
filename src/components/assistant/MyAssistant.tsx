@@ -14,8 +14,8 @@ import { usePathname } from "next/navigation";
 export function MyAssistant() {
   const pathname = usePathname();
 
-  // Don't show the floating assistant on the Ask page (it has its own full-page chat)
-  if (pathname === "/dashboard/ask") return null;
+  // Full-page chat owns the assistant surface.
+  if (pathname.startsWith("/chat") || pathname === "/dashboard/ask") return null;
 
   return (
     <Popover>
@@ -57,4 +57,3 @@ export function MyAssistant() {
     </Popover>
   );
 }
-

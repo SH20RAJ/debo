@@ -3,6 +3,7 @@
 import { Thread, ThreadList } from "@assistant-ui/react-ui";
 import { ThreadPrimitive } from "@assistant-ui/react";
 import Image from "next/image";
+import Link from "next/link";
 import { DeboToolUIs } from "./DeboToolUIs";
 import {
   BookOpen,
@@ -14,6 +15,7 @@ import {
   MessageSquareText,
   ShieldCheck,
   Activity,
+  LayoutDashboard,
 } from "lucide-react";
 
 const suggestions = [
@@ -99,7 +101,7 @@ function WelcomeScreen() {
 export function AskAssistant() {
   return (
     <div className="debo-ask flex h-full min-h-0 bg-[#071112] text-white">
-      <aside className="hidden w-[292px] shrink-0 flex-col overflow-hidden border-r border-white/10 bg-[#091416] lg:flex">
+      <aside className="hidden w-[316px] shrink-0 flex-col overflow-hidden border-r border-white/10 bg-[#091416] lg:flex">
         <div className="px-5 pb-4 pt-12">
           <div className="flex items-center gap-3 pl-10">
             <div className="flex h-9 w-9 items-center justify-center rounded-md border border-white/10 bg-white/[0.04] text-emerald-300">
@@ -107,10 +109,10 @@ export function AskAssistant() {
             </div>
             <div className="min-w-0">
               <p className="text-[10px] font-black uppercase tracking-[0.28em] text-white/35">
-                Conversations
+                Chat
               </p>
               <p className="truncate text-sm font-extrabold text-white/85">
-                Session memory
+                Thread memory
               </p>
             </div>
           </div>
@@ -129,16 +131,25 @@ export function AskAssistant() {
             </div>
             <div className="min-w-0">
               <h1 className="truncate text-lg font-black uppercase tracking-[0.16em] text-white sm:text-xl">
-                Debo Intelligence
+                Debo Chat
               </h1>
               <p className="hidden text-xs font-bold text-white/45 sm:block">
-                Signal stable.
+                Thread locked. Memory online.
               </p>
             </div>
           </div>
-          <div className="hidden items-center gap-2 rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.2em] text-emerald-200 sm:flex">
-            <ShieldCheck className="h-3.5 w-3.5" />
-            Active
+          <div className="flex items-center gap-2">
+            <Link
+              href="/dashboard"
+              aria-label="Open command center"
+              className="flex h-9 w-9 items-center justify-center rounded-md border border-white/10 bg-white/[0.04] text-white/70 transition hover:border-emerald-300/40 hover:text-emerald-200"
+            >
+              <LayoutDashboard className="h-4 w-4" />
+            </Link>
+            <div className="hidden items-center gap-2 rounded-md border border-emerald-300/20 bg-emerald-300/10 px-3 py-2 text-[11px] font-black uppercase tracking-[0.2em] text-emerald-200 sm:flex">
+              <ShieldCheck className="h-3.5 w-3.5" />
+              Active
+            </div>
           </div>
         </header>
 

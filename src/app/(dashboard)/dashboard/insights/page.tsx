@@ -51,7 +51,7 @@ export default async function InsightsPage() {
               variant="duolingo-outline"
               size="lg"
             >
-              <Link href="/dashboard/ask">Ask AI</Link>
+              <Link href="/chat">Ask Debo</Link>
             </Button>
             <Button
               asChild

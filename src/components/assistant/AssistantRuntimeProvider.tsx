@@ -9,10 +9,81 @@ import { useChat, type UIMessage } from "@ai-sdk/react";
 import { useAui, useAuiState } from "@assistant-ui/store";
 import { AssistantChatTransport, useAISDKRuntime } from "@assistant-ui/react-ai-sdk";
 import type { ChatTransport } from "ai";
-import { ReactNode, useEffect, useMemo, useRef } from "react";
+import { ReactNode, useEffect, useMemo, useRef, type MutableRefObject } from "react";
+import { usePathname, useRouter } from "next/navigation";
 
-export function MyAssistantRuntimeProvider({ children }: { children: ReactNode }) {
-  const historyAdapter = useMemo(() => ({
+type MyAssistantRuntimeProviderProps = {
+  children: ReactNode;
+  initialThreadId?: string | null;
+};
+
+export function MyAssistantRuntimeProvider({
+  children,
+  initialThreadId,
+}: MyAssistantRuntimeProviderProps) {
+  const activeThreadIdRef = useRef<string | null>(initialThreadId ?? null);
+
+  useEffect(() => {
+    if (!initialThreadId) return;
+    activeThreadIdRef.current = initialThreadId;
+    setBrowserActiveThreadId(initialThreadId);
+  }, [initialThreadId]);
+
+  const historyAdapter = useMemo(() => createHistoryAdapter(() => (
+    activeThreadIdRef.current ?? readBrowserActiveThreadId()
+  )), []);
+
+  const transport = useMemo(
+    () =>
+      new AssistantChatTransport({
+        api: "/api/chat",
+      }),
+    []
+  );
+
+  const threadListAdapter = useMemo(() => createThreadListAdapter(), []);
+  const runtimeInitialThreadId = useMemo(
+    () => initialThreadId ?? readBrowserActiveThreadId() ?? undefined,
+    [initialThreadId]
+  );
+
+  const runtime = useRemoteThreadListRuntime({
+    runtimeHook: function RuntimeHook() {
+      return useDeboChatThreadRuntime(transport, historyAdapter, activeThreadIdRef);
+    },
+    adapter: threadListAdapter,
+    initialThreadId: runtimeInitialThreadId,
+    allowNesting: true,
+  });
+
+  return (
+    <AssistantRuntimeProvider runtime={runtime}>
+      {children}
+    </AssistantRuntimeProvider>
+  );
+}
+
+export function ChatThreadUrlSync() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const threadId = useAuiState((state) => state.threadListItem.id);
+  const lastSyncedHref = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!threadId || !pathname?.startsWith("/chat")) return;
+
+    const href = `/chat/${encodeURIComponent(threadId)}`;
+    if (pathname === href || lastSyncedHref.current === href) return;
+
+    lastSyncedHref.current = href;
+    router.replace(href, { scroll: false });
+  }, [pathname, router, threadId]);
+
+  return null;
+}
+
+function createHistoryAdapter(getActiveThreadId: () => string | null) {
+  return {
     async load() {
       return { headId: null, messages: [] };
     },
@@ -20,7 +91,10 @@ export function MyAssistantRuntimeProvider({ children }: { children: ReactNode }
     withFormat: (fmt: any) => ({
       async load() {
         try {
-          const res = await fetch("/api/chat/history?threadId=current", {
+          const threadId = getActiveThreadId();
+          if (!threadId) return { messages: [] };
+
+          const res = await fetch(`/api/chat/history?threadId=${encodeURIComponent(threadId)}`, {
             cache: "no-store",
           });
           if (!res.ok) return { messages: [] };
@@ -35,39 +109,13 @@ export function MyAssistantRuntimeProvider({ children }: { children: ReactNode }
         }
       },
       async append(item: any) {
-        await persistHistoryItem(fmt, item);
+        await persistHistoryItem(fmt, item, getActiveThreadId);
       },
       async update(item: any) {
-        await persistHistoryItem(fmt, item);
+        await persistHistoryItem(fmt, item, getActiveThreadId);
       },
     }),
-  }), []);
-
-  const transport = useMemo(
-    () =>
-      new AssistantChatTransport({
-        api: "/api/chat",
-      }),
-    []
-  );
-
-  const threadListAdapter = useMemo(() => createThreadListAdapter(), []);
-  const initialThreadId = useMemo(() => readBrowserActiveThreadId() ?? undefined, []);
-
-  const runtime = useRemoteThreadListRuntime({
-    runtimeHook: function RuntimeHook() {
-      return useDeboChatThreadRuntime(transport, historyAdapter);
-    },
-    adapter: threadListAdapter,
-    initialThreadId,
-    allowNesting: true,
-  });
-
-  return (
-    <AssistantRuntimeProvider runtime={runtime}>
-      {children}
-    </AssistantRuntimeProvider>
-  );
+  };
 }
 
 function useDynamicChatTransport<UI_MESSAGE extends UIMessage = UIMessage>(
@@ -93,13 +141,21 @@ function useDynamicChatTransport<UI_MESSAGE extends UIMessage = UIMessage>(
 
 function useDeboChatThreadRuntime(
   transport: AssistantChatTransport<any>,
-  historyAdapter: Record<string, unknown>
+  historyAdapter: Record<string, unknown>,
+  activeThreadIdRef: MutableRefObject<string | null>
 ) {
   const dynamicTransport = useDynamicChatTransport(transport as ChatTransport<any>);
   const id = useAuiState((state) => state.threadListItem.id);
   const aui = useAui();
+
+  useEffect(() => {
+    if (!id) return;
+    activeThreadIdRef.current = id;
+    setBrowserActiveThreadId(id);
+  }, [activeThreadIdRef, id]);
+
   const chat = useChat({
-    id,
+    id: id ?? activeThreadIdRef.current ?? undefined,
     transport: dynamicTransport,
   });
 
@@ -217,8 +273,15 @@ function createThreadListAdapter(): RemoteThreadListAdapter {
   };
 }
 
-async function persistHistoryItem(fmt: any, item: any) {
+async function persistHistoryItem(
+  fmt: any,
+  item: any,
+  getActiveThreadId: () => string | null
+) {
   try {
+    const threadId = getActiveThreadId();
+    if (!threadId) return;
+
     const res = await fetch("/api/chat/history", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -227,7 +290,7 @@ async function persistHistoryItem(fmt: any, item: any) {
         parent_id: item.parentId,
         format: fmt.format,
         content: fmt.encode(item),
-        threadId: "current",
+        threadId,
       }),
     });
 

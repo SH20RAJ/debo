@@ -5,7 +5,7 @@ import { getLifeTimeline } from "@/lib/life/timeline";
 import { queryGraph, refreshMemoryGraph } from "@/lib/life/graph";
 import { LifeTimeline } from "@/components/dashboard/life/life-timeline";
 import { LifeInsights } from "@/components/dashboard/life/life-insights";
-import { BarChart3, BookOpen, Plus, Search, Sparkles } from "lucide-react";
+import { BarChart3, BookOpen, MessageSquareText, Plus, Search, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
@@ -53,11 +53,11 @@ export default async function DashboardPage() {
           <div className="grid gap-12 lg:grid-cols-[1fr_400px]">
             <div className="space-y-8 text-center lg:text-left">
               <h1 className="text-4xl font-heading font-black tracking-tight text-duo-eel md:text-5xl lg:text-6xl leading-[1.1] animate-in fade-in slide-in-from-bottom-4 duration-700">
-                Your <br />
-                <span className="text-duo-swan">Memory Engine.</span>
+                Debo <br />
+                <span className="text-duo-swan">Command Center.</span>
               </h1>
               <p className="max-w-xl text-xl font-bold leading-relaxed text-duo-wolf animate-in fade-in slide-in-from-bottom-6 duration-700">
-                Welcome back, {firstName}. Debo found patterns in your recent notes.
+                Welcome back, {firstName}. Your chat, journal, timeline, and memory graph now live in one quieter command surface.
               </p>
 
               <div className="flex flex-wrap justify-center lg:justify-start gap-4 pt-2 animate-in fade-in slide-in-from-bottom-8 duration-700">
@@ -67,9 +67,9 @@ export default async function DashboardPage() {
                   size="lg"
                   className="w-full sm:w-auto"
                 >
-                  <Link href="/dashboard/ask">
-                    <Search className="mr-2 h-5 w-5" />
-                    Ask Questions
+                  <Link href="/chat">
+                    <MessageSquareText className="mr-2 h-5 w-5" />
+                    Open Chat
                   </Link>
                 </Button>
                 <Button
@@ -175,9 +175,9 @@ export default async function DashboardPage() {
                   iconColor="text-duo-blue"
                 />
                 <ShortcutLink
-                  href="/dashboard/ask"
-                  title="Ask AI"
-                  description="Chat with AI"
+                  href="/chat"
+                  title="Chat"
+                  description="Talk with Debo"
                   iconColor="text-duo-green"
                 />
               </div>
@@ -205,9 +205,9 @@ export default async function DashboardPage() {
 }
 
 export const metadata: Metadata = {
-  title: "Dashboard",
+  title: "Command Center",
   description:
-    "Your personal life intelligence dashboard: insights, timeline, and memory graph.",
+    "Your personal life intelligence command center: chat, insights, timeline, and memory graph.",
 };
 
 function StatCard({

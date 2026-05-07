@@ -1,11 +1,11 @@
 "use client"
 
 import * as React from "react"
-import { 
-  Settings, 
-  LayoutDashboard, 
+import {
+  Settings,
+  LayoutDashboard,
   Plus,
-  Search,
+  MessageSquareText,
   Database,
   Library,
   ChartNoAxesCombined,
@@ -40,8 +40,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     {
       title: "Core",
       items: [
-        { title: "Home", href: "/dashboard", icon: LayoutDashboard, color: "text-duo-green" },
-        { title: "Ask Life", href: "/dashboard/ask", icon: Search, color: "text-duo-blue" },
+        { title: "Command", href: "/dashboard", icon: LayoutDashboard, color: "text-duo-green" },
+        { title: "Chat", href: "/chat", icon: MessageSquareText, color: "text-duo-blue" },
         { title: "Journal", href: "/dashboard/journal/new", icon: Plus, color: "text-duo-orange" },
         { title: "Timeline", href: "/dashboard/timeline", icon: Clock3, color: "text-duo-purple" },
         { title: "Insights", href: "/dashboard/insights", icon: ChartNoAxesCombined, color: "text-duo-red" },
@@ -85,9 +85,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton 
                       asChild 
-                      isActive={pathname === item.href}
+                      isActive={pathname === item.href || (item.href === "/chat" && pathname.startsWith("/chat"))}
                       tooltip={item.title}
-                      className={`h-12 rounded-2xl transition-all border-2 border-transparent uppercase font-black text-xs tracking-wider
+                      className={`h-12 rounded-lg transition-all border-2 border-transparent uppercase font-black text-xs tracking-wider
                         hover:bg-duo-polar hover:border-duo-swan
                         data-[active=true]:bg-duo-blue/10 data-[active=true]:text-duo-blue data-[active=true]:border-duo-macaw`}
                     >
@@ -111,7 +111,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     asChild 
                     isActive={pathname === "/dashboard/settings"}
                     tooltip="Settings"
-                    className="h-12 rounded-2xl transition-all border-2 border-transparent uppercase font-black text-xs tracking-wider hover:bg-duo-polar hover:border-duo-swan data-[active=true]:bg-duo-polar data-[active=true]:border-duo-swan"
+                    className="h-12 rounded-lg transition-all border-2 border-transparent uppercase font-black text-xs tracking-wider hover:bg-duo-polar hover:border-duo-swan data-[active=true]:bg-duo-polar data-[active=true]:border-duo-swan"
                 >
                     <Link href="/dashboard/settings">
                         <Settings className="h-5 w-5 text-duo-wolf" />
@@ -124,7 +124,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <SidebarMenuButton 
                     onClick={() => user?.signOut()}
                     tooltip="Sign Out"
-                    className="h-12 rounded-2xl transition-all border-2 border-transparent uppercase font-black text-xs tracking-wider hover:bg-duo-red/10 hover:border-duo-cardinal hover:text-duo-red text-duo-wolf"
+                    className="h-12 rounded-lg transition-all border-2 border-transparent uppercase font-black text-xs tracking-wider hover:bg-duo-red/10 hover:border-duo-cardinal hover:text-duo-red text-duo-wolf"
                 >
                     <LogOut className="h-5 w-5" />
                     <span>Sign Out</span>
@@ -146,4 +146,3 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     </Sidebar>
   )
 }
-

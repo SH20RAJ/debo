@@ -42,7 +42,7 @@ export default async function DashboardLayout({
 }
 
 export const metadata: Metadata = {
-  title: "Dashboard",
+  title: "Command Center",
   description:
-    "Debo dashboard: explore insights, timeline, and your memory graph.",
+    "Debo command center: explore insights, timeline, and your memory graph.",
 };

@@ -17,6 +17,7 @@ export async function createChat(title?: string) {
     title: title || "New Conversation",
   });
 
+  revalidatePath("/chat");
   revalidatePath("/dashboard");
   return chatId;
 }
@@ -86,6 +87,7 @@ export async function deleteChat(chatId: string) {
     .delete(chats)
     .where(and(eq(chats.id, chatId), eq(chats.userId, userId)));
 
+  revalidatePath("/chat");
   revalidatePath("/dashboard");
   return { success: true };
 }
