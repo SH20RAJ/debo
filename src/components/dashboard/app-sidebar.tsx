@@ -3,7 +3,7 @@
 import * as React from "react"
 import {
   Settings,
-  LayoutDashboard,
+  Home,
   Plus,
   MessageSquareText,
   Database,
@@ -11,7 +11,8 @@ import {
   ChartNoAxesCombined,
   Clock3,
   LogOut,
-  Cpu
+  Cpu,
+  Mic2,
 } from "lucide-react"
 
 import {
@@ -32,67 +33,80 @@ import { usePathname } from "next/navigation"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useUser } from "@stackframe/stack"
 
+type NavItem = {
+  title: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  exact?: boolean;
+};
+
+const groups: { title: string; items: NavItem[] }[] = [
+  {
+    title: "Workflows",
+    items: [
+      { title: "Studio", href: "/dashboard", icon: Home, exact: true },
+      { title: "Chat", href: "/chat", icon: MessageSquareText },
+      { title: "Capture", href: "/dashboard/capture", icon: Mic2 },
+      { title: "Write", href: "/dashboard/journal/new", icon: Plus, exact: true },
+    ],
+  },
+  {
+    title: "Memory",
+    items: [
+      { title: "Timeline", href: "/dashboard/timeline", icon: Clock3 },
+      { title: "Insights", href: "/dashboard/insights", icon: ChartNoAxesCombined },
+      { title: "Archive", href: "/dashboard/journals", icon: Library },
+      { title: "Memories", href: "/dashboard/memories", icon: Database },
+    ],
+  },
+  {
+    title: "System",
+    items: [
+      { title: "MCP", href: "/dashboard/mcp", icon: Cpu },
+    ],
+  },
+];
+
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
   const user = useUser()
 
-  const items = [
-    {
-      title: "Core",
-      items: [
-        { title: "Command", href: "/dashboard", icon: LayoutDashboard, color: "text-duo-green" },
-        { title: "Chat", href: "/chat", icon: MessageSquareText, color: "text-duo-blue" },
-        { title: "Journal", href: "/dashboard/journal/new", icon: Plus, color: "text-duo-orange" },
-        { title: "Timeline", href: "/dashboard/timeline", icon: Clock3, color: "text-duo-purple" },
-        { title: "Insights", href: "/dashboard/insights", icon: ChartNoAxesCombined, color: "text-duo-red" },
-      ]
-    },
-    {
-      title: "Library",
-      items: [
-        { title: "Archive", href: "/dashboard/journals", icon: Library, color: "text-duo-blue" },
-        { title: "Memories", href: "/dashboard/memories", icon: Database, color: "text-duo-green" },
-      ]
-    },
-    {
-      title: "Connectivity",
-      items: [
-        { title: "MCP", href: "/dashboard/mcp", icon: Cpu, color: "text-duo-blue" },
-      ]
-    }
-  ]
+  const isActive = (item: NavItem) => {
+    if (item.exact) return pathname === item.href;
+    return pathname === item.href || pathname.startsWith(`${item.href}/`);
+  };
 
   return (
-    <Sidebar variant="inset" collapsible="icon" {...props} className="border-r-2 border-duo-swan bg-background">
-      <SidebarHeader className="h-24 flex items-center px-6">
+    <Sidebar variant="inset" collapsible="icon" {...props} className="border-r border-border bg-background">
+      <SidebarHeader className="flex h-20 items-center px-5">
         <Link href="/dashboard" className="flex items-center gap-3 w-full overflow-hidden whitespace-nowrap">
-          <span className="font-heading font-black text-3xl tracking-tight text-duo-green group-data-[collapsible=icon]:hidden">
-            debo
+          <span className="flex size-9 items-center justify-center rounded-md border border-border bg-foreground text-sm font-semibold text-background">
+            D
           </span>
-          <div className="size-8 rounded-lg bg-duo-green hidden group-data-[collapsible=icon]:block" />
+          <span className="font-semibold tracking-tight text-foreground group-data-[collapsible=icon]:hidden">
+            Debo Studio
+          </span>
         </Link>
       </SidebarHeader>
 
-      <SidebarContent className="px-4 gap-8">
-        {items.map((group) => (
+      <SidebarContent className="gap-6 px-3">
+        {groups.map((group) => (
           <SidebarGroup key={group.title} className="p-0">
-            <SidebarGroupLabel className="px-2 text-xs font-black uppercase tracking-[0.2em] text-duo-swan group-data-[collapsible=icon]:hidden mb-4">
-                {group.title}
+            <SidebarGroupLabel className="mb-2 px-2 text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground group-data-[collapsible=icon]:hidden">
+              {group.title}
             </SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu className="gap-2">
+              <SidebarMenu className="gap-1">
                 {group.items.map((item) => (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton 
                       asChild 
-                      isActive={pathname === item.href || (item.href === "/chat" && pathname.startsWith("/chat"))}
+                      isActive={isActive(item)}
                       tooltip={item.title}
-                      className={`h-12 rounded-lg transition-all border-2 border-transparent uppercase font-black text-xs tracking-wider
-                        hover:bg-duo-polar hover:border-duo-swan
-                        data-[active=true]:bg-duo-blue/10 data-[active=true]:text-duo-blue data-[active=true]:border-duo-macaw`}
+                      className="h-10 rounded-md text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground data-[active=true]:bg-foreground data-[active=true]:text-background"
                     >
                       <Link href={item.href}>
-                        <item.icon className={`h-5 w-5 ${item.color} group-data-[active=true]:text-duo-blue`} />
+                        <item.icon className="h-4 w-4" />
                         <span>{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
@@ -104,17 +118,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         ))}
       </SidebarContent>
 
-      <SidebarFooter className="p-4 pt-0 space-y-4">
+      <SidebarFooter className="space-y-3 p-3 pt-0">
         <SidebarMenu className="gap-2">
             <SidebarMenuItem>
                 <SidebarMenuButton 
                     asChild 
                     isActive={pathname === "/dashboard/settings"}
                     tooltip="Settings"
-                    className="h-12 rounded-lg transition-all border-2 border-transparent uppercase font-black text-xs tracking-wider hover:bg-duo-polar hover:border-duo-swan data-[active=true]:bg-duo-polar data-[active=true]:border-duo-swan"
+                    className="h-10 rounded-md text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground data-[active=true]:bg-muted data-[active=true]:text-foreground"
                 >
                     <Link href="/dashboard/settings">
-                        <Settings className="h-5 w-5 text-duo-wolf" />
+                        <Settings className="h-4 w-4" />
                         <span>Settings</span>
                     </Link>
                 </SidebarMenuButton>
@@ -124,20 +138,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <SidebarMenuButton 
                     onClick={() => user?.signOut()}
                     tooltip="Sign Out"
-                    className="h-12 rounded-lg transition-all border-2 border-transparent uppercase font-black text-xs tracking-wider hover:bg-duo-red/10 hover:border-duo-cardinal hover:text-duo-red text-duo-wolf"
+                    className="h-10 rounded-md text-sm font-medium text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive"
                 >
-                    <LogOut className="h-5 w-5" />
+                    <LogOut className="h-4 w-4" />
                     <span>Sign Out</span>
                 </SidebarMenuButton>
             </SidebarMenuItem>
         </SidebarMenu>
 
-        <div className="flex flex-col gap-4 p-2">
+        <div className="flex flex-col gap-3 px-2 pb-1">
           <div className="flex items-center justify-between w-full group-data-[collapsible=icon]:justify-center">
             <ThemeToggle />
             <div className="flex items-center gap-2 group-data-[collapsible=icon]:hidden">
-              <div className="h-3 w-3 rounded-full bg-duo-green animate-pulse shadow-[0_0_8px_rgba(88,204,2,0.5)]" />
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-duo-green">Synced</span>
+              <div className="h-2 w-2 rounded-full bg-emerald-500" />
+              <span className="text-[11px] font-medium text-muted-foreground">Synced</span>
             </div>
           </div>
         </div>

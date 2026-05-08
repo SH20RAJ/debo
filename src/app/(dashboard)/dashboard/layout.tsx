@@ -25,9 +25,9 @@ export default async function DashboardLayout({
     <MyAssistantRuntimeProvider>
       <SidebarProvider>
         <AppSidebar />
-        <SidebarInset className="bg-background relative flex h-svh flex-col overflow-hidden">
-          <header className="absolute top-0 left-0 flex items-center gap-2 p-4 z-50 pointer-events-none">
-            <div className="flex items-center gap-2 pointer-events-auto bg-background/50 backdrop-blur-md rounded-md p-1">
+        <SidebarInset className="relative flex h-svh flex-col overflow-hidden bg-background">
+          <header className="pointer-events-none absolute left-0 top-0 z-50 flex items-center gap-2 p-4">
+            <div className="pointer-events-auto flex items-center gap-2 rounded-md border border-border bg-background/80 p-1 shadow-sm backdrop-blur-md">
               <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors" />
             </div>
           </header>
@@ -42,7 +42,7 @@ export default async function DashboardLayout({
 }
 
 export const metadata: Metadata = {
-  title: "Command Center",
+  title: "Debo Studio",
   description:
-    "Debo command center: explore insights, timeline, and your memory graph.",
+    "Debo Studio: capture journals, chat, review memory, and connect your assistant workflows.",
 };

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Nunito, Nunito_Sans } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
@@ -10,18 +9,6 @@ import "./globals.css";
 import "@assistant-ui/react-ui/styles/index.css";
 import "@assistant-ui/react-ui/styles/themes/shadcn-extras.css";
 import "@livekit/components-styles";
-
-const nunito = Nunito({
-	variable: "--font-display",
-	subsets: ["latin"],
-	weight: ["400", "500", "600", "700", "800", "900"],
-});
-
-const nunitoSans = Nunito_Sans({
-	variable: "--font-body",
-	subsets: ["latin"],
-	weight: ["300", "400", "500", "600", "700", "800", "900"],
-});
 
 export const metadata: Metadata = {
 	metadataBase: new URL("https://debo.app"),
@@ -50,7 +37,7 @@ export default function RootLayout({
 			<head>
 				<link rel="icon" href="/logo.png" />
 			</head>
-			<body className={`${nunito.variable} ${nunitoSans.variable} font-sans antialiased selection:bg-primary/20 selection:text-primary`}>
+			<body className="font-sans antialiased selection:bg-primary/20 selection:text-primary">
 				<StackProvider app={stackClientApp}>
 					<StackTheme>
 						<ThemeProvider

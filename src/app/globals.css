@@ -30,6 +30,9 @@
 }
 
 :root {
+	--font-body: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
+	--font-display: "Avenir Next", "Trebuchet MS", "Segoe UI", sans-serif;
+
 	/* === CORE BRAND === */
 	--duo-feather: #58CC02;
 	--duo-mask: #89E219;
