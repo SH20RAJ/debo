@@ -1,13 +1,13 @@
-import { ChatExperience } from "@/components/assistant/ChatExperience";
+import { ChatContainer } from "@/components/chat/chat-container";
+import { Metadata } from "next";
 
-type ChatThreadPageProps = {
-  params: Promise<{
-    threadId: string;
-  }>;
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: "Chat",
+    description: "Talk with Debo about your memories.",
+  };
+}
 
-export default async function ChatThreadPage({ params }: ChatThreadPageProps) {
-  const { threadId } = await params;
-
-  return <ChatExperience initialThreadId={threadId} />;
+export default function ChatThreadPage() {
+  return <ChatContainer />;
 }
