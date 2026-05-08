@@ -63,19 +63,19 @@ export function ProviderCard({ config, savedConfig, isActive }: ProviderCardProp
     };
 
     return (
-        <div className={`group relative flex flex-col rounded-2xl border transition-all hover:border-primary/20 bg-card overflow-hidden ${isActive ? 'border-primary bg-primary/5' : 'border-border'}`}>
-            <div className="p-5 flex items-center justify-between gap-4">
+        <div className={`duo-card group relative flex min-h-48 flex-col p-5 ${isActive ? 'border-duo-feather bg-duo-green/10' : ''}`}>
+            <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-3">
-                    <div className="relative h-10 w-10 overflow-hidden rounded-xl border border-border bg-background p-2 transition-transform group-hover:scale-105">
+                    <div className="relative h-12 w-12 overflow-hidden rounded-2xl border-2 border-duo-swan bg-duo-snow p-2 transition-transform group-hover:scale-105">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={config.icon} alt={config.name} className="h-full w-full object-contain grayscale group-hover:grayscale-0 transition-all" />
                     </div>
-                    <div className="space-y-0.5">
-                        <h3 className="text-sm font-semibold tracking-tight flex items-center gap-1.5">
+                    <div className="space-y-1">
+                        <h3 className="flex items-center gap-1.5 text-lg font-black text-duo-eel">
                             {config.name}
-                            {isActive && <CheckCircle2 className="h-3 w-3 text-primary" />}
+                            {isActive && <CheckCircle2 className="h-4 w-4 text-duo-green" />}
                         </h3>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">
+                        <p className="text-[10px] font-black uppercase tracking-wider text-duo-wolf">
                             {isActive ? "Active" : "Standard"}
                         </p>
                     </div>
@@ -83,40 +83,40 @@ export function ProviderCard({ config, savedConfig, isActive }: ProviderCardProp
                 <div className="flex items-center gap-3">
                     <Dialog open={open} onOpenChange={setOpen}>
                         <DialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Settings2 className="h-3.5 w-3.5" />
+                            <Button variant="duolingo-outline" size="icon-xs" className="shrink-0">
+                                <Settings2 className="h-4 w-4" />
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-[400px] border-border rounded-2xl">
+                        <DialogContent className="rounded-2xl border-2 border-duo-swan sm:max-w-[420px]">
                             <DialogHeader>
-                                <DialogTitle className="text-xl font-semibold tracking-tight">Configure {config.name}</DialogTitle>
-                                <DialogDescription className="text-sm">
+                                <DialogTitle className="text-2xl font-black tracking-tight text-duo-eel">Configure {config.name}</DialogTitle>
+                                <DialogDescription className="text-sm font-bold text-duo-wolf">
                                     Set your API credentials. They are encrypted before storage.
                                 </DialogDescription>
                             </DialogHeader>
                             <div className="grid gap-4 py-4">
                                 {config.id !== "cloudflare" && (
                                     <div className="grid gap-2">
-                                        <Label htmlFor="apiKey" className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">API Key</Label>
+                                        <Label htmlFor="apiKey" className="text-xs font-black uppercase tracking-wider text-duo-wolf">API Key</Label>
                                         <Input
                                             id="apiKey"
                                             type="password"
                                             placeholder={savedConfig?.apiKey ? "••••••••••••••••" : "Enter API key"}
                                             value={apiKey.includes("....config") ? "" : apiKey}
                                             onChange={(e) => setApiKey(e.target.value)}
-                                            className="h-10 rounded-lg border-border"
+                                            className="h-12 rounded-2xl border-2 border-duo-swan font-bold"
                                         />
                                     </div>
                                 )}
                                 {(config.isCustom || config.id === "ollama") && (
                                     <div className="grid gap-2">
-                                        <Label htmlFor="baseUrl" className="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">Base URL</Label>
+                                        <Label htmlFor="baseUrl" className="text-xs font-black uppercase tracking-wider text-duo-wolf">Base URL</Label>
                                         <Input
                                             id="baseUrl"
                                             placeholder="https://api.example.com/v1"
                                             value={baseUrl}
                                             onChange={(e) => setBaseUrl(e.target.value)}
-                                            className="h-10 rounded-lg border-border"
+                                            className="h-12 rounded-2xl border-2 border-duo-swan font-bold"
                                         />
                                     </div>
                                 )}
@@ -125,15 +125,15 @@ export function ProviderCard({ config, savedConfig, isActive }: ProviderCardProp
                                         href={config.docsUrl} 
                                         target="_blank" 
                                         rel="noopener noreferrer"
-                                        className="text-[11px] font-medium text-muted-foreground hover:text-primary flex items-center gap-1.5 transition-colors"
+                                        className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-duo-blue transition-colors hover:text-duo-humpback"
                                     >
-                                        Provider Documentation <ExternalLink className="h-3 w-3" />
+                                        Docs <ExternalLink className="h-3 w-3" />
                                     </a>
                                 )}
                             </div>
                             <DialogFooter>
-                                <Button onClick={handleSave} disabled={loading} className="h-10 rounded-lg text-xs font-bold uppercase tracking-wider px-6">
-                                    {loading ? "Saving..." : "Save Configuration"}
+                                <Button onClick={handleSave} disabled={loading} variant="duolingo" className="gap-2">
+                                    {loading ? "Saving..." : "Save"}
                                 </Button>
                             </DialogFooter>
                         </DialogContent>
@@ -145,8 +145,8 @@ export function ProviderCard({ config, savedConfig, isActive }: ProviderCardProp
                     />
                 </div>
             </div>
-            <div className="px-5 pb-5 mt-auto">
-                <p className="text-xs text-muted-foreground/70 leading-relaxed line-clamp-2">
+            <div className="mt-auto pt-5">
+                <p className="line-clamp-2 text-sm font-bold leading-6 text-duo-wolf">
                     {config.description}
                 </p>
             </div>

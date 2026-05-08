@@ -113,10 +113,22 @@ export async function setActiveProvider(providerId: string) {
   if (!userId) throw new Error("Unauthorized");
 
   try {
-    await db
-      .update(userPreferences)
-      .set({ activeProvider: providerId, updatedAt: new Date() })
-      .where(eq(userPreferences.userId, userId));
+    const existing = await db.query.userPreferences.findFirst({
+      where: eq(userPreferences.userId, userId),
+    });
+
+    if (existing) {
+      await db
+        .update(userPreferences)
+        .set({ activeProvider: providerId, updatedAt: new Date() })
+        .where(eq(userPreferences.userId, userId));
+    } else {
+      await db.insert(userPreferences).values({
+        userId,
+        activeProvider: providerId,
+        updatedAt: new Date(),
+      });
+    }
 
     revalidatePath("/dashboard/settings");
     return true;
@@ -168,7 +180,12 @@ export async function saveUserPreferences(data: {
 const UUID_V4 =
   /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-export async function getNangoConnections() {
+type NangoConnectionSummary = {
+  providerConfigKey?: string;
+  provider_config_key?: string;
+};
+
+export async function getNangoConnections(): Promise<NangoConnectionSummary[]> {
   const userId = await resolveUserId(undefined, true);
   if (!userId) throw new Error("Unauthorized");
 
@@ -180,7 +197,7 @@ export async function getNangoConnections() {
     }
 
     const connections = await nango.listConnections(userId);
-    return connections;
+    return connections as NangoConnectionSummary[];
   } catch (error) {
     console.error("Failed to list Nango connections:", error);
     return [];

@@ -83,7 +83,14 @@ export async function POST(request: Request) {
       kind,
       originalName: file.name,
     },
+  }).catch((error) => {
+    console.error("[Media] R2 upload failed:", error);
+    return null;
   });
+
+  if (!object) {
+    return NextResponse.json({ error: "Could not save media to R2." }, { status: 502 });
+  }
 
   return NextResponse.json({
     media: {
@@ -93,8 +100,8 @@ export async function POST(request: Request) {
       fileName: file.name,
       contentType,
       kind,
-      size: object?.size || file.size,
-      etag: object?.etag || null,
+      size: object.size || file.size,
+      etag: object.etag || null,
     },
   });
 }
