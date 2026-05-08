@@ -40,7 +40,7 @@ export function ProviderCard({ config, savedConfig, isActive }: ProviderCardProp
             if (!ok) throw new Error("Provider settings could not be saved");
             toast.success(`${config.name} configured successfully`);
             setOpen(false);
-        } catch (_error) {
+        } catch {
             toast.error("Failed to save provider config");
         } finally {
             setLoading(false);
@@ -57,7 +57,7 @@ export function ProviderCard({ config, savedConfig, isActive }: ProviderCardProp
             const ok = await setActiveProvider(config.id);
             if (!ok) throw new Error("Provider could not be set");
             toast.success(`${config.name} is now your active provider`);
-        } catch (_error) {
+        } catch {
             toast.error("Failed to set active provider");
         }
     };

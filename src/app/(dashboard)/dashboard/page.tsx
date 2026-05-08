@@ -4,17 +4,11 @@ import { format } from "date-fns";
 import {
   ArrowRight,
   CalendarClock,
-  ChartNoAxesCombined,
-  Cpu,
-  Database,
-  FileImage,
-  Library,
   MessageSquareText,
   Mic2,
   PenLine,
   Search,
   Sparkles,
-  Video,
   type LucideIcon,
 } from "lucide-react";
 import { redirect } from "next/navigation";
@@ -78,19 +72,6 @@ export default async function DashboardPage() {
       icon: PenLine,
       tone: "orange" as const,
     },
-    {
-      title: "Review",
-      text: "See patterns.",
-      href: "/dashboard/insights",
-      icon: ChartNoAxesCombined,
-      tone: "purple" as const,
-    },
-  ];
-
-  const captureModes = [
-    { title: "Audio note", text: "Speak fast.", icon: Mic2, tone: "green" as const },
-    { title: "Video note", text: "Record a vlog.", icon: Video, tone: "blue" as const },
-    { title: "Page scan", text: "Upload diary pages.", icon: FileImage, tone: "orange" as const },
   ];
 
   const metrics = [
@@ -98,13 +79,6 @@ export default async function DashboardPage() {
     { label: "Recent", value: recentTimeline.length.toString(), text: "groups" },
     { label: "Patterns", value: graph.patterns.length.toString(), text: "found" },
     { label: "Signals", value: signalCount.toString(), text: "active" },
-  ];
-
-  const quickLinks = [
-    { title: "Archive", href: "/dashboard/journals", icon: Library },
-    { title: "Timeline", href: "/dashboard/timeline", icon: CalendarClock },
-    { title: "Memories", href: "/dashboard/memories", icon: Database },
-    { title: "MCP", href: "/dashboard/mcp", icon: Cpu },
   ];
 
   return (
@@ -143,26 +117,12 @@ export default async function DashboardPage() {
           </div>
         </header>
 
-        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {actions.map((action) => (
-            <ActionCard key={action.href} {...action} />
-          ))}
-        </section>
-
         <section className="grid gap-6 lg:grid-cols-[1fr_360px]">
           <div className="space-y-4">
-            <SectionTitle label="Capture" title="Fast journal ways" />
+            <SectionTitle label="Start" title="Pick one" />
             <div className="grid gap-4 md:grid-cols-3">
-              {captureModes.map((mode) => (
-                <Link key={mode.title} href="/dashboard/capture" className="duo-card group p-5">
-                  <ToneIcon icon={mode.icon} tone={mode.tone} />
-                  <div className="mt-5 space-y-1">
-                    <h3 className="text-lg font-heading font-black uppercase tracking-wider text-duo-eel">
-                      {mode.title}
-                    </h3>
-                    <p className="text-sm font-bold text-duo-wolf">{mode.text}</p>
-                  </div>
-                </Link>
+              {actions.map((action) => (
+                <ActionCard key={action.href} {...action} />
               ))}
             </div>
           </div>
@@ -245,22 +205,12 @@ export default async function DashboardPage() {
                   </div>
                 ))}
               </div>
-            </div>
-
-            <div className="space-y-3">
-              {quickLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="btn-3d btn-3d-white flex h-14 items-center justify-between rounded-2xl border-2 border-duo-swan bg-background px-4 text-sm font-black uppercase tracking-wider text-duo-eel transition hover:bg-duo-polar"
-                >
-                  <span className="flex items-center gap-3">
-                    <link.icon className="h-5 w-5 text-duo-blue" />
-                    {link.title}
-                  </span>
-                  <ArrowRight className="h-4 w-4 text-duo-swan" />
+              <Button asChild variant="duolingo-outline" className="mt-5 w-full gap-2">
+                <Link href="/dashboard/insights">
+                  More Insights
+                  <ArrowRight className="h-4 w-4" />
                 </Link>
-              ))}
+              </Button>
             </div>
           </aside>
         </section>

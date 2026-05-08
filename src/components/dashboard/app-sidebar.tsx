@@ -4,14 +4,10 @@ import * as React from "react"
 import {
   Settings,
   Home,
-  Plus,
   MessageSquareText,
   Database,
   Library,
-  ChartNoAxesCombined,
-  Clock3,
   LogOut,
-  Cpu,
   Mic2,
 } from "lucide-react"
 
@@ -43,27 +39,18 @@ type NavItem = {
 
 const groups: { title: string; items: NavItem[] }[] = [
   {
-    title: "Workflows",
+    title: "Main",
     items: [
-      { title: "Studio", href: "/dashboard", icon: Home, color: "text-duo-green", exact: true },
+      { title: "Home", href: "/dashboard", icon: Home, color: "text-duo-green", exact: true },
       { title: "Chat", href: "/chat", icon: MessageSquareText, color: "text-duo-blue" },
       { title: "Capture", href: "/dashboard/capture", icon: Mic2, color: "text-duo-orange" },
-      { title: "Write", href: "/dashboard/journal/new", icon: Plus, color: "text-duo-green", exact: true },
+      { title: "Journals", href: "/dashboard/journals", icon: Library, color: "text-duo-blue" },
     ],
   },
   {
     title: "Memory",
     items: [
-      { title: "Timeline", href: "/dashboard/timeline", icon: Clock3, color: "text-duo-purple" },
-      { title: "Insights", href: "/dashboard/insights", icon: ChartNoAxesCombined, color: "text-duo-red" },
-      { title: "Archive", href: "/dashboard/journals", icon: Library, color: "text-duo-blue" },
       { title: "Memories", href: "/dashboard/memories", icon: Database, color: "text-duo-green" },
-    ],
-  },
-  {
-    title: "System",
-    items: [
-      { title: "MCP", href: "/dashboard/mcp", icon: Cpu, color: "text-duo-blue" },
     ],
   },
 ];

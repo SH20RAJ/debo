@@ -7,3 +7,8 @@
 
 claude can also connect to debo. (mcp client for claude using /mcp)
 also add all these to landing page.
+
+
+---
+
+replace mascot image with something else
