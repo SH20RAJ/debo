@@ -91,10 +91,14 @@ export function DeboVoiceDock() {
       connect
       audio
       video={false}
+      onConnected={() => toast.success("Voice linked")}
       onDisconnected={endSession}
       onError={(error) => {
         toast.error(error.message || "Voice link dropped");
         endSession();
+      }}
+      onMediaDeviceFailure={() => {
+        toast.error("Mic permission or device issue");
       }}
       className="contents"
     >

@@ -9,14 +9,14 @@ function toRoomSafeId(value: string) {
 
 export async function GET(req: NextRequest) {
   try {
-    const userId = await resolveUserId();
+    const userId = await resolveUserId(undefined, true);
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const user = await stackServerApp.getUser();
     const participantName = user?.displayName || "Debo User";
-    const participantIdentity = userId;
+    const participantIdentity = toRoomSafeId(userId);
 
     const requestedRoom = req.nextUrl.searchParams.get("room");
     const roomName = requestedRoom
@@ -37,6 +37,7 @@ export async function GET(req: NextRequest) {
     const at = new AccessToken(apiKey, apiSecret, {
       identity: participantIdentity,
       name: participantName,
+      ttl: "10m",
     });
 
     at.addGrant({

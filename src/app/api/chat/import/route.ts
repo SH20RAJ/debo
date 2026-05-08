@@ -24,7 +24,7 @@ function readActiveThreadId(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const userId = await resolveUserId();
+    const userId = await resolveUserId(undefined, true);
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

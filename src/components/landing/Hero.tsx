@@ -21,6 +21,7 @@ export function Hero({ isSignedIn = false }: HeroProps) {
                 alt="Debo Mascot" 
                 fill 
                 className="object-contain"
+                sizes="(max-width: 768px) 280px, 420px"
                 priority
               />
             </div>
@@ -54,4 +55,3 @@ export function Hero({ isSignedIn = false }: HeroProps) {
     </section>
   );
 }
-

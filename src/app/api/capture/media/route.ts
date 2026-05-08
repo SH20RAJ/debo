@@ -74,7 +74,7 @@ export async function POST(request: Request) {
   const key = createMediaKey(userId, kind, file);
   const contentType = file.type || "application/octet-stream";
 
-  const object = await bucket.put(key, file.stream(), {
+  const object = await bucket.put(key, file, {
     httpMetadata: {
       contentType,
     },

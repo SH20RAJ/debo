@@ -7,7 +7,7 @@ import { eq, desc, and, asc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 export async function createChat(title?: string) {
-  const userId = await resolveUserId();
+  const userId = await resolveUserId(undefined, true);
   if (!userId) throw new Error("Unauthorized");
 
   const chatId = crypto.randomUUID();
@@ -23,7 +23,7 @@ export async function createChat(title?: string) {
 }
 
 export async function getChatHistory(chatId: string) {
-  const userId = await resolveUserId();
+  const userId = await resolveUserId(undefined, true);
   if (!userId) throw new Error("Unauthorized");
 
   const chat = await db.query.chats.findFirst({
@@ -42,7 +42,7 @@ export async function addChatMessage(
   content: string,
   metadata?: Record<string, unknown>,
 ) {
-  const userId = await resolveUserId();
+  const userId = await resolveUserId(undefined, true);
   if (!userId) throw new Error("Unauthorized");
 
   // Verify ownership
@@ -69,7 +69,7 @@ export async function addChatMessage(
 }
 
 export async function getUserChats() {
-  const userId = await resolveUserId();
+  const userId = await resolveUserId(undefined, true);
   if (!userId) return [];
 
   return await db.query.chats.findMany({
@@ -79,7 +79,7 @@ export async function getUserChats() {
 }
 
 export async function deleteChat(chatId: string) {
-  const userId = await resolveUserId();
+  const userId = await resolveUserId(undefined, true);
   if (!userId) throw new Error("Unauthorized");
 
   await db.delete(messages).where(eq(messages.chatId, chatId));

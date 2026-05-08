@@ -14,7 +14,7 @@ import { revalidatePath } from "next/cache";
 // resolveUserId is imported from ./auth-sync
 
 export const getMemories = cache(async (query: string = "", userId?: string) => {
-  const resolvedUserId = await resolveUserId(userId);
+  const resolvedUserId = await resolveUserId(userId, true);
   if (!resolvedUserId) return { success: false, error: "Unauthorized" };
 
   try {
@@ -37,7 +37,7 @@ export const getMemories = cache(async (query: string = "", userId?: string) => 
 });
 
 export async function deleteMemory(memoryId: string, userId?: string) {
-  const resolvedUserId = await resolveUserId(userId);
+  const resolvedUserId = await resolveUserId(userId, true);
   if (!resolvedUserId) return { success: false, error: "Unauthorized" };
 
   try {
@@ -63,7 +63,7 @@ export async function deleteMemory(memoryId: string, userId?: string) {
 }
 
 export async function getMemory(memoryId: string, userId?: string) {
-  const resolvedUserId = await resolveUserId(userId);
+  const resolvedUserId = await resolveUserId(userId, true);
   if (!resolvedUserId) return { success: false, error: "Unauthorized" };
 
   try {
@@ -89,7 +89,7 @@ export async function getMemory(memoryId: string, userId?: string) {
 }
 
 export async function updateMemory(memoryId: string, content: string, userId?: string) {
-  const resolvedUserId = await resolveUserId(userId);
+  const resolvedUserId = await resolveUserId(userId, true);
   if (!resolvedUserId) return { success: false, error: "Unauthorized" };
 
   try {
@@ -137,7 +137,7 @@ export async function updateMemory(memoryId: string, content: string, userId?: s
 }
 
 export async function addMemory(fact: string, userId?: string) {
-  const resolvedUserId = await resolveUserId(userId);
+  const resolvedUserId = await resolveUserId(userId, true);
   if (!resolvedUserId) return { success: false, error: "Unauthorized" };
 
   try {
@@ -157,7 +157,7 @@ export async function addMemory(fact: string, userId?: string) {
 }
 
 export async function importMemories(jsonContent: string) {
-  const userId = await resolveUserId();
+  const userId = await resolveUserId(undefined, true);
   if (!userId) return { success: false, error: "Unauthorized" };
 
   try {

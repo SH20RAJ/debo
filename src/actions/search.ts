@@ -4,7 +4,7 @@ import { resolveUserId } from "./auth-sync";
 import { searchJournals as searchJournalCitations } from "@/lib/vector/search";
 
 export async function searchJournals(query: string = "", limit: number = 5) {
-  const userId = await resolveUserId();
+  const userId = await resolveUserId(undefined, true);
   if (!userId) throw new Error("Unauthorized");
 
   if (!query || typeof query !== "string" || !query.trim()) {

@@ -19,7 +19,7 @@ const journalSchema = z.object({
 // resolveUserId is imported from ./auth-sync
 
 export const getJournals = cache(async (sortOrder: "asc" | "desc" = "desc", limit: number = 10, offset: number = 0, userId?: string, query?: string) => {
-    const resolvedUserId = await resolveUserId(userId, Boolean(userId));
+    const resolvedUserId = await resolveUserId(userId, true);
     if (!resolvedUserId) return [];
 
     try {
@@ -53,7 +53,7 @@ export const getJournals = cache(async (sortOrder: "asc" | "desc" = "desc", limi
 });
 
 export const getJournalsCount = cache(async (query?: string, providedUserId?: string) => {
-    const userId = await resolveUserId(providedUserId, Boolean(providedUserId));
+    const userId = await resolveUserId(providedUserId, true);
     if (!userId) return 0;
 
     try {
@@ -75,7 +75,7 @@ export const getJournalsCount = cache(async (query?: string, providedUserId?: st
 });
 
 export const getJournal = cache(async (id: string, userId?: string) => {
-    const resolvedUserId = await resolveUserId(userId, Boolean(userId));
+    const resolvedUserId = await resolveUserId(userId, true);
     if (!resolvedUserId) return null;
 
     try {
@@ -139,7 +139,7 @@ export async function saveJournal(rawContent: string, id?: string, title?: strin
 
 export async function deleteJournal(id: string, userId?: string) {
     try {
-        const resolvedUserId = await resolveUserId(userId);
+        const resolvedUserId = await resolveUserId(userId, true);
         if (!resolvedUserId) return { success: false, error: "Unauthorized" };
 
         const existing = await getJournal(id, resolvedUserId);
