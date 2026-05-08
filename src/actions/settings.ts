@@ -7,9 +7,10 @@ import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { encrypt } from "@/lib/encryption";
 import { nango } from "@/lib/nango";
+import { logDatabaseIssue } from "@/lib/db/errors";
 
 export async function getUserPreferences() {
-  const userId = await resolveUserId();
+  const userId = await resolveUserId(undefined, true);
   if (!userId) throw new Error("Unauthorized");
 
   try {
@@ -27,23 +28,28 @@ export async function getUserPreferences() {
 
     return prefs;
   } catch (e) {
-    console.error("Database error in getUserPreferences:", e);
+    logDatabaseIssue("settings preferences", e);
     return null;
   }
 }
 
 export async function getAIProviders() {
-  const userId = await resolveUserId();
+  const userId = await resolveUserId(undefined, true);
   if (!userId) throw new Error("Unauthorized");
 
-  const providers = await db.query.aiProviders.findMany({
-    where: eq(aiProviders.userId, userId),
-  });
+  try {
+    const providers = await db.query.aiProviders.findMany({
+      where: eq(aiProviders.userId, userId),
+    });
 
-  return providers.map((p) => ({
-    ...p,
-    apiKey: p.apiKey ? "sk-....config" : null,
-  }));
+    return providers.map((p) => ({
+      ...p,
+      apiKey: p.apiKey ? "sk-....config" : null,
+    }));
+  } catch (error) {
+    logDatabaseIssue("settings ai providers", error);
+    return [];
+  }
 }
 
 export async function saveAIProvider(data: {
@@ -53,94 +59,109 @@ export async function saveAIProvider(data: {
   baseUrl?: string;
   isEnabled?: boolean;
 }) {
-  const userId = await resolveUserId();
+  const userId = await resolveUserId(undefined, true);
   if (!userId) throw new Error("Unauthorized");
 
-  const encryptedKey =
-    data.apiKey && !data.apiKey.includes("....config")
-      ? await encrypt(data.apiKey)
-      : undefined;
+  try {
+    const encryptedKey =
+      data.apiKey && !data.apiKey.includes("....config")
+        ? await encrypt(data.apiKey)
+        : undefined;
 
-  const existing = await db.query.aiProviders.findFirst({
-    where: and(
-      eq(aiProviders.userId, userId),
-      eq(aiProviders.providerId, data.providerId),
-    ),
-  });
+    const existing = await db.query.aiProviders.findFirst({
+      where: and(
+        eq(aiProviders.userId, userId),
+        eq(aiProviders.providerId, data.providerId),
+      ),
+    });
 
-  if (existing) {
-    await db
-      .update(aiProviders)
-      .set({
+    if (existing) {
+      await db
+        .update(aiProviders)
+        .set({
+          providerName: data.providerName,
+          baseUrl: data.baseUrl || null,
+          apiKey: encryptedKey || undefined,
+          isEnabled: data.isEnabled ?? true,
+          updatedAt: new Date(),
+        })
+        .where(eq(aiProviders.id, existing.id));
+    } else {
+      await db.insert(aiProviders).values({
+        id: crypto.randomUUID(),
+        userId: userId,
+        providerId: data.providerId,
         providerName: data.providerName,
         baseUrl: data.baseUrl || null,
-        apiKey: encryptedKey || undefined,
+        apiKey: encryptedKey || null,
         isEnabled: data.isEnabled ?? true,
+        createdAt: new Date(),
         updatedAt: new Date(),
-      })
-      .where(eq(aiProviders.id, existing.id));
-  } else {
-    await db.insert(aiProviders).values({
-      id: crypto.randomUUID(),
-      userId: userId,
-      providerId: data.providerId,
-      providerName: data.providerName,
-      baseUrl: data.baseUrl || null,
-      apiKey: encryptedKey || null,
-      isEnabled: data.isEnabled ?? true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-  }
+      });
+    }
 
-  revalidatePath("/dashboard/settings");
-  return true;
+    revalidatePath("/dashboard/settings");
+    return true;
+  } catch (error) {
+    logDatabaseIssue("settings save provider", error);
+    return false;
+  }
 }
 
 export async function setActiveProvider(providerId: string) {
-  const userId = await resolveUserId();
+  const userId = await resolveUserId(undefined, true);
   if (!userId) throw new Error("Unauthorized");
 
-  await db
-    .update(userPreferences)
-    .set({ activeProvider: providerId, updatedAt: new Date() })
-    .where(eq(userPreferences.userId, userId));
+  try {
+    await db
+      .update(userPreferences)
+      .set({ activeProvider: providerId, updatedAt: new Date() })
+      .where(eq(userPreferences.userId, userId));
 
-  revalidatePath("/dashboard/settings");
-  return true;
+    revalidatePath("/dashboard/settings");
+    return true;
+  } catch (error) {
+    logDatabaseIssue("settings active provider", error);
+    return false;
+  }
 }
 
 export async function saveUserPreferences(data: {
   mcpUrl?: string;
   activeProvider?: string;
 }) {
-  const userId = await resolveUserId();
+  const userId = await resolveUserId(undefined, true);
   if (!userId) throw new Error("Unauthorized");
 
-  const updateData: Record<string, string | Date | null> = {
-    activeProvider: data.activeProvider || "cloudflare",
-    mcpUrl: data.mcpUrl || null,
-    updatedAt: new Date(),
-  };
+  try {
+    const updateData: Record<string, string | Date | null> = {
+      activeProvider: data.activeProvider || "cloudflare",
+      mcpUrl: data.mcpUrl || null,
+      updatedAt: new Date(),
+    };
 
-  const existing = await db.query.userPreferences.findFirst({
-    where: eq(userPreferences.userId, userId),
-  });
-
-  if (existing) {
-    await db
-      .update(userPreferences)
-      .set(updateData)
-      .where(eq(userPreferences.userId, userId));
-  } else {
-    await db.insert(userPreferences).values({
-      userId: userId,
-      ...updateData,
+    const existing = await db.query.userPreferences.findFirst({
+      where: eq(userPreferences.userId, userId),
     });
-  }
 
-  revalidatePath("/dashboard/settings");
-  return true;
+    if (existing) {
+      await db
+        .update(userPreferences)
+        .set(updateData)
+        .where(eq(userPreferences.userId, userId));
+    } else {
+      await db.insert(userPreferences).values({
+        userId: userId,
+        ...updateData,
+      });
+    }
+
+    revalidatePath("/dashboard/settings");
+    return true;
+  } catch (error) {
+    logDatabaseIssue("settings save preferences", error);
+    return false;
+  }
 }
 
 /** UUID v4 regex — Nango requires this exact format for secret keys */
@@ -148,7 +169,7 @@ const UUID_V4 =
   /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export async function getNangoConnections() {
-  const userId = await resolveUserId();
+  const userId = await resolveUserId(undefined, true);
   if (!userId) throw new Error("Unauthorized");
 
   try {
@@ -167,7 +188,7 @@ export async function getNangoConnections() {
 }
 
 export async function deleteNangoConnection(providerConfigKey: string) {
-  const userId = await resolveUserId();
+  const userId = await resolveUserId(undefined, true);
   if (!userId) throw new Error("Unauthorized");
 
   try {

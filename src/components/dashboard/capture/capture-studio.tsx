@@ -23,8 +23,19 @@ import { cn } from "@/lib/utils";
 type CaptureMode = "audio" | "video" | "image";
 
 type ImagePreview = {
+  file: File;
   name: string;
   url: string;
+};
+
+type UploadedMedia = {
+  key: string;
+  uri: string;
+  url: string | null;
+  fileName: string;
+  contentType: string;
+  kind: CaptureMode;
+  size: number;
 };
 
 const modes = [
@@ -56,6 +67,7 @@ export function CaptureStudio() {
   const liveVideoRef = useRef<HTMLVideoElement | null>(null);
   const [mode, setMode] = useState<CaptureMode>("audio");
   const [status, setStatus] = useState<"idle" | "recording" | "ready">("idle");
+  const [mediaBlob, setMediaBlob] = useState<Blob | null>(null);
   const [mediaUrl, setMediaUrl] = useState<string | null>(null);
   const [mediaType, setMediaType] = useState("");
   const [imagePreviews, setImagePreviews] = useState<ImagePreview[]>([]);
@@ -79,14 +91,21 @@ export function CaptureStudio() {
 
   const resetMedia = () => {
     if (mediaUrl) URL.revokeObjectURL(mediaUrl);
+    setMediaBlob(null);
     setMediaUrl(null);
     setMediaType("");
     chunksRef.current = [];
   };
 
+  const resetImages = () => {
+    imagePreviews.forEach((preview) => URL.revokeObjectURL(preview.url));
+    setImagePreviews([]);
+  };
+
   const startRecording = async () => {
     try {
       resetMedia();
+      resetImages();
       if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
         throw new Error("Recording is not supported in this browser");
       }
@@ -123,6 +142,7 @@ export function CaptureStudio() {
 
       recorder.onstop = () => {
         const blob = new Blob(chunksRef.current, { type: preferredType || recorder.mimeType });
+        setMediaBlob(blob);
         setMediaType(preferredType || recorder.mimeType);
         setMediaUrl(URL.createObjectURL(blob));
         setStatus("ready");
@@ -145,23 +165,25 @@ export function CaptureStudio() {
   const handleImages = (files: FileList | null) => {
     imagePreviews.forEach((preview) => URL.revokeObjectURL(preview.url));
     const previews = Array.from(files ?? []).map((file) => ({
+      file,
       name: file.name,
       url: URL.createObjectURL(file),
     }));
     setImagePreviews(previews);
-    if (previews.length > 0) setStatus("ready");
+    setStatus(previews.length > 0 ? "ready" : "idle");
   };
 
   const saveCapture = async () => {
     const captureTitle = title.trim() || `${modes.find((item) => item.id === mode)?.label} journal`;
-    const body = buildJournalContent(captureTitle);
-    if (!body.trim()) {
+    if (!notes.trim() && status !== "ready") {
       toast.error("Add a note before saving");
       return;
     }
 
     setIsSaving(true);
     try {
+      const uploadedMedia = await uploadCaptureMedia();
+      const body = buildJournalContent(captureTitle, uploadedMedia);
       const result = await saveJournal(body, undefined, captureTitle, undefined, [
         `${mode}-journal`,
         "capture",
@@ -178,7 +200,55 @@ export function CaptureStudio() {
     }
   };
 
-  const buildJournalContent = (captureTitle: string) => {
+  const uploadCaptureMedia = async () => {
+    if (mode === "image") {
+      return Promise.all(imagePreviews.map((preview) => uploadMediaFile(preview.file, "image")));
+    }
+
+    if (status !== "ready") {
+      return [];
+    }
+
+    if (!mediaBlob) {
+      throw new Error("No recorded media found. Please record again.");
+    }
+
+    return [await uploadMediaFile(createRecordedFile(), mode)];
+  };
+
+  const createRecordedFile = () => {
+    if (!mediaBlob) {
+      throw new Error("No recorded media found. Please record again.");
+    }
+
+    const extension = mediaType.includes("mp4") ? "mp4" : "webm";
+    const fileName = `${mode}-journal-${Date.now()}.${extension}`;
+
+    return new File([mediaBlob], fileName, { type: mediaType || mediaBlob.type });
+  };
+
+  const uploadMediaFile = async (file: File, kind: CaptureMode): Promise<UploadedMedia> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("kind", kind);
+
+    const response = await fetch("/api/capture/media", {
+      method: "POST",
+      body: formData,
+    });
+    const payload = (await response.json().catch(() => ({}))) as {
+      media?: UploadedMedia;
+      error?: string;
+    };
+
+    if (!response.ok || !payload.media) {
+      throw new Error(payload.error || "Could not upload media");
+    }
+
+    return payload.media;
+  };
+
+  const buildJournalContent = (captureTitle: string, uploadedMedia: UploadedMedia[]) => {
     const lines = [
       `# ${captureTitle}`,
       "",
@@ -187,11 +257,21 @@ export function CaptureStudio() {
       imagePreviews.length
         ? `Image pages: ${imagePreviews.map((preview) => preview.name).join(", ")}`
         : "",
+      uploadedMedia.length ? "Stored media:" : "",
+      ...uploadedMedia.map(
+        (item) =>
+          `- ${item.kind}: ${item.fileName} (${formatBytes(item.size)}) ${item.url || item.uri}`
+      ),
       "",
       notes.trim(),
     ].filter(Boolean);
 
     return lines.join("\n");
+  };
+
+  const formatBytes = (bytes: number) => {
+    if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
   return (
@@ -223,6 +303,7 @@ export function CaptureStudio() {
                 setMode(item.id);
                 setStatus("idle");
                 resetMedia();
+                resetImages();
               }}
               className={cn(
                 "btn-3d btn-3d-white flex h-14 w-full items-center justify-between rounded-2xl border-2 px-4 text-left text-sm font-black uppercase tracking-wider transition",
@@ -324,7 +405,7 @@ export function CaptureStudio() {
             />
             <Button
               onClick={saveCapture}
-              disabled={isSaving || (!notes.trim() && status !== "ready")}
+              disabled={isSaving || status === "recording" || (!notes.trim() && status !== "ready")}
               variant="duolingo-blue"
               size="lg"
               className="w-full gap-2"

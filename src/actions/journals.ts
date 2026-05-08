@@ -91,7 +91,7 @@ export const getJournal = cache(async (id: string, userId?: string) => {
 
 export async function saveJournal(rawContent: string, id?: string, title?: string, userId?: string, tags: string[] = []) {
     try {
-        const resolvedUserId = await resolveUserId(userId);
+        const resolvedUserId = await resolveUserId(userId, true);
         if (!resolvedUserId) return { success: false, error: "Unauthorized" };
 
         // Validate input
@@ -132,7 +132,7 @@ export async function saveJournal(rawContent: string, id?: string, title?: strin
         
         return { success: true, data: journalId };
     } catch (error) {
-        console.error("Save journal error:", error);
+        logDatabaseIssue("journal save", error);
         return { success: false, error: "An unexpected error occurred" };
     }
 }

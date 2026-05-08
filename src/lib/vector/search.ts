@@ -3,7 +3,7 @@ import "server-only";
 import { db } from "@/db";
 import { journals } from "@/db/schema";
 import { extractEntities } from "@/lib/ai/extract";
-import { embed } from "@/lib/ai/embeddings";
+import { embed, warnEmbeddingProvider } from "@/lib/ai/embeddings";
 import {
   deleteVectorsByFilter,
   getQdrantErrorMessage,
@@ -164,6 +164,10 @@ export async function indexJournal(journal: JournalForIndex) {
       return;
     }
 
+    if (warnEmbeddingProvider(`journal indexing ${journal.id}`, error)) {
+      return;
+    }
+
     throw error;
   }
 }
@@ -195,8 +199,23 @@ export async function searchJournals(
   userId: string,
   limit = 5
 ): Promise<CitationSource[]> {
-  const vector = await embed(query);
-  const matches = (await searchQdrantVector(vector, userId, Math.max(limit * 2, 10))) as JournalChunkMatch[];
+  let matches: JournalChunkMatch[];
+
+  try {
+    const vector = await embed(query);
+    matches = (await searchQdrantVector(vector, userId, Math.max(limit * 2, 10))) as JournalChunkMatch[];
+  } catch (error) {
+    if (isQdrantAuthError(error)) {
+      console.warn(`[Vector] Skipping semantic search: ${getQdrantErrorMessage(error)}`);
+      return [];
+    }
+
+    if (warnEmbeddingProvider("semantic search", error)) {
+      return [];
+    }
+
+    throw error;
+  }
 
   if (matches.length === 0) {
     return [];

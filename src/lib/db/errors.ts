@@ -5,12 +5,14 @@ const warnedScopes = new Set<string>();
 export function isDatabaseUnavailable(error: unknown) {
   const value = error as {
     code?: unknown;
+    name?: unknown;
     message?: unknown;
-    cause?: { code?: unknown; message?: unknown };
+    cause?: { code?: unknown; name?: unknown; message?: unknown };
     sourceError?: {
       code?: unknown;
+      name?: unknown;
       message?: unknown;
-      cause?: { code?: unknown; message?: unknown };
+      cause?: { code?: unknown; name?: unknown; message?: unknown };
     };
   };
 
@@ -19,6 +21,13 @@ export function isDatabaseUnavailable(error: unknown) {
       value?.sourceError?.code ||
       value?.cause?.code ||
       value?.sourceError?.cause?.code ||
+      ""
+  );
+  const name = String(
+    value?.name ||
+      value?.sourceError?.name ||
+      value?.cause?.name ||
+      value?.sourceError?.cause?.name ||
       ""
   );
   const message = String(
@@ -32,8 +41,10 @@ export function isDatabaseUnavailable(error: unknown) {
 
   return (
     code === "UND_ERR_CONNECT_TIMEOUT" ||
+    code === "20" ||
     code === "AbortError" ||
-    /fetch failed|connect timeout|timed out|network/i.test(message)
+    name === "AbortError" ||
+    /fetch failed|connect timeout|timed out|network|operation was aborted|aborted/i.test(message)
   );
 }
 

@@ -30,13 +30,14 @@ export function ProviderCard({ config, savedConfig, isActive }: ProviderCardProp
     const handleSave = async () => {
         setLoading(true);
         try {
-            await saveAIProvider({
+            const ok = await saveAIProvider({
                 providerId: config.id,
                 providerName: config.name,
                 apiKey,
                 baseUrl,
                 isEnabled: true,
             });
+            if (!ok) throw new Error("Provider settings could not be saved");
             toast.success(`${config.name} configured successfully`);
             setOpen(false);
         } catch (_error) {
@@ -53,7 +54,8 @@ export function ProviderCard({ config, savedConfig, isActive }: ProviderCardProp
             return;
         }
         try {
-            await setActiveProvider(config.id);
+            const ok = await setActiveProvider(config.id);
+            if (!ok) throw new Error("Provider could not be set");
             toast.success(`${config.name} is now your active provider`);
         } catch (_error) {
             toast.error("Failed to set active provider");

@@ -5,6 +5,7 @@ declare namespace Cloudflare {
 	interface Env {
 		IMAGES: ImagesBinding;
 		ASSETS: Fetcher;
+		MEDIA: R2Bucket;
 		DATABASE_URL: string;
 		WORKER_SELF_REFERENCE: Fetcher /* debo */;
 	}
