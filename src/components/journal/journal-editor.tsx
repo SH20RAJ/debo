@@ -29,7 +29,6 @@ export function JournalEditor({
     const [tags, setTags] = useState<string[]>(initialTags);
     const [tagInput, setTagInput] = useState("");
     const [id, setId] = useState(initialId);
-    const [isSaving, setIsSaving] = useState(false);
     const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
     const router = useRouter();
     const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -54,7 +53,7 @@ export function JournalEditor({
                 toast.error(result.error || "Sync failed.");
                 setSaveStatus("idle");
             }
-        } catch (error) {
+        } catch {
             setSaveStatus("idle");
         }
         return currentId;

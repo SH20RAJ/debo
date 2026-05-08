@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { Shield, Lock, Eye, FileText, CheckCircle2 } from "lucide-react";
+import { Shield, Lock, Eye, CheckCircle2 } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useTransition, useCallback, Suspense } from "react";
+import { useState, useEffect, useTransition, useCallback } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Search, SortDesc, SortAsc, CalendarIcon, FileText, Sparkles, Trash2, Plus, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -34,7 +34,6 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { Skeleton } from "@/components/ui/skeleton";
 
 interface JournalProps {
   id: string;
@@ -99,7 +98,7 @@ export function JournalListManager({
       } else {
         toast.error(result.error || "Failed to delete entry");
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete entry");
     } finally {
       setIsDeleting(null);

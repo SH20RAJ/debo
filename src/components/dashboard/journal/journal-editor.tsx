@@ -47,7 +47,7 @@ export function JournalEditor({
             } else {
                 toast.error(result.error || "Failed to sync changes.");
             }
-        } catch (error) {
+        } catch {
             toast.error("An unexpected error occurred.");
         } finally {
             setIsSaving(false);

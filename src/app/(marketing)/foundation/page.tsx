@@ -1,17 +1,16 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { 
-  Droplets, 
-  Waves, 
-  GraduationCap, 
-  Hospital, 
-  Heart, 
-  Eye, 
+import {
+  Droplets,
+  Waves,
+  GraduationCap,
+  Hospital,
+  Heart,
+  Eye,
   ExternalLink,
   Sparkles,
   ShieldCheck,
-  Globe,
-  Clock3
+  Globe
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 

@@ -34,7 +34,7 @@ export default async function JournalPage({ params }: { params: Promise<{ id: st
             initialId = journal.id;
             initialTitle = journal.title || "";
             initialTags = journal.tags || [];
-        } catch (error) {
+        } catch {
             notFound();
         }
     }

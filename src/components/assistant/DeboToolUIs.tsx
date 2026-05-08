@@ -137,7 +137,7 @@ export const SearchJournalsToolUI = makeAssistantToolUI({
 // ── Memories Retrieved ──
 export const GetMemoriesToolUI = makeAssistantToolUI({
   toolName: "getMemoriesTool",
-  render: ({ args, result: _r }) => {
+  render: ({ result: _r }) => {
     const result = _r as unknown;
     const results = Array.isArray(result) ? result as ToolResultRecord[] : [];
     return (
@@ -173,7 +173,7 @@ export const GetMemoriesToolUI = makeAssistantToolUI({
 // ── Pattern Analysis ──
 export const DetectPatternsToolUI = makeAssistantToolUI({
   toolName: "queryGraphTool",
-  render: ({ args, result: rawResult }) => {
+  render: ({ result: rawResult }) => {
     const result = recordValue(rawResult);
     const sentiment = textValue(result.sentiment);
     const suggestedAction = textValue(result.suggestedAction);

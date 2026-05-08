@@ -5,7 +5,6 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Search, Trash2, Plus, Loader2, Download, Upload, Database, Brain, AlertCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { addMemory, deleteMemory, importMemories } from "@/actions/memories";
 import {
@@ -50,13 +49,6 @@ export function MemoryManager({ initialMemories = [], initialQuery = "" }: { ini
     });
   }, [pathname, router, searchParams]);
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    setQuery(val);
-    const timer = setTimeout(() => updateUrl(val), 400);
-    return () => clearTimeout(timer);
-  };
-
   const handleAdd = async () => {
     if (!newFact.trim()) return;
     setIsAdding(true);
@@ -69,7 +61,7 @@ export function MemoryManager({ initialMemories = [], initialQuery = "" }: { ini
         } else {
             toast.error(res.error);
         }
-    } catch (e) {
+    } catch {
         toast.error("Failed to add memory.");
     } finally {
         setIsAdding(false);
@@ -86,7 +78,7 @@ export function MemoryManager({ initialMemories = [], initialQuery = "" }: { ini
         } else {
             toast.error(res.error);
         }
-    } catch (e) {
+    } catch {
         toast.error("Failed to delete memory.");
     } finally {
         setIsDeleting(null);
@@ -122,7 +114,7 @@ export function MemoryManager({ initialMemories = [], initialQuery = "" }: { ini
             } else {
                 toast.error(res.error);
             }
-        } catch (err) {
+        } catch {
             toast.error("Invalid file format.");
         } finally {
             setIsImporting(false);

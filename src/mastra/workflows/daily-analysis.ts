@@ -2,7 +2,6 @@ import { createWorkflow, createStep } from '@mastra/core/workflows';
 import { z } from 'zod';
 import { getJournals } from '@/actions/journals';
 import { addMemory } from '@/actions/memories';
-import { mastra } from '../index';
 
 const fetchRecentJournalsStep = createStep({
   id: 'fetch-recent-journals',

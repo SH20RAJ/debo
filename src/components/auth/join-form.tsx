@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { stackClientApp } from "@/stack/client";
 import { OAuthButtonGroup } from "@stackframe/stack";
 import {
   Card,
@@ -14,21 +12,6 @@ import {
 import Link from "next/link";
 
 export function JoinForm() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  const handleGoogleJoin = async () => {
-    setLoading(true);
-    setError("");
-
-    try {
-      await stackClientApp.signInWithOAuth("google");
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "An unexpected error occurred");
-      setLoading(false);
-    }
-  };
-
   return (
     <Card className="border-2">
       <CardHeader className="text-center">
@@ -40,14 +23,6 @@ export function JoinForm() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4 pt-4">
-        {error && (
-          <div
-            className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-sm font-medium text-destructive text-center"
-            role="alert"
-          >
-            {error}
-          </div>
-        )}
         <div className="w-full">
           <OAuthButtonGroup type="sign-up" />
         </div>
