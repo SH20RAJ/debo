@@ -28,33 +28,27 @@ import { stackServerApp } from "@/stack/server";
 
 export const metadata: Metadata = {
   title: "Debo Studio",
-  description:
-    "A clean Debo workspace for chat, capture, journaling, memory, and assistant context.",
+  description: "Debo Studio for chat, capture, journaling, and memory.",
 };
 
 export default async function DashboardPage() {
-  const userId = await resolveUserId();
+  const userId = await resolveUserId(undefined, true);
   if (!userId) redirect("/join");
 
   const user = await stackServerApp.getUser();
   if (!user) redirect("/join");
 
-  const [journalCount, timeline] = await Promise.all([
-    getJournalsCount(),
+  const [journalCount, timeline, initialGraph] = await Promise.all([
+    getJournalsCount(undefined, userId),
     getLifeTimeline(userId, "daily"),
+    queryGraph("What patterns stand out in my life?", userId),
   ]);
 
-  let graph = await queryGraph(
-    "What recurring patterns stand out in my life?",
-    userId,
-  );
+  let graph = initialGraph;
 
   if (!graph.topPeople.length && journalCount > 0) {
     await refreshMemoryGraph(userId);
-    graph = await queryGraph(
-      "What recurring patterns stand out in my life?",
-      userId,
-    );
+    graph = await queryGraph("What patterns stand out in my life?", userId);
   }
 
   const recentTimeline = timeline.slice(-4).reverse();
@@ -62,56 +56,48 @@ export default async function DashboardPage() {
   const signalCount =
     graph.topPeople.length + graph.topTopics.length + graph.topEmotions.length;
 
-  const primaryActions = [
+  const actions = [
     {
-      title: "Talk with Debo",
-      description: "Open the homie chat with thread history and memory context.",
+      title: "Chat",
+      text: "Talk to Debo.",
       href: "/chat",
       icon: MessageSquareText,
+      tone: "green" as const,
     },
     {
-      title: "Capture a moment",
-      description: "Record audio, save a video journal, or upload diary pages.",
+      title: "Capture",
+      text: "Record audio, video, or pages.",
       href: "/dashboard/capture",
       icon: Mic2,
+      tone: "blue" as const,
     },
     {
-      title: "Write journal",
-      description: "Start a focused text entry and let Debo process it.",
+      title: "Write",
+      text: "Start a journal.",
       href: "/dashboard/journal/new",
       icon: PenLine,
+      tone: "orange" as const,
     },
     {
-      title: "Review memory",
-      description: "Scan patterns, timeline, and stored life signals.",
+      title: "Review",
+      text: "See patterns.",
       href: "/dashboard/insights",
       icon: ChartNoAxesCombined,
+      tone: "purple" as const,
     },
   ];
 
   const captureModes = [
-    {
-      title: "Audio journal",
-      description: "Speak quickly when writing feels slow.",
-      icon: Mic2,
-    },
-    {
-      title: "Video journal",
-      description: "Keep context from vlogs and daily check-ins.",
-      icon: Video,
-    },
-    {
-      title: "Diary pages",
-      description: "Upload handwritten pages for later OCR and context.",
-      icon: FileImage,
-    },
+    { title: "Audio note", text: "Speak fast.", icon: Mic2, tone: "green" as const },
+    { title: "Video note", text: "Record a vlog.", icon: Video, tone: "blue" as const },
+    { title: "Page scan", text: "Upload diary pages.", icon: FileImage, tone: "orange" as const },
   ];
 
   const metrics = [
-    { label: "Journals", value: journalCount.toString(), description: "Saved moments" },
-    { label: "Recent", value: recentTimeline.length.toString(), description: "Timeline groups" },
-    { label: "Patterns", value: graph.patterns.length.toString(), description: "Memory themes" },
-    { label: "Signals", value: signalCount.toString(), description: "People, topics, emotions" },
+    { label: "Journals", value: journalCount.toString(), text: "saved" },
+    { label: "Recent", value: recentTimeline.length.toString(), text: "groups" },
+    { label: "Patterns", value: graph.patterns.length.toString(), text: "found" },
+    { label: "Signals", value: signalCount.toString(), text: "active" },
   ];
 
   const quickLinks = [
@@ -122,152 +108,142 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <div className="min-h-full bg-background">
+    <div className="min-h-full bg-duo-polar">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-5 py-8 lg:px-8">
-        <header className="grid gap-6 border-b border-border pb-8 lg:grid-cols-[1fr_auto] lg:items-end">
-          <div className="space-y-4">
-            <div className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-1 text-xs font-medium text-muted-foreground">
-              <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              Studio synced
+        <header className="duo-card overflow-hidden p-0">
+          <div className="grid gap-6 p-6 lg:grid-cols-[1fr_auto] lg:items-end lg:p-8">
+            <div className="space-y-4">
+              <div className="inline-flex items-center gap-2 rounded-2xl border-2 border-duo-feather bg-duo-green/10 px-4 py-1.5 text-xs font-black uppercase tracking-[0.18em] text-duo-green">
+                <span className="h-3 w-3 rounded-full bg-duo-green" />
+                Ready
+              </div>
+              <div className="space-y-2">
+                <h1 className="text-4xl font-heading font-black tracking-tight text-duo-eel md:text-6xl">
+                  Hi, {firstName}.
+                </h1>
+                <p className="max-w-2xl text-lg font-bold leading-7 text-duo-wolf">
+                  Pick one thing. Debo will keep the memory clean.
+                </p>
+              </div>
             </div>
-            <div className="space-y-3">
-              <h1 className="max-w-3xl text-3xl font-semibold tracking-tight text-foreground md:text-5xl">
-                Welcome back, {firstName}.
-              </h1>
-              <p className="max-w-2xl text-sm leading-6 text-muted-foreground md:text-base">
-                Debo Studio is the clean workspace for talking, capturing, journaling, and turning your life context into useful memory.
-              </p>
+            <div className="flex flex-wrap gap-3">
+              <Button asChild variant="duolingo" size="lg">
+                <Link href="/chat">
+                  <MessageSquareText className="mr-2 h-5 w-5" />
+                  Chat
+                </Link>
+              </Button>
+              <Button asChild variant="duolingo-outline" size="lg">
+                <Link href="/dashboard/capture">
+                  <Mic2 className="mr-2 h-5 w-5" />
+                  Capture
+                </Link>
+              </Button>
             </div>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <Button asChild className="h-10 rounded-md gap-2">
-              <Link href="/chat">
-                <MessageSquareText className="h-4 w-4" />
-                Open Chat
-              </Link>
-            </Button>
-            <Button asChild variant="outline" className="h-10 rounded-md gap-2">
-              <Link href="/dashboard/capture">
-                <Mic2 className="h-4 w-4" />
-                Capture
-              </Link>
-            </Button>
           </div>
         </header>
 
-        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {primaryActions.map((action) => (
+        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {actions.map((action) => (
             <ActionCard key={action.href} {...action} />
           ))}
         </section>
 
-        <section className="grid gap-6 lg:grid-cols-[1fr_340px]">
+        <section className="grid gap-6 lg:grid-cols-[1fr_360px]">
           <div className="space-y-4">
-            <SectionHeader
-              eyebrow="Capture"
-              title="Fast journaling lanes"
-              description="Audio, video, and page uploads now have a visible place before they become transcripts, OCR, and assistant context."
-            />
-            <div className="grid gap-3 md:grid-cols-3">
+            <SectionTitle label="Capture" title="Fast journal ways" />
+            <div className="grid gap-4 md:grid-cols-3">
               {captureModes.map((mode) => (
-                <Link
-                  key={mode.title}
-                  href="/dashboard/capture"
-                  className="group rounded-lg border border-border bg-background p-4 transition hover:border-foreground"
-                >
-                  <div className="mb-5 flex h-9 w-9 items-center justify-center rounded-md bg-muted text-foreground">
-                    <mode.icon className="h-4 w-4" />
+                <Link key={mode.title} href="/dashboard/capture" className="duo-card group p-5">
+                  <ToneIcon icon={mode.icon} tone={mode.tone} />
+                  <div className="mt-5 space-y-1">
+                    <h3 className="text-lg font-heading font-black uppercase tracking-wider text-duo-eel">
+                      {mode.title}
+                    </h3>
+                    <p className="text-sm font-bold text-duo-wolf">{mode.text}</p>
                   </div>
-                  <div className="space-y-1">
-                    <h3 className="text-sm font-semibold text-foreground">{mode.title}</h3>
-                    <p className="text-sm leading-5 text-muted-foreground">{mode.description}</p>
-                  </div>
-                  <ArrowRight className="mt-5 h-4 w-4 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-foreground" />
                 </Link>
               ))}
             </div>
           </div>
 
-          <div className="rounded-lg border border-border bg-muted/20 p-4">
-            <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-foreground">
-              <Search className="h-4 w-4" />
-              Memory status
+          <div className="duo-card">
+            <div className="mb-5 flex items-center gap-3">
+              <ToneIcon icon={Search} tone="blue" />
+              <div>
+                <div className="text-xs font-black uppercase tracking-[0.18em] text-duo-swan">
+                  Memory
+                </div>
+                <h2 className="text-xl font-heading font-black text-duo-eel">Status</h2>
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               {metrics.map((metric) => (
-                <div key={metric.label} className="rounded-md border border-border bg-background p-3">
-                  <div className="text-2xl font-semibold tracking-tight text-foreground">{metric.value}</div>
-                  <div className="mt-1 text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+                <div key={metric.label} className="rounded-2xl border-2 border-duo-swan bg-background p-4 text-center">
+                  <div className="text-3xl font-heading font-black text-duo-eel">{metric.value}</div>
+                  <div className="mt-1 text-[10px] font-black uppercase tracking-[0.18em] text-duo-swan">
                     {metric.label}
                   </div>
-                  <div className="mt-1 text-xs text-muted-foreground">{metric.description}</div>
+                  <div className="text-xs font-bold text-duo-wolf">{metric.text}</div>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        <section className="grid gap-6 lg:grid-cols-[1fr_340px]">
+        <section className="grid gap-6 lg:grid-cols-[1fr_360px]">
           <div className="space-y-4">
-            <SectionHeader
-              eyebrow="Recent"
-              title="Latest timeline"
-              description="A quick scan of the moments Debo can already reason over."
-            />
-            <div className="overflow-hidden rounded-lg border border-border">
+            <SectionTitle label="Recent" title="Latest memory" />
+            <div className="space-y-3">
               {recentTimeline.length > 0 ? (
                 recentTimeline.map((entry, index) => (
                   <Link
                     key={`${entry.grouping}-${entry.date}`}
                     href={entry.journalIds[0] ? `/dashboard/journal/${entry.journalIds[0]}` : "/dashboard/timeline"}
-                    className="grid gap-3 border-b border-border bg-background p-4 transition last:border-b-0 hover:bg-muted/40 sm:grid-cols-[120px_1fr_auto] sm:items-center"
+                    className="duo-card group grid gap-3 p-5 sm:grid-cols-[110px_1fr_auto] sm:items-center"
                   >
-                    <div className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+                    <div className="rounded-2xl border-2 border-duo-swan bg-duo-polar px-3 py-2 text-center text-xs font-black uppercase tracking-wider text-duo-wolf">
                       {format(new Date(`${entry.date}T00:00:00.000Z`), "MMM d")}
                     </div>
-                    <div className="space-y-1">
-                      <div className="text-sm font-semibold text-foreground">{entry.summary}</div>
-                      <div className="text-xs text-muted-foreground">
+                    <div className="min-w-0">
+                      <div className="line-clamp-2 text-base font-black text-duo-eel">
+                        {entry.summary}
+                      </div>
+                      <div className="mt-1 line-clamp-1 text-sm font-bold text-duo-wolf">
                         {entry.events.slice(0, 2).join(" / ") || entry.label}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      {index === 0 ? <Sparkles className="h-3.5 w-3.5" /> : null}
+                    <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-duo-swan">
+                      {index === 0 ? <Sparkles className="h-4 w-4 text-duo-blue" /> : null}
                       {entry.journalIds.length} note{entry.journalIds.length === 1 ? "" : "s"}
                     </div>
                   </Link>
                 ))
               ) : (
-                <div className="bg-background p-8 text-center">
-                  <CalendarClock className="mx-auto mb-3 h-6 w-6 text-muted-foreground" />
-                  <div className="text-sm font-semibold text-foreground">No timeline yet</div>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Capture or write your first journal to start building memory.
+                <div className="duo-card p-8 text-center">
+                  <CalendarClock className="mx-auto mb-4 h-10 w-10 text-duo-swan" />
+                  <h3 className="text-xl font-heading font-black text-duo-eel">No notes yet</h3>
+                  <p className="mt-1 text-sm font-bold text-duo-wolf">
+                    Capture or write your first journal.
                   </p>
                 </div>
               )}
             </div>
           </div>
 
-          <aside className="space-y-6">
-            <div className="space-y-4">
-              <SectionHeader
-                eyebrow="Insights"
-                title="Current read"
-                description="The first signals from the memory graph."
-              />
-              <div className="rounded-lg border border-border bg-background p-4">
-                <div className="space-y-3">
-                  {(graph.insights.length > 0
-                    ? graph.insights.slice(0, 3)
-                    : ["Add a few journals and Debo will surface patterns here."]
-                  ).map((insight) => (
-                    <div key={insight} className="flex gap-3 text-sm leading-5 text-muted-foreground">
-                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-foreground" />
-                      <span>{insight}</span>
-                    </div>
-                  ))}
-                </div>
+          <aside className="space-y-5">
+            <div className="duo-card">
+              <SectionTitle label="Insights" title="Quick read" compact />
+              <div className="mt-4 space-y-3">
+                {(graph.insights.length > 0
+                  ? graph.insights.slice(0, 3)
+                  : ["Add a few journals and Debo will show patterns here."]
+                ).map((insight) => (
+                  <div key={insight} className="flex gap-3 rounded-2xl border-2 border-duo-swan bg-background p-3 text-sm font-bold leading-5 text-duo-wolf">
+                    <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-duo-green" />
+                    <span>{insight}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -276,13 +252,13 @@ export default async function DashboardPage() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="flex h-11 items-center justify-between rounded-lg border border-border bg-background px-3 text-sm font-medium text-foreground transition hover:bg-muted"
+                  className="btn-3d btn-3d-white flex h-14 items-center justify-between rounded-2xl border-2 border-duo-swan bg-background px-4 text-sm font-black uppercase tracking-wider text-duo-eel transition hover:bg-duo-polar"
                 >
                   <span className="flex items-center gap-3">
-                    <link.icon className="h-4 w-4 text-muted-foreground" />
+                    <link.icon className="h-5 w-5 text-duo-blue" />
                     {link.title}
                   </span>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  <ArrowRight className="h-4 w-4 text-duo-swan" />
                 </Link>
               ))}
             </div>
@@ -295,50 +271,69 @@ export default async function DashboardPage() {
 
 function ActionCard({
   title,
-  description,
+  text,
   href,
-  icon: Icon,
+  icon,
+  tone,
 }: {
   title: string;
-  description: string;
+  text: string;
   href: string;
   icon: LucideIcon;
+  tone: "green" | "blue" | "orange" | "purple";
 }) {
   return (
-    <Link
-      href={href}
-      className="group rounded-lg border border-border bg-background p-4 transition hover:border-foreground hover:shadow-sm"
-    >
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex h-9 w-9 items-center justify-center rounded-md bg-foreground text-background">
-          <Icon className="h-4 w-4" />
-        </div>
-        <ArrowRight className="h-4 w-4 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-foreground" />
+    <Link href={href} className="duo-card group p-5">
+      <div className="flex items-center justify-between">
+        <ToneIcon icon={icon} tone={tone} />
+        <ArrowRight className="h-5 w-5 text-duo-swan transition group-hover:translate-x-1 group-hover:text-duo-blue" />
       </div>
-      <div className="space-y-1">
-        <h2 className="text-sm font-semibold text-foreground">{title}</h2>
-        <p className="text-sm leading-5 text-muted-foreground">{description}</p>
+      <div className="mt-6 space-y-1">
+        <h2 className="text-xl font-heading font-black uppercase tracking-wider text-duo-eel">
+          {title}
+        </h2>
+        <p className="text-sm font-bold text-duo-wolf">{text}</p>
       </div>
     </Link>
   );
 }
 
-function SectionHeader({
-  eyebrow,
-  title,
-  description,
+function ToneIcon({
+  icon: Icon,
+  tone,
 }: {
-  eyebrow: string;
+  icon: LucideIcon;
+  tone: "green" | "blue" | "orange" | "purple";
+}) {
+  const toneClass = {
+    green: "border-duo-feather bg-duo-green/10 text-duo-green",
+    blue: "border-duo-macaw bg-duo-blue/10 text-duo-blue",
+    orange: "border-duo-fox bg-duo-orange/10 text-duo-orange",
+    purple: "border-duo-beetle bg-duo-purple/10 text-duo-purple",
+  }[tone];
+
+  return (
+    <div className={`flex h-12 w-12 items-center justify-center rounded-2xl border-2 ${toneClass}`}>
+      <Icon className="h-6 w-6" />
+    </div>
+  );
+}
+
+function SectionTitle({
+  label,
+  title,
+  compact = false,
+}: {
+  label: string;
   title: string;
-  description: string;
+  compact?: boolean;
 }) {
   return (
-    <div className="space-y-1">
-      <div className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
-        {eyebrow}
-      </div>
-      <h2 className="text-xl font-semibold tracking-tight text-foreground">{title}</h2>
-      <p className="max-w-2xl text-sm leading-6 text-muted-foreground">{description}</p>
+    <div className={compact ? "space-y-1" : "space-y-2"}>
+      <div className="text-xs font-black uppercase tracking-[0.2em] text-duo-swan">{label}</div>
+      <h2 className="text-2xl font-heading font-black uppercase tracking-wider text-duo-eel">
+        {title}
+      </h2>
     </div>
   );
 }

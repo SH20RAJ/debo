@@ -15,7 +15,7 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const userId = await resolveUserId();
+  const userId = await resolveUserId(undefined, true);
 
   if (!userId) {
     redirect("/join");

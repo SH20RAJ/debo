@@ -6,6 +6,7 @@ import { asc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { journals } from "@/db/schema";
 import { extractEntities, summarizeEntities } from "@/lib/ai/extract";
+import { logDatabaseIssue } from "@/lib/db/errors";
 
 export type TimelineGrouping = "daily" | "weekly" | "monthly";
 
@@ -146,10 +147,17 @@ function groupJournals(entries: JournalRow[], grouping: TimelineGrouping) {
 }
 
 export const getLifeTimeline = cache(async (userId: string, grouping: TimelineGrouping = "daily") => {
-  const entries = await db.query.journals.findMany({
-    where: eq(journals.userId, userId),
-    orderBy: [asc(journals.createdAt)],
-  });
+  let entries: JournalRow[] = [];
+
+  try {
+    entries = await db.query.journals.findMany({
+      where: eq(journals.userId, userId),
+      orderBy: [asc(journals.createdAt)],
+    });
+  } catch (error) {
+    logDatabaseIssue("life timeline", error);
+    return [];
+  }
 
   return groupJournals(entries, grouping);
 });

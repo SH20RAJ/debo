@@ -7,6 +7,7 @@ import {
   resolveRequestedThreadId,
   serializeChatMessage,
 } from "@/lib/chat/server";
+import { isDatabaseUnavailable, logDatabaseIssue } from "@/lib/db/errors";
 
 function readActiveThreadId(req: NextRequest) {
   const value = req.cookies.get(ACTIVE_THREAD_COOKIE)?.value;
@@ -22,7 +23,7 @@ function readActiveThreadId(req: NextRequest) {
 // GET /api/chat/history?threadId=xxx — Load messages for a thread
 export async function GET(req: NextRequest) {
   try {
-    const userId = await resolveUserId();
+    const userId = await resolveUserId(undefined, true);
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -42,6 +43,11 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(rows.map(serializeChatMessage));
   } catch (error) {
+    if (isDatabaseUnavailable(error)) {
+      logDatabaseIssue("chat history read", error);
+      return NextResponse.json([]);
+    }
+
     console.error("GET /api/chat/history error:", error);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
@@ -50,7 +56,7 @@ export async function GET(req: NextRequest) {
 // POST /api/chat/history — Persist a message (called by ThreadHistoryAdapter)
 export async function POST(req: NextRequest) {
   try {
-    const userId = await resolveUserId();
+    const userId = await resolveUserId(undefined, true);
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -83,6 +89,11 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    if (isDatabaseUnavailable(error)) {
+      logDatabaseIssue("chat history write", error);
+      return NextResponse.json({ success: false, offline: true });
+    }
+
     console.error("POST /api/chat/history error:", error);
     if (
       error instanceof Error &&

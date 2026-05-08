@@ -7,8 +7,7 @@ import { eq, desc, asc, and, count, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { cache } from "react";
 import { z } from "zod";
-import { removeJournalFromIndex } from "@/lib/vector/search";
-import { refreshMemoryGraph } from "@/lib/life/graph";
+import { logDatabaseIssue } from "@/lib/db/errors";
 
 const journalSchema = z.object({
   title: z.string().max(200).optional(),
@@ -20,7 +19,7 @@ const journalSchema = z.object({
 // resolveUserId is imported from ./auth-sync
 
 export const getJournals = cache(async (sortOrder: "asc" | "desc" = "desc", limit: number = 10, offset: number = 0, userId?: string, query?: string) => {
-    const resolvedUserId = await resolveUserId(userId);
+    const resolvedUserId = await resolveUserId(userId, Boolean(userId));
     if (!resolvedUserId) return [];
 
     try {
@@ -48,13 +47,13 @@ export const getJournals = cache(async (sortOrder: "asc" | "desc" = "desc", limi
             offset
         });
     } catch (error) {
-        console.error("Failed to fetch journals:", error);
+        logDatabaseIssue("journals list", error);
         return [];
     }
 });
 
-export const getJournalsCount = cache(async (query?: string) => {
-    const userId = await resolveUserId();
+export const getJournalsCount = cache(async (query?: string, providedUserId?: string) => {
+    const userId = await resolveUserId(providedUserId, Boolean(providedUserId));
     if (!userId) return 0;
 
     try {
@@ -70,13 +69,13 @@ export const getJournalsCount = cache(async (query?: string) => {
             .where(eq(journals.userId, userId));
         return result.value;
     } catch (error) {
-        console.error("Failed to count journals:", error);
+        logDatabaseIssue("journals count", error);
         return 0;
     }
 });
 
 export const getJournal = cache(async (id: string, userId?: string) => {
-    const resolvedUserId = await resolveUserId(userId);
+    const resolvedUserId = await resolveUserId(userId, Boolean(userId));
     if (!resolvedUserId) return null;
 
     try {
@@ -85,7 +84,7 @@ export const getJournal = cache(async (id: string, userId?: string) => {
         });
         return journal || null;
     } catch (error) {
-        console.error("Failed to fetch journal:", error);
+        logDatabaseIssue("journal read", error);
         return null;
     }
 });
@@ -125,31 +124,7 @@ export async function saveJournal(rawContent: string, id?: string, title?: strin
             });
         }
 
-        // Use Mastra Workflow for post-processing
-        try {
-            const savedJournal = await db.query.journals.findFirst({
-                where: and(eq(journals.id, journalId), eq(journals.userId, resolvedUserId)),
-            });
-            
-            if (savedJournal) {
-                const { mastra } = await import("@/mastra");
-                const workflow = mastra.getWorkflow("journalProcessing");
-                if (workflow) {
-                    workflow.createRun().then(run => {
-                        run.start({
-                            inputData: {
-                                userId: resolvedUserId,
-                                journal: savedJournal,
-                            }
-                        }).catch((err) => {
-                            console.error("Journal processing workflow failed:", err);
-                        });
-                    });
-                }
-            }
-        } catch (err) {
-            console.error("Failed to trigger journal processing workflow:", err);
-        }
+        void runJournalPostProcessing(resolvedUserId, journalId);
 
         revalidatePath("/dashboard/journals");
         revalidatePath(`/dashboard/journal/${journalId}`);
@@ -173,12 +148,14 @@ export async function deleteJournal(id: string, userId?: string) {
         await db.delete(journals).where(eq(journals.id, id));
 
         try {
+            const { removeJournalFromIndex } = await import("@/lib/vector/search");
             await removeJournalFromIndex(id, resolvedUserId);
         } catch (err) {
             console.error("Failed to delete journal vector from Qdrant:", err);
         }
 
         try {
+            const { refreshMemoryGraph } = await import("@/lib/life/graph");
             await refreshMemoryGraph(resolvedUserId);
         } catch (err) {
             console.error("Failed to refresh memory graph after deletion:", err);
@@ -190,5 +167,33 @@ export async function deleteJournal(id: string, userId?: string) {
     } catch (error) {
         console.error("Delete journal error:", error);
         return { success: false, error: "Failed to delete entry" };
+    }
+}
+
+async function runJournalPostProcessing(userId: string, journalId: string) {
+    try {
+        const savedJournal = await db.query.journals.findFirst({
+            where: and(eq(journals.id, journalId), eq(journals.userId, userId)),
+        });
+
+        if (!savedJournal) return;
+
+        const [{ indexJournal }, { upsertMemoryGraphForJournal }] = await Promise.all([
+            import("@/lib/vector/search"),
+            import("@/lib/life/graph"),
+        ]);
+
+        const results = await Promise.allSettled([
+            indexJournal(savedJournal),
+            upsertMemoryGraphForJournal(userId, savedJournal),
+        ]);
+
+        for (const result of results) {
+            if (result.status === "rejected") {
+                console.error("Journal post-processing failed:", result.reason);
+            }
+        }
+    } catch (error) {
+        console.error("Failed to run journal post-processing:", error);
     }
 }

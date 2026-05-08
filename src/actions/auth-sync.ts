@@ -14,6 +14,7 @@ import {
 } from "@/db/schema";
 import { stackServerApp } from "@/stack/server";
 import { eq } from "drizzle-orm";
+import { logDatabaseIssue } from "@/lib/db/errors";
 
 /**
  * Lightweight helper to get the current authenticated user ID from Stack Auth.
@@ -116,7 +117,7 @@ export async function resolveUserId(providedUserId?: string, skipSync = false): 
                 }
             });
         } catch (error) {
-            console.error("[AuthSync] Error syncing user:", error);
+            logDatabaseIssue("auth sync", error);
         }
     }
 

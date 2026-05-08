@@ -5,18 +5,33 @@ import {
   ensureChatThread,
   getChatThread,
   listChatThreads,
+  normalizeThreadId,
   renameChatThread,
 } from "@/lib/chat/server";
+import { isDatabaseUnavailable, logDatabaseIssue } from "@/lib/db/errors";
+
+function transientThread(id?: string | null, title?: string | null) {
+  const threadId = normalizeThreadId(id) ?? crypto.randomUUID();
+  return {
+    id: threadId,
+    title: title?.trim() || "New Chat",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    offline: true,
+  };
+}
 
 // GET /api/chat/threads — List all threads for the current user
 export async function GET(req: NextRequest) {
+  let requestedId: string | null = null;
+
   try {
-    const userId = await resolveUserId();
+    const userId = await resolveUserId(undefined, true);
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const requestedId = req.nextUrl.searchParams.get("id");
+    requestedId = req.nextUrl.searchParams.get("id");
     if (requestedId) {
       const thread = await getChatThread(userId, requestedId);
       if (!thread) {
@@ -42,6 +57,15 @@ export async function GET(req: NextRequest) {
       })),
     });
   } catch (error) {
+    if (isDatabaseUnavailable(error)) {
+      logDatabaseIssue("chat threads list", error);
+      if (requestedId) {
+        return NextResponse.json(transientThread(requestedId));
+      }
+
+      return NextResponse.json({ threads: [], offline: true });
+    }
+
     console.error("GET /api/chat/threads error:", error);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
@@ -49,13 +73,15 @@ export async function GET(req: NextRequest) {
 
 // POST /api/chat/threads — Create a new thread
 export async function POST(req: NextRequest) {
+  let body: { id?: string; title?: string } = {};
+
   try {
-    const userId = await resolveUserId();
+    const userId = await resolveUserId(undefined, true);
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json() as { id?: string; title?: string };
+    body = await req.json() as { id?: string; title?: string };
     const thread = await ensureChatThread(userId, body.id, body.title);
 
     return NextResponse.json({
@@ -65,6 +91,11 @@ export async function POST(req: NextRequest) {
       updatedAt: thread.updatedAt,
     });
   } catch (error) {
+    if (isDatabaseUnavailable(error)) {
+      logDatabaseIssue("chat thread create", error);
+      return NextResponse.json(transientThread(body.id, body.title));
+    }
+
     console.error("POST /api/chat/threads error:", error);
     if (
       error instanceof Error &&
@@ -80,7 +111,7 @@ export async function POST(req: NextRequest) {
 // DELETE /api/chat/threads?id=xxx — Delete a thread and its messages
 export async function DELETE(req: NextRequest) {
   try {
-    const userId = await resolveUserId();
+    const userId = await resolveUserId(undefined, true);
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -97,6 +128,11 @@ export async function DELETE(req: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    if (isDatabaseUnavailable(error)) {
+      logDatabaseIssue("chat thread delete", error);
+      return NextResponse.json({ success: true, offline: true });
+    }
+
     console.error("DELETE /api/chat/threads error:", error);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
@@ -105,7 +141,7 @@ export async function DELETE(req: NextRequest) {
 // PATCH /api/chat/threads — Update title
 export async function PATCH(req: NextRequest) {
   try {
-    const userId = await resolveUserId();
+    const userId = await resolveUserId(undefined, true);
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -128,6 +164,11 @@ export async function PATCH(req: NextRequest) {
       updatedAt: thread.updatedAt,
     });
   } catch (error) {
+    if (isDatabaseUnavailable(error)) {
+      logDatabaseIssue("chat thread rename", error);
+      return NextResponse.json({ success: true, offline: true });
+    }
+
     console.error("PATCH /api/chat/threads error:", error);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }

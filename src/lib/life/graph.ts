@@ -5,6 +5,7 @@ import { and, asc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { journals, memoryEdges, memoryNodes } from "@/db/schema";
 import { extractEntities } from "@/lib/ai/extract";
+import { isDatabaseUnavailable, logDatabaseIssue } from "@/lib/db/errors";
 
 export type Node =
   | { type: "person"; name: string }
@@ -288,6 +289,16 @@ export async function getMemoryGraphSnapshot(userId: string) {
     const code = error?.code || error?.cause?.code;
     if (code === "42P01" || /relation .* does not exist/i.test(String(err))) {
       console.warn("Memory graph tables missing. Returning empty snapshot. Run DB migrations to enable graph features.", error?.message || String(err));
+      return {
+        nodes: [],
+        edges: [],
+        nodeStats: {},
+        edgeStats: {},
+      };
+    }
+
+    if (isDatabaseUnavailable(err)) {
+      logDatabaseIssue("memory graph", err);
       return {
         nodes: [],
         edges: [],

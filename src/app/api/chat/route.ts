@@ -1,131 +1,43 @@
-import { mastra } from "@/mastra";
 import { resolveUserId } from "@/actions/auth-sync";
-import { handleChatStream } from "@mastra/ai-sdk";
-import {
-  MASTRA_RESOURCE_ID_KEY,
-  MASTRA_THREAD_ID_KEY,
-  RequestContext,
-} from "@mastra/core/request-context";
-import { ensureChatThread } from "@/lib/chat/server";
-import { createUIMessageStreamResponse } from "ai";
+import { ensureChatThread, normalizeThreadId } from "@/lib/chat/server";
+import { streamDeboChat } from "@/lib/chat/debo-tools";
+import { isDatabaseUnavailable, logDatabaseIssue } from "@/lib/db/errors";
+import { type UIMessage } from "ai";
 import { NextRequest } from "next/server";
 
+export const maxDuration = 60;
+
 export async function POST(req: NextRequest) {
-  const userId = await resolveUserId();
+  const userId = await resolveUserId(undefined, true);
   if (!userId) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    // Cloudflare context sync
-    const { getCloudflareContext } = await import("@opennextjs/cloudflare");
-    const cf = getCloudflareContext();
-    if (cf?.env) {
-      Object.assign(process.env, cf.env);
-    }
-  } catch {
-    // Not on Cloudflare
-  }
-
-  try {
-    const body = await req.json();
-    const { id: threadId } = body as { id?: string };
-
-    const thread = await ensureChatThread(userId, threadId);
-    const resolvedThreadId = thread.id;
-    const requestContext = new RequestContext<Record<string, unknown>>();
-    requestContext.set("userId", userId);
-    requestContext.set(MASTRA_RESOURCE_ID_KEY, userId);
-    requestContext.set(MASTRA_THREAD_ID_KEY, resolvedThreadId);
-
-    const stream = await handleChatStream({
-      mastra,
-      agentId: "debo",
-      params: body as never,
-      version: "v6",
-      defaultOptions: {
-        memory: {
-          thread: resolvedThreadId,
-          resource: userId,
-        },
-        requestContext,
-        maxSteps: 4,
-      },
-    });
-
-    // Transform stream to map sub-agent cumulative text to standard text-delta
-    // This makes sub-agent responses visible as streaming text in standard UI components
-    const lastTexts: Record<string, string> = {};
-    const syntheticTextPartIds: Record<string, string> = {};
-    const endedTextPartIds = new Set<string>();
-    const closeSyntheticTextParts = (controller: TransformStreamDefaultController) => {
-      for (const textPartId of Object.values(syntheticTextPartIds)) {
-        if (!endedTextPartIds.has(textPartId)) {
-          controller.enqueue({
-            type: "text-end",
-            id: textPartId,
-          });
-          endedTextPartIds.add(textPartId);
-        }
-      }
+    const body = await req.json() as {
+      id?: string;
+      messages?: UIMessage[];
     };
+    let threadId = normalizeThreadId(body.id) ?? crypto.randomUUID();
 
-    const transformedStream = stream.pipeThrough(new TransformStream({
-      transform(value, controller) {
-        if (!value) return;
+    try {
+      const thread = await ensureChatThread(userId, threadId);
+      threadId = thread.id;
+    } catch (threadError) {
+      if (!isDatabaseUnavailable(threadError)) throw threadError;
+      logDatabaseIssue("chat thread create", threadError);
+    }
 
-        // Handle sub-agent streaming text
-        if (value.type === "data-tool-agent" && value.data && typeof value.data === 'object') {
-          const data = value.data as Record<string, unknown>;
-          const agentId = data.id;
-          const runId = typeof value.id === 'string' ? value.id : agentId;
-          const fullText = data.text;
-          
-          if (typeof runId === "string" && typeof fullText === 'string') {
-            const lastText = lastTexts[runId] || "";
-            const delta = fullText.slice(lastText.length);
-            
-            if (delta) {
-              const textPartId = syntheticTextPartIds[runId] ?? `sub-agent-${runId}`;
-              syntheticTextPartIds[runId] = textPartId;
+    const result = await streamDeboChat({
+      userId,
+      messages: Array.isArray(body.messages) ? body.messages : [],
+      maxSteps: 4,
+    });
 
-              if (!lastText) {
-                controller.enqueue({
-                  type: "text-start",
-                  id: textPartId,
-                });
-              }
-
-              // Emit as text-delta so standard UI components render it.
-              // AI SDK v6 requires deltas to reference an existing text part id.
-              controller.enqueue({
-                type: "text-delta",
-                id: textPartId,
-                delta,
-              });
-            }
-            lastTexts[runId] = fullText;
-          }
-        }
-
-        if (value.type === "finish") {
-          closeSyntheticTextParts(controller);
-        }
-
-        controller.enqueue(value);
-      },
-      flush(controller) {
-        closeSyntheticTextParts(controller);
-      },
-    }));
-
-    const response = createUIMessageStreamResponse({ stream: transformedStream });
+    const response = result.toUIMessageStreamResponse();
     response.headers.append(
       "Set-Cookie",
-      `debo_active_chat_thread=${encodeURIComponent(resolvedThreadId)}; Path=/; SameSite=Lax; Max-Age=86400`
+      `debo_active_chat_thread=${encodeURIComponent(threadId)}; Path=/; SameSite=Lax; Max-Age=86400`
     );
 
     return response;
@@ -137,16 +49,12 @@ export async function POST(req: NextRequest) {
         ? 409
         : 500;
 
-    return new Response(
-      JSON.stringify({
+    return Response.json(
+      {
         error: "Intelligence engine error",
         message: error instanceof Error ? error.message : String(error),
-        stack: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.stack : undefined) : undefined
-      }),
-      {
-        status,
-        headers: { "Content-Type": "application/json" },
-      }
+      },
+      { status }
     );
   }
 }

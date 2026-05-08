@@ -1,6 +1,4 @@
 import "server-only";
-import { mastra } from "@/mastra";
-import { z } from "zod";
 
 export type ExtractedMemory = {
   facts: string[];
@@ -72,85 +70,11 @@ export async function extractMemory(text: string): Promise<ExtractedMemory> {
     };
   }
 
-  try {
-    const agent = mastra.getAgent('deboAnalyst');
-    const result = await agent.generate(
-      [
-        {
-          role: 'user',
-          content: `Extract durable personal memory from the input. Return a structured object with facts, entities, emotions, and topics.
-          
-          Input:
-          ${value}`,
-        },
-      ],
-      {
-        structuredOutput: {
-          schema: z.object({
-            facts: z.array(z.string()),
-            entities: z.array(z.string()),
-            emotions: z.array(z.string()),
-            topics: z.array(z.string()),
-          }),
-        },
-      }
-    );
-
-    if (result.object) {
-      return normalizeExtraction(result.object);
-    }
-  } catch (error) {
-    console.warn("Mastra memory extraction failed, using fallback heuristics:", error);
-  }
-
   return fallbackExtract(value);
 }
 
 function normalizeText(text: string) {
   return text.replace(/\s+/g, " ").trim();
-}
-
-function normalizeList(values: unknown) {
-  if (!Array.isArray(values)) {
-    return [] as string[];
-  }
-
-  return Array.from(
-    new Set(
-      values
-        .map((value) => (typeof value === "string" ? normalizeText(value) : ""))
-        .filter(Boolean)
-    )
-  ).slice(0, 12);
-}
-
-function normalizeExtraction(value: Partial<ExtractedMemory>): ExtractedMemory {
-  return {
-    facts: normalizeList(value.facts),
-    entities: normalizeList(value.entities),
-    emotions: normalizeList(value.emotions),
-    topics: normalizeList(value.topics),
-  };
-}
-
-function parseExtractionResult(raw: string) {
-  const trimmed = raw.trim();
-
-  const candidates = [
-    trimmed,
-    trimmed.replace(/```json|```/g, ""),
-    trimmed.slice(trimmed.indexOf("{"), trimmed.lastIndexOf("}") + 1),
-  ].filter(Boolean);
-
-  for (const candidate of candidates) {
-    try {
-      return JSON.parse(candidate) as Partial<ExtractedMemory>;
-    } catch {
-      continue;
-    }
-  }
-
-  return null;
 }
 
 function fallbackExtract(text: string): ExtractedMemory {

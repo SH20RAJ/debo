@@ -3,9 +3,9 @@ import {
   LATEST_PROTOCOL_VERSION,
   SUPPORTED_PROTOCOL_VERSIONS,
 } from "@modelcontextprotocol/sdk/types.js";
-import { RequestContext } from "@mastra/core/request-context";
 import { db } from "@/db";
 import { userPreferences } from "@/db/schema";
+import { createDeboRuntimeTools } from "@/lib/chat/debo-tools";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 
@@ -30,9 +30,8 @@ const MCP_HEADERS = {
   "Access-Control-Expose-Headers": "mcp-session-id, mcp-protocol-version",
 };
 
-async function getTools() {
-  const { mcpDeboTools } = await import("@/mastra/tools/debo-tools");
-  return mcpDeboTools;
+function getTools(userId = "tool-list") {
+  return createDeboRuntimeTools(userId, { includeMcpTools: true });
 }
 
 function json(data: unknown, status = 200) {
@@ -102,8 +101,8 @@ function getToolId(entryId: string, tool: unknown) {
   return typeof maybeTool.id === "string" ? maybeTool.id : entryId;
 }
 
-async function listMcpTools() {
-  const deboTools = await getTools();
+function listMcpTools(userId?: string) {
+  const deboTools = getTools(userId);
 
   return Object.entries(deboTools).map(([entryId, tool]) => {
     const typedTool = tool as {
@@ -132,16 +131,13 @@ async function listMcpTools() {
   });
 }
 
-async function findTool(name: string) {
-  const deboTools = await getTools();
+function findTool(name: string, userId: string) {
+  const deboTools = getTools(userId);
   return Object.entries(deboTools).find(
     ([entryId, tool]) => entryId === name || getToolId(entryId, tool) === name
-  )?.[1] as
+      )?.[1] as
     | {
-        execute?: (
-          input: unknown,
-          context: Record<string, unknown>
-        ) => Promise<unknown>;
+        execute?: (input: unknown) => Promise<unknown>;
         inputSchema?: {
           safeParse?: (input: unknown) => {
             success: boolean;
@@ -194,8 +190,7 @@ async function authenticate(req: NextRequest): Promise<McpAuthResult> {
 
 async function handleRequest(
   message: JsonRpcRequest,
-  auth: { mcpKey: string; userId: string },
-  req: NextRequest
+  auth: { mcpKey: string; userId: string }
 ) {
   const id = message.id;
 
@@ -230,7 +225,7 @@ async function handleRequest(
 
     case "tools/list":
       return result(id, {
-        tools: await listMcpTools(),
+        tools: listMcpTools(auth.userId),
       });
 
     case "tools/call": {
@@ -240,34 +235,14 @@ async function handleRequest(
         return error(id, -32602, "Invalid params: tools/call requires name");
       }
 
-      const tool = await findTool(name);
+      const tool = findTool(name, auth.userId);
       if (!tool?.execute) {
         return error(id, -32602, `Tool ${name} not found`);
       }
 
       try {
         const input = parseToolInput(tool, params.arguments);
-        const requestContext = new RequestContext<Record<string, unknown>>();
-        requestContext.set("userId", auth.userId);
-        requestContext.set("mcp.extra", {
-          authInfo: {
-            token: auth.mcpKey,
-            userId: auth.userId,
-          },
-        });
-
-        const output = await tool.execute(input, {
-          abortSignal: req.signal,
-          requestContext,
-          mcp: {
-            extra: {
-              authInfo: {
-                token: auth.mcpKey,
-                userId: auth.userId,
-              },
-            },
-          },
-        });
+        const output = await tool.execute(input);
 
         return result(id, {
           content: [
@@ -551,7 +526,7 @@ export async function POST(req: NextRequest) {
   try {
     const messages = Array.isArray(body) ? body : [body];
     const responses = (
-      await Promise.all(messages.map((message) => handleRequest(message, auth, req)))
+      await Promise.all(messages.map((message) => handleRequest(message, auth)))
     ).filter(Boolean);
 
     if (Array.isArray(body)) {
@@ -578,7 +553,7 @@ export async function GET() {
       version: SERVER_INFO.version,
       status: "active",
       protocolVersion: LATEST_PROTOCOL_VERSION,
-      tools: (await listMcpTools()).length,
+      tools: listMcpTools().length,
     });
   } catch (routeError) {
     return json(
