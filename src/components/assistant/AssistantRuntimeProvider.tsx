@@ -196,15 +196,12 @@ function useDeboChatThreadRuntime(
     setBrowserActiveThreadId(nextThreadId);
   }, [activeThreadIdRef, id, remoteId]);
 
-  const chatId =
-    readUsableThreadId(remoteId) ??
-    readUsableThreadId(id) ??
-    activeThreadIdRef.current ??
-    undefined;
-
   const chat = useChat({
-    id: chatId,
+    id,
     transport: dynamicTransport,
+    onError(error) {
+      console.error("Debo chat request failed:", error);
+    },
   });
 
   const runtime = useAISDKRuntime(chat, {
