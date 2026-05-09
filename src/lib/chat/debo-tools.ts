@@ -52,6 +52,16 @@ type GraphNodeResult = {
 };
 
 type GraphSentiment = "positive" | "negative" | "neutral" | "growth";
+type UIMessagePart = UIMessage["parts"][number];
+
+type IncomingChatMessage = {
+  id?: unknown;
+  role?: unknown;
+  metadata?: unknown;
+  parts?: unknown;
+  content?: unknown;
+  text?: unknown;
+};
 
 export function createDeboRuntimeTools(userId: string, options: CreateToolOptions = {}) {
   const baseTools = {
@@ -315,18 +325,113 @@ export function createDeboAiTools(userId: string): ToolSet {
 
 export async function streamDeboChat(input: {
   userId: string;
-  messages: UIMessage[];
+  messages: unknown;
   maxSteps?: number;
 }) {
-  const messages = input.messages ?? [];
+  const messages = normalizeChatMessages(input.messages);
 
   return streamText({
     model: getChatModel(),
     system: DEBO_SYSTEM_PROMPT,
-    messages: await convertToModelMessages(messages),
+    messages: await convertToModelMessages(messages, {
+      ignoreIncompleteToolCalls: true,
+    }),
     tools: createDeboAiTools(input.userId),
     stopWhen: stepCountIs(input.maxSteps ?? 4),
   });
+}
+
+export function normalizeChatMessages(value: unknown): UIMessage[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((message, index) => normalizeChatMessage(message, index))
+    .filter((message): message is UIMessage => Boolean(message));
+}
+
+function normalizeChatMessage(value: unknown, index: number): UIMessage | null {
+  if (!value || typeof value !== "object") return null;
+
+  const message = value as IncomingChatMessage;
+  const role = normalizeRole(message.role);
+  if (!role) return null;
+
+  const parts = normalizeMessageParts(message);
+  if (parts.length === 0) return null;
+
+  return {
+    id: typeof message.id === "string" && message.id.trim() ? message.id : createMessageId(index),
+    role,
+    ...(message.metadata && typeof message.metadata === "object"
+      ? { metadata: message.metadata }
+      : {}),
+    parts,
+  };
+}
+
+function normalizeRole(value: unknown): UIMessage["role"] | null {
+  return value === "system" || value === "user" || value === "assistant" ? value : null;
+}
+
+function normalizeMessageParts(message: IncomingChatMessage): UIMessagePart[] {
+  if (Array.isArray(message.parts)) {
+    return message.parts.map(normalizeMessagePart).filter(isMessagePart);
+  }
+
+  if (Array.isArray(message.content)) {
+    return message.content.map(normalizeMessagePart).filter(isMessagePart);
+  }
+
+  const text =
+    typeof message.content === "string"
+      ? message.content
+      : typeof message.text === "string"
+        ? message.text
+        : "";
+
+  return text.trim() ? [{ type: "text", text }] : [];
+}
+
+function normalizeMessagePart(value: unknown): UIMessagePart | null {
+  if (typeof value === "string") {
+    return value.trim() ? { type: "text", text: value } : null;
+  }
+
+  if (!value || typeof value !== "object") return null;
+
+  const part = value as {
+    type?: unknown;
+    text?: unknown;
+    content?: unknown;
+    url?: unknown;
+    mediaType?: unknown;
+  };
+
+  if (part.type === "text" && typeof part.text === "string") {
+    return { type: "text", text: part.text };
+  }
+
+  if (typeof part.text === "string") {
+    return { type: "text", text: part.text };
+  }
+
+  if (typeof part.content === "string") {
+    return { type: "text", text: part.content };
+  }
+
+  if (part.type === "file" && typeof part.url === "string" && typeof part.mediaType === "string") {
+    return value as UIMessagePart;
+  }
+
+  return typeof part.type === "string" ? (value as UIMessagePart) : null;
+}
+
+function isMessagePart(value: UIMessagePart | null): value is UIMessagePart {
+  return Boolean(value);
+}
+
+function createMessageId(index: number) {
+  return `msg-${index}-${crypto.randomUUID()}`;
 }
 
 function safeParse(value: string) {

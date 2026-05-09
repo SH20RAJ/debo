@@ -1,4 +1,4 @@
-import { ChatContainer } from "@/components/chat/chat-container";
+import { ChatExperience } from "@/components/assistant/ChatExperience";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function ChatPage() {
-  return <ChatContainer />;
+  return <ChatExperience />;
 }

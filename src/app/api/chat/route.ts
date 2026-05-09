@@ -1,8 +1,7 @@
 import { resolveUserId } from "@/actions/auth-sync";
 import { ensureChatThread, normalizeThreadId } from "@/lib/chat/server";
-import { streamDeboChat } from "@/lib/chat/debo-tools";
+import { normalizeChatMessages, streamDeboChat } from "@/lib/chat/debo-tools";
 import { isDatabaseUnavailable, logDatabaseIssue } from "@/lib/db/errors";
-import { type UIMessage } from "ai";
 import { NextRequest } from "next/server";
 
 export const maxDuration = 60;
@@ -14,10 +13,25 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const body = await req.json() as {
-      id?: string;
-      messages?: UIMessage[];
+    const body = await req.json().catch(() => ({})) as {
+      id?: unknown;
+      messages?: unknown;
+      message?: unknown;
+      prompt?: unknown;
     };
+    const rawMessages = Array.isArray(body.messages)
+      ? body.messages
+      : typeof body.message === "string"
+        ? [{ role: "user", content: body.message }]
+        : typeof body.prompt === "string"
+          ? [{ role: "user", content: body.prompt }]
+          : [];
+    const messages = normalizeChatMessages(rawMessages);
+
+    if (messages.length === 0) {
+      return Response.json({ error: "No message provided" }, { status: 400 });
+    }
+
     let threadId = normalizeThreadId(body.id) ?? crypto.randomUUID();
 
     try {
@@ -30,7 +44,7 @@ export async function POST(req: NextRequest) {
 
     const result = await streamDeboChat({
       userId,
-      messages: Array.isArray(body.messages) ? body.messages : [],
+      messages,
       maxSteps: 4,
     });
 

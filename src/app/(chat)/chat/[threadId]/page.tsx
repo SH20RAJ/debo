@@ -1,4 +1,4 @@
-import { ChatContainer } from "@/components/chat/chat-container";
+import { ChatExperience } from "@/components/assistant/ChatExperience";
 import { Metadata } from "next";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -8,6 +8,12 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function ChatThreadPage() {
-  return <ChatContainer />;
+export default async function ChatThreadPage({
+  params,
+}: {
+  params: Promise<{ threadId: string }>;
+}) {
+  const { threadId } = await params;
+
+  return <ChatExperience initialThreadId={threadId} />;
 }
