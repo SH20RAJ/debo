@@ -16,6 +16,7 @@ export function ChatContainer() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [streamedContent, setStreamedContent] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -27,7 +28,7 @@ export function ChatContainer() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, scrollToBottom]);
+  }, [messages, streamedContent, scrollToBottom]);
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
@@ -38,16 +39,19 @@ export function ChatContainer() {
       content: input,
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    const allMessages = [...messages, userMessage];
+
+    setMessages(allMessages);
     setInput("");
     setIsLoading(true);
+    setStreamedContent("");
 
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: [...messages, userMessage].map((m) => ({
+          messages: allMessages.map((m) => ({
             role: m.role,
             content: m.content,
           })),
@@ -55,19 +59,58 @@ export function ChatContainer() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to send message");
+        throw new Error(`HTTP ${response.status}`);
       }
 
-      // For streaming, we'd need to handle the stream differently
-      // For now, let's create a simple non-streaming approach
-      const data = await response.json() as { messages?: unknown };
+      if (!response.body) {
+        throw new Error("No response body");
+      }
 
-      // If the response contains a message, add it
-      if (data.messages) {
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let assistantContent = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            const data = line.slice(6);
+            if (data === "[DONE]") continue;
+
+            try {
+              const parsed = JSON.parse(data);
+              // Handle different message types from the stream
+              if (parsed.type === "text-delta") {
+                assistantContent += parsed.text || "";
+                setStreamedContent(assistantContent);
+              } else if (parsed.content) {
+                assistantContent += typeof parsed.content === "string" ? parsed.content : "";
+                setStreamedContent(assistantContent);
+              }
+            } catch {
+              // Not JSON, might be plain text
+              if (data.trim()) {
+                assistantContent += data;
+                setStreamedContent(assistantContent);
+              }
+            }
+          }
+        }
+      }
+
+      // Add final message
+      if (assistantContent) {
         const assistantMessage: Message = {
           id: crypto.randomUUID(),
           role: "assistant",
-          content: typeof data.messages === "string" ? data.messages : JSON.stringify(data.messages),
+          content: assistantContent,
         };
         setMessages((prev) => [...prev, assistantMessage]);
       }
@@ -81,6 +124,7 @@ export function ChatContainer() {
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
+      setStreamedContent("");
     }
   };
 
@@ -138,7 +182,7 @@ export function ChatContainer() {
 
         {/* Messages */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-6">
-          {messages.length === 0 ? (
+          {messages.length === 0 && !streamedContent ? (
             <div className="h-full flex flex-col items-center justify-center text-center space-y-6">
               <div className="h-12 w-12 rounded-xl bg-duo-feather/10 flex items-center justify-center">
                 <Bot className="h-6 w-6 text-duo-feather" />
@@ -163,34 +207,47 @@ export function ChatContainer() {
               </div>
             </div>
           ) : (
-            messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex gap-3 ${message.role === "user" ? "justify-end" : "justify-start"}`}
-              >
-                {message.role === "assistant" && (
+            <>
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex gap-3 ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                >
+                  {message.role === "assistant" && (
+                    <div className="h-8 w-8 rounded-lg bg-duo-feather/10 flex items-center justify-center shrink-0">
+                      <Bot className="h-4 w-4 text-duo-feather" />
+                    </div>
+                  )}
+                  <div
+                    className={`max-w-[75%] rounded-2xl px-4 py-3 ${
+                      message.role === "user"
+                        ? "bg-duo-feather text-white"
+                        : "bg-muted text-foreground"
+                    }`}
+                  >
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+                  </div>
+                  {message.role === "user" && (
+                    <div className="h-8 w-8 rounded-lg bg-duo-macaw/10 flex items-center justify-center shrink-0">
+                      <User className="h-4 w-4 text-duo-macaw" />
+                    </div>
+                  )}
+                </div>
+              ))}
+              {streamedContent && (
+                <div className="flex gap-3 justify-start">
                   <div className="h-8 w-8 rounded-lg bg-duo-feather/10 flex items-center justify-center shrink-0">
                     <Bot className="h-4 w-4 text-duo-feather" />
                   </div>
-                )}
-                <div
-                  className={`max-w-[75%] rounded-2xl px-4 py-3 ${
-                    message.role === "user"
-                      ? "bg-duo-feather text-white"
-                      : "bg-muted text-foreground"
-                  }`}
-                >
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
-                </div>
-                {message.role === "user" && (
-                  <div className="h-8 w-8 rounded-lg bg-duo-macaw/10 flex items-center justify-center shrink-0">
-                    <User className="h-4 w-4 text-duo-macaw" />
+                  <div className="bg-muted rounded-2xl px-4 py-3">
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{streamedContent}</p>
+                    <span className="inline-block h-4 w-4 border-2 border-duo-feather/30 border-t-duo-feather rounded-full animate-spin ml-1" />
                   </div>
-                )}
-              </div>
-            ))
+                </div>
+              )}
+            </>
           )}
-          {isLoading && (
+          {isLoading && !streamedContent && (
             <div className="flex gap-3">
               <div className="h-8 w-8 rounded-lg bg-duo-feather/10 flex items-center justify-center">
                 <Loader2 className="h-4 w-4 text-duo-feather animate-spin" />
