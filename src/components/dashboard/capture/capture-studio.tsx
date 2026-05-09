@@ -398,6 +398,7 @@ export function CaptureStudio() {
                       src={mediaUrl ?? undefined}
                       controls={Boolean(mediaUrl)}
                       muted={status === "recording"}
+                      autoPlay={status === "recording"}
                       playsInline
                       className="aspect-video w-full rounded-2xl border border-duo-swan bg-black object-cover"
                     />

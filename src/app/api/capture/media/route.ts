@@ -22,9 +22,13 @@ function createMediaKey(userId: string, kind: string, file: File) {
 
 function getPublicUrl(key: string) {
   const baseUrl = process.env.R2_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL;
-  if (!baseUrl) return null;
+  if (!baseUrl) return getAuthenticatedMediaUrl(key);
 
   return `${baseUrl.replace(/\/$/, "")}/${key}`;
+}
+
+function getAuthenticatedMediaUrl(key: string) {
+  return `/api/capture/media/${key.split("/").map(encodeURIComponent).join("/")}`;
 }
 
 async function getMediaBucket() {

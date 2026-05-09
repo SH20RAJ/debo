@@ -1,17 +1,24 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { saveJournal } from "@/actions/journals";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Loader2, Check } from "lucide-react";
+import { ArrowLeft, ExternalLink, FileImage, Loader2, Mic2, Play, Video, Check } from "lucide-react";
 import dynamic from "next/dynamic";
 
 const BlockEditor = dynamic(() => import("./block-editor"), { 
     ssr: false,
     loading: () => <div className="h-[500px] w-full bg-muted/20 animate-pulse rounded-2xl" />
 });
+
+type CaptureMediaItem = {
+    kind: "audio" | "video" | "image";
+    label: string;
+    size: string;
+    src: string;
+};
 
 export function JournalEditor({ 
     initialContent = "", 
@@ -32,6 +39,7 @@ export function JournalEditor({
     const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
     const router = useRouter();
     const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const mediaItems = useMemo(() => extractCaptureMedia(content), [content]);
 
     const handleSave = useCallback(async (currentContent: string, currentId: string, currentTitle: string, currentTags: string[]) => {
         if (!currentContent.trim() && !currentTitle.trim()) return currentId;
@@ -148,6 +156,10 @@ export function JournalEditor({
                             className="bg-transparent border-none outline-none text-sm text-duo-wolf font-bold placeholder:text-duo-swan min-w-[120px]"
                         />
                     </div>
+
+                    {mediaItems.length > 0 ? (
+                        <CaptureMediaPreview items={mediaItems} />
+                    ) : null}
                     
                     <div className="min-h-[60vh] duo-editor-container pt-6 border-t border-duo-swan">
                         <BlockEditor 
@@ -160,4 +172,102 @@ export function JournalEditor({
         </div>
     );
 
+}
+
+function CaptureMediaPreview({ items }: { items: CaptureMediaItem[] }) {
+    return (
+        <section className="rounded-3xl border border-duo-swan bg-duo-snow p-3 shadow-sm sm:p-4">
+            <div className="mb-3 flex items-center justify-between gap-3">
+                <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-duo-green">
+                        Capture media
+                    </p>
+                    <h2 className="text-xl font-heading font-black text-duo-eel">
+                        Saved recording
+                    </h2>
+                </div>
+                <span className="rounded-full bg-duo-polar px-3 py-1 text-[10px] font-black uppercase tracking-wider text-duo-wolf">
+                    {items.length} file{items.length === 1 ? "" : "s"}
+                </span>
+            </div>
+
+            <div className="grid gap-3">
+                {items.map((item) => (
+                    <article key={`${item.kind}-${item.src}`} className="overflow-hidden rounded-2xl border border-duo-swan bg-background">
+                        {item.kind === "video" ? (
+                            <video
+                                src={item.src}
+                                controls
+                                playsInline
+                                preload="metadata"
+                                className="aspect-video w-full bg-black object-contain"
+                            />
+                        ) : item.kind === "audio" ? (
+                            <div className="p-4">
+                                <audio src={item.src} controls preload="metadata" className="w-full" />
+                            </div>
+                        ) : (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={item.src} alt={item.label} className="max-h-[520px] w-full object-contain" />
+                        )}
+
+                        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-duo-swan px-3 py-2">
+                            <div className="flex min-w-0 items-center gap-2">
+                                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-duo-polar text-duo-green">
+                                    {item.kind === "video" ? (
+                                        <Video className="h-4 w-4" />
+                                    ) : item.kind === "audio" ? (
+                                        <Mic2 className="h-4 w-4" />
+                                    ) : (
+                                        <FileImage className="h-4 w-4" />
+                                    )}
+                                </span>
+                                <div className="min-w-0">
+                                    <p className="truncate text-sm font-black text-duo-eel">{item.label}</p>
+                                    <p className="text-xs font-bold text-duo-wolf">{item.size}</p>
+                                </div>
+                            </div>
+                            <a
+                                href={item.src}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1 rounded-xl border border-duo-swan px-3 py-2 text-xs font-black uppercase tracking-wider text-duo-wolf transition hover:bg-duo-polar hover:text-duo-eel"
+                            >
+                                {item.kind === "video" ? <Play className="h-3.5 w-3.5" /> : <ExternalLink className="h-3.5 w-3.5" />}
+                                Open
+                            </a>
+                        </div>
+                    </article>
+                ))}
+            </div>
+        </section>
+    );
+}
+
+function extractCaptureMedia(content: string): CaptureMediaItem[] {
+    return content
+        .split("\n")
+        .map((line) => line.trim())
+        .map((line) => {
+            const match = line.match(/^-\s*(audio|video|image):\s*(.+?)\s+\(([^)]+)\)\s+(\S+)/i);
+            if (!match) return null;
+
+            const [, kind, label, size, rawSrc] = match;
+            return {
+                kind: kind.toLowerCase() as CaptureMediaItem["kind"],
+                label,
+                size,
+                src: mediaSrcFromStoredValue(rawSrc),
+            };
+        })
+        .filter((item): item is CaptureMediaItem => Boolean(item));
+}
+
+function mediaSrcFromStoredValue(value: string) {
+    if (value.startsWith("r2://")) {
+        const key = value.slice("r2://".length);
+        return `/api/capture/media/${key.split("/").map(encodeURIComponent).join("/")}`;
+    }
+
+    return value;
 }
