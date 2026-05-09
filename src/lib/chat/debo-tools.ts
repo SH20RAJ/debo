@@ -318,10 +318,12 @@ export async function streamDeboChat(input: {
   messages: UIMessage[];
   maxSteps?: number;
 }) {
+  const messages = input.messages ?? [];
+
   return streamText({
     model: getChatModel(),
     system: DEBO_SYSTEM_PROMPT,
-    messages: await convertToModelMessages(input.messages),
+    messages: await convertToModelMessages(messages),
     tools: createDeboAiTools(input.userId),
     stopWhen: stepCountIs(input.maxSteps ?? 4),
   });

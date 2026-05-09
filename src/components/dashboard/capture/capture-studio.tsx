@@ -3,8 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Archive,
-  BookOpen,
   Camera,
   CheckCircle2,
   FileImage,
@@ -289,105 +287,86 @@ export function CaptureStudio() {
 
   return (
     <div className="min-h-full bg-duo-polar">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-4 sm:gap-6 sm:px-5 sm:py-6 lg:px-8">
-        <header className="duo-card overflow-hidden p-0">
-          <div className="grid gap-5 p-5 sm:p-6 lg:grid-cols-[1fr_auto] lg:items-end">
-            <div className="space-y-3">
-              <div className="inline-flex items-center gap-2 rounded-2xl border-2 border-duo-feather bg-duo-green/10 px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] text-duo-green">
-                <Archive className="h-3.5 w-3.5" />
-                Palace capture
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-4 sm:px-5 sm:py-6 lg:px-8">
+        <header className="rounded-3xl border border-duo-swan bg-duo-snow px-4 py-4 shadow-sm sm:px-5">
+          <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+            <div>
+              <div className="text-[11px] font-black uppercase tracking-[0.18em] text-duo-green">
+                Capture
               </div>
-              <div>
-                <h1 className="text-4xl font-heading font-black tracking-tight text-duo-eel sm:text-5xl">
-                  Open a drawer
-                </h1>
-                <p className="mt-2 max-w-2xl text-base font-bold leading-7 text-duo-wolf">
-                  Save the raw moment first. Debo can index and understand it after.
-                </p>
-              </div>
+              <h1 className="mt-1 text-3xl font-heading font-black tracking-tight text-duo-eel sm:text-4xl">
+                Save a moment
+              </h1>
+              <p className="mt-1 max-w-2xl text-sm font-bold leading-6 text-duo-wolf sm:text-base">
+                Record audio, video, or pages. Add a few words so Debo can find it later.
+              </p>
             </div>
-            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-end">
-              {[
-                ["Wing", "life"],
-                ["Room", "today"],
-                ["Drawer", activeMode.label.toLowerCase()],
-                ["Index", hasMedia ? "ready" : "empty"],
-              ].map(([label, value]) => (
-                <div key={label} className="rounded-2xl border-2 border-duo-swan bg-background px-3 py-2">
-                  <div className="text-[10px] font-black uppercase tracking-wider text-duo-swan">
-                    {label}
-                  </div>
-                  <div className="truncate text-sm font-black text-duo-eel">{value}</div>
-                </div>
-              ))}
+            <div
+              className={cn(
+                "w-fit rounded-full border px-3 py-1 text-[11px] font-black uppercase tracking-wider",
+                status === "recording"
+                  ? "border-duo-cardinal bg-duo-red/10 text-duo-red"
+                  : hasMedia
+                    ? "border-duo-feather bg-duo-green/10 text-duo-green"
+                    : "border-duo-swan bg-duo-polar text-duo-wolf"
+              )}
+            >
+              {status === "recording" ? "Recording" : hasMedia ? "Ready" : "Empty"}
             </div>
           </div>
         </header>
 
-        <section className="grid gap-5 lg:grid-cols-[220px_1fr]">
-          <div className="grid grid-cols-3 gap-2 lg:grid-cols-1 lg:content-start lg:gap-3">
-            {modes.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => {
-                  if (status === "recording") return;
-                  setMode(item.id);
-                  setStatus("idle");
-                  resetMedia();
-                  resetImages();
-                }}
-                className={cn(
-                  "btn-3d btn-3d-white flex min-h-20 flex-col items-center justify-center gap-2 rounded-2xl border-2 bg-background px-3 py-3 text-center text-xs font-black uppercase tracking-wider transition lg:min-h-14 lg:flex-row lg:justify-between lg:text-left",
-                  mode === item.id
-                    ? "border-duo-macaw bg-duo-blue/10 text-duo-blue"
-                    : "border-duo-swan text-duo-eel hover:bg-duo-polar"
-                )}
-              >
-                <span className="flex items-center gap-2 lg:gap-3">
-                  <item.icon className={cn("h-5 w-5", item.accent)} />
-                  {item.label}
-                </span>
-                {mode === item.id ? <CheckCircle2 className="h-4 w-4" /> : null}
-              </button>
-            ))}
-          </div>
-
-          <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
-            <div className="duo-card p-4 sm:p-5">
-              <div className="mb-4 flex items-center justify-between gap-3">
-                <div>
-                  <div className="text-[10px] font-black uppercase tracking-[0.2em] text-duo-swan">
-                    Verbatim drawer
-                  </div>
-                  <h2 className="text-xl font-heading font-black text-duo-eel">
-                    {activeMode.label} capture
-                  </h2>
-                </div>
-                <div
+        <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
+          <main className="rounded-3xl border border-duo-swan bg-duo-snow p-3 shadow-sm sm:p-4">
+            <div className="grid grid-cols-3 gap-1.5 rounded-2xl bg-duo-polar p-1.5">
+              {modes.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    if (status === "recording") return;
+                    setMode(item.id);
+                    setStatus("idle");
+                    resetMedia();
+                    resetImages();
+                  }}
                   className={cn(
-                    "rounded-full border-2 px-3 py-1 text-[10px] font-black uppercase tracking-wider",
-                    status === "recording"
-                      ? "border-duo-cardinal bg-duo-red/10 text-duo-red"
-                      : hasMedia
-                        ? "border-duo-feather bg-duo-green/10 text-duo-green"
-                        : "border-duo-swan bg-duo-polar text-duo-wolf"
+                    "flex h-12 items-center justify-center gap-2 rounded-xl px-2 text-xs font-black uppercase tracking-wider transition",
+                    mode === item.id
+                      ? "bg-duo-snow text-duo-eel shadow-sm"
+                      : "text-duo-wolf hover:bg-duo-snow/70"
                   )}
                 >
-                  {status === "recording" ? "Recording" : hasMedia ? "Ready" : "Empty"}
+                  <item.icon className={cn("h-4 w-4 shrink-0", item.accent)} />
+                  <span>{item.label}</span>
+                  {mode === item.id ? <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-duo-green" /> : null}
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-4 rounded-2xl border border-duo-swan bg-background p-3 sm:p-4">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-[10px] font-black uppercase tracking-[0.18em] text-duo-swan">
+                    Raw capture
+                  </div>
+                  <h2 className="text-xl font-heading font-black text-duo-eel">
+                    {activeMode.label}
+                  </h2>
+                </div>
+                <div className="rounded-full bg-duo-polar px-3 py-1 text-[10px] font-black uppercase tracking-wider text-duo-wolf">
+                  {mode === "image" ? `${imagePreviews.length} pages` : status}
                 </div>
               </div>
 
               {mode === "image" ? (
-                <div className="flex min-h-[320px] flex-col gap-4 lg:min-h-[430px]">
-                  <label className="flex min-h-48 cursor-pointer flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-duo-swan bg-background px-4 text-center transition hover:bg-duo-polar">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl border-2 border-duo-fox bg-duo-orange/10 text-duo-orange">
+                <div className="flex flex-col gap-4">
+                  <label className="flex min-h-48 cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-duo-swan bg-duo-polar px-4 text-center transition hover:bg-duo-polar/70 sm:min-h-56">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-duo-orange/10 text-duo-orange">
                       <Upload className="h-7 w-7" />
                     </div>
-                    <span className="text-base font-black uppercase tracking-wider text-duo-eel">
-                      Upload diary pages
-                    </span>
-                    <span className="max-w-xs text-sm font-bold text-duo-wolf">
-                      Photos are stored as the original drawer.
+                    <span className="text-base font-black text-duo-eel">Upload diary pages</span>
+                    <span className="max-w-xs text-sm font-bold leading-6 text-duo-wolf">
+                      Add photos of notes, letters, whiteboards, or book pages.
                     </span>
                     <Input
                       type="file"
@@ -400,7 +379,7 @@ export function CaptureStudio() {
                   {imagePreviews.length ? (
                     <div className="grid gap-3 sm:grid-cols-2">
                       {imagePreviews.map((preview) => (
-                        <div key={preview.url} className="overflow-hidden rounded-2xl border-2 border-duo-swan bg-background">
+                        <div key={preview.url} className="overflow-hidden rounded-2xl border border-duo-swan bg-duo-snow">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={preview.url} alt={preview.name} className="aspect-[4/3] w-full object-cover" />
                           <div className="truncate px-3 py-2 text-xs font-bold text-duo-wolf">
@@ -412,7 +391,7 @@ export function CaptureStudio() {
                   ) : null}
                 </div>
               ) : (
-                <div className="flex min-h-[320px] flex-col items-center justify-center gap-5 lg:min-h-[430px]">
+                <div className="flex min-h-[320px] flex-col items-center justify-center gap-4 sm:min-h-[390px]">
                   {mode === "video" ? (
                     <video
                       ref={liveVideoRef}
@@ -420,10 +399,10 @@ export function CaptureStudio() {
                       controls={Boolean(mediaUrl)}
                       muted={status === "recording"}
                       playsInline
-                      className="aspect-video w-full rounded-2xl border-2 border-duo-swan bg-black object-cover"
+                      className="aspect-video w-full rounded-2xl border border-duo-swan bg-black object-cover"
                     />
                   ) : (
-                    <div className="flex h-52 w-full items-center justify-center rounded-2xl border-2 border-duo-swan bg-background sm:h-64">
+                    <div className="flex h-52 w-full items-center justify-center rounded-2xl border border-duo-swan bg-duo-polar sm:h-64">
                       <Mic2 className={cn("h-16 w-16", status === "recording" ? "animate-bounce-subtle text-duo-green" : "text-duo-swan")} />
                     </div>
                   )}
@@ -448,28 +427,32 @@ export function CaptureStudio() {
                 </div>
               )}
             </div>
+          </main>
 
-            <aside className="duo-card flex flex-col gap-4 p-4 sm:p-5 xl:sticky xl:top-6 xl:max-h-[calc(100svh-3rem)]">
-              <div className="rounded-2xl border-2 border-duo-swan bg-duo-polar p-4">
-                <div className="mb-2 flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-duo-wolf">
-                  <BookOpen className="h-4 w-4 text-duo-blue" />
-                  Index note
-                </div>
-                <p className="text-sm font-bold leading-6 text-duo-wolf">
-                  Add only what helps future Debo find this drawer.
-                </p>
+          <aside className="rounded-3xl border border-duo-swan bg-duo-snow p-4 shadow-sm sm:p-5 lg:sticky lg:top-6 lg:self-start">
+            <div className="mb-4">
+              <div className="text-[10px] font-black uppercase tracking-[0.18em] text-duo-swan">
+                Context
               </div>
+              <h2 className="mt-1 text-xl font-heading font-black text-duo-eel">
+                Make it searchable
+              </h2>
+              <p className="mt-1 text-sm font-bold leading-6 text-duo-wolf">
+                Add people, promises, places, or a rough transcript.
+              </p>
+            </div>
+            <div className="flex flex-col gap-3">
               <Input
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
                 placeholder="Title"
-                className="h-12 rounded-2xl border-2 border-duo-swan text-base font-bold"
+                className="h-12 rounded-2xl border border-duo-swan bg-background text-base font-bold"
               />
               <Textarea
                 value={notes}
                 onChange={(event) => setNotes(event.target.value)}
-                placeholder="Notes, transcript, people, promises..."
-                className="min-h-44 flex-1 resize-none rounded-2xl border-2 border-duo-swan text-base font-bold xl:min-h-64"
+                placeholder="What happened?"
+                className="min-h-44 resize-none rounded-2xl border border-duo-swan bg-background text-base font-bold lg:min-h-64"
               />
               <Button
                 onClick={saveCapture}
@@ -479,10 +462,10 @@ export function CaptureStudio() {
                 className="w-full gap-2"
               >
                 {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-                Save Drawer
+                Save Moment
               </Button>
-            </aside>
-          </div>
+            </div>
+          </aside>
         </section>
       </div>
     </div>
