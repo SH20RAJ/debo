@@ -29,6 +29,9 @@ type ChatHistoryRow = {
   content: Record<string, unknown>;
 };
 
+const CHAT_READ_TIMEOUT_MS = 5000;
+const CHAT_WRITE_TIMEOUT_MS = 5000;
+
 export function MyAssistantRuntimeProvider({
   children,
   initialThreadId,
@@ -110,7 +113,7 @@ function createHistoryAdapter(aui: ReturnType<typeof useAui>): ThreadHistoryAdap
 
           const res = await fetchWithTimeout(`/api/chat/history?threadId=${encodeURIComponent(threadId)}`, {
             cache: "no-store",
-          }, 1200);
+          }, CHAT_READ_TIMEOUT_MS);
           if (!res.ok) {
             return {
               headId: localRows.at(-1)?.id ?? null,
@@ -126,7 +129,9 @@ function createHistoryAdapter(aui: ReturnType<typeof useAui>): ThreadHistoryAdap
             ),
           };
         } catch (e) {
-          console.error("Failed to load history:", e);
+          if (!isAbortError(e)) {
+            console.error("Failed to load history:", e);
+          }
           const threadId = aui.threadListItem().getState().remoteId;
           const localRows = threadId ? readLocalHistory(threadId) : [];
           return {
@@ -247,7 +252,7 @@ function createThreadListAdapter(): RemoteThreadListAdapter {
     async list() {
       const localThreads = readLocalThreads();
       try {
-        const res = await fetchWithTimeout("/api/chat/threads", { cache: "no-store" }, 1200);
+        const res = await fetchWithTimeout("/api/chat/threads", { cache: "no-store" }, CHAT_READ_TIMEOUT_MS);
         if (!res.ok) {
           return { threads: localThreads.map(threadToRuntimeItem) };
         }
@@ -268,7 +273,9 @@ function createThreadListAdapter(): RemoteThreadListAdapter {
           threads: threads.map(threadToRuntimeItem),
         };
       } catch (error) {
-        console.error("Failed to load chat threads:", error);
+        if (!isAbortError(error)) {
+          console.error("Failed to load chat threads:", error);
+        }
         return { threads: localThreads.map(threadToRuntimeItem) };
       }
     },
@@ -281,8 +288,10 @@ function createThreadListAdapter(): RemoteThreadListAdapter {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: remoteId }),
-      }, 1200).catch((error) => {
-        console.warn("Chat thread will stay local until database is reachable:", error);
+      }, CHAT_WRITE_TIMEOUT_MS).catch((error) => {
+        if (!isAbortError(error)) {
+          console.warn("Chat thread will stay local until database is reachable:", error);
+        }
       });
 
       return { remoteId, externalId: remoteId };
@@ -297,14 +306,14 @@ function createThreadListAdapter(): RemoteThreadListAdapter {
       try {
         const res = await fetchWithTimeout(`/api/chat/threads?id=${encodeURIComponent(usableThreadId)}`, {
           cache: "no-store",
-        }, 1200);
+        }, CHAT_READ_TIMEOUT_MS);
 
         if (res.status === 404) {
           void fetchWithTimeout("/api/chat/threads", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ id: usableThreadId }),
-          }, 1200).catch(() => {});
+          }, CHAT_WRITE_TIMEOUT_MS).catch(() => {});
           setBrowserActiveThreadId(usableThreadId);
           return threadToRuntimeItem(localThread);
         }
@@ -329,7 +338,7 @@ function createThreadListAdapter(): RemoteThreadListAdapter {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: remoteId, title: newTitle }),
-      }, 1200);
+      }, CHAT_WRITE_TIMEOUT_MS);
       if (!res.ok) throw new Error(`Thread rename failed with ${res.status}`);
     },
     async archive() {},
@@ -338,7 +347,7 @@ function createThreadListAdapter(): RemoteThreadListAdapter {
       deleteLocalThread(remoteId);
       const res = await fetchWithTimeout(`/api/chat/threads?id=${encodeURIComponent(remoteId)}`, {
         method: "DELETE",
-      }, 1200);
+      }, CHAT_WRITE_TIMEOUT_MS);
       if (!res.ok && res.status !== 404) {
         throw new Error(`Thread delete failed with ${res.status}`);
       }
@@ -351,7 +360,7 @@ function createThreadListAdapter(): RemoteThreadListAdapter {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: remoteId, title }),
-      }, 1200).catch(() => {});
+      }, CHAT_WRITE_TIMEOUT_MS).catch(() => {});
 
       return createAssistantStream((controller) => {
         controller.appendText(title);
@@ -487,6 +496,13 @@ async function fetchWithTimeout(input: RequestInfo | URL, init: RequestInit = {}
   } finally {
     window.clearTimeout(timeout);
   }
+}
+
+function isAbortError(error: unknown) {
+  return (
+    error instanceof DOMException && error.name === "AbortError" ||
+    error instanceof Error && /abort|signal is aborted/i.test(error.message)
+  );
 }
 
 async function persistHistoryItem<TMessage, TStorageFormat extends Record<string, unknown>>(
