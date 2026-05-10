@@ -88,6 +88,23 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const user = useUser()
   const [expandedItems, setExpandedItems] = React.useState<string[]>([]);
 
+  // Automatically expand the submenu containing the active item
+  React.useEffect(() => {
+    const activeSubmenuHrefs = groups.flatMap(g => g.items)
+      .filter(item => item.type === 'submenu' && item.items.some(sub => isActive(sub.href, false)))
+      .map(item => item.href);
+    
+    if (activeSubmenuHrefs.length > 0) {
+      setExpandedItems(prev => {
+        const newItems = [...prev];
+        activeSubmenuHrefs.forEach(href => {
+          if (!newItems.includes(href)) newItems.push(href);
+        });
+        return newItems;
+      });
+    }
+  }, [pathname]);
+
   const toggleExpand = (href: string) => {
     setExpandedItems(prev => 
       prev.includes(href) ? prev.filter(h => h !== href) : [...prev, href]
@@ -100,7 +117,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   };
 
   const isSubmenuOpen = (item: any) => {
-    return expandedItems.includes(item.href) || item.items.some((sub: SubItem) => isActive(sub.href));
+    return expandedItems.includes(item.href);
   };
 
   return (
