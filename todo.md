@@ -21,6 +21,22 @@
 - [ ] Trello connector (working)
 - [ ] Asana connector (pending)
 - [ ] Jira connector (pending)
+- [ ] Google Drive connector (pending) - Store video/audio journals
+
+### 8. Media Storage (Google Drive)
+- [ ] Google Drive OAuth2 integration
+- [ ] Create folder structure: /Debo/Videos/, /Debo/Audios/, /Debo/Transcripts/
+- [ ] Upload video journals to Google Drive
+- [ ] Upload audio journals to Google Drive
+- [ ] Store metadata in database (file ID, Drive URL, thumbnail)
+- [ ] Stream media directly from Drive
+
+### 9. Database Restructure
+- [ ] Create `video_journals` table (id, userId, title, driveFileId, driveWebUrl, thumbnailUrl, duration, transcript, createdAt)
+- [ ] Create `audio_journals` table (id, userId, title, driveFileId, driveWebUrl, transcript, duration, createdAt)
+- [ ] Keep `journals` table for text-only entries
+- [ ] Add sorting options on /dashboard (date, title, type)
+- [ ] Add filter by content type (text/video/audio)
 
 ### 3. Chat Apps
 - [x] /chat - Web chat with AI

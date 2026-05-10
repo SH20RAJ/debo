@@ -28,9 +28,12 @@ Debo is a **Life Intelligence System** that learns from your writing, retrieves 
 - **Orchestration**: Mastra (multi-agent system)
 - **AI**: NVIDIA NIM / OpenAI / Anthropic
 - **Database**: Neon (PostgreSQL), Qdrant (Vector DB)
+- **Media Storage**: Google Drive (video/audio journals)
 - **Auth**: Stack Auth
 - **Voice**: LiveKit
 - **Deployment**: Cloudflare Workers
+
+> 📋 See [Project Roadmap](./todo.md) for feature status and upcoming work
 
 ## Getting Started
 
