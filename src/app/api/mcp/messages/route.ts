@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const message = await req.json();
+    const message = await req.json() as { id?: string | number; method: string; params?: any };
     const { id, method, params } = message;
 
     const deboTools = createDeboRuntimeTools(userId, { includeMcpTools: true });
