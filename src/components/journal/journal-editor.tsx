@@ -5,29 +5,33 @@ import { saveJournal } from "@/actions/journals";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ExternalLink, FileImage, Loader2, Mic2, Play, Video, Check, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ArrowLeft, ExternalLink, FileImage, Loader2, Mic2, Play, Video, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import dynamic from "next/dynamic";
+import { MediaBlock, extractMediaFromContent, mediaSrcFromR2, type MediaKind } from "./media-block";
 
-const BlockEditor = dynamic(() => import("./block-editor"), { 
+const BlockEditor = dynamic(() => import("./block-editor"), {
     ssr: false,
     loading: () => <div className="h-[500px] w-full bg-muted/20 animate-pulse rounded-2xl" />
 });
 
 type CaptureMediaItem = {
-    kind: "audio" | "video" | "image";
+    id: string;
+    kind: MediaKind;
     label: string;
     size: string;
     src: string;
+    lineIndex: number;
+    line: string;
 };
 
-export function JournalEditor({ 
-    initialContent = "", 
-    initialId = "", 
+export function JournalEditor({
+    initialContent = "",
+    initialId = "",
     initialTitle = "",
     initialTags = []
-}: { 
-    initialContent?: string, 
-    initialId?: string, 
+}: {
+    initialContent?: string,
+    initialId?: string,
     initialTitle?: string,
     initialTags?: string[]
 }) {
@@ -37,17 +41,78 @@ export function JournalEditor({
     const [tagInput, setTagInput] = useState("");
     const [id, setId] = useState(initialId);
     const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+    const [mediaItems, setMediaItems] = useState<CaptureMediaItem[]>([]);
+    const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
     const router = useRouter();
     const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const mediaItems = useMemo(() => extractCaptureMedia(content), [content]);
+
+    // Parse media from content and extract to separate state
+    const parseAndExtractMedia = useCallback((text: string) => {
+        const extracted = extractMediaFromContent(text);
+        const items: CaptureMediaItem[] = extracted.map((media, idx) => ({
+            id: `media-${idx}-${Date.now()}`,
+            kind: media.kind,
+            label: media.label,
+            size: media.size,
+            src: mediaSrcFromR2(media.src),
+            lineIndex: -1,
+            line: media.fullLine,
+        }));
+        return items;
+    }, []);
+
+    // Initialize media from content
+    useEffect(() => {
+        const items = parseAndExtractMedia(initialContent);
+        setMediaItems(items);
+    }, [initialContent, parseAndExtractMedia]);
+
+    // Handle content changes - re-parse media
+    const handleContentChange = useCallback((newContent: string) => {
+        setContent(newContent);
+        // Re-parse to detect any changes in media lines
+        const items = parseAndExtractMedia(newContent);
+        setMediaItems(items);
+    }, [parseAndExtractMedia]);
+
+    // Remove media item (removes from content and preview)
+    const handleRemoveMedia = useCallback((mediaId: string) => {
+        const media = mediaItems.find(m => m.id === mediaId);
+        if (!media) return;
+
+        // Remove the line from content
+        const newContent = content
+            .split("\n")
+            .filter(line => line !== media.line && line.trim() !== media.line.trim())
+            .join("\n");
+
+        setContent(newContent);
+        setMediaItems(prev => prev.filter(m => m.id !== mediaId));
+
+        if (currentMediaIndex >= mediaItems.length - 1 && currentMediaIndex > 0) {
+            setCurrentMediaIndex(prev => prev - 1);
+        }
+    }, [content, mediaItems, currentMediaIndex]);
+
+    // Add media via URL (MCP or manual)
+    const handleAddMedia = useCallback((kind: MediaKind, src: string, label?: string) => {
+        const extension = src.match(/\.(webm|mp4|mp3|wav|ogg)$/i)?.[1] || "media";
+        const fileLabel = label || `${kind}-${Date.now()}.${extension}`;
+        const line = `- ${kind}: ${fileLabel} (Unknown size) ${src}`;
+
+        const newContent = content ? `${content}\n\n${line}` : line;
+        setContent(newContent);
+
+        toast.success(`${kind} added to journal`);
+    }, [content]);
 
     const handleSave = useCallback(async (currentContent: string, currentId: string, currentTitle: string, currentTags: string[]) => {
         if (!currentContent.trim() && !currentTitle.trim()) return currentId;
-        
+
         setSaveStatus("saving");
         try {
             const result = await saveJournal(currentContent, currentId || undefined, currentTitle || undefined, undefined, currentTags);
-            
+
             if (result.success && result.data) {
                 const newId = result.data;
                 if (!currentId) {
@@ -97,13 +162,16 @@ export function JournalEditor({
         setTags(tags.filter(tag => tag !== tagToRemove));
     };
 
+    const hasMedia = mediaItems.length > 0;
+    const currentMedia = mediaItems[currentMediaIndex] || null;
+
     return (
         <div className="w-full flex flex-col min-h-screen bg-background">
             {/* Header */}
             <div className="max-w-screen-xl mx-auto w-full px-6 py-10 flex items-center justify-between">
-                <Button 
-                    variant="duolingo-outline" 
-                    size="icon" 
+                <Button
+                    variant="duolingo-outline"
+                    size="icon"
                     onClick={() => router.push("/dashboard/journals")}
                     className="rounded-2xl hover-bounce h-12 w-12"
                 >
@@ -157,176 +225,52 @@ export function JournalEditor({
                         />
                     </div>
 
-                    {mediaItems.length > 0 ? (
-                        <CaptureMediaPreview items={mediaItems} />
-                    ) : null}
-                    
+                    {/* Media Preview - Only show above editor, not inline */}
+                    {hasMedia && currentMedia && (
+                        <MediaBlock
+                            key={currentMedia.id}
+                            kind={currentMedia.kind}
+                            label={currentMedia.label}
+                            size={currentMedia.size}
+                            src={currentMedia.src}
+                            onRemove={() => handleRemoveMedia(currentMedia.id)}
+                        />
+                    )}
+
+                    {/* Media Navigation - Only show if multiple items */}
+                    {hasMedia && mediaItems.length > 1 && (
+                        <div className="flex items-center justify-center gap-4 py-3 bg-duo-polar/30 rounded-xl">
+                            <button
+                                onClick={() => setCurrentMediaIndex((i) => (i === 0 ? mediaItems.length - 1 : i - 1))}
+                                className="flex h-9 w-9 items-center justify-center rounded-full bg-duo-swan/20 text-duo-wolf hover:bg-duo-swan/40 transition"
+                            >
+                                <ChevronLeft className="h-5 w-5" />
+                            </button>
+                            <span className="text-sm font-black text-duo-eel">
+                                {currentMediaIndex + 1} / {mediaItems.length}
+                            </span>
+                            <button
+                                onClick={() => setCurrentMediaIndex((i) => (i === mediaItems.length - 1 ? 0 : i + 1))}
+                                className="flex h-9 w-9 items-center justify-center rounded-full bg-duo-swan/20 text-duo-wolf hover:bg-duo-swan/40 transition"
+                            >
+                                <ChevronRight className="h-5 w-5" />
+                            </button>
+                        </div>
+                    )}
+
                     <div className="min-h-[60vh] duo-editor-container pt-6 border-t border-duo-swan">
-                        <BlockEditor 
-                            initialContent={content} 
-                            onChange={(markdown) => setContent(markdown)} 
+                        <BlockEditor
+                            initialContent={content}
+                            onChange={handleContentChange}
                         />
                     </div>
+
+                    {/* Editor hint */}
+                    <p className="text-xs font-bold text-duo-swan/60 text-center">
+                        Media lines (video:, audio:, - video:) are automatically extracted and shown above. Remove the line text to detach from preview.
+                    </p>
                 </div>
             </main>
         </div>
     );
-
-}
-
-function CaptureMediaPreview({ items }: { items: CaptureMediaItem[] }) {
-    const [currentIndex, setCurrentIndex] = useState(0);
-
-    if (items.length === 0) return null;
-
-    const current = items[currentIndex];
-    const isSingle = items.length === 1;
-
-    return (
-        <section className="rounded-3xl border border-duo-swan bg-duo-snow p-3 shadow-sm sm:p-4">
-            <div className="mb-3 flex items-center justify-between gap-3">
-                <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-duo-green">
-                        Capture media
-                    </p>
-                    <h2 className="text-xl font-heading font-black text-duo-eel">
-                        {isSingle ? "Saved recording" : `Recording ${currentIndex + 1} of ${items.length}`}
-                    </h2>
-                </div>
-                <span className="rounded-full bg-duo-polar px-3 py-1 text-[10px] font-black uppercase tracking-wider text-duo-wolf">
-                    {items.length} file{items.length === 1 ? "" : "s"}
-                </span>
-            </div>
-
-            {/* Slider for multiple items */}
-            <div className="relative">
-                {!isSingle && (
-                    <>
-                        <button
-                            onClick={() => setCurrentIndex((i) => (i === 0 ? items.length - 1 : i - 1))}
-                            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition"
-                        >
-                            <ChevronLeft className="h-5 w-5" />
-                        </button>
-                        <button
-                            onClick={() => setCurrentIndex((i) => (i === items.length - 1 ? 0 : i + 1))}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition"
-                        >
-                            <ChevronRight className="h-5 w-5" />
-                        </button>
-                    </>
-                )}
-
-                <article className="overflow-hidden rounded-2xl border border-duo-swan bg-background">
-                    {current.kind === "video" ? (
-                        <video
-                            src={current.src}
-                            controls
-                            playsInline
-                            preload="metadata"
-                            className="aspect-video w-full bg-black object-contain"
-                        />
-                    ) : current.kind === "audio" ? (
-                        <div className="p-4">
-                            <audio src={current.src} controls preload="metadata" className="w-full" />
-                        </div>
-                    ) : (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={current.src} alt={current.label} className="max-h-[520px] w-full object-contain" />
-                    )}
-
-                    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-duo-swan px-3 py-2">
-                        <div className="flex min-w-0 items-center gap-2">
-                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-duo-polar text-duo-green">
-                                {current.kind === "video" ? (
-                                    <Video className="h-4 w-4" />
-                                ) : current.kind === "audio" ? (
-                                    <Mic2 className="h-4 w-4" />
-                                ) : (
-                                    <FileImage className="h-4 w-4" />
-                                )}
-                            </span>
-                            <div className="min-w-0">
-                                <p className="truncate text-sm font-black text-duo-eel">{current.label}</p>
-                                <p className="text-xs font-bold text-duo-wolf">{current.size}</p>
-                            </div>
-                        </div>
-                        <a
-                            href={current.src}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex items-center gap-1 rounded-xl border border-duo-swan px-3 py-2 text-xs font-black uppercase tracking-wider text-duo-wolf transition hover:bg-duo-polar hover:text-duo-eel"
-                        >
-                            {current.kind === "video" ? <Play className="h-3.5 w-3.5" /> : <ExternalLink className="h-3.5 w-3.5" />}
-                            Open
-                        </a>
-                    </div>
-                </article>
-
-                {/* Dots indicator */}
-                {!isSingle && (
-                    <div className="flex justify-center gap-2 mt-3">
-                        {items.map((_, i) => (
-                            <button
-                                key={i}
-                                onClick={() => setCurrentIndex(i)}
-                                className={`h-2 rounded-full transition-all ${
-                                    i === currentIndex ? "w-6 bg-duo-green" : "w-2 bg-duo-swan"
-                                }`}
-                            />
-                        ))}
-                    </div>
-                )}
-            </div>
-        </section>
-    );
-}
-
-function extractCaptureMedia(content: string): CaptureMediaItem[] {
-    // Multiple patterns to handle various media formats in journal content
-    // Pattern 1: "- video: filename (size) r2://path"
-    // Pattern 2: "video: filename (size) r2://path"
-    // Pattern 3: "Attached video: https://..."
-    const patterns = [
-        /^-?\s*(audio|video|image):\s*(.+?)\s+\(([^)]+)\)\s+(r2:\/\/\S+|https?:\/\/\S+)/i,
-        /^-?\s*Attached\s+(audio|video):\s+(r2:\/\/\S+|https?:\/\/\S+)/i,
-    ];
-
-    const lines = content.split("\n");
-    const items: CaptureMediaItem[] = [];
-
-    for (const line of lines) {
-        const trimmed = line.trim();
-
-        for (const pattern of patterns) {
-            const match = pattern.exec(trimmed);
-            if (match) {
-                const kind = match[1].toLowerCase();
-                const label = match[2]?.trim() || `${kind} recording`;
-                const size = match[3]?.trim() || "Unknown size";
-                const src = match[4]?.trim();
-
-                if (src) {
-                    items.push({
-                        kind: kind as CaptureMediaItem["kind"],
-                        label,
-                        size,
-                        src: mediaSrcFromStoredValue(src),
-                    });
-                    break;
-                }
-            }
-        }
-    }
-
-    return items;
-}
-
-function mediaSrcFromStoredValue(value: string) {
-    if (value.startsWith("r2://")) {
-        const key = value.slice("r2://".length);
-        return `/api/capture/media/${key.split("/").map(encodeURIComponent).join("/")}`;
-    }
-
-    return value;
 }
