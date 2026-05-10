@@ -13,12 +13,12 @@ import { revalidatePath } from "next/cache";
 
 // resolveUserId is imported from ./auth-sync
 
-export const getMemories = cache(async (query: string = "", userId?: string) => {
+export const getMemories = cache(async (query: string = "", limit: number = 20, offset: number = 0, userId?: string) => {
   const resolvedUserId = await resolveUserId(userId, true);
   if (!resolvedUserId) return { success: false, error: "Unauthorized" };
 
   try {
-    const memories = await getRelevantMemories(resolvedUserId, query);
+    const memories = await getRelevantMemories(resolvedUserId, query, limit, offset);
     return {
       success: true,
       data: memories.items.map((memory) => ({
@@ -28,6 +28,7 @@ export const getMemories = cache(async (query: string = "", userId?: string) => 
         sourceType: memory.sourceType,
         score: memory.score,
       })),
+      totalCount: memories.totalCount,
       insights: memories.insights,
     };
   } catch (error) {

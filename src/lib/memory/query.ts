@@ -16,7 +16,7 @@ export type RelevantMemory = {
   label?: string;
 };
 
-export const getRelevantMemories = cache(async (userId: string, query: string) => {
+export const getRelevantMemories = cache(async (userId: string, query: string, limit: number = 20, offset: number = 0) => {
   const normalizedQuery = query.replace(/\s+/g, " ").trim();
 
   const [facts, entities] = await Promise.all([
@@ -31,7 +31,6 @@ export const getRelevantMemories = cache(async (userId: string, query: string) =
           : undefined
       ),
       orderBy: [desc(memoryFacts.weight), desc(memoryFacts.createdAt)],
-      limit: 20,
     }),
     db.query.memoryEntities.findMany({
       where: and(
@@ -44,7 +43,6 @@ export const getRelevantMemories = cache(async (userId: string, query: string) =
           : undefined
       ),
       orderBy: [desc(memoryEntities.frequency), desc(memoryEntities.updatedAt)],
-      limit: 20,
     }),
   ]);
 
@@ -85,7 +83,8 @@ export const getRelevantMemories = cache(async (userId: string, query: string) =
   const combined = [...factItems, ...entityItems].sort((left, right) => right.score - left.score);
 
   return {
-    items: combined.slice(0, 8),
+    items: combined.slice(offset, offset + limit),
+    totalCount: combined.length,
     insights: buildMemoryInsights(combined),
   };
 });

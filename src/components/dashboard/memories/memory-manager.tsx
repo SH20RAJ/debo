@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useCallback, useRef } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { Search, Trash2, Plus, Loader2, Download, Upload, Database, Brain, AlertCircle } from "lucide-react";
+import { Search, Trash2, Plus, Loader2, Download, Upload, Database, Brain, AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -27,7 +27,7 @@ export interface Memory {
   score?: number;
 }
 
-export function MemoryManager({ initialMemories = [], initialQuery = "" }: { initialMemories: Memory[], initialQuery: string }) {
+export function MemoryManager({ initialMemories = [], initialQuery = "", totalCount = 0 }: { initialMemories: Memory[], initialQuery: string, totalCount?: number }) {
   const [query, setQuery] = useState(initialQuery);
   const [isPending, startTransition] = useTransition();
   const [isAdding, setIsAdding] = useState(false);
@@ -40,9 +40,14 @@ export function MemoryManager({ initialMemories = [], initialQuery = "" }: { ini
   const searchParams = useSearchParams();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const updateUrl = useCallback((newQuery: string) => {
+  const currentPage = parseInt(searchParams.get("page") || "1", 10);
+  const pageSize = 20;
+  const totalPages = Math.ceil(totalCount / pageSize);
+
+  const updateUrl = useCallback((newQuery: string, newPage: number = 1) => {
     const params = new URLSearchParams(searchParams.toString());
     if (newQuery) params.set("q", newQuery); else params.delete("q");
+    if (newPage > 1) params.set("page", newPage.toString()); else params.delete("page");
     
     startTransition(() => {
       router.push(`${pathname}?${params.toString()}`, { scroll: false });
@@ -133,7 +138,7 @@ export function MemoryManager({ initialMemories = [], initialQuery = "" }: { ini
           <Input 
             placeholder="Search persistent facts..." 
             value={query}
-            onChange={(e) => { setQuery(e.target.value); updateUrl(e.target.value); }}
+            onChange={(e) => { setQuery(e.target.value); updateUrl(e.target.value, 1); }}
             className="pl-10 h-10 rounded-xl border-border bg-muted/20 text-sm focus-visible:ring-primary/10"
           />
         </div>
@@ -170,7 +175,7 @@ export function MemoryManager({ initialMemories = [], initialQuery = "" }: { ini
       <div className={`space-y-4 transition-opacity duration-300 ${isPending ? 'opacity-50' : 'opacity-100'}`}>
         <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 px-1">
             <Brain className="h-3 w-3" />
-            Active Memories: {initialMemories.length}
+            Total Memories: {totalCount}
         </div>
         
         {initialMemories.length === 0 ? (
@@ -221,6 +226,39 @@ export function MemoryManager({ initialMemories = [], initialQuery = "" }: { ini
                         </AlertDialog>
                     </div>
                 ))}
+            </div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 pt-10">
+                <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={currentPage <= 1 || isPending}
+                    onClick={() => updateUrl(query, currentPage - 1)}
+                    className="rounded-xl border-border h-10 px-4"
+                >
+                    <ChevronLeft className="h-4 w-4 mr-2" />
+                    Prev
+                </Button>
+                
+                <div className="flex items-center gap-1 px-4">
+                    <span className="text-sm font-bold text-foreground">{currentPage}</span>
+                    <span className="text-sm font-medium text-muted-foreground/30">/</span>
+                    <span className="text-sm font-medium text-muted-foreground">{totalPages}</span>
+                </div>
+
+                <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={currentPage >= totalPages || isPending}
+                    onClick={() => updateUrl(query, currentPage + 1)}
+                    className="rounded-xl border-border h-10 px-4"
+                >
+                    Next
+                    <ChevronRight className="h-4 w-4 ml-2" />
+                </Button>
             </div>
         )}
       </div>

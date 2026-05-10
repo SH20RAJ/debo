@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useCallback } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { Search, SortDesc, SortAsc, Trash2, Plus, Loader2, Sparkles } from "lucide-react";
+import { Search, SortDesc, SortAsc, Trash2, Plus, Loader2, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -47,6 +47,10 @@ export function JournalsGrid({ journals, initialQuery, initialSort, totalCount }
   const [sort, setSort] = useState(initialSort);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
 
+  const currentPage = parseInt(searchParams.get("page") || "1", 10);
+  const pageSize = 12;
+  const totalPages = Math.ceil(totalCount / pageSize);
+
   const updateUrl = useCallback((newQuery: string, newSort: string, newPage: number = 1) => {
     setSort(newSort);
     startTransition(() => {
@@ -76,7 +80,7 @@ export function JournalsGrid({ journals, initialQuery, initialSort, totalCount }
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pb-20">
       {/* Minimal Header */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="relative w-full sm:w-80">
@@ -85,7 +89,11 @@ export function JournalsGrid({ journals, initialQuery, initialSort, totalCount }
             placeholder="Search memories..."
             className="pl-9 h-10 rounded-xl bg-muted/40 border-0 focus-visible:ring-1 focus-visible:ring-duo-macaw/20"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => {
+                setQuery(e.target.value);
+                // In a real app we'd debounce, but here we trigger update
+                updateUrl(e.target.value, sort, 1);
+            }}
           />
         </div>
         <div className="flex items-center gap-2">
@@ -132,6 +140,39 @@ export function JournalsGrid({ journals, initialQuery, initialSort, totalCount }
           ))
         )}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 pt-8">
+            <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage <= 1 || isPending}
+                onClick={() => updateUrl(query, sort, currentPage - 1)}
+                className="rounded-xl border-duo-swan/50 h-10 px-4"
+            >
+                <ChevronLeft className="h-4 w-4 mr-2" />
+                Prev
+            </Button>
+            
+            <div className="flex items-center gap-1 px-4">
+                <span className="text-sm font-bold text-duo-eel">{currentPage}</span>
+                <span className="text-sm font-medium text-duo-swan">/</span>
+                <span className="text-sm font-medium text-duo-wolf">{totalPages}</span>
+            </div>
+
+            <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage >= totalPages || isPending}
+                onClick={() => updateUrl(query, sort, currentPage + 1)}
+                className="rounded-xl border-duo-swan/50 h-10 px-4"
+            >
+                Next
+                <ChevronRight className="h-4 w-4 ml-2" />
+            </Button>
+        </div>
+      )}
     </div>
   );
 }

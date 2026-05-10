@@ -12,9 +12,12 @@ export default async function MemoriesPage(props: {
 }) {
   const searchParams = await props.searchParams;
   const query = typeof searchParams.q === 'string' ? searchParams.q : '';
+  const page = typeof searchParams.page === 'string' ? parseInt(searchParams.page, 10) : 1;
+  const pageSize = 20;
 
-  const result = await getMemories(query);
+  const result = await getMemories(query, pageSize, (page - 1) * pageSize);
   const memories = result.success && result.data ? result.data : [];
+  const totalCount = result.success && result.totalCount ? result.totalCount : 0;
 
   return (
     <div className="flex-1 bg-background">
@@ -34,6 +37,7 @@ export default async function MemoriesPage(props: {
         <MemoryManager 
           initialMemories={memories} 
           initialQuery={query}
+          totalCount={totalCount}
         />
       </div>
     </div>
