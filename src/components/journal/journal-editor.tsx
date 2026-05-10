@@ -5,7 +5,7 @@ import { saveJournal } from "@/actions/journals";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ExternalLink, FileImage, Loader2, Mic2, Play, Video, Check } from "lucide-react";
+import { ArrowLeft, ExternalLink, FileImage, Loader2, Mic2, Play, Video, Check, ChevronLeft, ChevronRight, X } from "lucide-react";
 import dynamic from "next/dynamic";
 
 const BlockEditor = dynamic(() => import("./block-editor"), { 
@@ -175,6 +175,13 @@ export function JournalEditor({
 }
 
 function CaptureMediaPreview({ items }: { items: CaptureMediaItem[] }) {
+    const [currentIndex, setCurrentIndex] = useState(0);
+
+    if (items.length === 0) return null;
+
+    const current = items[currentIndex];
+    const isSingle = items.length === 1;
+
     return (
         <section className="rounded-3xl border border-duo-swan bg-duo-snow p-3 shadow-sm sm:p-4">
             <div className="mb-3 flex items-center justify-between gap-3">
@@ -183,7 +190,7 @@ function CaptureMediaPreview({ items }: { items: CaptureMediaItem[] }) {
                         Capture media
                     </p>
                     <h2 className="text-xl font-heading font-black text-duo-eel">
-                        Saved recording
+                        {isSingle ? "Saved recording" : `Recording ${currentIndex + 1} of ${items.length}`}
                     </h2>
                 </div>
                 <span className="rounded-full bg-duo-polar px-3 py-1 text-[10px] font-black uppercase tracking-wider text-duo-wolf">
@@ -191,76 +198,128 @@ function CaptureMediaPreview({ items }: { items: CaptureMediaItem[] }) {
                 </span>
             </div>
 
-            <div className="grid gap-3">
-                {items.map((item) => (
-                    <article key={`${item.kind}-${item.src}`} className="overflow-hidden rounded-2xl border border-duo-swan bg-background">
-                        {item.kind === "video" ? (
-                            <video
-                                src={item.src}
-                                controls
-                                playsInline
-                                preload="metadata"
-                                className="aspect-video w-full bg-black object-contain"
-                            />
-                        ) : item.kind === "audio" ? (
-                            <div className="p-4">
-                                <audio src={item.src} controls preload="metadata" className="w-full" />
-                            </div>
-                        ) : (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={item.src} alt={item.label} className="max-h-[520px] w-full object-contain" />
-                        )}
+            {/* Slider for multiple items */}
+            <div className="relative">
+                {!isSingle && (
+                    <>
+                        <button
+                            onClick={() => setCurrentIndex((i) => (i === 0 ? items.length - 1 : i - 1))}
+                            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition"
+                        >
+                            <ChevronLeft className="h-5 w-5" />
+                        </button>
+                        <button
+                            onClick={() => setCurrentIndex((i) => (i === items.length - 1 ? 0 : i + 1))}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition"
+                        >
+                            <ChevronRight className="h-5 w-5" />
+                        </button>
+                    </>
+                )}
 
-                        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-duo-swan px-3 py-2">
-                            <div className="flex min-w-0 items-center gap-2">
-                                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-duo-polar text-duo-green">
-                                    {item.kind === "video" ? (
-                                        <Video className="h-4 w-4" />
-                                    ) : item.kind === "audio" ? (
-                                        <Mic2 className="h-4 w-4" />
-                                    ) : (
-                                        <FileImage className="h-4 w-4" />
-                                    )}
-                                </span>
-                                <div className="min-w-0">
-                                    <p className="truncate text-sm font-black text-duo-eel">{item.label}</p>
-                                    <p className="text-xs font-bold text-duo-wolf">{item.size}</p>
-                                </div>
-                            </div>
-                            <a
-                                href={item.src}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="inline-flex items-center gap-1 rounded-xl border border-duo-swan px-3 py-2 text-xs font-black uppercase tracking-wider text-duo-wolf transition hover:bg-duo-polar hover:text-duo-eel"
-                            >
-                                {item.kind === "video" ? <Play className="h-3.5 w-3.5" /> : <ExternalLink className="h-3.5 w-3.5" />}
-                                Open
-                            </a>
+                <article className="overflow-hidden rounded-2xl border border-duo-swan bg-background">
+                    {current.kind === "video" ? (
+                        <video
+                            src={current.src}
+                            controls
+                            playsInline
+                            preload="metadata"
+                            className="aspect-video w-full bg-black object-contain"
+                        />
+                    ) : current.kind === "audio" ? (
+                        <div className="p-4">
+                            <audio src={current.src} controls preload="metadata" className="w-full" />
                         </div>
-                    </article>
-                ))}
+                    ) : (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={current.src} alt={current.label} className="max-h-[520px] w-full object-contain" />
+                    )}
+
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-duo-swan px-3 py-2">
+                        <div className="flex min-w-0 items-center gap-2">
+                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-duo-polar text-duo-green">
+                                {current.kind === "video" ? (
+                                    <Video className="h-4 w-4" />
+                                ) : current.kind === "audio" ? (
+                                    <Mic2 className="h-4 w-4" />
+                                ) : (
+                                    <FileImage className="h-4 w-4" />
+                                )}
+                            </span>
+                            <div className="min-w-0">
+                                <p className="truncate text-sm font-black text-duo-eel">{current.label}</p>
+                                <p className="text-xs font-bold text-duo-wolf">{current.size}</p>
+                            </div>
+                        </div>
+                        <a
+                            href={current.src}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 rounded-xl border border-duo-swan px-3 py-2 text-xs font-black uppercase tracking-wider text-duo-wolf transition hover:bg-duo-polar hover:text-duo-eel"
+                        >
+                            {current.kind === "video" ? <Play className="h-3.5 w-3.5" /> : <ExternalLink className="h-3.5 w-3.5" />}
+                            Open
+                        </a>
+                    </div>
+                </article>
+
+                {/* Dots indicator */}
+                {!isSingle && (
+                    <div className="flex justify-center gap-2 mt-3">
+                        {items.map((_, i) => (
+                            <button
+                                key={i}
+                                onClick={() => setCurrentIndex(i)}
+                                className={`h-2 rounded-full transition-all ${
+                                    i === currentIndex ? "w-6 bg-duo-green" : "w-2 bg-duo-swan"
+                                }`}
+                            />
+                        ))}
+                    </div>
+                )}
             </div>
         </section>
     );
 }
 
 function extractCaptureMedia(content: string): CaptureMediaItem[] {
-    return content
-        .split("\n")
-        .map((line) => line.trim())
-        .map((line) => {
-            const match = line.match(/^-\s*(audio|video|image):\s*(.+?)\s+\(([^)]+)\)\s+(\S+)/i);
-            if (!match) return null;
+    // Multiple patterns to handle various media formats in journal content
+    // Pattern 1: "- video: filename (size) r2://path"
+    // Pattern 2: "video: filename (size) r2://path"
+    // Pattern 3: "Attached video: https://..."
+    const patterns = [
+        /^-?\s*(audio|video|image):\s*(.+?)\s+\(([^)]+)\)\s+(r2:\/\/\S+|https?:\/\/\S+)/i,
+        /^-?\s*Attached\s+(audio|video):\s+(r2:\/\/\S+|https?:\/\/\S+)/i,
+    ];
 
-            const [, kind, label, size, rawSrc] = match;
-            return {
-                kind: kind.toLowerCase() as CaptureMediaItem["kind"],
-                label,
-                size,
-                src: mediaSrcFromStoredValue(rawSrc),
-            };
-        })
-        .filter((item): item is CaptureMediaItem => Boolean(item));
+    const lines = content.split("\n");
+    const items: CaptureMediaItem[] = [];
+
+    for (const line of lines) {
+        const trimmed = line.trim();
+
+        for (const pattern of patterns) {
+            const match = pattern.exec(trimmed);
+            if (match) {
+                const kind = match[1].toLowerCase();
+                const label = match[2]?.trim() || `${kind} recording`;
+                const size = match[3]?.trim() || "Unknown size";
+                const src = match[4]?.trim();
+
+                if (src) {
+                    items.push({
+                        kind: kind as CaptureMediaItem["kind"],
+                        label,
+                        size,
+                        src: mediaSrcFromStoredValue(src),
+                    });
+                    break;
+                }
+            }
+        }
+    }
+
+    return items;
 }
 
 function mediaSrcFromStoredValue(value: string) {
