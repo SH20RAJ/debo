@@ -1,5 +1,6 @@
 import { stackServerApp } from "@/stack/server";
 import { Hero } from "@/components/landing/Hero";
+import { Comparison } from "@/components/landing/Comparison";
 import { Problem } from "@/components/landing/Problem";
 import { Solution } from "@/components/landing/Solution";
 import { UseCases } from "@/components/landing/UseCases";
@@ -14,6 +15,7 @@ export default async function LandingPage() {
   return (
     <>
       <Hero isSignedIn={Boolean(user)} />
+      <Comparison />
       <Problem />
       <Solution />
       <UseCases />
