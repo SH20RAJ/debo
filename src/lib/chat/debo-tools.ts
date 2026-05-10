@@ -70,10 +70,18 @@ export function createDeboRuntimeTools(userId: string, options: CreateToolOption
       inputSchema: z.object({
         content: z.string().min(1).describe("The journal content."),
         title: z.string().optional().describe("An optional journal title."),
+        tags: z.array(z.string()).optional().describe("Tags for the journal entry."),
+        mediaUrl: z.string().optional().describe("Optional video/audio URL to attach (r2:// or https://)."),
       }),
-      execute: async (input: { content: string; title?: string }) => {
+      execute: async (input: { content: string; title?: string; tags?: string[]; mediaUrl?: string }) => {
         const { saveJournal } = await import("@/actions/journals");
-        return saveJournal(input.content, undefined, input.title, userId);
+        let finalContent = input.content;
+        if (input.mediaUrl) {
+          const mediaType = input.mediaUrl.match(/\.(webm|mp4|mp3|wav|ogg)$/i)?.[1] || "media";
+          const isVideo = ["webm", "mp4"].includes(mediaType);
+          finalContent += `\n\n---\nAttached ${isVideo ? "video" : "audio"}: ${input.mediaUrl}`;
+        }
+        return saveJournal(finalContent, undefined, input.title, userId, input.tags);
       },
     },
     deleteJournalTool: {
@@ -84,6 +92,35 @@ export function createDeboRuntimeTools(userId: string, options: CreateToolOption
       execute: async (input: { id: string }) => {
         const { deleteJournal } = await import("@/actions/journals");
         return deleteJournal(input.id, userId);
+      },
+    },
+    updateJournalTool: {
+      description: "Update an existing journal entry with new content, title, or tags.",
+      inputSchema: z.object({
+        id: z.string().describe("The journal ID to update."),
+        content: z.string().optional().describe("New journal content (merges with existing)."),
+        title: z.string().optional().describe("New title for the journal."),
+        tags: z.array(z.string()).optional().describe("New tags for the journal."),
+        mediaUrl: z.string().optional().describe("Optional video/audio URL to attach (r2:// or https://)."),
+        append: z.boolean().optional().default(false).describe("Append to existing content instead of replacing."),
+      }),
+      execute: async (input: { id: string; content?: string; title?: string; tags?: string[]; mediaUrl?: string; append?: boolean }) => {
+        const { getJournal, saveJournal } = await import("@/actions/journals");
+        const existing = await getJournal(input.id, userId);
+        if (!existing) throw new Error("Journal not found");
+
+        let finalContent = existing.content;
+        if (input.mediaUrl) {
+          const mediaType = input.mediaUrl.match(/\.(webm|mp4|mp3|wav|ogg)$/i)?.[1] || "media";
+          const isVideo = ["webm", "mp4"].includes(mediaType);
+          finalContent += `\n\n---\nAttached ${isVideo ? "video" : "audio"}: ${input.mediaUrl}`;
+        }
+
+        if (input.content) {
+          finalContent = input.append ? `${existing.content}\n\n${input.content}` : input.content;
+        }
+
+        return saveJournal(finalContent, input.id, input.title || existing.title || undefined, userId, input.tags ?? (existing.tags ?? undefined));
       },
     },
     getJournalsTool: {

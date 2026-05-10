@@ -62,9 +62,11 @@ Identity: Always identify as Debo AI when asked.
 
 Tools Available (use maximum MCP tools freely):
 - ask_debo: Full natural chat with memory awareness (same as /chat)
+- create_journal: Save new journal entries
+- update_journal: Update existing journal content or append notes
 - get_journals: Fetch recent journal entries
 - search_journals: Semantic search through journal history
-- create_journal: Save new journal entries
+- delete_journal: Remove journal entries
 - add_memory: Store persistent facts about the user
 - get_memories: Query stored memories and preferences
 - get_timeline: Build chronological life event timelines
@@ -72,7 +74,6 @@ Tools Available (use maximum MCP tools freely):
 - import_ai_context: Import ChatGPT/Claude/Cursor/Gemini exports
 - list_chat_threads: Browse existing Debo chat threads
 - get_chat_thread: Read a specific chat thread with messages
-- delete_journal: Remove journal entries
 
 Guidelines:
 - Use ask_debo for natural conversation with full memory context
@@ -80,6 +81,7 @@ Guidelines:
 - Proactively use add_memory when user shares important facts
 - Use search_journals/get_memories before claiming to remember something
 - Import external AI context with import_ai_context when user provides exports
+- Use update_journal to add follow-up notes or corrections to existing entries
 - Keep responses warm, concise, and action-oriented`
 
     const httpProbe = `curl -s ${JSON.stringify(mcpUrl)} \\
@@ -364,9 +366,10 @@ Guidelines:
                                 {[
                                     { name: "ask_debo", desc: "Natural chat with full memory context", icon: MessageSquareText },
                                     { name: "create_journal", desc: "Save new journal entries" },
+                                    { name: "update_journal", desc: "Update existing journal content" },
+                                    { name: "delete_journal", desc: "Remove journal entries" },
                                     { name: "get_journals", desc: "List recent journal entries" },
                                     { name: "search_journals", desc: "Semantic search through journals" },
-                                    { name: "delete_journal", desc: "Remove journal entries" },
                                     { name: "add_memory", desc: "Store persistent facts about user" },
                                     { name: "get_memories", desc: "Query stored memories & preferences" },
                                     { name: "get_timeline", desc: "Build chronological life timelines" },

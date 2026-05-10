@@ -12,6 +12,7 @@ graphify-out/
 .secrets/
 # testing
 /coverage
+.claude/
 
 # next.js
 /.next/
