@@ -169,3 +169,45 @@ export const memoryEntities = pgTable("memory_entity", {
     uniqueEntityIdx: uniqueIndex("memory_entity_unique_idx").on(table.userId, table.type, table.normalizedName),
 }));
 
+// Connectors - apps/services that connect to Debo MCP
+export const connectors = pgTable("connector", {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull().references(() => user.id),
+    name: text("name").notNull(),
+    connectorType: text("connector_type").notNull(), // 'slack', 'discord', 'notion', 'linear', 'gmail', 'calendar', 'custom'
+    apiKey: text("api_key"), // Encrypted connector-specific API key
+    webhookUrl: text("webhook_url"),
+    webhookSecret: text("webhook_secret"),
+    baseUrl: text("base_url"), // For custom connectors
+    isEnabled: boolean("is_enabled").default(true).notNull(),
+    lastSyncAt: timestamp("last_sync_at"),
+    syncStatus: text("sync_status").default("idle"), // 'idle', 'syncing', 'error', 'success'
+    metadata: text("metadata"), // JSON for connector-specific config
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+    userIdIdx: index("connector_user_id_idx").on(table.userId),
+    typeIdx: index("connector_type_idx").on(table.connectorType),
+}));
+
+// Connector events - incoming messages/events from connectors
+export const connectorEvents = pgTable("connector_event", {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull().references(() => user.id),
+    connectorId: text("connector_id").notNull().references(() => connectors.id),
+    eventType: text("event_type").notNull(), // 'message', 'mention', 'file', 'reaction', 'webhook'
+    content: text("content").notNull(),
+    sourceId: text("source_id"), // External ID (message ID, channel ID, etc.)
+    sourceUrl: text("source_url"), // Link to original message
+    authorName: text("author_name"),
+    channelName: text("channel_name"),
+    metadata: text("metadata"), // JSON for event-specific data
+    processedAt: timestamp("processed_at"),
+    journalId: text("journal_id").references(() => journals.id), // Linked journal if auto-created
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+    userIdIdx: index("connector_event_user_id_idx").on(table.userId),
+    connectorIdIdx: index("connector_event_connector_id_idx").on(table.connectorId),
+    createdAtIdx: index("connector_event_created_at_idx").on(table.createdAt),
+}));
+

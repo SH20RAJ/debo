@@ -286,6 +286,72 @@ export function createDeboRuntimeTools(userId: string, options: CreateToolOption
         });
       },
     },
+    // Connector tools - for integrating external apps with Debo
+    listConnectorsTool: {
+      description: "List all connected apps/services (Slack, Discord, Notion, etc.) that sync with Debo.",
+      inputSchema: z.object({}),
+      execute: async () => {
+        const { listConnectors } = await import("@/actions/connectors");
+        return listConnectors(userId);
+      },
+    },
+    addConnectorTool: {
+      description: "Connect a new app/service to Debo (Slack, Discord, Notion, Linear, Gmail, Calendar, GitHub, etc.).",
+      inputSchema: z.object({
+        name: z.string().min(1).describe("Display name for this connector."),
+        connectorType: z.enum(["slack", "discord", "notion", "linear", "gmail", "calendar", "github", "trello", "asana", "jira", "custom"]),
+        apiKey: z.string().optional().describe("API key for the service."),
+        webhookUrl: z.string().optional().describe("Webhook URL for receiving events."),
+        webhookSecret: z.string().optional().describe("Webhook secret for verification."),
+        baseUrl: z.string().optional().describe("Base URL for custom connectors."),
+      }),
+      execute: async (input: {
+        name: string;
+        connectorType: "slack" | "discord" | "notion" | "linear" | "gmail" | "calendar" | "github" | "trello" | "asana" | "jira" | "custom";
+        apiKey?: string;
+        webhookUrl?: string;
+        webhookSecret?: string;
+        baseUrl?: string;
+      }) => {
+        const { createConnector } = await import("@/actions/connectors");
+        return createConnector(userId, {
+          name: input.name,
+          connectorType: input.connectorType,
+          apiKey: input.apiKey,
+          webhookUrl: input.webhookUrl,
+          webhookSecret: input.webhookSecret,
+          baseUrl: input.baseUrl,
+        });
+      },
+    },
+    removeConnectorTool: {
+      description: "Disconnect an app/service from Debo.",
+      inputSchema: z.object({
+        connectorId: z.string().describe("The connector ID to remove."),
+      }),
+      execute: async (input: { connectorId: string }) => {
+        const { deleteConnector } = await import("@/actions/connectors");
+        return deleteConnector(userId, input.connectorId);
+      },
+    },
+    syncConnectorTool: {
+      description: "Trigger a manual sync of a connected app/service with Debo.",
+      inputSchema: z.object({
+        connectorId: z.string().describe("The connector ID to sync."),
+      }),
+      execute: async (input: { connectorId: string }) => {
+        const { syncConnector } = await import("@/actions/connectors");
+        return syncConnector(userId, input.connectorId);
+      },
+    },
+    getConnectorHealthTool: {
+      description: "Get the health status of all connected apps/services.",
+      inputSchema: z.object({}),
+      execute: async () => {
+        const { getConnectorHealth } = await import("@/actions/connectors");
+        return getConnectorHealth(userId);
+      },
+    },
   } satisfies Record<string, RuntimeTool>;
 
   if (!options.includeMcpTools) {
