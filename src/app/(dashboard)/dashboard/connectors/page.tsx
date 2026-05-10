@@ -49,13 +49,13 @@ const CONNECTOR_ICONS: Record<string, React.ComponentType<{ className?: string }
 };
 
 const CONNECTOR_TYPES = [
-  { value: "slack", label: "Slack", icon: Slack },
+  { value: "slack", label: "Slack", icon: MessageSquare },
   { value: "discord", label: "Discord", icon: MessageSquare },
   { value: "notion", label: "Notion", icon: Link2 },
   { value: "linear", label: "Linear", icon: Zap },
   { value: "gmail", label: "Gmail", icon: Mail },
   { value: "calendar", label: "Calendar", icon: Calendar },
-  { value: "github", label: "GitHub", icon: Github },
+  { value: "github", label: "GitHub", icon: Link2 },
   { value: "custom", label: "Custom Webhook", icon: Link2 },
 ];
 
