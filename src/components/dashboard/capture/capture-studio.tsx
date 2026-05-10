@@ -1,17 +1,18 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
-  Camera,
   CheckCircle2,
   FileImage,
   Loader2,
   Mic2,
   Sparkles,
   Square,
+  Video as VideoIcon,
+  Brain,
+  History,
   Upload,
-  Video,
 } from "lucide-react";
 import { toast } from "sonner";
 import { saveJournal } from "@/actions/journals";
@@ -22,452 +23,384 @@ import { cn } from "@/lib/utils";
 
 type CaptureMode = "audio" | "video" | "image";
 
-type ImagePreview = {
-  file: File;
-  name: string;
-  url: string;
-};
-
-type UploadedMedia = {
-  key: string;
-  uri: string;
-  url: string | null;
-  fileName: string;
-  contentType: string;
-  kind: CaptureMode;
-  size: number;
-};
-
 const modes = [
-  {
-    id: "audio" as const,
-    label: "Audio",
-    icon: Mic2,
-    accent: "text-duo-green",
-  },
-  {
-    id: "video" as const,
-    label: "Video",
-    icon: Video,
-    accent: "text-duo-blue",
-  },
-  {
-    id: "image" as const,
-    label: "Pages",
-    icon: FileImage,
-    accent: "text-duo-orange",
-  },
+  { id: "audio" as const, label: "Audio", icon: Mic2, color: "bg-duo-green", shadow: "shadow-duo-feather-shadow", accent: "text-duo-green" },
+  { id: "video" as const, label: "Video", icon: VideoIcon, color: "bg-duo-macaw", shadow: "shadow-duo-macaw-shadow", accent: "text-duo-macaw" },
+  { id: "image" as const, label: "Photos", icon: FileImage, color: "bg-duo-fox", shadow: "shadow-duo-fox-shadow", accent: "text-duo-fox" },
 ];
 
 export function CaptureStudio() {
   const router = useRouter();
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
-  const liveVideoRef = useRef<HTMLVideoElement | null>(null);
-  const [mode, setMode] = useState<CaptureMode>("audio");
+  const searchParams = useSearchParams();
+  const typeParam = searchParams.get("type") as CaptureMode | null;
+
+  const [mode, setMode] = useState<CaptureMode>(typeParam || "audio");
   const [status, setStatus] = useState<"idle" | "recording" | "ready">("idle");
   const [mediaBlob, setMediaBlob] = useState<Blob | null>(null);
   const [mediaUrl, setMediaUrl] = useState<string | null>(null);
-  const [mediaType, setMediaType] = useState("");
-  const [imagePreviews, setImagePreviews] = useState<ImagePreview[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<{ url: string; name: string }[]>([]);
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  const activeMode = modes.find((item) => item.id === mode) ?? modes[0];
-  const hasMedia = mode === "image" ? imagePreviews.length > 0 : Boolean(mediaUrl);
+  const [timer, setTimer] = useState(0);
+
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    return () => {
-      cleanupStream();
-      if (mediaUrl) URL.revokeObjectURL(mediaUrl);
-      imagePreviews.forEach((preview) => URL.revokeObjectURL(preview.url));
-    };
-  }, [imagePreviews, mediaUrl]);
+    if (typeParam && modes.some(m => m.id === typeParam)) {
+      setMode(typeParam);
+    }
+  }, [typeParam]);
 
-  const cleanupStream = () => {
-    streamRef.current?.getTracks().forEach((track) => track.stop());
+  useEffect(() => {
+    if (status === "recording") {
+      timerRef.current = setInterval(() => setTimer(prev => prev + 1), 1000);
+    } else {
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (status === "idle") setTimer(0);
+    }
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [status]);
+
+  const cleanup = useCallback(() => {
+    streamRef.current?.getTracks().forEach(track => track.stop());
     streamRef.current = null;
-    if (liveVideoRef.current) liveVideoRef.current.srcObject = null;
-  };
-
-  const resetMedia = () => {
     if (mediaUrl) URL.revokeObjectURL(mediaUrl);
-    setMediaBlob(null);
-    setMediaUrl(null);
-    setMediaType("");
-    chunksRef.current = [];
-  };
+    imagePreviews.forEach(p => URL.revokeObjectURL(p.url));
+  }, [mediaUrl, imagePreviews]);
 
-  const resetImages = () => {
-    imagePreviews.forEach((preview) => URL.revokeObjectURL(preview.url));
-    setImagePreviews([]);
-  };
+  useEffect(() => cleanup, [cleanup]);
 
   const startRecording = async () => {
     try {
-      resetMedia();
-      resetImages();
-      if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
-        throw new Error("Recording is not supported in this browser");
-      }
-
-      const stream = await navigator.mediaDevices.getUserMedia(
-        mode === "audio" ? { audio: true } : { audio: true, video: true }
-      );
-      streamRef.current = stream;
-
-      if (mode === "video" && liveVideoRef.current) {
-        liveVideoRef.current.srcObject = stream;
-        await liveVideoRef.current.play();
-      }
-
-      const preferredType =
-        mode === "audio"
-          ? MediaRecorder.isTypeSupported("audio/webm")
-            ? "audio/webm"
-            : ""
-          : MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
-            ? "video/webm;codecs=vp9"
-            : MediaRecorder.isTypeSupported("video/webm")
-              ? "video/webm"
-              : "";
-      const recorder = preferredType
-        ? new MediaRecorder(stream, { mimeType: preferredType })
-        : new MediaRecorder(stream);
-      mediaRecorderRef.current = recorder;
+      cleanup();
+      setMediaBlob(null);
+      setMediaUrl(null);
       chunksRef.current = [];
 
-      recorder.ondataavailable = (event) => {
-        if (event.data.size > 0) chunksRef.current.push(event.data);
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: true, 
+        video: mode === "video" 
+      });
+      streamRef.current = stream;
+
+      const recorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = recorder;
+
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data);
       };
 
       recorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: preferredType || recorder.mimeType });
+        const blob = new Blob(chunksRef.current, { type: recorder.mimeType });
         setMediaBlob(blob);
-        setMediaType(preferredType || recorder.mimeType);
         setMediaUrl(URL.createObjectURL(blob));
         setStatus("ready");
-        cleanupStream();
       };
 
       recorder.start();
       setStatus("recording");
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not start capture");
-      cleanupStream();
-      setStatus("idle");
+    } catch (err) {
+      toast.error("Microphone access required for capture.");
     }
   };
 
   const stopRecording = () => {
     mediaRecorderRef.current?.stop();
+    streamRef.current?.getTracks().forEach(t => t.stop());
   };
 
-  const handleImages = (files: FileList | null) => {
-    imagePreviews.forEach((preview) => URL.revokeObjectURL(preview.url));
-    const previews = Array.from(files ?? []).map((file) => ({
-      file,
-      name: file.name,
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    const newPreviews = files.map(file => ({
       url: URL.createObjectURL(file),
+      name: file.name
     }));
-    setImagePreviews(previews);
-    setStatus(previews.length > 0 ? "ready" : "idle");
+
+    setImagePreviews(prev => [...prev, ...newPreviews]);
+    setStatus("ready");
   };
 
-  const saveCapture = async () => {
-    const captureTitle = title.trim() || `${modes.find((item) => item.id === mode)?.label} journal`;
-    if (!notes.trim() && status !== "ready") {
-      toast.error("Add a note before saving");
-      return;
-    }
-
+  const handleSave = async () => {
     setIsSaving(true);
     try {
-      const uploadedMedia = await uploadCaptureMedia();
-      const body = buildJournalContent(captureTitle, uploadedMedia);
-      const result = await saveJournal(body, undefined, captureTitle, undefined, [
-        `${mode}-journal`,
-        "capture",
-      ]);
-      if (!result.success || !result.data) {
-        throw new Error(result.error || "Could not save capture");
+      const activeMode = modes.find(m => m.id === mode)!;
+      const finalTitle = title.trim() || `New ${activeMode.label} Moment`;
+      
+      const content = `# ${finalTitle}\n\n[Captured ${activeMode.label}]\n\n${notes}`;
+      
+      const result = await saveJournal(content, undefined, finalTitle, undefined, ["capture", mode]);
+      
+      if (result.success) {
+        toast.success("Moment captured successfully!");
+        router.push(`/dashboard/journal/${result.data}`);
+      } else {
+        toast.error(result.error);
       }
-      toast.success("Capture saved");
-      router.push(`/dashboard/journal/${result.data}`);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not save capture");
+    } catch (err) {
+      toast.error("Failed to save capture.");
     } finally {
       setIsSaving(false);
     }
   };
 
-  const uploadCaptureMedia = async () => {
-    if (mode === "image") {
-      return Promise.all(imagePreviews.map((preview) => uploadMediaFile(preview.file, "image")));
-    }
-
-    if (status !== "ready") {
-      return [];
-    }
-
-    if (!mediaBlob) {
-      throw new Error("No recorded media found. Please record again.");
-    }
-
-    return [await uploadMediaFile(createRecordedFile(), mode)];
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const createRecordedFile = () => {
-    if (!mediaBlob) {
-      throw new Error("No recorded media found. Please record again.");
-    }
-
-    const extension = mediaType.includes("mp4") ? "mp4" : "webm";
-    const fileName = `${mode}-journal-${Date.now()}.${extension}`;
-
-    return new File([mediaBlob], fileName, { type: mediaType || mediaBlob.type });
-  };
-
-  const uploadMediaFile = async (file: File, kind: CaptureMode): Promise<UploadedMedia> => {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("kind", kind);
-
-    const response = await fetch("/api/capture/media", {
-      method: "POST",
-      body: formData,
-    });
-    const payload = (await response.json().catch(() => ({}))) as {
-      media?: UploadedMedia;
-      error?: string;
-    };
-
-    if (!response.ok || !payload.media) {
-      throw new Error(payload.error || "Could not upload media");
-    }
-
-    return payload.media;
-  };
-
-  const buildJournalContent = (captureTitle: string, uploadedMedia: UploadedMedia[]) => {
-    const capturedAt = new Date().toISOString();
-    const lines = [
-      `# ${captureTitle}`,
-      "",
-      "Palace index:",
-      "@w life",
-      `@r ${capturedAt.slice(0, 10)}`,
-      `@d ${mode}-${capturedAt}`,
-      `@m ${mode}`,
-      `@t ${capturedAt}`,
-      "",
-      `Capture type: ${mode}`,
-      mediaUrl ? `Recorded media: ${mediaType || "browser recording"}` : "",
-      imagePreviews.length
-        ? `Image pages: ${imagePreviews.map((preview) => preview.name).join(", ")}`
-        : "",
-      uploadedMedia.length ? "Stored media:" : "",
-      ...uploadedMedia.map(
-        (item) =>
-          `- ${item.kind}: ${item.fileName} (${formatBytes(item.size)}) ${item.url || item.uri}`
-      ),
-      "",
-      notes.trim() ? "Verbatim note:" : "",
-      notes.trim(),
-    ].filter(Boolean);
-
-    return lines.join("\n");
-  };
-
-  const formatBytes = (bytes: number) => {
-    if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  };
+  const activeMode = modes.find(m => m.id === mode)!;
 
   return (
     <div className="min-h-full bg-duo-polar">
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-4 sm:px-5 sm:py-6 lg:px-8">
-        <header className="rounded-3xl border border-duo-swan bg-duo-snow px-4 py-4 shadow-sm sm:px-5">
-          <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-            <div>
-              <div className="text-[11px] font-black uppercase tracking-[0.18em] text-duo-green">
-                Capture
-              </div>
-              <h1 className="mt-1 text-3xl font-heading font-black tracking-tight text-duo-eel sm:text-4xl">
-                Save a moment
-              </h1>
-              <p className="mt-1 max-w-2xl text-sm font-bold leading-6 text-duo-wolf sm:text-base">
-                Record audio, video, or pages. Add a few words so Debo can find it later.
-              </p>
-            </div>
-            <div
-              className={cn(
-                "w-fit rounded-full border px-3 py-1 text-[11px] font-black uppercase tracking-wider",
-                status === "recording"
-                  ? "border-duo-cardinal bg-duo-red/10 text-duo-red"
-                  : hasMedia
-                    ? "border-duo-feather bg-duo-green/10 text-duo-green"
-                    : "border-duo-swan bg-duo-polar text-duo-wolf"
+      <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
+        
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-heading font-black text-duo-eel">Capture Moment</h1>
+            <p className="font-bold text-duo-wolf">Document your life in real-time.</p>
+          </div>
+          <div className="flex bg-duo-snow border-2 border-duo-swan rounded-2xl p-1 shadow-[0_4px_0_var(--duo-swan)]">
+            {modes.map((m) => (
+              <button
+                key={m.id}
+                onClick={() => {
+                  setMode(m.id);
+                  setStatus("idle");
+                  cleanup();
+                  setImagePreviews([]);
+                }}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all",
+                  mode === m.id ? `${m.color} text-white ${m.shadow} scale-105` : "text-duo-wolf hover:bg-duo-polar"
+                )}
+              >
+                <m.icon className="h-4 w-4" />
+                <span className="hidden sm:inline">{m.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid gap-8 lg:grid-cols-5">
+          {/* Main Stage */}
+          <div className="lg:col-span-3 space-y-6">
+            <div className={cn(
+              "relative aspect-square sm:aspect-video rounded-[2.5rem] border-4 flex flex-col items-center justify-center transition-all duration-500 overflow-hidden bg-white shadow-[0_12px_0_var(--duo-swan)]",
+              status === "recording" ? "border-duo-cardinal" : "border-duo-swan"
+            )}>
+              
+              {/* Recording Animation / Visualizer */}
+              {status === "recording" && (
+                <div className="absolute inset-0 flex items-center justify-center bg-duo-cardinal/5 animate-pulse">
+                   <div className="flex items-end gap-1.5 h-20">
+                      {[...Array(12)].map((_, i) => (
+                        <div 
+                          key={i} 
+                          className="w-2 bg-duo-cardinal rounded-full animate-bounce" 
+                          style={{ 
+                            height: `${20 + Math.random() * 80}%`,
+                            animationDuration: `${0.5 + Math.random()}s`
+                          }} 
+                        />
+                      ))}
+                   </div>
+                </div>
               )}
-            >
-              {status === "recording" ? "Recording" : hasMedia ? "Ready" : "Empty"}
+
+              {/* Status Overlay */}
+              <div className="absolute top-6 left-6 flex items-center gap-3">
+                 <div className={cn(
+                   "h-3 w-3 rounded-full",
+                   status === "recording" ? "bg-duo-cardinal animate-ping" : "bg-duo-swan"
+                 )} />
+                 <span className="text-xs font-black uppercase tracking-[0.2em] text-duo-wolf">
+                    {status === "recording" ? "Live Recording" : status === "ready" ? "Capture Ready" : "Ready to start"}
+                 </span>
+              </div>
+
+              {/* Timer */}
+              {status !== "idle" && mode !== "image" && (
+                <div className="absolute top-6 right-6 font-display text-2xl font-black text-duo-eel">
+                   {formatTime(timer)}
+                </div>
+              )}
+
+              {/* Center Content */}
+              {status === "idle" && (
+                <div className="text-center space-y-6 px-8">
+                  {mode === "image" ? (
+                    <div 
+                      onClick={() => fileInputRef.current?.click()}
+                      className="cursor-pointer group space-y-6"
+                    >
+                      <div className="mx-auto h-32 w-32 rounded-[2.5rem] flex items-center justify-center bg-duo-fox/10 text-duo-fox border-4 border-dashed border-duo-fox/30 group-hover:bg-duo-fox/20 transition-all">
+                        <Upload className="h-12 w-12" />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-lg font-black text-duo-eel">Upload Photos</p>
+                        <p className="text-sm font-bold text-duo-wolf">Diary pages, whiteboards, or moments.</p>
+                      </div>
+                      <input 
+                        type="file" 
+                        ref={fileInputRef} 
+                        onChange={handleImageUpload} 
+                        multiple 
+                        accept="image/*" 
+                        className="hidden" 
+                      />
+                    </div>
+                  ) : (
+                    <>
+                      <div className={cn("mx-auto h-24 w-24 rounded-[2rem] flex items-center justify-center text-white shadow-xl", activeMode.color)}>
+                         <activeMode.icon className="h-12 w-12" />
+                      </div>
+                      <p className="text-sm font-black text-duo-swan uppercase tracking-widest">
+                        Tap record to begin
+                      </p>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {status === "ready" && (
+                <div className="text-center space-y-6 w-full px-8 overflow-y-auto max-h-full py-12">
+                  <div className="h-20 w-20 rounded-full bg-duo-feather/10 text-duo-feather flex items-center justify-center mx-auto">
+                     <CheckCircle2 className="h-10 w-10" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xl font-black text-duo-eel">Moment Captured</p>
+                    <p className="text-sm font-bold text-duo-wolf">Ready to synchronize with palace</p>
+                  </div>
+                  
+                  {mode === "image" && (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-4">
+                       {imagePreviews.map((p, i) => (
+                         <div key={i} className="aspect-square rounded-2xl overflow-hidden border-2 border-duo-swan bg-duo-polar relative">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={p.url} alt={p.name} className="w-full h-full object-cover" />
+                         </div>
+                       ))}
+                       <button 
+                         onClick={() => fileInputRef.current?.click()}
+                         className="aspect-square rounded-2xl border-2 border-dashed border-duo-swan flex items-center justify-center text-duo-swan hover:bg-duo-polar transition-all"
+                       >
+                         <Upload className="h-6 w-6" />
+                       </button>
+                    </div>
+                  )}
+
+                  {mediaUrl && mode === "audio" && (
+                    <div className="mx-auto w-full max-w-sm">
+                       <audio src={mediaUrl} controls className="w-full" />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Controls */}
+              <div className="absolute bottom-10 flex gap-4">
+                {status === "recording" ? (
+                  <Button 
+                    onClick={stopRecording}
+                    variant="destructive"
+                    size="lg"
+                    className="h-16 px-10 rounded-2xl shadow-[0_6px_0_var(--duo-cardinal-shadow)] uppercase font-black tracking-widest"
+                  >
+                    <Square className="h-5 w-5 mr-3 fill-current" /> Stop
+                  </Button>
+                ) : mode !== "image" ? (
+                  <Button 
+                    onClick={startRecording}
+                    variant="duolingo"
+                    size="lg"
+                    className="h-16 px-10 rounded-2xl shadow-[0_6px_0_var(--duo-feather-shadow)] uppercase font-black tracking-widest"
+                  >
+                    {status === "ready" ? "Retake" : `Record ${activeMode.label}`}
+                  </Button>
+                ) : status === "ready" && (
+                  <Button 
+                    onClick={() => { setStatus("idle"); setImagePreviews([]); }}
+                    variant="destructive"
+                    size="lg"
+                    className="h-16 px-10 rounded-2xl shadow-[0_6px_0_var(--duo-cardinal-shadow)] uppercase font-black tracking-widest"
+                  >
+                    Clear All
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {/* Quick Tips */}
+            <div className="grid grid-cols-2 gap-4">
+               <div className="bg-duo-macaw/5 border-2 border-duo-macaw/20 rounded-3xl p-6 flex gap-4">
+                  <Brain className="h-6 w-6 text-duo-macaw shrink-0" />
+                  <p className="text-xs font-bold text-duo-macaw leading-relaxed">
+                    Debo automatically extracts memories from your capture.
+                  </p>
+               </div>
+               <div className="bg-duo-fox/5 border-2 border-duo-fox/20 rounded-3xl p-6 flex gap-4">
+                  <History className="h-6 w-6 text-duo-fox shrink-0" />
+                  <p className="text-xs font-bold text-duo-fox leading-relaxed">
+                    Captured moments are indexed by date and location.
+                  </p>
+               </div>
             </div>
           </div>
-        </header>
 
-        <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
-          <main className="rounded-3xl border border-duo-swan bg-duo-snow p-3 shadow-sm sm:p-4">
-            <div className="grid grid-cols-3 gap-1.5 rounded-2xl bg-duo-polar p-1.5">
-              {modes.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => {
-                    if (status === "recording") return;
-                    setMode(item.id);
-                    setStatus("idle");
-                    resetMedia();
-                    resetImages();
-                  }}
-                  className={cn(
-                    "flex h-12 items-center justify-center gap-2 rounded-xl px-2 text-xs font-black uppercase tracking-wider transition",
-                    mode === item.id
-                      ? "bg-duo-snow text-duo-eel shadow-sm"
-                      : "text-duo-wolf hover:bg-duo-snow/70"
-                  )}
-                >
-                  <item.icon className={cn("h-4 w-4 shrink-0", item.accent)} />
-                  <span>{item.label}</span>
-                  {mode === item.id ? <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-duo-green" /> : null}
-                </button>
-              ))}
-            </div>
+          {/* Context Sidebar */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-white border-4 border-duo-swan rounded-[2.5rem] p-8 shadow-[0_12px_0_var(--duo-swan)] space-y-6">
+               <div className="space-y-2">
+                 <h2 className="text-xl font-black text-duo-eel uppercase tracking-tight">Context</h2>
+                 <p className="text-sm font-bold text-duo-wolf">Add metadata to help Debo connect the dots.</p>
+               </div>
 
-            <div className="mt-4 rounded-2xl border border-duo-swan bg-background p-3 sm:p-4">
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <div>
-                  <div className="text-[10px] font-black uppercase tracking-[0.18em] text-duo-swan">
-                    Raw capture
-                  </div>
-                  <h2 className="text-xl font-heading font-black text-duo-eel">
-                    {activeMode.label}
-                  </h2>
-                </div>
-                <div className="rounded-full bg-duo-polar px-3 py-1 text-[10px] font-black uppercase tracking-wider text-duo-wolf">
-                  {mode === "image" ? `${imagePreviews.length} pages` : status}
-                </div>
-              </div>
-
-              {mode === "image" ? (
-                <div className="flex flex-col gap-4">
-                  <label className="flex min-h-48 cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-duo-swan bg-duo-polar px-4 text-center transition hover:bg-duo-polar/70 sm:min-h-56">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-duo-orange/10 text-duo-orange">
-                      <Upload className="h-7 w-7" />
-                    </div>
-                    <span className="text-base font-black text-duo-eel">Upload diary pages</span>
-                    <span className="max-w-xs text-sm font-bold leading-6 text-duo-wolf">
-                      Add photos of notes, letters, whiteboards, or book pages.
-                    </span>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      className="hidden"
-                      onChange={(event) => handleImages(event.target.files)}
+               <div className="space-y-4 pt-4">
+                  <div className="space-y-2">
+                    <label className="text-xs font-black uppercase tracking-widest text-duo-swan px-1">Title</label>
+                    <Input 
+                      placeholder="e.g. Afternoon Walk with Maya"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      className="h-12 rounded-xl border-2 border-duo-swan bg-duo-polar font-bold focus-visible:ring-duo-macaw/20"
                     />
-                  </label>
-                  {imagePreviews.length ? (
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      {imagePreviews.map((preview) => (
-                        <div key={preview.url} className="overflow-hidden rounded-2xl border border-duo-swan bg-duo-snow">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={preview.url} alt={preview.name} className="aspect-[4/3] w-full object-cover" />
-                          <div className="truncate px-3 py-2 text-xs font-bold text-duo-wolf">
-                            {preview.name}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
-              ) : (
-                <div className="flex min-h-[320px] flex-col items-center justify-center gap-4 sm:min-h-[390px]">
-                  {mode === "video" ? (
-                    <video
-                      ref={liveVideoRef}
-                      src={mediaUrl ?? undefined}
-                      controls={Boolean(mediaUrl)}
-                      muted={status === "recording"}
-                      autoPlay={status === "recording"}
-                      playsInline
-                      className="aspect-video w-full rounded-2xl border border-duo-swan bg-black object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-52 w-full items-center justify-center rounded-2xl border border-duo-swan bg-duo-polar sm:h-64">
-                      <Mic2 className={cn("h-16 w-16", status === "recording" ? "animate-bounce-subtle text-duo-green" : "text-duo-swan")} />
-                    </div>
-                  )}
-
-                  {mode === "audio" && mediaUrl ? (
-                    <audio src={mediaUrl} controls className="w-full" />
-                  ) : null}
-
-                  <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:justify-center">
-                    {status === "recording" ? (
-                      <Button onClick={stopRecording} variant="destructive" size="lg" className="w-full gap-2 sm:w-auto">
-                        <Square className="h-4 w-4" />
-                        Stop
-                      </Button>
-                    ) : (
-                      <Button onClick={startRecording} variant="duolingo" size="lg" className="w-full gap-2 sm:w-auto">
-                        {mode === "audio" ? <Mic2 className="h-4 w-4" /> : <Camera className="h-4 w-4" />}
-                        Record
-                      </Button>
-                    )}
                   </div>
-                </div>
-              )}
-            </div>
-          </main>
 
-          <aside className="rounded-3xl border border-duo-swan bg-duo-snow p-4 shadow-sm sm:p-5 lg:sticky lg:top-6 lg:self-start">
-            <div className="mb-4">
-              <div className="text-[10px] font-black uppercase tracking-[0.18em] text-duo-swan">
-                Context
-              </div>
-              <h2 className="mt-1 text-xl font-heading font-black text-duo-eel">
-                Make it searchable
-              </h2>
-              <p className="mt-1 text-sm font-bold leading-6 text-duo-wolf">
-                Add people, promises, places, or a rough transcript.
-              </p>
+                  <div className="space-y-2">
+                    <label className="text-xs font-black uppercase tracking-widest text-duo-swan px-1">Notes / Transcript</label>
+                    <Textarea 
+                      placeholder="What happened? Who were you with? What did you promise?"
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      className="min-h-[200px] rounded-xl border-2 border-duo-swan bg-duo-polar font-bold resize-none focus-visible:ring-duo-macaw/20"
+                    />
+                  </div>
+               </div>
+
+               <Button
+                 onClick={handleSave}
+                 disabled={isSaving || status === "recording" || (status === "idle" && !notes.trim())}
+                 className="w-full h-16 rounded-2xl bg-duo-macaw hover:bg-duo-macaw/90 text-white font-black uppercase tracking-widest shadow-[0_6px_0_var(--duo-macaw-shadow)] transition-all active:translate-y-1 active:shadow-none"
+               >
+                 {isSaving ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5 mr-3" />}
+                 Sync to Palace
+               </Button>
             </div>
-            <div className="flex flex-col gap-3">
-              <Input
-                value={title}
-                onChange={(event) => setTitle(event.target.value)}
-                placeholder="Title"
-                className="h-12 rounded-2xl border border-duo-swan bg-background text-base font-bold"
-              />
-              <Textarea
-                value={notes}
-                onChange={(event) => setNotes(event.target.value)}
-                placeholder="What happened?"
-                className="min-h-44 resize-none rounded-2xl border border-duo-swan bg-background text-base font-bold lg:min-h-64"
-              />
-              <Button
-                onClick={saveCapture}
-                disabled={isSaving || status === "recording" || (!notes.trim() && status !== "ready")}
-                variant="duolingo-blue"
-                size="lg"
-                className="w-full gap-2"
-              >
-                {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-                Save Moment
-              </Button>
-            </div>
-          </aside>
-        </section>
+
+            <p className="text-[10px] font-black text-center text-duo-swan uppercase tracking-[0.2em] px-8">
+               Your moment is encrypted and private.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

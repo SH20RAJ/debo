@@ -49,7 +49,7 @@ export default function PitchPage() {
                 {/* Visual Representation of Debo */}
                 <div className="absolute inset-0 bg-duo-feather/5 rounded-full animate-pulse scale-110" />
                 <div className="absolute inset-0 bg-duo-feather/10 rounded-full animate-pulse delay-75" />
-                <div className="relative h-64 w-64 lg:h-80 lg:w-80 rounded-[3.5rem] bg-white border-4 border-duo-feather shadow-[0_12px_0_var(--duo-feather-shadow)] flex items-center justify-center">
+                <div className="relative h-64 w-64 lg:h-80 lg:w-80 rounded-[3.5rem] bg-duo-snow border-4 border-duo-feather shadow-[0_12px_0_var(--duo-feather-shadow)] flex items-center justify-center">
                    <Image src="/mascot.png" alt="Duo" width={200} height={200} className="object-contain" />
                 </div>
                 
@@ -85,7 +85,7 @@ export default function PitchPage() {
                { icon: Zap, label: "Fragmented Data", color: "text-duo-fox" },
                { icon: Database, label: "Lost Insights", color: "text-duo-beetle" }
              ].map((item, i) => (
-               <div key={i} className="rounded-3xl border-2 border-duo-swan bg-white p-8 shadow-[0_4px_0_var(--duo-swan)]">
+               <div key={i} className="rounded-3xl border-2 border-duo-swan bg-duo-snow p-8 shadow-[0_4px_0_var(--duo-swan)]">
                   <item.icon className={`h-10 w-10 mx-auto mb-4 ${item.color}`} />
                   <span className="font-black uppercase tracking-wider text-sm">{item.label}</span>
                </div>
@@ -181,7 +181,7 @@ export default function PitchPage() {
                      <Pillar icon={ShieldCheck} title="Worldly" text="Broad perspectives that connect your personal growth to the wider world." />
                   </div>
                </div>
-               <div className="rounded-[3rem] border-4 border-duo-swan bg-white p-12 shadow-[0_12px_0_var(--duo-swan)] flex flex-col justify-between">
+               <div className="rounded-[3rem] border-4 border-duo-swan bg-duo-snow p-12 shadow-[0_12px_0_var(--duo-swan)] flex flex-col justify-between">
                   <div className="space-y-6">
                      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-duo-macaw/10 text-duo-macaw">
                         <ShieldCheck className="h-8 w-8" />
@@ -200,7 +200,7 @@ export default function PitchPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t-2 border-duo-swan bg-white px-6 py-16">
+      <footer className="border-t-2 border-duo-swan bg-duo-snow px-6 py-16">
         <div className="mx-auto max-w-7xl flex flex-col items-center gap-8">
            <div className="flex items-center gap-3">
               <span className="flex h-8 w-8 items-center justify-center rounded-xl border-2 border-duo-feather-shadow bg-duo-feather text-sm font-black text-white shadow-[0_3px_0_var(--duo-feather-shadow)]">
@@ -231,7 +231,7 @@ interface FeatureCardProps {
 
 function FeatureCard({ icon: Icon, title, description, color }: FeatureCardProps) {
   return (
-    <div className="rounded-[2.5rem] border-2 border-duo-swan bg-white p-8 transition-all hover:-translate-y-2 shadow-[0_8px_0_var(--duo-swan)]">
+    <div className="rounded-[2.5rem] border-2 border-duo-swan bg-duo-snow p-8 transition-all hover:-translate-y-2 shadow-[0_8px_0_var(--duo-swan)]">
        <div className={`mb-6 flex h-14 w-14 items-center justify-center rounded-2xl ${color} text-white shadow-[0_4px_0_rgba(0,0,0,0.1)]`}>
           <Icon className="h-7 w-7" />
        </div>
