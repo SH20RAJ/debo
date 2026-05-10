@@ -1,4 +1,4 @@
-import "server-only";
+// Removed server-only for worker compatibility
 
 import {
   convertToModelMessages,

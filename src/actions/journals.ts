@@ -170,6 +170,37 @@ export async function deleteJournal(id: string, userId?: string) {
     }
 }
 
+export const getRelatedJournals = cache(async (journalId: string, userId?: string, limit: number = 3) => {
+    const resolvedUserId = await resolveUserId(userId, true);
+    if (!resolvedUserId) return [];
+
+    try {
+        const journal = await db.query.journals.findFirst({
+            where: and(eq(journals.id, journalId), eq(journals.userId, resolvedUserId)),
+        });
+        if (!journal) return [];
+
+        const { searchJournals } = await import("@/lib/vector/search");
+        // Use journal content and title to find similar ones
+        const query = journal.title ? `${journal.title}\n${journal.content}` : journal.content;
+        const semanticResults = await searchJournals(query, resolvedUserId, limit + 1);
+        
+        const filteredIds = semanticResults
+            .map(r => r.journalId)
+            .filter((id): id is string => !!id && id !== journalId)
+            .slice(0, limit);
+
+        if (filteredIds.length === 0) return [];
+
+        return await db.query.journals.findMany({
+            where: and(eq(journals.userId, resolvedUserId), inArray(journals.id, filteredIds)),
+        });
+    } catch (error) {
+        logDatabaseIssue("related journals", error);
+        return [];
+    }
+});
+
 async function runJournalPostProcessing(userId: string, journalId: string) {
     try {
         const savedJournal = await db.query.journals.findFirst({

@@ -5,6 +5,7 @@ import { saveJournal } from "@/actions/journals";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { RelatedJournals } from "@/components/dashboard/journal/related-journals";
 import { ArrowLeft, Loader2, Check, ChevronLeft, ChevronRight, Plus, Video, Mic2, Image as ImageIcon, X } from "lucide-react";
 import dynamic from "next/dynamic";
 import { MediaBlock, extractMediaFromContent, mediaSrcFromR2, type MediaKind } from "./media-block";
@@ -30,12 +31,14 @@ export function JournalEditor({
     initialContent = "",
     initialId = "",
     initialTitle = "",
-    initialTags = []
+    initialTags = [],
+    relatedJournals = []
 }: {
     initialContent?: string,
     initialId?: string,
     initialTitle?: string,
-    initialTags?: string[]
+    initialTags?: string[],
+    relatedJournals?: any[]
 }) {
     const [content, setContent] = useState(initialContent);
     const [title, setTitle] = useState(initialTitle);
@@ -362,6 +365,10 @@ export function JournalEditor({
                     <p className="text-xs font-bold text-duo-swan/60 text-center">
                         Media lines (video:, audio:, - video:) are automatically extracted and shown above. Remove the line text to detach from preview.
                     </p>
+
+                    {relatedJournals && relatedJournals.length > 0 && (
+                        <RelatedJournals journals={relatedJournals} />
+                    )}
                 </div>
             </main>
         </div>

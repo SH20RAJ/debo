@@ -1,275 +1,230 @@
-"use client";
+'use client';
 
-import { useCallback, useEffect, useState } from "react";
-import {
-  LiveKitRoom,
+import React, { useEffect, useState, useRef } from 'react';
+import { 
+  LiveKitRoom, 
+  BarVisualizer,
   RoomAudioRenderer,
-  useLocalParticipant,
   useVoiceAssistant,
-} from "@livekit/components-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { Loader2, Mic, MicOff, PhoneOff, Radio, Bot, Settings, Home } from "lucide-react";
-import Link from "next/link";
-import Image from "next/image";
+  useLocalParticipant,
+} from '@livekit/components-react';
+import { 
+  Mic, 
+  MicOff, 
+  PhoneOff, 
+  Sparkles, 
+  Loader2,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useStackApp } from '@stackframe/stack';
 
-type VoiceSession = {
-  token: string;
-  serverUrl: string;
-  roomName: string;
-};
+// --- Components ---
 
-type VoiceTokenResponse = Partial<VoiceSession> & {
-  error?: string;
-};
-
-export default function TalkPage() {
-  const [session, setSession] = useState<VoiceSession | null>(null);
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const startSession = useCallback(async () => {
-    setIsConnecting(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/livekit/token", { cache: "no-store" });
-      const data = (await res.json()) as VoiceTokenResponse;
-
-      if (!res.ok || !data.token || !data.serverUrl || !data.roomName) {
-        throw new Error(data.error || "Failed to connect");
-      }
-
-      setSession({
-        token: data.token,
-        serverUrl: data.serverUrl,
-        roomName: data.roomName,
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Connection failed");
-    } finally {
-      setIsConnecting(false);
-    }
-  }, []);
-
-  const endSession = useCallback(() => {
-    setSession(null);
-  }, []);
-
+/**
+ * Pulse indicator for thinking/processing state
+ */
+const AgentChatIndicator = ({ state }: { state: string }) => {
+  if (state !== 'thinking' && state !== 'speaking') return null;
+  
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#071112] via-[#0a1014] to-[#071112] text-white">
-      {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-[#091416]/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link href="/dashboard" className="flex items-center gap-3">
-            <span className="relative h-10 w-10 rounded-lg border border-white/10 bg-white/5 p-1.5 shadow-sm">
-              <Image src="/mascot.png" alt="Debo" fill className="object-contain p-1" />
-            </span>
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.28em] text-emerald-300">Debo</p>
-              <p className="text-sm font-extrabold text-white/85">Voice Chat</p>
-            </div>
-          </Link>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/chat"
-              className="flex h-9 w-9 items-center justify-center rounded-md border border-white/10 bg-white/[0.04] text-white/70 transition hover:border-emerald-300/40 hover:text-emerald-200"
-              aria-label="Text chat"
-            >
-              <Home className="h-4 w-4" />
-            </Link>
-            <Link
-              href="/dashboard"
-              className="flex h-9 w-9 items-center justify-center rounded-md border border-white/10 bg-white/[0.04] text-white/70 transition hover:border-emerald-300/40 hover:text-emerald-200"
-              aria-label="Dashboard"
-            >
-              <Settings className="h-4 w-4" />
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="flex min-h-[calc(100vh-64px)] flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
-        {!session ? (
-          <div className="flex flex-col items-center gap-8 text-center">
-            {/* Avatar */}
-            <div className="relative">
-              <div className="flex h-40 w-40 items-center justify-center rounded-full border-2 border-dashed border-emerald-300/30 bg-emerald-300/5">
-                <Bot className="h-20 w-20 text-emerald-300/50" />
-              </div>
-              {/* Pulsing rings */}
-              <div className="absolute inset-0 flex animate-pulse items-center justify-center rounded-full">
-                <div className="h-44 w-44 rounded-full border border-emerald-300/20" />
-              </div>
-              <div className="absolute inset-0 flex items-center justify-center rounded-full">
-                <div className="h-48 w-48 rounded-full border border-emerald-300/10" />
-              </div>
-            </div>
-
-            {/* Text */}
-            <div className="max-w-md space-y-3">
-              <h1 className="text-3xl font-black tracking-tight sm:text-4xl">Talk with Debo</h1>
-              <p className="text-white/50">
-                Voice chat powered by LiveKit. Speak naturally and Debo will listen, think, and respond with memory awareness.
-              </p>
-            </div>
-
-            {/* Error */}
-            {error && (
-              <div className="rounded-xl border border-rose-300/30 bg-rose-300/10 px-4 py-3 text-sm text-rose-200">
-                {error}
-              </div>
-            )}
-
-            {/* Start Button */}
-            <Button
-              onClick={startSession}
-              disabled={isConnecting}
-              className="h-14 gap-3 rounded-2xl bg-emerald-300 px-8 text-lg font-black uppercase tracking-wider text-[#071112] shadow-lg shadow-emerald-300/25 transition-all hover:bg-emerald-200 hover:shadow-emerald-300/40 active:scale-95"
-            >
-              {isConnecting ? (
-                <>
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  Connecting...
-                </>
-              ) : (
-                <>
-                  <Mic className="h-5 w-5" />
-                  Start Voice Chat
-                </>
-              )}
-            </Button>
-
-            {/* Tips */}
-            <div className="mt-4 flex flex-wrap justify-center gap-2 text-xs text-white/30">
-              <span className="rounded-full border border-white/10 px-3 py-1">Microphone required</span>
-              <span className="rounded-full border border-white/10 px-3 py-1">Memory active</span>
-              <span className="rounded-full border border-white/10 px-3 py-1">Real-time AI</span>
-            </div>
-          </div>
-        ) : (
-          <LiveKitRoom
-            serverUrl={session.serverUrl}
-            token={session.token}
-            connect
-            audio
-            video={false}
-            onDisconnected={endSession}
-            onError={(err) => setError(err.message)}
-            className="contents"
-          >
-            <VoiceChatInterface onEnd={endSession} />
-            <RoomAudioRenderer />
-          </LiveKitRoom>
-        )}
-      </main>
+    <div className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md rounded-full border border-white/20 shadow-xl animate-in fade-in zoom-in duration-300">
+      <span className="relative flex h-3 w-3">
+        <span className={cn(
+          "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75",
+          state === 'speaking' ? "bg-duo-macaw" : "bg-duo-canary"
+        )}></span>
+        <span className={cn(
+          "relative inline-flex rounded-full h-3 w-3",
+          state === 'speaking' ? "bg-duo-macaw" : "bg-duo-canary"
+        )}></span>
+      </span>
+      <span className="text-xs font-bold uppercase tracking-wider text-white/80">
+        {state === 'speaking' ? 'Debo Speaking' : 'Debo Thinking'}
+      </span>
     </div>
   );
-}
+};
 
-function VoiceChatInterface({ onEnd }: { onEnd: () => void }) {
+const MascotDisplay = ({ state }: { state: string }) => {
+  const isSpeaking = state === 'speaking';
+  const isThinking = state === 'thinking';
+  const isListening = state === 'listening';
+
+  return (
+    <div className="relative group perspective-1000">
+      {/* Dynamic Glow Background */}
+      <div className={cn(
+        "absolute inset-0 rounded-full blur-[80px] opacity-40 transition-all duration-1000 scale-125",
+        isSpeaking ? "bg-duo-macaw animate-pulse" : 
+        isThinking ? "bg-duo-canary animate-bounce" : 
+        isListening ? "bg-duo-feather" : "bg-duo-wolf"
+      )} />
+      
+      <div className="relative z-10 flex flex-col items-center">
+        {/* Mascot Container */}
+        <div className={cn(
+          "w-64 h-64 md:w-80 md:h-80 rounded-full border-[12px] bg-white flex items-center justify-center overflow-hidden transition-all duration-500 shadow-[0_20px_50px_rgba(0,0,0,0.2)]",
+          isSpeaking ? "border-duo-macaw scale-105 shadow-[0_0_40px_var(--duo-macaw)]" : 
+          isThinking ? "border-duo-canary rotate-6 shadow-[0_0_30px_var(--duo-canary)]" : 
+          "border-duo-feather"
+        )}>
+          {/* Mascot Image Placeholder */}
+          <div className="text-9xl transform transition-transform duration-300 hover:scale-110 select-none">
+            {isSpeaking ? '🦉' : isThinking ? '🤔' : isListening ? '👂' : '😴'}
+          </div>
+        </div>
+
+        {/* State Label */}
+        <div className="mt-8">
+           <AgentChatIndicator state={state} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const VoiceContent = () => {
   const { state, audioTrack } = useVoiceAssistant();
   const { localParticipant } = useLocalParticipant();
   const [isMuted, setIsMuted] = useState(false);
-  const [isDeboSpeaking, setIsDeboSpeaking] = useState(false);
+  const [lastTranscript, setLastTranscript] = useState('');
 
-  useEffect(() => {
-    setIsMuted(!localParticipant.isMicrophoneEnabled);
-    setIsDeboSpeaking(state === "speaking");
-  }, [localParticipant.isMicrophoneEnabled, state]);
-
-  const toggleMute = async () => {
-    const nextMuted = !isMuted;
-    await localParticipant.setMicrophoneEnabled(!nextMuted);
-    setIsMuted(nextMuted);
+  const toggleMute = () => {
+    localParticipant.setMicrophoneEnabled(isMuted);
+    setIsMuted(!isMuted);
   };
 
-  const stateLabel = state === "speaking" ? "Speaking" : state === "listening" ? "Listening" : "Connected";
-  const stateColor = state === "speaking" ? "text-emerald-300" : state === "listening" ? "text-amber-300" : "text-white/50";
-
   return (
-    <div className="flex flex-col items-center gap-10">
-      {/* Debo Avatar */}
-      <div className={cn("relative transition-all duration-500", isDeboSpeaking && "scale-105")}>
-        <div
-          className={cn(
-            "flex h-48 w-48 items-center justify-center rounded-full border-4 transition-all duration-300",
-            isDeboSpeaking
-              ? "border-emerald-300 bg-emerald-300/20 shadow-[0_0_60px_rgba(52,211,153,0.4)]"
-              : state === "listening"
-              ? "border-amber-300 bg-amber-300/10 shadow-[0_0_40px_rgba(251,191,36,0.3)]"
-              : "border-white/20 bg-white/5"
-          )}
-        >
-          <Bot className={cn("h-20 w-20 transition-all", isDeboSpeaking ? "text-emerald-300" : state === "listening" ? "text-amber-300" : "text-white/50")} />
+    <div className="flex flex-col items-center justify-between h-full py-12 px-6 max-w-4xl mx-auto w-full">
+      {/* Header Info */}
+      <div className="text-center space-y-2 animate-in slide-in-from-top duration-700">
+        <h1 className="text-3xl md:text-5xl font-black text-white drop-shadow-lg tracking-tight">
+          Talk to <span className="text-duo-canary">Debo</span>
+        </h1>
+        <p className="text-white/60 font-medium text-lg">
+          {state === 'idle' ? 'Ready when you are' : 
+           state === 'listening' ? 'I\'m listening...' : 
+           state === 'speaking' ? 'Sharing thoughts' : 'Thinking...'}
+        </p>
+      </div>
+
+      {/* Centerpiece: Mascot & Visualizer */}
+      <div className="flex flex-col items-center justify-center flex-1 w-full space-y-12">
+        <MascotDisplay state={state} />
+        
+        {/* Enhanced Visualizer Container */}
+        <div className="w-full max-w-md h-24 flex items-center justify-center relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent rounded-full blur-md" />
+          <BarVisualizer 
+            trackRef={audioTrack} 
+            barCount={40}
+            className="h-full w-full"
+            style={{ 
+              color: 'var(--duo-macaw)',
+              filter: 'drop-shadow(0 0 8px var(--duo-macaw))'
+            }} 
+          />
         </div>
 
-        {/* Pulsing rings when active */}
-        {(state === "speaking" || state === "listening") && (
-          <div
-            className={cn(
-              "absolute inset-0 animate-ping rounded-full border-2 opacity-50",
-              state === "speaking" ? "border-emerald-300" : "border-amber-300"
-            )}
-            style={{ animationDuration: "2s" }}
-          />
-        )}
-
-        {/* Audio visualizer when speaking */}
-        {audioTrack && state === "speaking" && (
-          <div className="absolute -bottom-8 left-1/2 flex -translate-x-1/2 gap-1">
-            {[...Array(8)].map((_, i) => (
-              <div
-                key={i}
-                className="h-10 w-1.5 rounded-full bg-emerald-300 animate-bounce"
-                style={{ animationDelay: `${i * 60}ms`, height: `${16 + Math.sin(i * 0.8) * 12}px` }}
-              />
-            ))}
+        {/* Transcript Overlay */}
+        {lastTranscript && (
+          <div className="max-w-xl text-center animate-in fade-in slide-in-from-bottom duration-500">
+            <p className="text-xl md:text-2xl font-bold text-white/90 leading-tight italic">
+              &ldquo;{lastTranscript}&rdquo;
+            </p>
           </div>
         )}
       </div>
 
-      {/* Status */}
-      <div className="flex flex-col items-center gap-2">
-        <div className="flex items-center gap-2">
-          <Radio className={cn("h-4 w-4", stateColor)} />
-          <span className={cn("text-sm font-black uppercase tracking-[0.2em]", stateColor)}>{stateLabel}</span>
-        </div>
-        <p className="text-xs text-white/30">Debo is ready to talk with your memories</p>
-      </div>
-
-      {/* Controls */}
-      <div className="flex items-center gap-6">
-        {/* Mute Button */}
-        <button
+      {/* Control Bar */}
+      <div className="flex items-center gap-6 animate-in slide-in-from-bottom duration-700 delay-300">
+        <button 
           onClick={toggleMute}
           className={cn(
-            "flex h-16 w-16 items-center justify-center rounded-full border-2 transition-all",
-            isMuted
-              ? "border-amber-300/50 bg-amber-300/10 text-amber-300 hover:bg-amber-300/20"
-              : "border-white/20 bg-white/5 text-white/70 hover:border-white/40 hover:bg-white/10"
+            "p-6 rounded-3xl transition-all duration-300 shadow-[0_8px_0_rgba(0,0,0,0.2)] active:shadow-none active:translate-y-2 group",
+            isMuted ? "bg-duo-cardinal hover:bg-red-500" : "bg-white/10 hover:bg-white/20 border border-white/20"
           )}
         >
-          {isMuted ? <MicOff className="h-6 w-6" /> : <Mic className="h-6 w-6" />}
+          {isMuted ? (
+            <MicOff className="w-8 h-8 text-white" />
+          ) : (
+            <Mic className="w-8 h-8 text-white group-hover:scale-110 transition-transform" />
+          )}
         </button>
 
-        {/* End Call Button */}
-        <button
-          onClick={onEnd}
-          className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-rose-300/50 bg-rose-300/10 text-rose-300 transition-all hover:border-rose-300 hover:bg-rose-300/20 active:scale-95"
+        <button 
+          onClick={() => window.location.href = '/dashboard'}
+          className="p-6 bg-duo-cardinal rounded-3xl hover:bg-red-500 transition-all duration-300 shadow-[0_8px_0_rgba(0,0,0,0.1)] active:shadow-none active:translate-y-2 group"
         >
-          <PhoneOff className="h-8 w-8" />
+          <PhoneOff className="w-8 h-8 text-white group-hover:rotate-12 transition-transform" />
         </button>
 
-        {/* Placeholder for symmetry */}
-        <div className="h-16 w-16" />
-      </div>
-
-      {/* Tips */}
-      <div className="mt-8 flex flex-wrap justify-center gap-3 text-xs text-white/30">
-        <span className="rounded-full border border-white/10 px-3 py-1">Click mic to mute/unmute</span>
-        <span className="rounded-full border border-white/10 px-3 py-1">Click phone to end</span>
+        <button 
+          className="p-6 bg-white/10 rounded-3xl hover:bg-white/20 border border-white/20 transition-all duration-300 shadow-[0_8px_0_rgba(0,0,0,0.1)] active:shadow-none active:translate-y-2 group"
+        >
+          <Sparkles className="w-8 h-8 text-duo-canary group-hover:scale-125 transition-transform" />
+        </button>
       </div>
     </div>
   );
+};
+
+const TalkPageContent = ({ token }: { token: string }) => {
+  return (
+    <LiveKitRoom
+      token={token}
+      serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL}
+      connect={true}
+      audio={true}
+      video={false}
+      className="fixed inset-0 bg-[#131f24] overflow-hidden select-none"
+    >
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,rgba(31,213,249,0.15),transparent_60%)]" />
+      <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:radial-gradient(white,transparent_80%)] opacity-10" />
+      
+      <VoiceContent />
+      <RoomAudioRenderer />
+    </LiveKitRoom>
+  );
+};
+
+export default function TalkPage() {
+  const [token, setToken] = useState<string | null>(null);
+  const stack = useStackApp();
+  const user = stack.useUser();
+
+  useEffect(() => {
+    const fetchToken = async () => {
+      if (!user) return;
+      try {
+        const room = `room-${user.id}`;
+        const identity = user.id;
+        const resp = await fetch(
+          `/api/livekit/token?room=${room}&identity=${identity}`
+        );
+        const data = await resp.json() as { token: string };
+        setToken(data.token);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    fetchToken();
+  }, [user]);
+
+  if (!token) {
+    return (
+      <div className="fixed inset-0 bg-[#131f24] flex flex-col items-center justify-center space-y-6">
+        <div className="relative">
+          <div className="w-24 h-24 border-4 border-white/10 border-t-duo-macaw rounded-full animate-spin" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Loader2 className="w-8 h-8 text-duo-macaw animate-pulse" />
+          </div>
+        </div>
+        <p className="text-white/60 font-medium animate-pulse">Initializing encrypted voice link...</p>
+      </div>
+    );
+  }
+
+  return <TalkPageContent token={token} />;
 }

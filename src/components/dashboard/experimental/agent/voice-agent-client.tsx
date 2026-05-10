@@ -50,15 +50,6 @@ export function VoiceAgentClient() {
     <div className="flex-1 w-full flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] p-4">
       {!token ? (
         <div className="text-center space-y-12 max-w-md w-full animate-in fade-in slide-in-from-bottom-4 duration-1000">
-          <div className="flex flex-col items-center justify-center gap-6">
-            <div className="w-24 h-24 rounded-3xl bg-duo-green/10 flex items-center justify-center animate-pulse shadow-inner border-2 border-duo-green/20">
-                <Sparkles className="h-10 w-10 text-duo-green" />
-            </div>
-            <div className="space-y-2">
-                <div className="h-1.5 w-1.5 rounded-full bg-duo-green mx-auto animate-bounce" />
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-duo-wolf">Intelligence Link Ready</p>
-            </div>
-          </div>
           
           <div className="space-y-4">
             <h1 className="text-3xl font-heading font-black text-duo-eel">Talk to Debo</h1>

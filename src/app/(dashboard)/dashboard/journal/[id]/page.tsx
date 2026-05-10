@@ -1,4 +1,4 @@
-import { getJournal } from "@/actions/journals";
+import { getJournal, getRelatedJournals } from "@/actions/journals";
 import { JournalEditor } from "@/components/journal/journal-editor";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
@@ -23,6 +23,7 @@ export default async function JournalPage({ params }: { params: Promise<{ id: st
     let initialId = "";
     let initialTitle = "";
     let initialTags: string[] = [];
+    let relatedJournals: any[] = [];
 
     if (!isNew) {
         try {
@@ -34,12 +35,21 @@ export default async function JournalPage({ params }: { params: Promise<{ id: st
             initialId = journal.id;
             initialTitle = journal.title || "";
             initialTags = journal.tags || [];
+
+            // Fetch related journals for existing entries
+            relatedJournals = await getRelatedJournals(resolvedParams.id);
         } catch {
             notFound();
         }
     }
 
     return (
-        <JournalEditor initialContent={initialContent} initialId={initialId} initialTitle={initialTitle} initialTags={initialTags} />
+        <JournalEditor 
+            initialContent={initialContent} 
+            initialId={initialId} 
+            initialTitle={initialTitle} 
+            initialTags={initialTags} 
+            relatedJournals={relatedJournals}
+        />
     );
 }

@@ -65,12 +65,11 @@ const groups: { title: string; items: (NavItem | { type: 'submenu'; title: strin
         icon: MessageSquareText,
         color: "text-duo-macaw",
         items: [
-          { title: "Ask", href: "/dashboard/ask", icon: Sparkles, color: "text-duo-macaw" },
-          { title: "Capture", href: "/dashboard/capture", icon: Mic2, color: "text-duo-macaw" },
-          { title: "Connectors", href: "/dashboard/connectors", icon: Plug, color: "text-duo-macaw" },
-          { title: "Insights", href: "/dashboard/insights", icon: BarChart3, color: "text-duo-macaw" },
+          { title: "Capture", href: "/dashboard/capture", icon: Mic2, color: "text-duo-feather" },
+          { title: "Connectors", href: "/dashboard/connectors", icon: Plug, color: "text-duo-fox" },
+          { title: "Insights", href: "/dashboard/insights", icon: BarChart3, color: "text-duo-bee" },
           { title: "Journals", href: "/dashboard/journals", icon: Library, color: "text-duo-macaw" },
-          { title: "Timeline", href: "/dashboard/timeline", icon: Clock, color: "text-duo-macaw" },
+          { title: "Timeline", href: "/dashboard/timeline", icon: Clock, color: "text-duo-humpback" },
         ]
       },
       { title: "MCP", href: "/dashboard/mcp", icon: Terminal, color: "text-duo-macaw" },
@@ -87,14 +86,21 @@ const groups: { title: string; items: (NavItem | { type: 'submenu'; title: strin
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
   const user = useUser()
+  const [expandedItems, setExpandedItems] = React.useState<string[]>([]);
+
+  const toggleExpand = (href: string) => {
+    setExpandedItems(prev => 
+      prev.includes(href) ? prev.filter(h => h !== href) : [...prev, href]
+    );
+  };
 
   const isActive = (href: string, exact?: boolean) => {
     if (exact) return pathname === href;
     return pathname === href || pathname.startsWith(`${href}/`);
   };
 
-  const isSubmenuOpen = (items: SubItem[]) => {
-    return items.some(item => isActive(item.href));
+  const isSubmenuOpen = (item: any) => {
+    return expandedItems.includes(item.href) || item.items.some((sub: SubItem) => isActive(sub.href));
   };
 
   return (
@@ -121,22 +127,34 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <SidebarMenu className="gap-3">
                 {group.items.map((item: any) => {
                   if (item.type === 'submenu') {
-                    const open = isSubmenuOpen(item.items);
+                    const isOpen = isSubmenuOpen(item);
                     return (
                       <SidebarMenuItem key={item.href}>
-                        <SidebarMenuButton
-                          isActive={isActive(item.href)}
-                          tooltip={item.title}
-                          className="h-14 rounded-2xl border-2 border-transparent text-[13px] font-black uppercase tracking-wider text-duo-wolf transition-all hover:border-duo-swan hover:bg-duo-polar data-[active=true]:border-duo-macaw data-[active=true]:bg-duo-macaw/10 data-[active=true]:text-duo-macaw shadow-none active:translate-y-1 active:shadow-none"
-                        >
-                          <Link href={item.href} className="flex items-center gap-4 w-full">
-                            <item.icon className={cn("h-6 w-6 transition-transform", open && "scale-110")} />
-                            <span className="flex-grow">{item.title}</span>
-                            <ChevronRight className={cn("ml-auto h-5 w-5 transition-transform group-data-[collapsible=icon]:hidden", open && "rotate-90")} />
-                          </Link>
-                        </SidebarMenuButton>
-                        {open && (
-                          <div className="ml-6 mt-3 space-y-2 group-data-[collapsible=icon]:hidden border-l-2 border-duo-swan/30 pl-4">
+                        <div className="relative group/menu-item-container">
+                          <SidebarMenuButton
+                            isActive={isActive(item.href)}
+                            tooltip={item.title}
+                            className="h-14 rounded-2xl border-2 border-transparent text-[13px] font-black uppercase tracking-wider text-duo-wolf transition-all hover:border-duo-swan hover:bg-duo-polar data-[active=true]:border-duo-macaw data-[active=true]:bg-duo-macaw/10 data-[active=true]:text-duo-macaw shadow-none active:translate-y-1 active:shadow-none pr-12"
+                            asChild
+                          >
+                            <Link href={item.href} className="flex items-center gap-4 w-full">
+                              <item.icon className={cn("h-6 w-6 transition-transform", isOpen && "scale-110")} />
+                              <span className="flex-grow">{item.title}</span>
+                            </Link>
+                          </SidebarMenuButton>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              toggleExpand(item.href);
+                            }}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 h-10 w-10 flex items-center justify-center rounded-xl hover:bg-duo-swan/20 transition-colors z-20 group-data-[collapsible=icon]:hidden"
+                          >
+                            <ChevronRight className={cn("h-5 w-5 transition-transform text-duo-swan", isOpen && "rotate-90 text-duo-macaw")} />
+                          </button>
+                        </div>
+                        {isOpen && (
+                          <div className="ml-6 mt-3 space-y-2 group-data-[collapsible=icon]:hidden border-l-2 border-duo-swan/30 pl-4 animate-in slide-in-from-left-2 duration-300">
                             {item.items.map((subItem: SubItem) => (
                               <SidebarMenuButton
                                 key={subItem.href}
