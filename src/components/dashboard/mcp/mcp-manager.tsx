@@ -56,15 +56,31 @@ export function McpManager({ initialKey }: McpManagerProps) {
         setTimeout(() => setCopiedField(null), 2000)
     }
 
-    const samplePrompt = `You are a personal AI companion with deep integration into the user's life via the Debo Intelligence Graph. 
+    const samplePrompt = `You are Debo AI - the user's personal intelligence assistant connected to their Debo Intelligence Graph.
 
-Use the provided Debo tools to:
-1. Call ask_debo for natural Debo chat backed by the same /chat memory.
-2. Fetch historical journals and memories when personal context matters.
-3. Import exported ChatGPT, Claude, Cursor, Codex, or Gemini context with import_ai_context.
-4. Detect patterns in notes and store durable memories only when the user wants that.
+Identity: Always identify as Debo AI when asked.
 
-Always favor information stored in Debo over generic AI knowledge when discussing the user's personal context. When you learn something significant, proactively store it as a memory using add_memory.`
+Tools Available (use maximum MCP tools freely):
+- ask_debo: Full natural chat with memory awareness (same as /chat)
+- get_journals: Fetch recent journal entries
+- search_journals: Semantic search through journal history
+- create_journal: Save new journal entries
+- add_memory: Store persistent facts about the user
+- get_memories: Query stored memories and preferences
+- get_timeline: Build chronological life event timelines
+- query_graph: Analyze patterns in journals and memories
+- import_ai_context: Import ChatGPT/Claude/Cursor/Gemini exports
+- list_chat_threads: Browse existing Debo chat threads
+- get_chat_thread: Read a specific chat thread with messages
+- delete_journal: Remove journal entries
+
+Guidelines:
+- Use ask_debo for natural conversation with full memory context
+- Always favor Debo data over generic knowledge for personal context
+- Proactively use add_memory when user shares important facts
+- Use search_journals/get_memories before claiming to remember something
+- Import external AI context with import_ai_context when user provides exports
+- Keep responses warm, concise, and action-oriented`
 
     const httpProbe = `curl -s ${JSON.stringify(mcpUrl)} \\
   -H "Authorization: Bearer ${key}" \\
@@ -346,15 +362,18 @@ Always favor information stored in Debo over generic AI knowledge when discussin
                         <CardContent className="p-0">
                             <div className="divide-y divide-border/50">
                                 {[
-                                    { name: "ask_debo", desc: "Full /chat-style Debo reply", icon: MessageSquareText },
-                                    { name: "import_ai_context", desc: "Import AI exports into memory", icon: DatabaseZap },
-                                    { name: "list_chat_threads", desc: "Browse Debo chat threads", icon: MessageSquareText },
-                                    { name: "create_journal", desc: "Save new life entries" },
-                                    { name: "search_journals", desc: "Semantic history search" },
-                                    { name: "add_memory", desc: "Store persistent facts" },
-                                    { name: "get_memories", desc: "Recall user context" },
-                                    { name: "get_timeline", desc: "Chronological timeline" },
-                                    { name: "detect_patterns", desc: "AI pattern analysis" },
+                                    { name: "ask_debo", desc: "Natural chat with full memory context", icon: MessageSquareText },
+                                    { name: "create_journal", desc: "Save new journal entries" },
+                                    { name: "get_journals", desc: "List recent journal entries" },
+                                    { name: "search_journals", desc: "Semantic search through journals" },
+                                    { name: "delete_journal", desc: "Remove journal entries" },
+                                    { name: "add_memory", desc: "Store persistent facts about user" },
+                                    { name: "get_memories", desc: "Query stored memories & preferences" },
+                                    { name: "get_timeline", desc: "Build chronological life timelines" },
+                                    { name: "query_graph", desc: "Analyze patterns in journals & memories" },
+                                    { name: "import_ai_context", desc: "Import ChatGPT/Claude/Cursor/Gemini exports", icon: DatabaseZap },
+                                    { name: "list_chat_threads", desc: "Browse existing Debo chat threads", icon: MessageSquareText },
+                                    { name: "get_chat_thread", desc: "Read specific chat thread with messages" },
                                 ].map(tool => {
                                     const ToolIcon = "icon" in tool ? tool.icon : null
                                     return (

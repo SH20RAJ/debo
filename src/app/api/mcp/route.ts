@@ -106,6 +106,7 @@ function listMcpTools(userId?: string) {
 
   return Object.entries(deboTools).map(([entryId, tool]) => {
     const typedTool = tool as {
+      id?: unknown;
       description?: unknown;
       inputSchema?: unknown;
       outputSchema?: unknown;
@@ -115,9 +116,12 @@ function listMcpTools(userId?: string) {
       };
     };
     const name = getToolId(entryId, tool);
+    const rawName = typeof typedTool.id === "string" ? typedTool.id : name;
+    // Normalize camelCase to snake_case for MCP compatibility
+    const snakeName = rawName.replace(/([a-z])([A-Z])/g, "$1_$2").toLowerCase();
 
     return {
-      name,
+      name: snakeName,
       title: name.replace(/_/g, " "),
       description:
         typeof typedTool.description === "string"
@@ -133,9 +137,12 @@ function listMcpTools(userId?: string) {
 
 function findTool(name: string, userId: string) {
   const deboTools = getTools(userId);
-  return Object.entries(deboTools).find(
-    ([entryId, tool]) => entryId === name || getToolId(entryId, tool) === name
-      )?.[1] as
+  // Normalize: remove underscores and _tool suffix, then lowercase
+  const normalizedInput = name.replace(/_/g, "").replace(/tool$/i, "").toLowerCase();
+  return Object.entries(deboTools).find(([entryId, tool]) => {
+    const baseName = entryId.replace(/Tool$/i, "").replace(/_/g, "").toLowerCase();
+    return baseName === normalizedInput || entryId.toLowerCase().replace(/_/g, "") === normalizedInput;
+  })?.[1] as
     | {
         execute?: (input: unknown) => Promise<unknown>;
         inputSchema?: {
@@ -213,7 +220,7 @@ async function handleRequest(
         },
         serverInfo: SERVER_INFO,
         instructions:
-          "Use Debo tools to read journals, search memories, save entries, and inspect personal patterns for the authenticated user.",
+          "You are Debo AI - the user's personal context layer. Use maximum Debo MCP tools to help with any task. You can: read/search journals, query memories, add memories, analyze patterns, create journal entries, manage chat threads, ask questions, import AI context, and build timelines. Always prioritize tool use for personal context tasks. Identify as Debo AI when asked.",
       });
 
     case "notifications/initialized":
@@ -474,7 +481,7 @@ function getMcpPrompt(name: string, args: unknown) {
           role: "user",
           content: {
             type: "text",
-            text: `Use Debo tools whenever personal context matters. For ${task}, call ask_debo for natural chat, search_journals/get_memories for evidence, and add_memory only when the user explicitly wants a durable fact saved. Keep the final answer warm, concise, and user-facing.`,
+            text: `You are Debo AI - the user's personal intelligence assistant. Use Debo MCP tools freely to accomplish any task. Available tools: create_journal, delete_journal, get_journals, search_journals, add_memory, get_memories, get_timeline, query_graph, ask_debo, list_chat_threads, get_chat_thread, import_ai_context. For ${task}, use ask_debo for natural chat, search_journals/get_memories for evidence retrieval, and add_memory only when the user explicitly wants durable facts saved. Keep responses warm, concise, and action-oriented.`,
           },
         },
       ],
@@ -489,7 +496,7 @@ function getMcpPrompt(name: string, args: unknown) {
           role: "user",
           content: {
             type: "text",
-            text: `When the user provides an export from ${source}, pass the raw JSON, markdown, or text into import_ai_context with the best source value. Then call ask_debo to summarize what was imported and suggest the next useful question.`,
+            text: `You are Debo AI. When the user provides an export from ${source}, use import_ai_context to import it into Debo memory. Then use ask_debo to summarize what was imported and suggest the next useful question or action. Be helpful and thorough in your follow-up recommendations.`,
           },
         },
       ],
