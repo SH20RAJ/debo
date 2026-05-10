@@ -10,13 +10,19 @@
     "deploy": "NODE_OPTIONS=--import=./scripts/register-opennext-ast-patch.mjs opennextjs-cloudflare build && node scripts/patch-opennext-worker.mjs && opennextjs-cloudflare deploy",
     "upload": "NODE_OPTIONS=--import=./scripts/register-opennext-ast-patch.mjs opennextjs-cloudflare build && node scripts/patch-opennext-worker.mjs && opennextjs-cloudflare upload",
     "preview": "NODE_OPTIONS=--import=./scripts/register-opennext-ast-patch.mjs opennextjs-cloudflare build && node scripts/patch-opennext-worker.mjs && opennextjs-cloudflare preview",
-    "cf-typegen": "wrangler types --env-interface CloudflareEnv ./cloudflare-env.d.ts"
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv ./cloudflare-env.d.ts",
+    "voice": "bun run src/workers/voice-agent.ts dev"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.71",
     "@ai-sdk/openai": "^3.0.53",
     "@ai-sdk/react": "^3.0.170",
     "@base-ui/react": "^1.4.1",
+    "@livekit/agents": "^1.4.0",
+    "@livekit/agents-plugin-cartesia": "^1.4.0",
+    "@livekit/agents-plugin-deepgram": "^1.4.0",
+    "@livekit/agents-plugin-elevenlabs": "^1.4.0",
+    "@livekit/agents-plugin-openai": "^1.4.0",
     "@livekit/components-react": "^2.9.20",
     "@livekit/components-styles": "^1.2.0",
     "@mastra/ai-sdk": "^1.4.1",

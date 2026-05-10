@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import {
   SidebarProvider,
   SidebarInset,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
 import { Metadata } from "next";
@@ -26,11 +25,6 @@ export default async function DashboardLayout({
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset className="relative flex h-svh flex-col overflow-hidden bg-background">
-          <header className="pointer-events-none absolute left-0 top-0 z-50 flex items-center gap-2 p-4">
-            <div className="pointer-events-auto flex items-center gap-2 rounded-md border border-border bg-background/80 p-1 shadow-sm backdrop-blur-md">
-              <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors" />
-            </div>
-          </header>
           <main className="flex-1 overflow-y-auto no-scrollbar scroll-smooth">
             {children}
           </main>
