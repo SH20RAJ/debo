@@ -6,8 +6,7 @@ import {
 } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
 import { Metadata } from "next";
-import { MyAssistantRuntimeProvider } from "@/components/assistant/AssistantRuntimeProvider";
-import { MyAssistant } from "@/components/assistant/MyAssistant";
+
 
 export default async function DashboardLayout({
   children,
@@ -21,17 +20,14 @@ export default async function DashboardLayout({
   }
 
   return (
-    <MyAssistantRuntimeProvider>
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset className="relative flex h-svh flex-col overflow-hidden bg-background">
           <main className="flex-1 overflow-y-auto no-scrollbar scroll-smooth">
             {children}
           </main>
-          <MyAssistant />
         </SidebarInset>
       </SidebarProvider>
-    </MyAssistantRuntimeProvider>
   );
 }
 

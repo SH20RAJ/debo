@@ -12,6 +12,13 @@ import {
 import { z } from "zod";
 
 import { getChatModel } from "@/lib/ai/openai";
+import MemoryClient from "mem0ai";
+
+function getMem0Client() {
+  const apiKey = process.env.MEM0_API_KEY;
+  if (!apiKey) throw new Error("MEM0_API_KEY is not configured.");
+  return new MemoryClient({ apiKey });
+}
 
 export const DEBO_SYSTEM_PROMPT = `You are Debo, a calm Jarvis-like personal intelligence assistant for journaling, memory, and reflection. You are the user's trusted cognitive layer - their second brain, their memory palace, their reflective companion.
 
@@ -542,10 +549,33 @@ export async function streamDeboChat(input: {
   maxSteps?: number;
 }) {
   const messages = normalizeChatMessages(input.messages);
+  
+  let systemPrompt = DEBO_SYSTEM_PROMPT;
+  
+  // Try to inject context from Mem0 based on the last message
+  try {
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage && lastMessage.role === "user") {
+        const query = lastMessage.parts.map(p => p.type === 'text' ? p.text : '').join(' ');
+        if (query) {
+            const client = getMem0Client();
+            const results = await client.search(query, { filters: { user_id: input.userId }, limit: 10 } as any);
+            const items = results.results || results || [];
+            const memoriesList = Array.isArray(items) ? items : [];
+            
+            if (memoriesList.length > 0) {
+                const contextStrs = memoriesList.map((m: any) => `- ${m.memory || m.content || m.text}`);
+                systemPrompt += `\n\n### RELEVANT MEMORIES FOR THIS CONVERSATION:\n${contextStrs.join('\n')}\n(Use these facts about the user to personalize your response.)`;
+            }
+        }
+    }
+  } catch (err) {
+      console.error("Mem0 context retrieval failed:", err);
+  }
 
   return streamText({
     model: getChatModel(),
-    system: DEBO_SYSTEM_PROMPT,
+    system: systemPrompt,
     messages: await convertToModelMessages(messages, {
       ignoreIncompleteToolCalls: true,
     }),

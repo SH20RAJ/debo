@@ -85,7 +85,7 @@ export const searchMem0MemoryTool = createTool({
     const userId = requireUserId(context);
     const client = getMem0Client();
     
-    const results = await client.search(input.query, { user_id: userId } as any);
+    const results = await client.search(input.query, { filters: { user_id: userId } } as any);
     return {
       results: results,
     };

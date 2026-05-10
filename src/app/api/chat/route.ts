@@ -3,6 +3,13 @@ import { ensureChatThread, normalizeThreadId } from "@/lib/chat/server";
 import { normalizeChatMessages, streamDeboChat } from "@/lib/chat/debo-tools";
 import { isDatabaseUnavailable, logDatabaseIssue } from "@/lib/db/errors";
 import { NextRequest } from "next/server";
+import MemoryClient from "mem0ai";
+
+function getMem0Client() {
+  const apiKey = process.env.MEM0_API_KEY;
+  if (!apiKey) throw new Error("MEM0_API_KEY is not configured.");
+  return new MemoryClient({ apiKey });
+}
 
 export const maxDuration = 60;
 
@@ -40,6 +47,22 @@ export async function POST(req: NextRequest) {
     } catch (threadError) {
       if (!isDatabaseUnavailable(threadError)) throw threadError;
       logDatabaseIssue("chat thread create", threadError);
+    }
+
+    // Save user message to mem0 in background
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage && lastMessage.role === "user") {
+        const text = lastMessage.parts.map(p => p.type === 'text' ? p.text : '').join(' ');
+        if (text) {
+            Promise.resolve().then(async () => {
+                try {
+                    const client = getMem0Client();
+                    await client.add([{ role: "user", content: text }], { user_id: userId } as any);
+                } catch (err) {
+                    console.error("Mem0 add background error:", err);
+                }
+            });
+        }
     }
 
     const result = await streamDeboChat({

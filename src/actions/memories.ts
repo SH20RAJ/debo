@@ -1,35 +1,49 @@
 "use server";
 
-import { eq, and } from "drizzle-orm";
-
-import { db } from "@/db";
-import { memoryEntities, memoryFacts } from "@/db/schema";
 import { resolveUserId } from "./auth-sync";
-import { extractMemory } from "@/lib/memory/extract";
-import { getRelevantMemories } from "@/lib/memory/query";
-import { storeMemory } from "@/lib/memory/store";
 import { cache } from "react";
 import { revalidatePath } from "next/cache";
+import MemoryClient from "mem0ai";
 
-// resolveUserId is imported from ./auth-sync
+function getMem0Client() {
+  const apiKey = process.env.MEM0_API_KEY;
+  if (!apiKey) throw new Error("MEM0_API_KEY is not configured.");
+  return new MemoryClient({ apiKey });
+}
 
 export const getMemories = cache(async (query: string = "", limit: number = 20, offset: number = 0, userId?: string) => {
   const resolvedUserId = await resolveUserId(userId, true);
   if (!resolvedUserId) return { success: false, error: "Unauthorized" };
 
   try {
-    const memories = await getRelevantMemories(resolvedUserId, query, limit, offset);
+    const client = getMem0Client();
+    
+    let items = [];
+    if (query.trim() === "") {
+        const results = await client.getAll({ filters: { user_id: resolvedUserId } } as any);
+        items = results.results || results || [];
+        if (Array.isArray(results)) {
+            items = results;
+        }
+    } else {
+        const results = await client.search(query, { filters: { user_id: resolvedUserId } } as any);
+        items = results.results || results || [];
+    }
+    
+    const formattedData = Array.isArray(items) ? items.slice(offset, offset + limit).map((memory: any) => ({
+      id: memory.id,
+      content: memory.memory || memory.content || memory.text,
+      source: "Mem0",
+      sourceType: "user",
+      score: memory.score || 1.0,
+      createdAt: memory.created_at || memory.createdAt,
+    })) : [];
+
     return {
       success: true,
-      data: memories.items.map((memory) => ({
-        id: memory.id,
-        content: memory.content,
-        source: memory.source,
-        sourceType: memory.sourceType,
-        score: memory.score,
-      })),
-      totalCount: memories.totalCount,
-      insights: memories.insights,
+      data: formattedData,
+      totalCount: formattedData.length,
+      insights: [],
     };
   } catch (error) {
     console.error("Fetch memories error:", error);
@@ -42,18 +56,8 @@ export async function deleteMemory(memoryId: string, userId?: string) {
   if (!resolvedUserId) return { success: false, error: "Unauthorized" };
 
   try {
-    const fact = await db.query.memoryFacts.findFirst({
-      where: and(eq(memoryFacts.id, memoryId), eq(memoryFacts.userId, resolvedUserId)),
-    });
-    if (fact) {
-      await db.delete(memoryFacts).where(and(eq(memoryFacts.id, memoryId), eq(memoryFacts.userId, resolvedUserId)));
-    } else {
-      const entity = await db.query.memoryEntities.findFirst({
-        where: and(eq(memoryEntities.id, memoryId), eq(memoryEntities.userId, resolvedUserId)),
-      });
-      if (!entity) return { success: false, error: "Memory not found" };
-      await db.delete(memoryEntities).where(and(eq(memoryEntities.id, memoryId), eq(memoryEntities.userId, resolvedUserId)));
-    }
+    const client = getMem0Client();
+    await client.delete(memoryId);
 
     revalidatePath("/dashboard/memories");
     return { success: true };
@@ -68,18 +72,11 @@ export async function getMemory(memoryId: string, userId?: string) {
   if (!resolvedUserId) return { success: false, error: "Unauthorized" };
 
   try {
-    const fact = await db.query.memoryFacts.findFirst({
-      where: and(eq(memoryFacts.id, memoryId), eq(memoryFacts.userId, resolvedUserId)),
-    });
-    if (fact) {
-      return { success: true, data: { ...fact, kind: "fact" as const } };
-    }
-
-    const entity = await db.query.memoryEntities.findFirst({
-      where: and(eq(memoryEntities.id, memoryId), eq(memoryEntities.userId, resolvedUserId)),
-    });
-    if (entity) {
-      return { success: true, data: { ...entity, kind: "entity" as const } };
+    const client = getMem0Client();
+    const memory = await client.get(memoryId);
+    
+    if (memory) {
+      return { success: true, data: { ...memory, kind: "fact" as const } };
     }
 
     return { success: false, error: "Memory not found" };
@@ -94,43 +91,11 @@ export async function updateMemory(memoryId: string, content: string, userId?: s
   if (!resolvedUserId) return { success: false, error: "Unauthorized" };
 
   try {
-    const fact = await db.query.memoryFacts.findFirst({
-      where: and(eq(memoryFacts.id, memoryId), eq(memoryFacts.userId, resolvedUserId)),
-    });
-    if (fact) {
-      await db
-        .update(memoryFacts)
-        .set({
-          content,
-          type: fact.type,
-          weight: fact.weight + 1,
-          createdAt: new Date(),
-        })
-        .where(and(eq(memoryFacts.id, memoryId), eq(memoryFacts.userId, resolvedUserId)));
+    const client = getMem0Client();
+    await client.update(memoryId, { text: content });
 
-      revalidatePath("/dashboard/memories");
-      return { success: true, data: memoryId };
-    }
-
-    const entity = await db.query.memoryEntities.findFirst({
-      where: and(eq(memoryEntities.id, memoryId), eq(memoryEntities.userId, resolvedUserId)),
-    });
-    if (entity) {
-      await db
-        .update(memoryEntities)
-        .set({
-          name: content,
-          normalizedName: content.toLowerCase().replace(/\s+/g, " ").trim(),
-          updatedAt: new Date(),
-          frequency: entity.frequency + 1,
-        })
-        .where(and(eq(memoryEntities.id, memoryId), eq(memoryEntities.userId, resolvedUserId)));
-
-      revalidatePath("/dashboard/memories");
-      return { success: true, data: memoryId };
-    }
-
-    return { success: false, error: "Memory not found" };
+    revalidatePath("/dashboard/memories");
+    return { success: true, data: memoryId };
   } catch (error) {
     console.error("Update memory error:", error);
     return { success: false, error: "Failed to update memory" };
@@ -142,13 +107,8 @@ export async function addMemory(fact: string, userId?: string) {
   if (!resolvedUserId) return { success: false, error: "Unauthorized" };
 
   try {
-    const extracted = await extractMemory(fact);
-    const result = await storeMemory(resolvedUserId, {
-      facts: extracted.facts.length > 0 ? extracted.facts : [fact],
-      entities: extracted.entities,
-      emotions: extracted.emotions,
-      topics: extracted.topics,
-    });
+    const client = getMem0Client();
+    const result = await client.add([{ role: "user" as const, content: fact }], { user_id: resolvedUserId } as any);
     revalidatePath("/dashboard/memories");
     return { success: true, data: result };
   } catch (error) {
@@ -166,19 +126,13 @@ export async function importMemories(jsonContent: string) {
     if (!Array.isArray(data))
       throw new Error("Invalid format. Expected an array of facts.");
 
-    for (const item of data) {
-      const content =
-        typeof item === "string"
-          ? item
-          : item.content || item.fact || JSON.stringify(item);
-      const extracted = await extractMemory(content);
-      await storeMemory(userId, {
-        facts: extracted.facts.length > 0 ? extracted.facts : [content],
-        entities: extracted.entities,
-        emotions: extracted.emotions,
-        topics: extracted.topics,
-      });
-    }
+    const client = getMem0Client();
+    const messages = data.map(item => ({
+        role: "user" as const,
+        content: typeof item === "string" ? item : item.content || item.fact || JSON.stringify(item)
+    }));
+
+    await client.add(messages, { user_id: userId } as any);
 
     revalidatePath("/dashboard/memories");
     return { success: true };
