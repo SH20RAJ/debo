@@ -32,9 +32,9 @@ const faqs = [
 
 export function FAQ() {
   return (
-    <section className="py-24 bg-duo-polar dark:bg-slate-900/50 border-t-2 border-duo-swan">
+    <section className="py-24 bg-duo-polar border-t-2 border-duo-swan">
       <div className="container mx-auto max-w-3xl px-6">
-        <h2 className="text-4xl font-heading font-black text-center text-duo-eel dark:text-white mb-16 uppercase tracking-wider">
+        <h2 className="text-4xl font-heading font-black text-center text-duo-eel mb-16 uppercase tracking-wider">
           Frequently Asked <span className="text-duo-macaw">Questions</span>
         </h2>
         
@@ -43,12 +43,12 @@ export function FAQ() {
             <AccordionItem 
               key={i} 
               value={`item-${i}`}
-              className="bg-background dark:bg-slate-900 border-2 border-duo-swan rounded-[2rem] px-8 shadow-[0_4px_0_var(--duo-swan)]"
+              className="bg-background border-2 border-duo-swan rounded-[2rem] px-8 shadow-[0_4px_0_var(--duo-swan)]"
             >
-              <AccordionTrigger className="text-left font-black text-duo-eel dark:text-white hover:no-underline py-8 text-lg uppercase tracking-tight">
+              <AccordionTrigger className="text-left font-black text-duo-eel hover:no-underline py-8 text-lg uppercase tracking-tight">
                 {faq.question}
               </AccordionTrigger>
-              <AccordionContent className="text-duo-wolf dark:text-slate-400 pb-8 font-bold leading-relaxed text-base">
+              <AccordionContent className="text-duo-wolf pb-8 font-bold leading-relaxed text-base">
                 {faq.answer}
               </AccordionContent>
             </AccordionItem>
@@ -56,5 +56,6 @@ export function FAQ() {
         </Accordion>
       </div>
     </section>
+
   );
 }

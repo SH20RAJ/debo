@@ -13,28 +13,28 @@ const rows = [
 
 export function Differentiation() {
   return (
-    <section className="py-24 bg-duo-polar dark:bg-slate-900/50 border-t-2 border-duo-swan">
+    <section className="py-24 bg-duo-polar border-t-2 border-duo-swan">
       <div className="container mx-auto max-w-4xl px-6">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-heading font-black text-duo-eel dark:text-white">
+          <h2 className="text-4xl md:text-5xl font-heading font-black text-duo-eel">
             Not another <span className="text-duo-macaw">notes app.</span>
           </h2>
         </div>
 
-        <div className="overflow-hidden rounded-[2.5rem] border-4 border-duo-swan bg-background dark:bg-slate-900 shadow-[0_12px_0_var(--duo-swan)]">
+        <div className="overflow-hidden rounded-[2.5rem] border-4 border-duo-swan bg-background shadow-[0_12px_0_var(--duo-swan)]">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b-4 border-duo-swan">
                 <th className="p-8 text-xs font-black uppercase tracking-widest text-duo-hare">Feature</th>
-                <th className="p-8 text-xs font-black uppercase tracking-widest text-duo-eel dark:text-white text-center">Notes App</th>
-                <th className="p-8 text-xs font-black uppercase tracking-widest text-duo-eel dark:text-white text-center">Chatbot</th>
+                <th className="p-8 text-xs font-black uppercase tracking-widest text-duo-eel text-center">Notes App</th>
+                <th className="p-8 text-xs font-black uppercase tracking-widest text-duo-eel text-center">Chatbot</th>
                 <th className="p-8 text-xs font-black uppercase tracking-widest text-duo-feather text-center bg-duo-feather/5">Debo</th>
               </tr>
             </thead>
-            <tbody className="divide-y-2 divide-duo-swan dark:divide-slate-800">
+            <tbody className="divide-y-2 divide-duo-swan">
               {rows.map((row, i) => (
-                <tr key={i} className="hover:bg-duo-polar dark:hover:bg-slate-800/50 transition-colors">
-                  <td className="p-8 text-base font-black text-duo-eel dark:text-slate-300 uppercase tracking-tight">{row.label}</td>
+                <tr key={i} className="hover:bg-duo-polar transition-colors">
+                  <td className="p-8 text-base font-black text-duo-eel uppercase tracking-tight">{row.label}</td>
                   <td className="p-8 text-center">
                     <StatusIcon status={row.notes} />
                   </td>
@@ -61,6 +61,7 @@ function StatusIcon({ status, isPrimary = false }: { status: boolean | string; i
   if (status === "partial") {
     return <Minus className="w-8 h-8 mx-auto text-duo-fox" />;
   }
-  return <X className="w-8 h-8 mx-auto text-duo-swan dark:text-slate-700" />;
+  return <X className="w-8 h-8 mx-auto text-duo-swan" />;
 }
+
 

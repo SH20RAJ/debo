@@ -37,14 +37,14 @@ const privacyFeatures = [
 
 export function Privacy() {
   return (
-    <section id="privacy" className="py-24 bg-background dark:bg-slate-950 border-t-2 border-duo-swan">
+    <section id="privacy" className="py-24 bg-background border-t-2 border-duo-swan">
       <div className="container mx-auto max-w-6xl px-6">
         <div className="flex flex-col lg:flex-row gap-16 items-center">
           <div className="lg:w-1/3 space-y-8 text-center lg:text-left">
-            <h2 className="text-4xl md:text-5xl font-heading font-black text-duo-eel dark:text-white leading-tight">
+            <h2 className="text-4xl md:text-5xl font-heading font-black text-duo-eel leading-tight">
               Built for your <span className="text-duo-feather">most personal</span> data.
             </h2>
-            <p className="text-xl text-duo-wolf dark:text-slate-400 font-bold leading-relaxed">
+            <p className="text-xl text-duo-wolf font-bold leading-relaxed">
               We believe your memories are yours alone. Debo is architected from the ground up to be the most private way to store your life documentary.
             </p>
           </div>
@@ -52,11 +52,11 @@ export function Privacy() {
           <div className="lg:w-2/3 grid sm:grid-cols-2 gap-8">
             {privacyFeatures.map((feature, i) => (
               <div key={i} className="duo-card p-8 flex flex-col gap-4 shadow-[0_4px_0_var(--duo-swan)]">
-                <div className="w-14 h-14 rounded-2xl bg-duo-polar dark:bg-slate-800 border-2 border-duo-swan flex items-center justify-center text-duo-macaw">
+                <div className="w-14 h-14 rounded-2xl bg-duo-polar border-2 border-duo-swan flex items-center justify-center text-duo-macaw">
                   <feature.icon className="w-7 h-7" />
                 </div>
-                <h3 className="text-xl font-black text-duo-eel dark:text-white uppercase tracking-wider">{feature.title}</h3>
-                <p className="text-duo-wolf dark:text-slate-400 font-bold leading-relaxed text-sm">
+                <h3 className="text-xl font-black text-duo-eel uppercase tracking-wider">{feature.title}</h3>
+                <p className="text-duo-wolf font-bold leading-relaxed text-sm">
                   {feature.description}
                 </p>
               </div>
@@ -65,6 +65,8 @@ export function Privacy() {
         </div>
       </div>
     </section>
+
   );
 }
+
 
