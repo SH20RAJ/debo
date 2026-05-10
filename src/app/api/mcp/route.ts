@@ -244,6 +244,11 @@ async function handleRequest(
         const input = parseToolInput(tool, params.arguments);
         const output = await tool.execute(input);
 
+        let structuredContent: Record<string, unknown> | undefined;
+        if (typeof output === "object" && output !== null && !Array.isArray(output)) {
+          structuredContent = output as Record<string, unknown>;
+        }
+
         return result(id, {
           content: [
             {
@@ -251,7 +256,7 @@ async function handleRequest(
               text: typeof output === "string" ? output : JSON.stringify(output, null, 2),
             },
           ],
-          ...(typeof output === "object" && output !== null ? { structuredContent: output } : {}),
+          ...(structuredContent ? { structuredContent } : {}),
         });
       } catch (callError) {
         return result(id, {
