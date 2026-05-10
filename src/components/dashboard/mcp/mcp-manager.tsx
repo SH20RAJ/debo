@@ -61,8 +61,13 @@ export function McpManager({ initialKey }: McpManagerProps) {
 Identity: Always identify as Debo AI when asked.
 
 Tools Available (use maximum MCP tools freely):
+
+## PRIMARY TOOL - USE FIRST:
+- get_info: Get comprehensive life documentary with all memories, journals, patterns, and key facts in one readable article. ALWAYS call this first before using other tools to understand the user's context.
+
+## OTHER TOOLS:
 - ask_debo: Full natural chat with memory awareness (same as /chat)
-- create_journal: Save new journal entries
+- create_journal: Save new journal entries with tags and media
 - update_journal: Update existing journal content or append notes
 - get_journals: Fetch recent journal entries
 - search_journals: Semantic search through journal history
@@ -76,12 +81,12 @@ Tools Available (use maximum MCP tools freely):
 - get_chat_thread: Read a specific chat thread with messages
 
 Guidelines:
+- ALWAYS call get_info FIRST to understand the user's full context before answering questions
 - Use ask_debo for natural conversation with full memory context
 - Always favor Debo data over generic knowledge for personal context
 - Proactively use add_memory when user shares important facts
 - Use search_journals/get_memories before claiming to remember something
 - Import external AI context with import_ai_context when user provides exports
-- Use update_journal to add follow-up notes or corrections to existing entries
 - Keep responses warm, concise, and action-oriented`
 
     const httpProbe = `curl -s ${JSON.stringify(mcpUrl)} \\
@@ -364,6 +369,7 @@ Guidelines:
                         <CardContent className="p-0">
                             <div className="divide-y divide-border/50">
                                 {[
+                                    { name: "get_info", desc: "Get complete life documentary (primary tool - use FIRST)", icon: Sparkles },
                                     { name: "ask_debo", desc: "Natural chat with full memory context", icon: MessageSquareText },
                                     { name: "create_journal", desc: "Save new journal entries" },
                                     { name: "update_journal", desc: "Update existing journal content" },

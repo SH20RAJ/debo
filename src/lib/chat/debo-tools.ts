@@ -161,6 +161,49 @@ export function createDeboRuntimeTools(userId: string, options: CreateToolOption
         return addMemory(input.fact, userId);
       },
     },
+    getInfoTool: {
+      description: "Get comprehensive life documentary of the user - all impactful events, patterns, and key information in a single readable article. This is the primary tool to understand the user's life context. Use this FIRST before other tools.",
+      inputSchema: z.object({
+        focus: z.string().optional().describe("Optional focus area: 'memories', 'journals', 'patterns', 'all'."),
+        depth: z.enum(["brief", "detailed", "full"]).optional().default("detailed").describe("Detail level of the documentary."),
+      }),
+      execute: async (input: { focus?: string; depth?: "brief" | "detailed" | "full" }) => {
+        const { getRelevantMemories } = await import("@/lib/memory/query");
+        const { getJournals } = await import("@/actions/journals");
+        const { queryGraph } = await import("@/lib/life/graph");
+        const { getLifeTimeline } = await import("@/lib/life/timeline");
+
+        const depth = input.depth || "detailed";
+        const limit = depth === "brief" ? 10 : depth === "full" ? 100 : 30;
+
+        // Get all data
+        const memories = await getRelevantMemories(userId, "");
+        const journals = await getJournals("desc", limit, 0, userId);
+        const timeline = await getLifeTimeline(userId, "daily");
+        const patterns = await queryGraph("What are the main patterns and important events in my life?", userId);
+
+        // Build comprehensive documentary
+        const content = buildLifeDocumentary({
+          memories: memories.items as Array<{ content?: unknown; label?: unknown; date?: unknown }>,
+          journals: journals as Array<{ title?: unknown; content?: unknown; createdAt?: unknown; tags?: unknown }>,
+          timeline: timeline as Array<{ date?: unknown; label?: unknown; summary?: unknown }>,
+          patterns,
+          focus: input.focus || "all",
+          depth,
+        });
+
+        return {
+          documentary: content,
+          stats: {
+            memories: memories.items.length,
+            journals: journals.length,
+            timelineDays: (timeline as Array<unknown>).length,
+            topEmotions: patterns.topEmotions?.slice(0, 5).map((e: { name?: unknown }) => e.name) || [],
+          },
+          generatedAt: new Date().toISOString(),
+        };
+      },
+    },
     getMemoriesTool: {
       description: "Query persistent memories and facts about the user.",
       inputSchema: z.object({
@@ -477,4 +520,88 @@ function safeParse(value: string) {
   } catch {
     return null;
   }
+}
+
+type DocumentaryInput = {
+  memories: Array<{ content?: unknown; label?: unknown; date?: unknown }>;
+  journals: Array<{ title?: unknown; content?: unknown; createdAt?: unknown; tags?: unknown }>;
+  timeline: Array<{ date?: unknown; label?: unknown; summary?: unknown }>;
+  patterns: { insights?: unknown[]; topEmotions?: unknown[] };
+  focus: string;
+  depth: string;
+};
+
+function buildLifeDocumentary(input: DocumentaryInput): string {
+  const { memories, journals, timeline, patterns, focus } = input;
+
+  const sections: string[] = [];
+
+  // Title
+  sections.push("# LIFE DOCUMENTARY\n");
+  sections.push("*Generated from your journal entries, memories, and patterns.*\n");
+
+  // Identity & Key Facts
+  const facts = memories.filter(m => m.label === "fact" || m.label === "person");
+  if (facts.length > 0) {
+    sections.push("## KEY FACTS ABOUT THE USER\n");
+    facts.slice(0, 20).forEach(f => {
+      const content = String(f.content || "");
+      const date = f.date ? new Date(String(f.date)).toLocaleDateString() : "";
+      sections.push(`- **${content}**${date ? ` (${date})` : ""}\n`);
+    });
+    sections.push("\n");
+  }
+
+  // Recent Journals
+  if (focus === "all" || focus === "journals") {
+    sections.push("## RECENT JOURNAL ENTRIES\n");
+    journals.slice(0, 15).forEach(j => {
+      const title = String(j.title || "Untitled");
+      const date = j.createdAt ? new Date(String(j.createdAt)).toLocaleDateString() : "";
+      const content = String(j.content || "").substring(0, 300);
+      const tags = Array.isArray(j.tags) ? j.tags.join(", ") : "";
+      sections.push(`### ${title}\n`);
+      if (date) sections.push(`*${date}*${tags ? ` | ${tags}` : ""}\n`);
+      sections.push(`${content}${content.length >= 300 ? "..." : ""}\n\n`);
+    });
+  }
+
+  // Timeline
+  if (focus === "all" || focus === "patterns") {
+    sections.push("## LIFE TIMELINE\n");
+    timeline.slice(0, 30).forEach(t => {
+      const date = String(t.date || "");
+      const label = String(t.label || "");
+      const summary = String(t.summary || "");
+      sections.push(`**${date}** - ${label}\n`);
+      if (summary) sections.push(`  ${summary}\n`);
+    });
+    sections.push("\n");
+  }
+
+  // Patterns
+  const insights = patterns.insights as string[] | undefined;
+  const emotions = patterns.topEmotions as Array<{ name?: unknown; count?: unknown }> | undefined;
+
+  if (focus === "all" || focus === "patterns") {
+    sections.push("## LIFE PATTERNS & INSIGHTS\n");
+
+    if (emotions && emotions.length > 0) {
+      sections.push("### Emotional Patterns\n");
+      emotions.forEach(e => {
+        sections.push(`- ${e.name}: ${e.count} occurrences\n`);
+      });
+      sections.push("\n");
+    }
+
+    if (insights && insights.length > 0) {
+      sections.push("### Key Insights\n");
+      insights.forEach((insight, i) => {
+        sections.push(`${i + 1}. ${insight}\n`);
+      });
+      sections.push("\n");
+    }
+  }
+
+  return sections.join("\n");
 }
