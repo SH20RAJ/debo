@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { saveJournal } from "@/actions/journals";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ExternalLink, FileImage, Loader2, Mic2, Play, Video, Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, Loader2, Check, ChevronLeft, ChevronRight, Plus, Video, Mic2, Image as ImageIcon, X } from "lucide-react";
 import dynamic from "next/dynamic";
 import { MediaBlock, extractMediaFromContent, mediaSrcFromR2, type MediaKind } from "./media-block";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 const BlockEditor = dynamic(() => import("./block-editor"), {
     ssr: false,
@@ -43,6 +45,10 @@ export function JournalEditor({
     const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
     const [mediaItems, setMediaItems] = useState<CaptureMediaItem[]>([]);
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+    const [showAddMedia, setShowAddMedia] = useState(false);
+    const [newMediaUrl, setNewMediaUrl] = useState("");
+    const [newMediaLabel, setNewMediaLabel] = useState("");
+    const [newMediaKind, setNewMediaKind] = useState<MediaKind>("video");
     const router = useRouter();
     const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -158,6 +164,27 @@ export function JournalEditor({
         }
     };
 
+    // Add media from URL
+    const handleAddMediaFromUrl = useCallback(() => {
+        if (!newMediaUrl.trim()) {
+            toast.error("Please enter a media URL");
+            return;
+        }
+
+        const url = newMediaUrl.trim();
+        const label = newMediaLabel.trim() || `${newMediaKind}-${Date.now()}`;
+        const size = "Added via URL";
+
+        const line = `- ${newMediaKind}: ${label} (${size}) ${url}`;
+        const newContent = content ? `${content}\n\n${line}` : line;
+
+        setContent(newContent);
+        setNewMediaUrl("");
+        setNewMediaLabel("");
+        setShowAddMedia(false);
+        toast.success(`${newMediaKind} added to journal`);
+    }, [content, newMediaUrl, newMediaLabel, newMediaKind]);
+
     const removeTag = (tagToRemove: string) => {
         setTags(tags.filter(tag => tag !== tagToRemove));
     };
@@ -233,11 +260,12 @@ export function JournalEditor({
                             label={currentMedia.label}
                             size={currentMedia.size}
                             src={currentMedia.src}
+                            codeLine={currentMedia.line}
                             onRemove={() => handleRemoveMedia(currentMedia.id)}
                         />
                     )}
 
-                    {/* Media Navigation - Only show if multiple items */}
+                    {/* Media Navigation and Add Button */}
                     {hasMedia && mediaItems.length > 1 && (
                         <div className="flex items-center justify-center gap-4 py-3 bg-duo-polar/30 rounded-xl">
                             <button
@@ -255,6 +283,71 @@ export function JournalEditor({
                             >
                                 <ChevronRight className="h-5 w-5" />
                             </button>
+                        </div>
+                    )}
+
+                    {/* Add Media Button and Dialog */}
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => setShowAddMedia(!showAddMedia)}
+                            className="inline-flex items-center gap-2 rounded-xl border border-dashed border-duo-swan/50 px-4 py-2 text-sm font-bold text-duo-wolf hover:bg-duo-swan/10 hover:text-duo-eel transition-colors"
+                        >
+                            <Plus className="h-4 w-4" />
+                            Add Media
+                        </button>
+                    </div>
+
+                    {/* Add Media Dialog */}
+                    {showAddMedia && (
+                        <div className="rounded-2xl border border-duo-swan/30 bg-duo-polar/30 p-4 space-y-4">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-sm font-black text-duo-eel">Add Media from URL</h3>
+                                <button onClick={() => setShowAddMedia(false)} className="text-duo-wolf/50 hover:text-duo-wolf">
+                                    <X className="h-4 w-4" />
+                                </button>
+                            </div>
+
+                            {/* Media Type Selection */}
+                            <div className="flex gap-2">
+                                {(["video", "audio", "image"] as MediaKind[]).map(kind => (
+                                    <button
+                                        key={kind}
+                                        onClick={() => setNewMediaKind(kind)}
+                                        className={cn(
+                                            "flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold uppercase transition-colors",
+                                            newMediaKind === kind
+                                                ? "bg-duo-green/20 text-duo-green border border-duo-green/30"
+                                                : "bg-duo-polar/50 text-duo-wolf border border-duo-swan/30 hover:bg-duo-polar"
+                                        )}
+                                    >
+                                        {kind === "video" ? <Video className="h-4 w-4" /> : kind === "audio" ? <Mic2 className="h-4 w-4" /> : <ImageIcon className="h-4 w-4" />}
+                                        {kind}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* URL Input */}
+                            <input
+                                type="url"
+                                value={newMediaUrl}
+                                onChange={(e) => setNewMediaUrl(e.target.value)}
+                                placeholder="Paste media URL (r2:// or https://)"
+                                className="w-full rounded-xl border border-duo-swan/30 bg-duo-snow px-4 py-3 text-sm font-bold text-duo-eel placeholder:text-duo-swan/50 outline-none focus:border-duo-green/50"
+                            />
+
+                            {/* Label Input */}
+                            <input
+                                type="text"
+                                value={newMediaLabel}
+                                onChange={(e) => setNewMediaLabel(e.target.value)}
+                                placeholder="Optional label"
+                                className="w-full rounded-xl border border-duo-swan/30 bg-duo-snow px-4 py-3 text-sm font-bold text-duo-eel placeholder:text-duo-swan/50 outline-none focus:border-duo-green/50"
+                            />
+
+                            {/* Add Button */}
+                            <Button onClick={handleAddMediaFromUrl} className="w-full bg-duo-green text-duo-snow hover:bg-duo-green/90">
+                                Add to Journal
+                            </Button>
                         </div>
                     )}
 

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
-import { ChevronDown, ChevronUp, X, Play, Mic2, Video, FileImage, ExternalLink, Edit3 } from "lucide-react";
+import { useState } from "react";
+import { ChevronDown, ChevronUp, X, Mic2, Video, FileImage, ExternalLink, Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type MediaKind = "audio" | "video" | "image";
@@ -11,20 +11,30 @@ interface MediaBlockProps {
   label: string;
   size: string;
   src: string;
+  codeLine?: string; // The original code line from content
   transcription?: string;
   onRemove?: () => void;
   onUpdate?: (updates: { label?: string; transcription?: string }) => void;
 }
 
-export function MediaBlock({ kind, label, size, src, transcription, onRemove, onUpdate }: MediaBlockProps) {
+export function MediaBlock({ kind, label, size, src, codeLine, transcription, onRemove, onUpdate }: MediaBlockProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditingLabel, setIsEditingLabel] = useState(false);
   const [editedLabel, setEditedLabel] = useState(label);
+  const [copied, setCopied] = useState(false);
 
   const handleSaveLabel = () => {
     setIsEditingLabel(false);
     if (editedLabel !== label && onUpdate) {
       onUpdate({ label: editedLabel });
+    }
+  };
+
+  const handleCopyCode = async () => {
+    if (codeLine) {
+      await navigator.clipboard.writeText(codeLine);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
   };
 
@@ -92,6 +102,22 @@ export function MediaBlock({ kind, label, size, src, transcription, onRemove, on
           )}
         </div>
       </div>
+
+      {/* Code Line - Highlighted source */}
+      {codeLine && (
+        <div className="flex items-center gap-2 px-3 py-2 bg-[#1a1a1a] border-b border-white/5">
+          <code className="flex-1 text-xs font-mono text-emerald-400/80 truncate">
+            {codeLine}
+          </code>
+          <button
+            onClick={handleCopyCode}
+            className="flex items-center gap-1 rounded px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+          >
+            {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+            {copied ? "Copied" : "Copy"}
+          </button>
+        </div>
+      )}
 
       {/* Media Player */}
       <div className="bg-black">
