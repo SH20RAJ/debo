@@ -13,16 +13,24 @@ export const metadata: Metadata = {
   description: "Debo Dashboard",
 };
 
-export default async function DashboardPage() {
+export default async function DashboardPage(props: {
+  searchParams: Promise<{ q?: string; sort?: string; page?: string }>;
+}) {
+  const searchParams = await props.searchParams;
   const userId = await resolveUserId(undefined, true);
   if (!userId) redirect("/join");
 
   const user = await stackServerApp.getUser();
   if (!user) redirect("/join");
 
+  const query = searchParams.q || "";
+  const sort = (searchParams.sort as "asc" | "desc") || "desc";
+  const page = parseInt(searchParams.page || "1", 10);
   const pageSize = 12;
-  const journals = await getJournals("desc", pageSize, 0, userId, "");
-  const totalCount = await getJournalsCount("", userId);
+  const offset = (page - 1) * pageSize;
+
+  const journals = await getJournals(sort, pageSize, offset, userId, query);
+  const totalCount = await getJournalsCount(query, userId);
 
   const firstName = (user.displayName ?? "there").split(" ")[0];
 
@@ -66,8 +74,8 @@ export default async function DashboardPage() {
           </div>
           <JournalsGrid
             journals={journals}
-            initialQuery=""
-            initialSort="desc"
+            initialQuery={query}
+            initialSort={sort}
             totalCount={totalCount}
           />
         </section>

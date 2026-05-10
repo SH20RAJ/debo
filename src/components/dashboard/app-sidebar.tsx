@@ -13,9 +13,7 @@ import {
   Sparkles,
   Zap,
   BarChart3,
-  FileText,
   Plug,
-  Brain,
   Clock,
   Terminal,
 } from "lucide-react"
@@ -59,29 +57,29 @@ const groups: { title: string; items: (NavItem | { type: 'submenu'; title: strin
   {
     title: "Main",
     items: [
-      { title: "Home", href: "/dashboard", icon: Home, color: "text-duo-green", exact: true },
+      { title: "Home", href: "/dashboard", icon: Home, color: "text-duo-macaw", exact: true },
       {
         type: 'submenu',
         title: "Talk",
         href: "/dashboard/talk",
         icon: MessageSquareText,
-        color: "text-duo-blue",
+        color: "text-duo-macaw",
         items: [
-          { title: "Ask", href: "/dashboard/ask", icon: Sparkles, color: "text-duo-purple" },
-          { title: "Capture", href: "/dashboard/capture", icon: Mic2, color: "text-duo-orange" },
-          { title: "Connectors", href: "/dashboard/connectors", icon: Plug, color: "text-duo-cyan" },
-          { title: "Insights", href: "/dashboard/insights", icon: BarChart3, color: "text-duo-pink" },
-          { title: "Journals", href: "/dashboard/journals", icon: Library, color: "text-duo-blue" },
-          { title: "Timeline", href: "/dashboard/timeline", icon: Clock, color: "text-duo-yellow" },
+          { title: "Ask", href: "/dashboard/ask", icon: Sparkles, color: "text-duo-macaw" },
+          { title: "Capture", href: "/dashboard/capture", icon: Mic2, color: "text-duo-macaw" },
+          { title: "Connectors", href: "/dashboard/connectors", icon: Plug, color: "text-duo-macaw" },
+          { title: "Insights", href: "/dashboard/insights", icon: BarChart3, color: "text-duo-macaw" },
+          { title: "Journals", href: "/dashboard/journals", icon: Library, color: "text-duo-macaw" },
+          { title: "Timeline", href: "/dashboard/timeline", icon: Clock, color: "text-duo-macaw" },
         ]
       },
-      { title: "MCP", href: "/dashboard/mcp", icon: Terminal, color: "text-duo-green" },
+      { title: "MCP", href: "/dashboard/mcp", icon: Terminal, color: "text-duo-macaw" },
     ],
   },
   {
     title: "Memory",
     items: [
-      { title: "Memories", href: "/dashboard/memories", icon: Database, color: "text-duo-green" },
+      { title: "Memories", href: "/dashboard/memories", icon: Database, color: "text-duo-macaw" },
     ],
   },
 ];
@@ -100,27 +98,27 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   };
 
   return (
-    <Sidebar variant="inset" collapsible="icon" {...props} className="border-r-2 border-duo-swan bg-background">
-      <SidebarHeader className="flex h-20 items-center px-5 gap-4">
-        <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors -ml-2" />
-        <Link href="/dashboard" className="flex items-center gap-3 w-full overflow-hidden whitespace-nowrap">
-          <span className="flex size-10 items-center justify-center rounded-2xl border-2 border-duo-feather bg-duo-green text-sm font-black text-white shadow-[0_4px_0_var(--duo-feather-shadow)]">
-            D
-          </span>
-          <span className="font-heading text-2xl font-black tracking-tight text-duo-green group-data-[collapsible=icon]:hidden">
+    <Sidebar variant="inset" collapsible="icon" {...props} className="border-r-4 border-duo-swan bg-background">
+      <SidebarHeader className="flex h-24 items-center px-6 gap-4">
+        <SidebarTrigger className="text-duo-wolf hover:text-duo-eel transition-colors -ml-2" />
+        <Link href="/dashboard" className="flex items-center gap-3 w-full overflow-hidden whitespace-nowrap group">
+          <div className="flex size-10 items-center justify-center rounded-2xl border-2 border-duo-macaw bg-duo-macaw/10 text-duo-macaw shadow-[0_4px_0_var(--duo-macaw-shadow)] transition-transform group-hover:-translate-y-0.5">
+            <Zap className="h-6 w-6 fill-current" />
+          </div>
+          <span className="font-heading text-3xl font-black tracking-tight text-duo-eel group-data-[collapsible=icon]:hidden">
             debo
           </span>
         </Link>
       </SidebarHeader>
 
-      <SidebarContent className="gap-6 px-3">
+      <SidebarContent className="gap-8 px-4 pt-4">
         {groups.map((group) => (
           <SidebarGroup key={group.title} className="p-0">
-            <SidebarGroupLabel className="mb-3 px-2 text-[11px] font-black uppercase tracking-[0.2em] text-duo-swan group-data-[collapsible=icon]:hidden">
+            <SidebarGroupLabel className="mb-4 px-3 text-[11px] font-black uppercase tracking-[0.3em] text-duo-swan group-data-[collapsible=icon]:hidden">
               {group.title}
             </SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu className="gap-2">
+              <SidebarMenu className="gap-3">
                 {group.items.map((item: any) => {
                   if (item.type === 'submenu') {
                     const open = isSubmenuOpen(item.items);
@@ -129,26 +127,26 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         <SidebarMenuButton
                           isActive={isActive(item.href)}
                           tooltip={item.title}
-                          className="h-12 rounded-2xl border-2 border-transparent text-xs font-black uppercase tracking-wider text-duo-wolf transition hover:border-duo-swan hover:bg-duo-polar data-[active=true]:border-duo-macaw data-[active=true]:bg-duo-blue/10 data-[active=true]:text-duo-blue"
+                          className="h-14 rounded-2xl border-2 border-transparent text-[13px] font-black uppercase tracking-wider text-duo-wolf transition-all hover:border-duo-swan hover:bg-duo-polar data-[active=true]:border-duo-macaw data-[active=true]:bg-duo-macaw/10 data-[active=true]:text-duo-macaw shadow-none active:translate-y-1 active:shadow-none"
                         >
-                          <Link href={item.href} className="flex items-center gap-3 w-full">
-                            <item.icon className={`h-5 w-5 ${item.color}`} />
-                            <span>{item.title}</span>
-                            <ChevronRight className={cn("ml-auto h-4 w-4 transition-transform group-data-[collapsible=icon]:hidden", open && "rotate-90")} />
+                          <Link href={item.href} className="flex items-center gap-4 w-full">
+                            <item.icon className={cn("h-6 w-6 transition-transform", open && "scale-110")} />
+                            <span className="flex-grow">{item.title}</span>
+                            <ChevronRight className={cn("ml-auto h-5 w-5 transition-transform group-data-[collapsible=icon]:hidden", open && "rotate-90")} />
                           </Link>
                         </SidebarMenuButton>
                         {open && (
-                          <div className="ml-4 mt-1 space-y-1 group-data-[collapsible=icon]:hidden">
+                          <div className="ml-6 mt-3 space-y-2 group-data-[collapsible=icon]:hidden border-l-2 border-duo-swan/30 pl-4">
                             {item.items.map((subItem: SubItem) => (
                               <SidebarMenuButton
                                 key={subItem.href}
                                 asChild
                                 isActive={isActive(subItem.href)}
                                 tooltip={subItem.title}
-                                className="h-10 rounded-xl border-0 text-xs font-bold uppercase tracking-wider text-duo-wolf/70 transition hover:text-duo-wolf hover:bg-duo-polar/50 data-[active=true]:bg-duo-blue/10 data-[active=true]:text-duo-blue"
+                                className="h-12 rounded-xl border-2 border-transparent text-xs font-black uppercase tracking-widest text-duo-wolf/60 transition-all hover:border-duo-swan/50 hover:bg-duo-polar data-[active=true]:border-duo-macaw/30 data-[active=true]:bg-duo-macaw/5 data-[active=true]:text-duo-macaw"
                               >
                                 <Link href={subItem.href} className="flex items-center gap-3">
-                                  <subItem.icon className={`h-4 w-4 ${subItem.color}`} />
+                                  <subItem.icon className="h-5 w-5" />
                                   <span>{subItem.title}</span>
                                 </Link>
                               </SidebarMenuButton>
@@ -165,10 +163,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         asChild
                         isActive={isActive(item.href, item.exact)}
                         tooltip={item.title}
-                        className="h-12 rounded-2xl border-2 border-transparent text-xs font-black uppercase tracking-wider text-duo-wolf transition hover:border-duo-swan hover:bg-duo-polar data-[active=true]:border-duo-macaw data-[active=true]:bg-duo-blue/10 data-[active=true]:text-duo-blue"
+                        className="h-14 rounded-2xl border-2 border-transparent text-[13px] font-black uppercase tracking-wider text-duo-wolf transition-all hover:border-duo-swan hover:bg-duo-polar data-[active=true]:border-duo-macaw data-[active=true]:bg-duo-macaw/10 data-[active=true]:text-duo-macaw shadow-none active:translate-y-1 active:shadow-none"
                       >
                         <Link href={item.href}>
-                          <item.icon className={`h-5 w-5 ${item.color}`} />
+                          <item.icon className="h-6 w-6" />
                           <span>{item.title}</span>
                         </Link>
                       </SidebarMenuButton>
@@ -181,17 +179,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         ))}
       </SidebarContent>
 
-      <SidebarFooter className="space-y-3 p-3 pt-0">
-        <SidebarMenu className="gap-2">
+      <SidebarFooter className="space-y-4 p-4 pt-0">
+        <SidebarMenu className="gap-3">
             <SidebarMenuItem>
                 <SidebarMenuButton
                     asChild
                     isActive={pathname === "/dashboard/settings"}
                     tooltip="Settings"
-                    className="h-12 rounded-2xl border-2 border-transparent text-xs font-black uppercase tracking-wider text-duo-wolf transition hover:border-duo-swan hover:bg-duo-polar data-[active=true]:border-duo-swan data-[active=true]:bg-duo-polar"
+                    className="h-14 rounded-2xl border-2 border-transparent text-[13px] font-black uppercase tracking-wider text-duo-wolf transition-all hover:border-duo-swan hover:bg-duo-polar data-[active=true]:border-duo-swan data-[active=true]:bg-duo-swan/20"
                 >
                     <Link href="/dashboard/settings">
-                        <Settings className="h-5 w-5 text-duo-wolf" />
+                        <Settings className="h-6 w-6" />
                         <span>Settings</span>
                     </Link>
                 </SidebarMenuButton>
@@ -201,20 +199,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <SidebarMenuButton
                     onClick={() => user?.signOut()}
                     tooltip="Sign Out"
-                    className="h-12 rounded-2xl border-2 border-transparent text-xs font-black uppercase tracking-wider text-duo-wolf transition hover:border-duo-cardinal hover:bg-duo-red/10 hover:text-duo-red"
+                    className="h-14 rounded-2xl border-2 border-transparent text-[13px] font-black uppercase tracking-wider text-duo-cardinal transition-all hover:border-duo-cardinal hover:bg-duo-cardinal/10 shadow-none active:translate-y-1 active:shadow-none"
                 >
-                    <LogOut className="h-5 w-5" />
+                    <LogOut className="h-6 w-6" />
                     <span>Sign Out</span>
                 </SidebarMenuButton>
             </SidebarMenuItem>
         </SidebarMenu>
 
-        <div className="flex flex-col gap-3 px-2 pb-1">
+        <div className="flex flex-col gap-4 px-3 pb-2 border-t-2 border-duo-swan/30 pt-6">
           <div className="flex items-center justify-between w-full group-data-[collapsible=icon]:justify-center">
             <ThemeToggle />
-            <div className="flex items-center gap-2 group-data-[collapsible=icon]:hidden">
-              <div className="h-3 w-3 rounded-full bg-duo-green" />
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-duo-green">Synced</span>
+            <div className="flex items-center gap-3 group-data-[collapsible=icon]:hidden">
+              <div className="h-2.5 w-2.5 rounded-full bg-duo-feather shadow-[0_0_8px_var(--duo-feather)]" />
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-duo-feather">Live Sync</span>
             </div>
           </div>
         </div>
