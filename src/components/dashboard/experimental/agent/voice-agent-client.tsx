@@ -127,7 +127,7 @@ function AgentInterface({ onEnd }: { onEnd: () => void }) {
     if (localParticipant) {
         setIsMuted(!localParticipant.isMicrophoneEnabled);
     }
-  }, [localParticipant?.isMicrophoneEnabled]);
+  }, [localParticipant]);
 
   const toggleMute = async () => {
     const nextMute = !isMuted;

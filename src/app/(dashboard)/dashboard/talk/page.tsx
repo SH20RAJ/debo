@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import {
-  BarVisualizer,
   LiveKitRoom,
   RoomAudioRenderer,
   useLocalParticipant,
