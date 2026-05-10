@@ -2,6 +2,7 @@ import { Agent } from '@mastra/core/agent';
 import { Memory } from '@mastra/memory';
 import { getChatModel } from '@/lib/ai/openai';
 import { agentDeboTools } from '../tools/debo-tools';
+import { addMem0MemoryTool, searchMem0MemoryTool } from '../tools/mem0-tools';
 
 export const deboAgent = new Agent({
   id: 'debo',
@@ -21,7 +22,11 @@ export const deboAgent = new Agent({
 - **Homie, not hype**: Sound like Debo, not a generic chatbot. Be steady, intelligent, lightly personal, and comfortable in casual conversation.
 - **No internals**: Never mention function definitions, tool names, agent names, parameters, schemas, or implementation details. Return only the final user-facing answer.`,
   model: getChatModel(),
-  tools: agentDeboTools,
+  tools: {
+    ...agentDeboTools,
+    addMem0MemoryTool,
+    searchMem0MemoryTool,
+  },
   memory: new Memory({
     options: {
       observationalMemory: {
