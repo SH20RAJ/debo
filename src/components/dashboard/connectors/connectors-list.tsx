@@ -30,20 +30,31 @@ export function ConnectorsList({
   const router = useRouter();
 
   async function handleConnect(providerConfigKey: string) {
-    if (!process.env.NEXT_PUBLIC_NANGO_PUBLIC_KEY) {
-      toast.error("Nango public key is missing.");
-      return;
-    }
-
     setIsConnecting(providerConfigKey);
     try {
-      const nango = new Nango({ publicKey: process.env.NEXT_PUBLIC_NANGO_PUBLIC_KEY });
-      await nango.auth(providerConfigKey, userId);
+      // 1. Get session token from backend
+      const sessionRes = await fetch("/api/auth/nango/session", { method: "POST" });
+      const { token, error: sessionError } = await sessionRes.json();
+      
+      if (!sessionRes.ok || sessionError) {
+        throw new Error(sessionError || "Failed to create Nango session");
+      }
+
+      // 2. Initialize Nango with session token
+      // Note: With sessions, publicKey is often not required or is part of the session
+      const nango = new Nango({ 
+        publicKey: process.env.NEXT_PUBLIC_NANGO_PUBLIC_KEY!, // Keep it for compatibility if needed
+      });
+      
+      await nango.auth(providerConfigKey, userId, {
+        sessionToken: token
+      });
+
       toast.success(`${getConnectorName(providerConfigKey)} connected`);
       router.refresh();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Nango auth error:", error);
-      toast.error(`Could not connect ${getConnectorName(providerConfigKey)}.`);
+      toast.error(`Could not connect ${getConnectorName(providerConfigKey)}: ${error.message}`);
     } finally {
       setIsConnecting(null);
     }

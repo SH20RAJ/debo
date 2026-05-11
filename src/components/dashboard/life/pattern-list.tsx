@@ -23,9 +23,9 @@ export function PatternList({ patterns }: { patterns: Pattern[] }) {
               <span className="font-black text-duo-eel">{p.entity}</span>
               <div className="flex items-center gap-4">
                 <span className="text-xs font-black text-duo-wolf uppercase tracking-wider">{p.count}x</span>
-                <div className="h-4 w-24 rounded-full bg-duo-swan overflow-hidden">
+                <div className="h-4 w-24 rounded-full bg-duo-swan">
                   <div 
-                    className="h-full bg-duo-macaw shadow-[0_2px_0_var(--duo-macaw-shadow)]" 
+                    className="h-full rounded-full bg-duo-macaw shadow-[0_2px_0_var(--duo-macaw-shadow)]" 
                     style={{ width: `${Math.min(100, (p.count / maxCount) * 100)}%` }}
                   />
                 </div>

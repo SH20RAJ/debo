@@ -18,6 +18,29 @@ export class NangoEdge {
         };
     }
 
+    async createConnectSession(userId: string) {
+        const response = await fetch(`${this.baseUrl}/connect/sessions`, {
+            method: "POST",
+            headers: this.headers,
+            body: JSON.stringify({
+                end_user: {
+                    id: userId,
+                },
+                tags: {
+                    end_user_id: userId,
+                }
+            }),
+        });
+
+        if (!response.ok) {
+            const error = await response.text();
+            throw new Error(`Nango createConnectSession failed: ${error}`);
+        }
+
+        const data = await response.json() as { token: string };
+        return data.token;
+    }
+
     async listConnections(connectionId: string) {
         const url = new URL(`${this.baseUrl}/connection`);
         url.searchParams.append("connectionId", connectionId);
@@ -88,6 +111,28 @@ export class NangoEdge {
 
         const data = await response.json();
         return { data };
+    }
+
+    async triggerAction(providerConfigKey: string, connectionId: string, actionName: string, input?: unknown) {
+        const url = new URL(`${this.baseUrl}/action/trigger`);
+        
+        const response = await fetch(url.toString(), {
+            method: "POST",
+            headers: this.headers,
+            body: JSON.stringify({
+                provider_config_key: providerConfigKey,
+                connection_id: connectionId,
+                action_name: actionName,
+                input: input || {},
+            }),
+        });
+
+        if (!response.ok) {
+            const error = await response.text();
+            throw new Error(`Nango triggerAction failed: ${error}`);
+        }
+
+        return await response.json();
     }
 }
 
