@@ -149,16 +149,15 @@ export async function deleteConnector(userId: string, connectorId: string) {
 
 export async function syncConnector(userId: string, connectorId: string) {
   try {
-    await db.update(connectors)
-      .set({ syncStatus: "syncing", updatedAt: new Date() })
+    const [existing] = await db.select()
+      .from(connectors)
       .where(and(eq(connectors.id, connectorId), eq(connectors.userId, userId)));
 
+    if (!existing) return { success: false, error: "Connector not found" };
+
     if (existing.connectorType === "google-drive") {
-      const { syncGoogleDriveJournals } = await import("./media-journals");
-      const syncResult = await syncGoogleDriveJournals(userId);
-      if (!syncResult.success) {
-        throw new Error(syncResult.error);
-      }
+      // Legacy sync is disabled. Agent tools are now used for Drive.
+      return { success: true, message: "Use AI Agent tools to interact with Drive." };
     }
 
     await db.update(connectors)
