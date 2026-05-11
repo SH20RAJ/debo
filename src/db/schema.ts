@@ -211,3 +211,51 @@ export const connectorEvents = pgTable("connector_event", {
     createdAtIdx: index("connector_event_created_at_idx").on(table.createdAt),
 }));
 
+// Google Drive credentials for storing media
+export const googleDriveCredentials = pgTable("google_drive_credential", {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull().references(() => user.id).unique(),
+    accessToken: text("access_token"),
+    refreshToken: text("refresh_token"),
+    expiryDate: timestamp("expiry_date"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+    userIdIdx: index("gdc_user_id_idx").on(table.userId),
+}));
+
+// Video journals stored on Google Drive
+export const videoJournals = pgTable("video_journal", {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull().references(() => user.id),
+    title: text("title").notNull(),
+    driveFileId: text("drive_file_id").notNull(),
+    driveWebUrl: text("drive_web_url"),
+    thumbnailUrl: text("thumbnail_url"),
+    duration: integer("duration"), // seconds
+    transcript: text("transcript"),
+    folderId: text("folder_id"), // Google Drive folder ID
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+    userIdIdx: index("video_journal_user_id_idx").on(table.userId),
+    createdAtIdx: index("video_journal_created_at_idx").on(table.createdAt),
+}));
+
+// Audio journals stored on Google Drive
+export const audioJournals = pgTable("audio_journal", {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull().references(() => user.id),
+    title: text("title").notNull(),
+    driveFileId: text("drive_file_id").notNull(),
+    driveWebUrl: text("drive_web_url"),
+    transcript: text("transcript"),
+    duration: integer("duration"), // seconds
+    folderId: text("folder_id"), // Google Drive folder ID
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+    userIdIdx: index("audio_journal_user_id_idx").on(table.userId),
+    createdAtIdx: index("audio_journal_created_at_idx").on(table.createdAt),
+}));
+

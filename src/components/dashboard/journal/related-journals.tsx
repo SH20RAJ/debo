@@ -6,8 +6,10 @@ import { Sparkles } from "lucide-react";
 
 interface RelatedJournalProps {
   id: string;
+  type?: "text" | "video" | "audio";
   title?: string | null;
-  content: string;
+  content?: string;
+  transcript?: string | null;
   createdAt: string | Date;
   tags?: string[] | null;
 }
@@ -37,16 +39,21 @@ export function RelatedJournals({ journals }: { journals: RelatedJournalProps[] 
 }
 
 function RelatedJournalCard({ journal }: { journal: RelatedJournalProps }) {
-  const preview = journal.content.slice(0, 140).replace(/[#*`]/g, "");
+  const content = journal.content || journal.transcript || "";
+  const preview = content.slice(0, 140).replace(/[#*`]/g, "");
+  const type = journal.type || "text";
 
   return (
     <Link 
-      href={`/dashboard/journal/${journal.id}`}
+      href={`/dashboard/journal/${journal.id}?type=${type}`}
       className="group flex flex-col rounded-[2rem] border-4 border-duo-swan/30 bg-white p-6 transition-all duration-300 hover:border-duo-macaw/50 hover:-translate-y-2 hover:shadow-[0_12px_0_var(--duo-macaw-shadow)] active:translate-y-1 active:shadow-none"
     >
       <div className="space-y-4">
         <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-duo-swan">
           <span>{format(new Date(journal.createdAt), "MMM d, yyyy")}</span>
+          {journal.type && journal.type !== "text" && (
+            <span className="text-duo-macaw/70 font-black ml-auto lowercase">{journal.type}</span>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -56,7 +63,7 @@ function RelatedJournalCard({ journal }: { journal: RelatedJournalProps }) {
             </h3>
           )}
           <p className="text-sm font-bold text-duo-wolf line-clamp-3 leading-relaxed">
-            {preview}...
+            {preview || (type === "video" ? "Processing video..." : type === "audio" ? "Processing audio..." : "No content")}{preview ? "..." : ""}
           </p>
         </div>
 

@@ -1,6 +1,5 @@
 import {
   getUserPreferences,
-  getNangoConnections,
   getAIProviders,
 } from "@/actions/settings";
 import { SettingsForm } from "@/components/dashboard/settings/settings-form";
@@ -17,9 +16,8 @@ export default async function SettingsPage() {
   const user = await stackServerApp.getUser();
   if (!user) redirect("/join");
 
-  const [preferences, connections, aiProvidersList] = await Promise.all([
+  const [preferences, aiProvidersList] = await Promise.all([
     getUserPreferences(),
-    getNangoConnections(),
     getAIProviders(),
   ]);
 
@@ -35,7 +33,7 @@ export default async function SettingsPage() {
               Settings
             </h1>
             <p className="mt-3 max-w-2xl text-base font-bold leading-7 text-duo-wolf">
-              Connect apps, pick your AI, and keep capture ready.
+              Pick your AI and keep capture ready.
             </p>
           </div>
           <div className="rounded-2xl border-2 border-duo-feather bg-duo-green/10 px-4 py-3 text-sm font-black text-duo-green">
@@ -45,7 +43,6 @@ export default async function SettingsPage() {
 
         <SettingsForm
           initialData={preferences}
-          connections={connections}
           aiProviders={aiProvidersList}
           userId={user.id}
         />

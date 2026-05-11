@@ -16,7 +16,8 @@ export type ConnectorType =
   | "trello"
   | "asana"
   | "jira"
-  | "custom";
+  | "custom"
+  | "google-drive";
 
 export type ConnectorConfig = {
   name: string;
@@ -152,8 +153,13 @@ export async function syncConnector(userId: string, connectorId: string) {
       .set({ syncStatus: "syncing", updatedAt: new Date() })
       .where(and(eq(connectors.id, connectorId), eq(connectors.userId, userId)));
 
-    // TODO: Implement actual sync logic per connector type
-    // This is a placeholder that marks sync as success after a delay
+    if (existing.connectorType === "google-drive") {
+      const { syncGoogleDriveJournals } = await import("./media-journals");
+      const syncResult = await syncGoogleDriveJournals(userId);
+      if (!syncResult.success) {
+        throw new Error(syncResult.error);
+      }
+    }
 
     await db.update(connectors)
       .set({

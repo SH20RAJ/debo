@@ -1,13 +1,13 @@
 import { stackServerApp } from "@/stack/server";
 import { redirect } from "next/navigation";
-import { getJournals, getJournalsCount } from "@/actions/journals";
+import { getAllJournals, getAllJournalsCount } from "@/actions/media-journals";
 import { JournalsGrid } from "@/components/dashboard/journal/journals-grid";
 import { Metadata } from "next";
 
 export default async function JournalsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; sort?: "asc" | "desc"; page?: string }>;
+  searchParams: Promise<{ q?: string; sort?: "asc" | "desc"; page?: string; type?: "all" | "text" | "video" | "audio" }>;
 }) {
   const user = await stackServerApp.getUser();
   if (!user) redirect("/join");
@@ -16,10 +16,12 @@ export default async function JournalsPage({
   const query = params.q || "";
   const sort = params.sort || "desc";
   const page = parseInt(params.page || "1", 10);
+  const filter = params.type || "all";
   const pageSize = 12;
 
-  const journals = await getJournals(sort, pageSize, (page - 1) * pageSize, user.id, query);
-  const totalCount = await getJournalsCount(query, user.id);
+  // Fetch all types of journals (text, video, audio)
+  const journals = await getAllJournals(sort, pageSize, (page - 1) * pageSize, filter, user.id);
+  const totalCount = await getAllJournalsCount(filter, user.id);
 
   return (
     <div className="flex-1 bg-background min-h-screen">
@@ -40,6 +42,7 @@ export default async function JournalsPage({
           initialQuery={query}
           initialSort={sort}
           totalCount={totalCount}
+          initialFilter={filter}
         />
       </div>
     </div>

@@ -1,38 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type ComponentType } from "react";
-import { useRouter } from "next/navigation";
-import Nango from "@nangohq/frontend";
+import { type ComponentType } from "react";
 import {
-  CalendarDays,
   Cloud,
-  FileText,
-  HardDrive,
   Images,
   Link2,
-  Link2Off,
-  Loader2,
-  Mail,
-  MessageSquare,
   Mic,
   Radio,
   ShieldCheck,
   Sparkles,
   Video,
 } from "lucide-react";
-import { toast } from "sonner";
-import { deleteNangoConnection } from "@/actions/settings";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PROVIDERS } from "@/config/providers";
+import { CONNECTORS } from "@/config/connectors";
 import { cn } from "@/lib/utils";
 import { ProviderCard } from "./provider-card";
-
-type Connection = {
-  providerConfigKey?: string;
-  provider_config_key?: string;
-};
 
 type AIProvider = {
   providerId: string;
@@ -41,136 +26,37 @@ type AIProvider = {
   isEnabled: boolean;
 };
 
-const connectors = [
-  {
-    id: "google-calendar",
-    name: "Google Calendar",
-    detail: "Meetings and reminders",
-    icon: CalendarDays,
-    color: "text-duo-blue",
-    surface: "border-duo-macaw bg-duo-blue/10",
-  },
-  {
-    id: "google-mail",
-    name: "Gmail",
-    detail: "Important email context",
-    icon: Mail,
-    color: "text-duo-red",
-    surface: "border-duo-cardinal bg-duo-red/10",
-  },
-  {
-    id: "google-photos",
-    name: "Google Photos",
-    detail: "Photos and videos",
-    icon: Images,
-    color: "text-duo-green",
-    surface: "border-duo-feather bg-duo-green/10",
-  },
-  {
-    id: "google-drive",
-    name: "Google Drive",
-    detail: "Docs and files",
-    icon: HardDrive,
-    color: "text-duo-orange",
-    surface: "border-duo-fox bg-duo-orange/10",
-  },
-  {
-    id: "slack",
-    name: "Slack",
-    detail: "Team memory",
-    icon: MessageSquare,
-    color: "text-duo-purple",
-    surface: "border-duo-beetle bg-duo-purple/10",
-  },
-  {
-    id: "notion",
-    name: "Notion",
-    detail: "Notes and pages",
-    icon: FileText,
-    color: "text-duo-eel",
-    surface: "border-duo-swan bg-duo-polar",
-  },
-];
-
 export function SettingsForm({
   initialData,
-  connections = [],
   aiProviders = [],
   userId,
 }: {
   initialData?: {
     activeProvider?: string | null;
   } | null;
-  connections?: Connection[];
   aiProviders?: AIProvider[];
   userId: string;
 }) {
-  const [isConnecting, setIsConnecting] = useState<string | null>(null);
-  const router = useRouter();
-
-  const connectedCount = connectors.filter((connector) => isConnected(connector.id)).length;
   const activeProviderName =
     PROVIDERS.find((provider) => provider.id === initialData?.activeProvider)?.name || "Cloudflare";
-
-  async function handleConnect(providerConfigKey: string) {
-    if (!process.env.NEXT_PUBLIC_NANGO_PUBLIC_KEY) {
-      toast.error("Nango public key is missing.");
-      return;
-    }
-
-    setIsConnecting(providerConfigKey);
-    try {
-      const nango = new Nango({ publicKey: process.env.NEXT_PUBLIC_NANGO_PUBLIC_KEY });
-      await nango.auth(providerConfigKey, userId);
-      toast.success(`${getConnectorName(providerConfigKey)} connected`);
-      router.refresh();
-    } catch (error) {
-      console.error("Nango auth error:", error);
-      toast.error(`Could not connect ${getConnectorName(providerConfigKey)}.`);
-    } finally {
-      setIsConnecting(null);
-    }
-  }
-
-  async function handleDisconnect(providerConfigKey: string) {
-    setIsConnecting(providerConfigKey);
-    try {
-      const ok = await deleteNangoConnection(providerConfigKey);
-      if (!ok) throw new Error("Disconnect failed");
-      toast.success(`${getConnectorName(providerConfigKey)} disconnected`);
-      router.refresh();
-    } catch {
-      toast.error("Could not disconnect.");
-    } finally {
-      setIsConnecting(null);
-    }
-  }
-
-  function isConnected(provider: string) {
-    return connections.some((connection) => {
-      const key = connection.providerConfigKey || connection.provider_config_key;
-      return key === provider;
-    });
-  }
 
   function getSavedConfig(providerId: string) {
     return aiProviders.find((provider) => provider.providerId === providerId);
   }
 
-  function getConnectorName(providerConfigKey: string) {
-    return connectors.find((connector) => connector.id === providerConfigKey)?.name || providerConfigKey;
-  }
-
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-3">
-        <StatusTile
-          icon={Link2}
-          label="Apps"
-          value={`${connectedCount}/${connectors.length}`}
-          detail="connected"
-          color="text-duo-green"
-        />
+        <Link href="/dashboard/connectors" className="group">
+          <StatusTile
+            icon={Link2}
+            label="Apps"
+            value="Connect"
+            detail="manage external apps"
+            color="text-duo-green"
+            className="group-hover:border-duo-feather transition-colors"
+          />
+        </Link>
         <StatusTile
           icon={Sparkles}
           label="AI"
@@ -187,76 +73,12 @@ export function SettingsForm({
         />
       </div>
 
-      <Tabs defaultValue="connectors" className="space-y-6">
-        <TabsList className="grid h-auto w-full grid-cols-2 gap-2 rounded-2xl border-2 border-duo-swan bg-duo-snow p-2 md:grid-cols-4">
-          <SettingsTab value="connectors" icon={Link2} label="Apps" />
+      <Tabs defaultValue="ai" className="space-y-6">
+        <TabsList className="grid h-auto w-full grid-cols-2 gap-2 rounded-2xl border-2 border-duo-swan bg-duo-snow p-2 md:grid-cols-3">
           <SettingsTab value="ai" icon={Sparkles} label="AI" />
           <SettingsTab value="capture" icon={Video} label="Capture" />
           <SettingsTab value="voice" icon={Mic} label="Voice" />
         </TabsList>
-
-        <TabsContent value="connectors" className="mt-0 space-y-4">
-          <SectionHeader
-            title="Connect apps"
-            text="Debo can use connected apps after you approve them."
-          />
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {connectors.map((connector) => {
-              const connected = isConnected(connector.id);
-              const loading = isConnecting === connector.id;
-              const Icon = connector.icon;
-
-              return (
-                <div key={connector.id} className="duo-card flex min-h-48 flex-col justify-between p-5">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className={cn("flex h-12 w-12 items-center justify-center rounded-2xl border-2", connector.surface)}>
-                      <Icon className={cn("h-6 w-6", connector.color)} />
-                    </div>
-                    <span
-                      className={cn(
-                        "rounded-full border-2 px-3 py-1 text-[10px] font-black uppercase tracking-wider",
-                        connected
-                          ? "border-duo-feather bg-duo-green/10 text-duo-green"
-                          : "border-duo-swan bg-duo-polar text-duo-wolf"
-                      )}
-                    >
-                      {connected ? "On" : "Off"}
-                    </span>
-                  </div>
-                  <div className="space-y-1">
-                    <h3 className="text-lg font-black text-duo-eel">{connector.name}</h3>
-                    <p className="text-sm font-bold text-duo-wolf">{connector.detail}</p>
-                  </div>
-                  {connected ? (
-                    <Button
-                      type="button"
-                      variant="duolingo-outline"
-                      size="sm"
-                      className="w-full gap-2"
-                      disabled={loading}
-                      onClick={() => handleDisconnect(connector.id)}
-                    >
-                      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2Off className="h-4 w-4" />}
-                      Disconnect
-                    </Button>
-                  ) : (
-                    <Button
-                      type="button"
-                      variant="duolingo"
-                      size="sm"
-                      className="w-full gap-2"
-                      disabled={loading}
-                      onClick={() => handleConnect(connector.id)}
-                    >
-                      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2 className="h-4 w-4" />}
-                      Connect
-                    </Button>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </TabsContent>
 
         <TabsContent value="ai" className="mt-0 space-y-4">
           <SectionHeader title="AI models" text="Choose the model Debo uses." />
@@ -365,15 +187,17 @@ function StatusTile({
   value,
   detail,
   color,
+  className,
 }: {
   icon: ComponentType<{ className?: string }>;
   label: string;
   value: string;
   detail: string;
   color: string;
+  className?: string;
 }) {
   return (
-    <div className="duo-card flex items-center gap-4 p-5">
+    <div className={cn("duo-card flex items-center gap-4 p-5", className)}>
       <div className="flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-duo-swan bg-duo-polar">
         <Icon className={cn("h-6 w-6", color)} />
       </div>

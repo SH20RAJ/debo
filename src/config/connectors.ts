@@ -1,0 +1,59 @@
+import {
+  CalendarDays,
+  FileText,
+  HardDrive,
+  Images,
+  Mail,
+  MessageSquare,
+} from "lucide-react";
+
+export const CONNECTORS = [
+  {
+    id: "google-calendar",
+    name: "Google Calendar",
+    detail: "Meetings and reminders",
+    icon: CalendarDays,
+    color: "text-duo-blue",
+    surface: "border-duo-macaw bg-duo-blue/10",
+  },
+  {
+    id: "google-mail",
+    name: "Gmail",
+    detail: "Important email context",
+    icon: Mail,
+    color: "text-duo-red",
+    surface: "border-duo-cardinal bg-duo-red/10",
+  },
+  {
+    id: "google-photos",
+    name: "Google Photos",
+    detail: "Photos and videos",
+    icon: Images,
+    color: "text-duo-green",
+    surface: "border-duo-feather bg-duo-green/10",
+  },
+  {
+    id: "google-drive",
+    name: "Google Drive",
+    detail: "Docs and files",
+    icon: HardDrive,
+    color: "text-duo-orange",
+    surface: "border-duo-fox bg-duo-orange/10",
+  },
+  {
+    id: "slack",
+    name: "Slack",
+    detail: "Team memory",
+    icon: MessageSquare,
+    color: "text-duo-purple",
+    surface: "border-duo-beetle bg-duo-purple/10",
+  },
+  {
+    id: "notion",
+    name: "Notion",
+    detail: "Notes and pages",
+    icon: FileText,
+    color: "text-duo-eel",
+    surface: "border-duo-swan bg-duo-polar",
+  },
+];
