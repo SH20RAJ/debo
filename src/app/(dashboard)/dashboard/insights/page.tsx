@@ -8,6 +8,8 @@ import { InsightsHero } from "@/components/dashboard/life/insights-hero";
 import { PatternList } from "@/components/dashboard/life/pattern-list";
 import { BrainCircuit } from "lucide-react";
 
+const INSIGHTS_QUERY = "What do I work on most, who do I meet most, and what stresses me?";
+
 export const metadata: Metadata = {
   title: "Insights",
   description: "Cognitive analysis of your journal patterns.",
@@ -17,18 +19,17 @@ export default async function InsightsPage() {
   const user = await stackServerApp.getUser();
   if (!user) redirect("/join");
 
-  const journalCount = await getJournalsCount();
-  let graph = await queryGraph(
-    "What do I work on most, who do I meet most, and what stresses me?",
-    user.id,
-  );
+  const [journalCount, initialGraph] = await Promise.all([
+    getJournalsCount(),
+    queryGraph(INSIGHTS_QUERY, user.id),
+  ]);
 
-  if (!graph.topPeople.length && journalCount > 0) {
+  let graph = initialGraph;
+
+  // Refresh graph if it's empty but user has journals
+  if (graph.patterns.length === 0 && journalCount > 0) {
     await refreshMemoryGraph(user.id);
-    graph = await queryGraph(
-      "What do I work on most, who do I meet most, and what stresses me?",
-      user.id,
-    );
+    graph = await queryGraph(INSIGHTS_QUERY, user.id);
   }
 
   // Map to new types
