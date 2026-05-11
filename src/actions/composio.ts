@@ -12,14 +12,38 @@ export async function connectComposioApp(appName: string = "googledrive") {
   const user = await stackServerApp.getUser();
   if (!user) throw new Error("Unauthorized");
 
-  const connection = await composio.connections.initiate({
-    appName,
-    entityId: user.id,
-    redirectUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/connectors?composio_success=true`,
-  });
+  try {
+    // 1. Find or create an auth config for the toolkit
+    const authConfigs = await composio.authConfigs.list({
+      toolkit: appName,
+    });
 
-  if (connection.redirectUrl) {
-    redirect(connection.redirectUrl);
+    let authConfigId = authConfigs.items[0]?.id;
+
+    if (!authConfigId) {
+      // Create a default Composio-managed auth config if none exists
+      const newConfig = await composio.authConfigs.create(appName, {
+        type: "use_composio_managed_auth",
+        name: `${appName} Default Auth`,
+      });
+      authConfigId = newConfig.id;
+    }
+
+    // 2. Create a connection link
+    const connection = await composio.connectedAccounts.link(
+      user.id,
+      authConfigId,
+      {
+        callbackUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/connectors?composio_success=true`,
+      }
+    );
+
+    if (connection.redirectUrl) {
+      redirect(connection.redirectUrl);
+    }
+  } catch (error) {
+    console.error("Error initiating Composio connection:", error);
+    throw error;
   }
 }
 
@@ -31,12 +55,12 @@ export async function getComposioActiveApps() {
   if (!user) return [];
 
   try {
-    const connections = await composio.connections.list({
-      entityId: user.id,
+    const connections = await composio.connectedAccounts.list({
+      userIds: [user.id],
     });
-    return connections
+    return connections.items
       .filter((c) => c.status === "ACTIVE")
-      .map((c) => c.appName.toLowerCase());
+      .map((c) => c.toolkit.slug.toLowerCase());
   } catch (error) {
     console.error("Error fetching Composio connections:", error);
     return [];
