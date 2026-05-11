@@ -1,4 +1,3 @@
-import { getNangoConnections } from "@/actions/settings";
 import { getComposioActiveApps } from "@/actions/composio";
 import { ConnectorsList } from "@/components/dashboard/connectors/connectors-list";
 import { stackServerApp } from "@/stack/server";
@@ -14,10 +13,7 @@ export default async function ConnectorsPage() {
   const user = await stackServerApp.getUser();
   if (!user) redirect("/join");
 
-  const [connections, composioApps] = await Promise.all([
-    getNangoConnections(),
-    getComposioActiveApps(),
-  ]);
+  const composioApps = await getComposioActiveApps();
 
   return (
     <div className="flex-1 bg-duo-polar">
@@ -40,7 +36,6 @@ export default async function ConnectorsPage() {
         </header>
 
         <ConnectorsList 
-          connections={connections} 
           composioApps={composioApps} 
           userId={user.id} 
         />

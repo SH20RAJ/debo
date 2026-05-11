@@ -6,7 +6,6 @@ import { resolveUserId } from "./auth-sync";
 import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { encrypt } from "@/lib/encryption";
-import { nango } from "@/lib/nango";
 import { logDatabaseIssue } from "@/lib/db/errors";
 
 export async function getUserPreferences() {
@@ -172,48 +171,6 @@ export async function saveUserPreferences(data: {
     return true;
   } catch (error) {
     logDatabaseIssue("settings save preferences", error);
-    return false;
-  }
-}
-
-/** UUID v4 regex — Nango requires this exact format for secret keys */
-const UUID_V4 =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
-type NangoConnectionSummary = {
-  providerConfigKey?: string;
-  provider_config_key?: string;
-};
-
-export async function getNangoConnections(): Promise<NangoConnectionSummary[]> {
-  const userId = await resolveUserId(undefined, true);
-  if (!userId) throw new Error("Unauthorized");
-
-  try {
-    const key = process.env.NANGO_SECRET_KEY;
-    if (!key || !UUID_V4.test(key)) {
-      // Nango secret key is not set or is not a valid UUID v4 — skip silently
-      return [];
-    }
-
-    const connections = await nango.listConnections(userId);
-    return connections as NangoConnectionSummary[];
-  } catch (error) {
-    console.error("Failed to list Nango connections:", error);
-    return [];
-  }
-}
-
-export async function deleteNangoConnection(providerConfigKey: string) {
-  const userId = await resolveUserId(undefined, true);
-  if (!userId) throw new Error("Unauthorized");
-
-  try {
-    await nango.deleteConnection(providerConfigKey, userId);
-    revalidatePath("/dashboard/settings");
-    return true;
-  } catch (error) {
-    console.error("Failed to delete Nango connection:", error);
     return false;
   }
 }

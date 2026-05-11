@@ -72,3 +72,12 @@ Top-level files define how your Mastra project is configured, built, and connect
 - **UI for configuration:** The dashboard UI that lets users add providers and set the active provider is implemented at [src/components/dashboard/settings/provider-card.tsx](src/components/dashboard/settings/provider-card.tsx) and referenced by the settings page.
 - **Mastra guidance:** When writing Mastra agents or workflows, follow the repo's Mastra guidance in this file and the Mastra skill; prefer the provider registry and embedded docs over guessing model names.
 
+<!-- stripe-projects-cli managed:agents-md:start -->
+## Stripe Projects CLI
+
+This repository is initialized for the Stripe project "debo".
+
+## Tools used
+
+- [Stripe CLI](https://docs.stripe.com/stripe-cli) with the `projects` plugin to manage third-party services, credentials, and deployments for this project. Use the stripe-projects-cli to manage deploying and access to third party services.
+<!-- stripe-projects-cli managed:agents-md:end -->

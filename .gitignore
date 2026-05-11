@@ -52,3 +52,8 @@ next-env.d.ts
 
 !.dev.vars.example
 /scratch
+
+.projects/cache
+.projects/vault
+.env
+.env.local

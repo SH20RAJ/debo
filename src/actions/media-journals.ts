@@ -7,8 +7,6 @@ import { eq, desc, asc, and, count } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { cache } from "react";
 import { logDatabaseIssue } from "@/lib/db/errors";
-import { GoogleDriveClient, initializeUserDriveFolders } from "@/lib/google-drive";
-import { nango } from "@/lib/nango";
 
 // Video Journal Actions
 
@@ -386,94 +384,22 @@ export const getAllJournalsCount = cache(async (
 
 // Google Drive Connection
 export async function connectGoogleDrive(userId: string, connectionId: string) {
-    try {
-        // Initialize folders for the user
-        const folders = await initializeUserDriveFolders(connectionId);
-
-        return {
-            success: true,
-            data: {
-                connectionId,
-                folders,
-            }
-        };
-    } catch (error) {
-        console.error("Failed to connect Google Drive:", error);
-        return { success: false, error: "Failed to connect Google Drive" };
-    }
+    // Legacy sync connection disabled. 
+    return {
+        success: true,
+        data: {
+            connectionId,
+            message: "Legacy sync is disabled. Agent tools are now used for Drive."
+        }
+    };
 }
 
 export async function getDriveConnectionStatus(userId: string) {
-    try {
-        // Check if user has a Google Drive connection via Nango
-        const nangoConnections = await nango.listConnections(userId);
-        const gdriveConnection = (nangoConnections as Array<{ providerConfigKey?: string }>)
-            .find(c => c.providerConfigKey === "google-drive");
-
-        return {
-            connected: !!gdriveConnection,
-            connectionId: gdriveConnection ? userId : null,
-        };
-    } catch (error) {
-        console.error("Failed to get Drive connection status:", error);
-        return { connected: false, connectionId: null };
-    }
+    // Nango is removed. Connection status should now be checked via Composio.
+    return { connected: false, connectionId: null };
 }
 
 export async function syncGoogleDriveJournals(userId: string) {
-    try {
-        const { connected, connectionId } = await getDriveConnectionStatus(userId);
-        if (!connected || !connectionId) {
-            return { success: false, error: "Google Drive not connected" };
-        }
-
-        const drive = new GoogleDriveClient(connectionId);
-        const folders = await initializeUserDriveFolders(connectionId);
-
-        // Sync Videos
-        const videoFiles = await drive.listFiles(folders.videosFolderId);
-        for (const file of videoFiles) {
-            // Check if already exists
-            const existing = await db.query.videoJournals.findFirst({
-                where: and(eq(videoJournals.userId, userId), eq(videoJournals.driveFileId, file.id)),
-            });
-
-            if (!existing) {
-                await db.insert(videoJournals).values({
-                    id: crypto.randomUUID(),
-                    userId,
-                    title: file.name,
-                    driveFileId: file.id,
-                    driveWebUrl: file.webViewLink,
-                    thumbnailUrl: file.thumbnailLink,
-                    createdAt: file.createdTime ? new Date(file.createdTime) : new Date(),
-                });
-            }
-        }
-
-        // Sync Audios
-        const audioFiles = await drive.listFiles(folders.audiosFolderId);
-        for (const file of audioFiles) {
-            const existing = await db.query.audioJournals.findFirst({
-                where: and(eq(audioJournals.userId, userId), eq(audioJournals.driveFileId, file.id)),
-            });
-
-            if (!existing) {
-                await db.insert(audioJournals).values({
-                    id: crypto.randomUUID(),
-                    userId,
-                    title: file.name,
-                    driveFileId: file.id,
-                    driveWebUrl: file.webViewLink,
-                    createdAt: file.createdTime ? new Date(file.createdTime) : new Date(),
-                });
-            }
-        }
-
-        revalidatePath("/dashboard/journals");
-        return { success: true };
-    } catch (error) {
-        console.error("Sync Google Drive Journals error:", error);
-        return { success: false, error: "Failed to sync journals from Google Drive" };
-    }
+    // Nango is removed. Syncing logic will be moved to Composio-based tools.
+    return { success: false, error: "Legacy sync disabled. Use Agent Tools." };
 }

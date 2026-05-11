@@ -35,8 +35,6 @@
     "@mastra/memory": "^1.17.4",
     "@mastra/observability": "^1.11.0",
     "@modelcontextprotocol/sdk": "^1.29.0",
-    "@nangohq/frontend": "^0.70.1",
-    "@nangohq/node": "^0.70.1",
     "@neondatabase/serverless": "^0.10.4",
     "@opennextjs/aws": "^3.10.4",
     "@opennextjs/cloudflare": "1.19.6",
