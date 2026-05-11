@@ -43,21 +43,25 @@ export function InsightsHero({ topPerson, topEmotion, topTopic }: InsightsHeroPr
       {cards.map((card, i) => (
         <div 
           key={i} 
-          className="duo-card hover-bounce flex flex-col justify-between p-6 min-h-[200px]"
+          className="duo-card hover-bounce flex flex-col justify-between p-7 min-h-[220px] transition-all duration-300 group"
         >
           <div className="flex items-start justify-between">
-            <div className={cn("flex h-12 w-12 items-center justify-center rounded-2xl border-2", card.surface)}>
-              <card.icon className={cn("h-6 w-6", card.color)} />
+            <div className={cn(
+              "flex h-14 w-14 items-center justify-center rounded-2xl border-b-4 transition-transform group-hover:scale-110",
+              card.surface,
+              card.surface.replace('border-', 'border-b-') // Make bottom border thicker for 3D effect
+            )}>
+              <card.icon className={cn("h-7 w-7", card.color)} />
             </div>
-            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-duo-wolf">
+            <div className="text-[11px] font-black uppercase tracking-[0.2em] text-duo-wolf/60">
               {card.label}
             </div>
           </div>
-          <div className="space-y-1">
-            <div className={cn("text-2xl font-black tracking-tight", card.color)}>
+          <div className="space-y-2">
+            <div className={cn("text-3xl font-black tracking-tight drop-shadow-sm", card.color)}>
               {card.value}
             </div>
-            <div className="text-xs font-bold text-duo-wolf">
+            <div className="text-sm font-bold text-duo-wolf">
               {card.detail}
             </div>
           </div>
