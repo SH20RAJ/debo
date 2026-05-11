@@ -24,19 +24,21 @@ export async function connectComposioApp(appName: string = "googledrive") {
 }
 
 /**
- * Checks if a user has an active connection for a specific app.
+ * Returns a list of apps the user has actively connected via Composio.
  */
-export async function getComposioConnectionStatus(appName: string = "googledrive") {
+export async function getComposioActiveApps() {
   const user = await stackServerApp.getUser();
-  if (!user) return false;
+  if (!user) return [];
 
   try {
     const connections = await composio.connections.list({
       entityId: user.id,
     });
-    return connections.some((c) => c.appName === appName && c.status === "ACTIVE");
+    return connections
+      .filter((c) => c.status === "ACTIVE")
+      .map((c) => c.appName.toLowerCase());
   } catch (error) {
     console.error("Error fetching Composio connections:", error);
-    return false;
+    return [];
   }
 }

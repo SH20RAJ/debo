@@ -10,6 +10,7 @@ import {
 export const CONNECTORS = [
   {
     id: "google-calendar",
+    composioSlug: "googlecalendar",
     name: "Google Calendar",
     detail: "Meetings and reminders",
     icon: CalendarDays,
@@ -18,6 +19,7 @@ export const CONNECTORS = [
   },
   {
     id: "google-mail",
+    composioSlug: "gmail",
     name: "Gmail",
     detail: "Important email context",
     icon: Mail,
@@ -26,6 +28,7 @@ export const CONNECTORS = [
   },
   {
     id: "google-photos",
+    composioSlug: "googlephotos",
     name: "Google Photos",
     detail: "Photos and videos",
     icon: Images,
@@ -34,6 +37,7 @@ export const CONNECTORS = [
   },
   {
     id: "google-drive",
+    composioSlug: "googledrive",
     name: "Google Drive",
     detail: "Docs and files",
     icon: HardDrive,
@@ -42,6 +46,7 @@ export const CONNECTORS = [
   },
   {
     id: "slack",
+    composioSlug: "slack",
     name: "Slack",
     detail: "Team memory",
     icon: MessageSquare,
@@ -50,6 +55,7 @@ export const CONNECTORS = [
   },
   {
     id: "notion",
+    composioSlug: "notion",
     name: "Notion",
     detail: "Notes and pages",
     icon: FileText,
