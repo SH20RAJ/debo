@@ -7,35 +7,35 @@ export function PatternList({ patterns }: { patterns: Pattern[] }) {
   const maxCount = Math.max(...patterns.map(p => p.count), 1);
 
   return (
-    <div className="duo-card overflow-hidden p-0 border-b-4">
-      <div className="p-7 border-b-2 border-duo-swan bg-duo-snow">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-duo-macaw/10 border-2 border-duo-macaw/20">
-            <BrainCircuit className="h-6 w-6 text-duo-macaw" />
+    <div className="minimal-card bg-card/40 border border-border/50 overflow-hidden p-0">
+      <div className="p-8 border-b border-border/50 bg-muted/5">
+        <div className="flex items-center gap-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/5 border border-primary/10">
+            <BrainCircuit className="h-6 w-6 text-primary/60" />
           </div>
           <div>
-            <div className="text-[11px] font-black uppercase tracking-[0.2em] text-duo-wolf/60">
-              Mention Intensity
+            <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground/30">
+              Cognitive Intensity
             </div>
-            <div className="text-sm font-bold text-duo-eel">
-              Entities found in your stream
+            <div className="text-sm font-semibold text-foreground tracking-tight">
+              Recurrent signal patterns in your stream
             </div>
           </div>
         </div>
       </div>
-      <div className="divide-y-2 divide-duo-swan bg-white">
+      <div className="divide-y divide-border/30 bg-card/10">
         {patterns.length > 0 ? (
           patterns.map((p) => (
-            <div key={p.entity} className="flex items-center justify-between p-7 hover:bg-duo-polar/30 transition-all group">
-              <div className="flex items-center gap-4">
-                <div className="h-2 w-2 rounded-full bg-duo-macaw group-hover:scale-150 transition-transform" />
-                <span className="text-lg font-black text-duo-eel tracking-tight">{p.entity}</span>
+            <div key={p.entity} className="flex items-center justify-between p-8 hover:bg-primary/[0.02] transition-all group">
+              <div className="flex items-center gap-5">
+                <div className="h-1.5 w-1.5 rounded-full bg-primary/20 group-hover:bg-primary group-hover:scale-125 transition-all" />
+                <span className="text-lg font-medium text-foreground tracking-tight">{p.entity}</span>
               </div>
-              <div className="flex items-center gap-6">
-                <span className="text-sm font-black text-duo-wolf uppercase tracking-widest">{p.count} mentions</span>
-                <div className="h-5 w-32 rounded-full bg-duo-swan/50 p-1">
+              <div className="flex items-center gap-8">
+                <span className="text-[10px] font-bold text-muted-foreground/30 uppercase tracking-[0.2em]">{p.count} signals</span>
+                <div className="h-2.5 w-32 rounded-full bg-muted/20 p-0.5 overflow-hidden">
                   <div 
-                    className="h-full rounded-full bg-duo-macaw shadow-[0_2px_0_rgba(28,176,246,0.5)] transition-all duration-1000" 
+                    className="h-full rounded-full bg-primary/40 transition-all duration-1000 group-hover:bg-primary/60 shadow-lg shadow-primary/5" 
                     style={{ width: `${Math.max(8, (p.count / maxCount) * 100)}%` }}
                   />
                 </div>
@@ -43,12 +43,12 @@ export function PatternList({ patterns }: { patterns: Pattern[] }) {
             </div>
           ))
         ) : (
-          <div className="p-16 text-center">
-            <div className="text-lg font-bold text-duo-swan">
-              The graph is currently silent.
+          <div className="p-20 text-center">
+            <div className="text-xl font-heading font-semibold text-foreground/40 tracking-tight">
+              Quiet Engine
             </div>
-            <p className="mt-2 text-sm text-duo-wolf font-bold">
-              Capture more thoughts to reveal cognitive patterns.
+            <p className="mt-3 text-sm text-muted-foreground/20 font-medium italic">
+              Expand your conceptual stream to visualize emerging intelligence patterns.
             </p>
           </div>
         )}

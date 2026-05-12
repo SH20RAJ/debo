@@ -26,22 +26,21 @@ export function ConnectorsList({
     setIsConnecting(appName);
     try {
       await connectComposioApp(appName);
-      // redirect happens in action
     } catch (error: any) {
-      toast.error(`Could not connect agent tools: ${error.message}`);
+      toast.error(`Error: ${error.message}`);
       setIsConnecting(null);
     }
   }
 
   async function handleComposioDisconnect(appName: string) {
-    if (!confirm(`Are you sure you want to disconnect ${appName}? This will revoke AI agent access.`)) return;
+    if (!confirm(`Disconnect ${appName}?`)) return;
     setIsDisconnecting(appName);
     try {
       await disconnectComposioApp(appName);
-      toast.success(`${appName} disconnected successfully.`);
+      toast.success("Disconnected.");
       router.refresh();
     } catch (error: any) {
-      toast.error(`Could not disconnect: ${error.message}`);
+      toast.error(`Error: ${error.message}`);
     } finally {
       setIsDisconnecting(null);
     }
@@ -53,57 +52,72 @@ export function ConnectorsList({
   }
 
   return (
-    <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {CONNECTORS.map((connector) => {
-        const composioActive = isComposioConnected(connector.composioSlug);
+        const active = isComposioConnected(connector.composioSlug);
         const loading = isConnecting === connector.composioSlug;
         const Icon = connector.icon;
 
         return (
-          <div key={connector.id} className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-border/50 bg-card p-6 transition-all duration-300 hover:border-primary/20 hover:shadow-sm">
+          <div key={connector.id} className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-border/20 bg-card/10 p-6 transition-all hover:border-primary/20 group">
             {/* Header */}
-            <div className="flex items-start justify-between mb-6">
-              <div className={cn(
-                "flex h-14 w-14 items-center justify-center rounded-xl border border-border/40 bg-muted/30 transition-transform group-hover:scale-105", 
-                connector.color.replace('text-', 'bg-').replace('500', '50/10')
-              )}>
-                <Icon className={cn("h-7 w-7", connector.color)} />
+            <div className="flex items-start justify-between mb-8">
+              <div className="flex size-12 items-center justify-center rounded-xl bg-primary/5 border border-primary/10 text-primary/40 group-hover:text-primary transition-colors">
+                <Icon className="h-6 w-6" />
               </div>
-              <StatusBadge active={composioActive} label="Tools" />
+              <div className={cn(
+                "flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest transition-all",
+                active ? "border-primary/20 bg-primary/5 text-primary" : "border-border/40 bg-muted/20 text-muted-foreground/20"
+              )}>
+                <div className={cn("h-1 w-1 rounded-full", active ? "bg-primary animate-pulse" : "bg-muted-foreground/20")} />
+                {active ? "Connected" : "Inactive"}
+              </div>
             </div>
 
-            {/* Info */}
-            <div className="mb-8">
-              <h3 className="text-xl font-semibold text-foreground tracking-tight">{connector.name}</h3>
-              <p className="text-sm font-medium text-muted-foreground mt-2 leading-relaxed">{connector.detail}</p>
+            {/* Content */}
+            <div className="space-y-2 mb-8">
+              <h3 className="text-base font-bold text-foreground/80 tracking-tight">{connector.name}</h3>
+              <p className="text-xs font-medium text-muted-foreground/40 leading-relaxed">{connector.detail}</p>
             </div>
+
+            {/* Tools Area (Visible only when connected) */}
+            {active && (
+              <div className="mb-8 pt-4 border-t border-border/10">
+                <div className="text-[8px] font-bold uppercase tracking-[0.3em] text-muted-foreground/20 mb-3">Available Tools</div>
+                <div className="flex flex-wrap gap-1.5">
+                  {(connector as any).tools?.map((tool: string) => (
+                    <div key={tool} className="px-2 py-0.5 rounded-md bg-muted/10 border border-border/10 text-[9px] font-bold text-muted-foreground/40 uppercase tracking-widest whitespace-nowrap">
+                      {tool}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Actions */}
-            <div className="space-y-3">
+            <div className="space-y-2">
               <Button
                 type="button"
-                variant={composioActive ? "outline" : "default"}
-                size="lg"
-                className="w-full gap-2 rounded-xl h-11"
-                disabled={loading || isDisconnecting === connector.composioSlug || composioActive}
+                variant="outline"
+                className={cn(
+                  "w-full h-10 rounded-xl text-xs font-bold uppercase tracking-widest transition-all border-border/20",
+                  !active && "bg-primary text-primary-foreground border-none hover:bg-primary/90"
+                )}
+                disabled={loading || !!isDisconnecting || active}
                 onClick={() => handleComposioConnect(connector.composioSlug!)}
               >
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className={cn("h-4 w-4", !composioActive && "fill-current")} />}
-                {composioActive ? "Agent Tools Active" : "Connect Tools"}
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : active ? "Active" : "Connect"}
               </Button>
 
-              {composioActive && (
+              {active && (
                 <Button
                   type="button"
                   variant="ghost"
-                  size="sm"
-                  className="w-full text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 hover:text-destructive hover:bg-destructive/5"
-                  disabled={isDisconnecting === connector.composioSlug}
+                  className="w-full h-8 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/20 hover:text-destructive hover:bg-destructive/5"
+                  disabled={!!isDisconnecting}
                   onClick={() => handleComposioDisconnect(connector.composioSlug!)}
                 >
-                  {isDisconnecting === connector.composioSlug ? (
-                    <Loader2 className="h-3 w-3 animate-spin mr-2" />
-                  ) : "Disconnect Integration"}
+                  {isDisconnecting === connector.composioSlug ? "Disconnecting..." : "Disconnect"}
                 </Button>
               )}
             </div>

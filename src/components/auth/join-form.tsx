@@ -7,90 +7,58 @@ import { Sparkles } from "lucide-react";
 
 export function JoinForm() {
   return (
-    <div className="flex flex-col items-center gap-12 w-full max-w-xl mx-auto py-12">
-      {/* Mascot Area */}
-      <div className="relative group">
-        <div className="absolute inset-0 bg-duo-macaw/20 rounded-full blur-3xl animate-pulse" />
-        <div className="relative duo-card bg-background p-8 rounded-[3rem] border-4 border-duo-swan shadow-[0_12px_0_var(--duo-swan)]">
-          <Image 
-            src="/mascot.png" 
-            alt="Debo Mascot" 
-            width={200} 
-            height={200} 
-            className="w-40 h-40 object-contain animate-float"
-            priority
-          />
+    <div className="flex flex-col items-center gap-10 w-full max-w-sm mx-auto py-24 px-6 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+      {/* Simple Identity */}
+      <div className="flex flex-col items-center gap-6">
+        <div className="flex size-16 items-center justify-center rounded-2xl bg-primary/5 border border-primary/10 text-primary">
+          <Sparkles className="h-8 w-8" />
         </div>
-        {/* Speech Bubble */}
-        <div className="absolute -top-12 -right-16 md:-right-24 bg-background p-6 rounded-[2rem] border-4 border-duo-swan shadow-[0_8px_0_var(--duo-swan)] max-w-[200px] hidden sm:block">
-          <p className="text-sm font-black text-duo-eel uppercase tracking-tight">
-            Ready to start remembering everything?
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl font-heading font-semibold text-foreground tracking-tight">
+            Get started
+          </h1>
+          <p className="text-muted-foreground/60 font-medium text-sm">
+            Keep track of your life and memories.
           </p>
-          <div className="absolute -bottom-4 left-6 w-8 h-8 bg-background border-r-4 border-b-4 border-duo-swan rotate-45" />
         </div>
       </div>
 
-      {/* Main Card */}
-      <div className="duo-card w-full bg-background p-8 md:p-12 rounded-[3rem] border-4 border-duo-swan shadow-[0_16px_0_var(--duo-swan)]">
-        <div className="text-center space-y-4 mb-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-duo-macaw/10 border-2 border-duo-macaw text-duo-macaw font-black uppercase tracking-widest text-[10px]">
-            <Sparkles className="w-3 h-3" />
-            <span>Join Early Access</span>
+      {/* Main Authentication Area */}
+      <div className="w-full space-y-10">
+        <div className="w-full">
+          <div className="[&_button]:!h-14 [&_button]:!rounded-xl [&_button]:!text-sm [&_button]:!font-bold [&_button]:!uppercase [&_button]:!tracking-widest [&_button]:!border-border/50 [&_button]:!bg-card [&_button]:!text-foreground [&_button]:hover:!bg-primary/5 [&_button]:hover:!border-primary/20 [&_button]:!transition-all [&_button]:active:!scale-95">
+            <OAuthButtonGroup type="sign-up" />
           </div>
-          <h1 className="text-4xl font-heading font-black text-duo-eel leading-tight uppercase tracking-tight">
-            Create your <span className="text-duo-macaw">memory bank</span>
-          </h1>
-          <p className="text-duo-wolf font-bold text-lg">
-            30 seconds to set up. Lifetime of clarity.
+        </div>
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-border/20" />
+          </div>
+          <div className="relative flex justify-center text-[9px] uppercase tracking-[0.4em] font-bold text-muted-foreground/20">
+            <span className="bg-background px-6">Or</span>
+          </div>
+        </div>
+
+        {/* <div className="text-center space-y-4">
+          <p className="text-muted-foreground/40 font-medium text-xs">
+            Already have an account?
           </p>
-        </div>
+          <Link 
+            href="/signin" 
+            className="inline-block text-primary font-bold uppercase tracking-widest text-[11px] hover:text-primary/80 transition-colors"
+          >
+            Sign in
+          </Link>
+        </div> */}
+      </div>
 
-        <div className="space-y-8">
-          <div className="w-full">
-            {/* Custom styled OAuth buttons would be ideal, but for now we use Stack's component */}
-            {/* We can wrap it to match the aesthetic */}
-            <div className="[&_button]:!h-16 [&_button]:!rounded-2xl [&_button]:!text-lg [&_button]:!font-black [&_button]:!border-2 [&_button]:!border-duo-swan [&_button]:!shadow-[0_4px_0_var(--duo-swan)] [&_button]:!transition-all [&_button]:active:!translate-y-1 [&_button]:active:!shadow-none">
-              <OAuthButtonGroup type="sign-up" />
-            </div>
-          </div>
-
-          <div className="relative py-4">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t-4 border-duo-swan opacity-50" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase tracking-[0.3em] font-black">
-              <span className="bg-background px-4 text-duo-swan">or</span>
-            </div>
-          </div>
-
-          <div className="text-center">
-            <p className="text-duo-wolf font-bold mb-4">
-              Already have an account?
-            </p>
-            <Link 
-              href="/signin" 
-              className="text-duo-macaw font-black uppercase tracking-widest text-sm hover:underline underline-offset-8"
-            >
-              Sign In Here
-            </Link>
-          </div>
-        </div>
-
-
-        <div className="mt-12 pt-8 border-t-4 border-duo-swan/50 text-center space-y-4">
-          <p className="text-[10px] font-black text-duo-swan uppercase tracking-widest leading-relaxed">
-            By joining, you agree to our{" "}
-            <Link href="/terms" className="text-duo-wolf hover:text-duo-eel underline decoration-2">Terms</Link>
-            {" "} & {" "}
-            <Link href="/privacy" className="text-duo-wolf hover:text-duo-eel underline decoration-2">Privacy Policy</Link>
-          </p>
-          <div className="flex justify-center gap-4 text-[10px] font-black text-duo-swan uppercase tracking-widest">
-            <span className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-duo-feather" /> Encrypted</span>
-            <span className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-duo-macaw" /> Private</span>
-          </div>
-        </div>
+      {/* Simple Footer */}
+      <div className="pt-10 border-t border-border/10 w-full text-center">
+        <p className="text-[10px] font-medium text-muted-foreground/20 leading-relaxed max-w-[240px] mx-auto">
+          By signing up, you agree to our terms and privacy policy.
+        </p>
       </div>
     </div>
   );
 }
-

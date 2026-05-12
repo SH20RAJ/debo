@@ -13,28 +13,28 @@ interface InsightsHeroProps {
 export function InsightsHero({ topPerson, topEmotion, topTopic }: InsightsHeroProps) {
   const cards = [
     {
-      label: "Most Mentioned",
+      label: "Social Hub",
       value: topPerson?.name || "No one yet",
       icon: Link2,
-      color: "text-duo-macaw",
-      surface: "border-duo-macaw bg-duo-macaw/10",
-      detail: "Who you think about most",
+      color: "text-primary",
+      surface: "border-primary/10 bg-primary/5",
+      detail: "Peak connection frequency",
     },
     {
-      label: "Emotional Tone",
-      value: topEmotion?.name || "Tired",
+      label: "Affective State",
+      value: topEmotion?.name || "Equanimity",
       icon: Smile,
-      color: "text-duo-cardinal",
-      surface: "border-duo-cardinal bg-duo-red/10",
-      detail: "Your dominant feeling",
+      color: "text-primary/80",
+      surface: "border-primary/20 bg-primary/10",
+      detail: "Dominant emotional signature",
     },
     {
-      label: "Topic Signal",
-      value: topTopic?.name || "Journal",
+      label: "Core Concept",
+      value: topTopic?.name || "General",
       icon: Zap,
-      color: "text-duo-fox",
-      surface: "border-duo-fox bg-duo-orange/10",
-      detail: "Strongest recurring theme",
+      color: "text-primary/60",
+      surface: "border-primary/5 bg-primary/5",
+      detail: "Maximum thematic resonance",
     },
   ];
 
@@ -43,25 +43,24 @@ export function InsightsHero({ topPerson, topEmotion, topTopic }: InsightsHeroPr
       {cards.map((card, i) => (
         <div 
           key={i} 
-          className="duo-card hover-bounce flex flex-col justify-between p-7 min-h-[220px] transition-all duration-300 group"
+          className="minimal-card bg-card/40 border border-border/50 flex flex-col justify-between p-8 min-h-[220px] transition-all hover:bg-card/60 hover:shadow-xl hover:shadow-primary/5 group"
         >
           <div className="flex items-start justify-between">
             <div className={cn(
-              "flex h-14 w-14 items-center justify-center rounded-2xl border-b-4 transition-transform group-hover:scale-110",
-              card.surface,
-              card.surface.replace('border-', 'border-b-') // Make bottom border thicker for 3D effect
+              "flex h-14 w-14 items-center justify-center rounded-2xl border border-transparent transition-all group-hover:scale-105",
+              card.surface
             )}>
               <card.icon className={cn("h-7 w-7", card.color)} />
             </div>
-            <div className="text-[11px] font-black uppercase tracking-[0.2em] text-duo-wolf/60">
+            <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground/30">
               {card.label}
             </div>
           </div>
           <div className="space-y-2">
-            <div className={cn("text-3xl font-black tracking-tight drop-shadow-sm", card.color)}>
+            <div className={cn("text-3xl font-heading font-semibold tracking-tight", card.color)}>
               {card.value}
             </div>
-            <div className="text-sm font-bold text-duo-wolf">
+            <div className="text-sm font-medium text-muted-foreground/40 italic leading-relaxed">
               {card.detail}
             </div>
           </div>

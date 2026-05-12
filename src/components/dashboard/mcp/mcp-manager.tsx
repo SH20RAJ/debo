@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import { useState } from "react"
 import { 
     Copy, 
     RefreshCw, 
@@ -118,62 +118,62 @@ Guidelines:
             {/* TOP ROW: CONNECTION HUB */}
             <div className="grid gap-6 md:grid-cols-2">
                 {/* Endpoint Card */}
-                <div className="duo-card space-y-6">
+                <div className="minimal-card p-8 space-y-6 bg-card/40 backdrop-blur-sm border border-border/50">
                     <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-duo-macaw/10 border-2 border-duo-macaw text-duo-macaw">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/5 border border-primary/10 text-primary">
                             <DatabaseZap className="h-5 w-5" />
                         </div>
-                        <h3 className="text-xl font-heading font-black text-duo-eel">Connection Endpoint</h3>
+                        <h3 className="text-xl font-heading font-semibold text-foreground tracking-tight">Connection Endpoint</h3>
                     </div>
                     
                     <div className="space-y-3">
-                        <label className="text-[11px] font-black uppercase tracking-widest text-duo-wolf">MCP URL</label>
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 px-1">MCP URL</label>
                         <div className="relative">
                             <Input 
                                 value={mcpUrl} 
                                 readOnly 
-                                className="font-bold text-sm bg-duo-polar border-2 border-duo-swan rounded-2xl h-14 pr-14 text-duo-eel focus:border-duo-macaw outline-none transition-all" 
+                                className="font-medium text-sm bg-muted/20 border border-border/50 rounded-xl h-14 pr-14 text-foreground focus-visible:ring-primary/20 focus-visible:border-primary/40 outline-none transition-all" 
                             />
                             <Button 
                                 variant="ghost" 
                                 size="icon" 
-                                className="absolute right-2 top-2 h-10 w-10 text-duo-wolf hover:text-duo-macaw hover:bg-duo-macaw/10 rounded-xl"
+                                className="absolute right-2 top-2 h-10 w-10 text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-lg"
                                 onClick={() => copyToClipboard(mcpUrl, "URL")}
                             >
                                 {copiedField === "URL" ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
                             </Button>
                         </div>
-                        <p className="text-[10px] font-bold text-duo-wolf px-1">Use this URL to connect external agents to your intelligence graph.</p>
+                        <p className="text-[10px] font-medium text-muted-foreground/30 px-1 italic">Use this URL to connect external agents to your intelligence graph.</p>
                     </div>
                 </div>
 
                 {/* Auth Card */}
-                <div className="duo-card space-y-6">
+                <div className="minimal-card p-8 space-y-6 bg-card/40 backdrop-blur-sm border border-border/50">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-duo-cardinal/10 border-2 border-duo-cardinal text-duo-cardinal">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/5 border border-primary/10 text-primary">
                                 <Shield className="h-5 w-5" />
                             </div>
-                            <h3 className="text-xl font-heading font-black text-duo-eel">Security</h3>
+                            <h3 className="text-xl font-heading font-semibold text-foreground tracking-tight">Security</h3>
                         </div>
-                        <Badge className="bg-duo-bee text-duo-eel font-black text-[10px] uppercase border-none py-1 rounded-lg">Bearer Auth</Badge>
+                        <Badge variant="outline" className="text-primary font-bold text-[9px] uppercase border-primary/20 py-1 rounded-lg">Bearer Protocol</Badge>
                     </div>
 
                     <div className="space-y-3">
-                        <label className="text-[11px] font-black uppercase tracking-widest text-duo-wolf">Bearer Token</label>
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 px-1">Bearer Token</label>
                         <div className="flex gap-3">
                             <div className="relative flex-1">
                                 <Input 
                                     value={key} 
                                     type={showKey ? "text" : "password"} 
                                     readOnly 
-                                    className="font-bold text-sm bg-duo-polar border-2 border-duo-swan rounded-2xl h-14 pr-24 text-duo-eel focus:border-duo-macaw outline-none transition-all" 
+                                    className="font-medium text-sm bg-muted/20 border border-border/50 rounded-xl h-14 pr-24 text-foreground focus-visible:ring-primary/20 focus-visible:border-primary/40 outline-none transition-all" 
                                 />
                                 <div className="absolute right-2 top-2 flex gap-1">
                                     <Button 
                                         variant="ghost" 
                                         size="icon" 
-                                        className="h-10 w-10 text-duo-wolf hover:text-duo-macaw hover:bg-duo-macaw/10 rounded-xl"
+                                        className="h-10 w-10 text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-lg"
                                         onClick={() => setShowKey(!showKey)}
                                     >
                                         {showKey ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -181,7 +181,7 @@ Guidelines:
                                     <Button 
                                         variant="ghost" 
                                         size="icon" 
-                                        className="h-10 w-10 text-duo-wolf hover:text-duo-macaw hover:bg-duo-macaw/10 rounded-xl"
+                                        className="h-10 w-10 text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-lg"
                                         onClick={() => copyToClipboard(key, "Key")}
                                     >
                                         {copiedField === "Key" ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
@@ -191,8 +191,9 @@ Guidelines:
                             <Button 
                                 onClick={handleRotate}
                                 disabled={isRotating}
+                                variant="outline"
                                 className={cn(
-                                    "btn-3d btn-3d-red h-14 w-14 rounded-2xl bg-duo-cardinal text-white p-0 shrink-0",
+                                    "h-14 w-14 rounded-xl border-border/50 text-muted-foreground hover:text-destructive hover:bg-destructive/5 p-0 shrink-0",
                                     isRotating && "opacity-50 cursor-not-allowed"
                                 )}
                                 title="Rotate Key"
@@ -200,7 +201,7 @@ Guidelines:
                                 <RefreshCw className={cn("h-5 w-5", isRotating && "animate-spin")} />
                             </Button>
                         </div>
-                        <p className="text-[10px] font-bold text-duo-wolf px-1 italic">Rotating your key will break existing active connections.</p>
+                        <p className="text-[10px] font-medium text-muted-foreground/30 px-1 italic">Rotating your key will break existing active connections.</p>
                     </div>
                 </div>
             </div>
@@ -210,20 +211,20 @@ Guidelines:
                 {/* Integration Guides */}
                 <div className="lg:col-span-7 space-y-6">
                     <div className="flex items-center gap-3 px-1">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-duo-green/10 border-2 border-duo-green text-duo-green">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/5 border border-primary/10 text-primary">
                             <Code2 className="h-5 w-5" />
                         </div>
-                        <h3 className="text-2xl font-heading font-black text-duo-eel">Setup Guides</h3>
+                        <h3 className="text-2xl font-heading font-semibold text-foreground tracking-tight">Setup Guides</h3>
                     </div>
                     
-                    <div className="duo-card p-0 overflow-hidden bg-duo-snow">
+                    <div className="minimal-card p-0 overflow-hidden bg-card/40 border border-border/50">
                         <Tabs defaultValue="claude" className="w-full">
-                            <TabsList className="w-full justify-start rounded-none border-b-2 border-duo-swan bg-duo-polar h-16 px-4 gap-2">
+                            <TabsList className="w-full justify-start rounded-none border-b border-border/50 bg-muted/20 h-16 px-4 gap-2">
                                 {["claude", "cursor", "agents", "http"].map((tab) => (
                                     <TabsTrigger 
                                         key={tab}
                                         value={tab} 
-                                        className="text-[12px] font-black uppercase tracking-widest data-[state=active]:bg-duo-snow data-[state=active]:border-2 data-[state=active]:border-duo-swan data-[state=active]:border-b-0 rounded-t-xl h-10 px-6 translate-y-3 transition-all"
+                                        className="text-[10px] font-bold uppercase tracking-widest data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:border border-border/50 rounded-lg h-10 px-6 transition-all"
                                     >
                                         {tab}
                                     </TabsTrigger>
@@ -231,12 +232,12 @@ Guidelines:
                             </TabsList>
                             <div className="p-8">
                                 <TabsContent value="claude" className="mt-0 space-y-6">
-                                    <div className="space-y-2">
-                                        <h4 className="text-lg font-black text-duo-eel">Claude Desktop</h4>
-                                        <p className="text-sm font-bold text-duo-wolf italic">Add to your `claude_desktop_config.json`:</p>
+                                    <div className="space-y-1">
+                                        <h4 className="text-lg font-semibold text-foreground tracking-tight">Claude Desktop</h4>
+                                        <p className="text-xs font-medium text-muted-foreground/60 italic">Inject protocol into `claude_desktop_config.json`:</p>
                                     </div>
                                     <div className="relative group">
-                                        <pre className="bg-duo-polar p-6 rounded-2xl text-[12px] text-duo-eel overflow-x-auto font-mono border-2 border-duo-swan shadow-inner">
+                                        <pre className="bg-muted/30 p-6 rounded-2xl text-[12px] text-foreground/80 overflow-x-auto font-mono border border-border/50 shadow-inner">
 {`{
   "mcpServers": {
     "debo": {
@@ -250,7 +251,8 @@ Guidelines:
 }`}
                                         </pre>
                                         <Button 
-                                            className="btn-3d btn-3d-white absolute top-4 right-4 h-10 bg-duo-snow text-duo-eel font-black text-[10px] uppercase rounded-xl border-2 border-duo-swan"
+                                            variant="outline"
+                                            className="absolute top-4 right-4 h-9 rounded-lg text-[9px] font-bold uppercase tracking-widest bg-background/50 backdrop-blur-md"
                                             onClick={() => copyToClipboard(`{
   "mcpServers": {
     "debo": {
@@ -268,9 +270,9 @@ Guidelines:
                                     </div>
                                 </TabsContent>
                                 <TabsContent value="cursor" className="mt-0 space-y-6">
-                                    <div className="space-y-2">
-                                        <h4 className="text-lg font-black text-duo-eel">Connect to Cursor</h4>
-                                        <p className="text-sm font-bold text-duo-wolf italic">Configure in Cursor Settings:</p>
+                                    <div className="space-y-1">
+                                        <h4 className="text-lg font-semibold text-foreground tracking-tight">Cursor Connection</h4>
+                                        <p className="text-xs font-medium text-muted-foreground/60 italic">Configure in Cursor Settings:</p>
                                     </div>
                                     <div className="grid gap-3">
                                         {[
@@ -280,19 +282,19 @@ Guidelines:
                                             `URL: ${mcpUrl}`,
                                             "Header: Authorization = Bearer [Your Key]"
                                         ].map((step, i) => (
-                                            <div key={i} className="flex items-center gap-5 p-4 rounded-2xl bg-duo-polar border-2 border-duo-swan hover:border-duo-macaw transition-colors">
-                                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-duo-macaw text-white font-black text-xs shadow-[0_3px_0_#1899D6]">
+                                            <div key={i} className="flex items-center gap-5 p-4 rounded-xl bg-muted/20 border border-border/50 hover:border-primary/20 transition-colors">
+                                                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-[10px]">
                                                     {i + 1}
                                                 </div>
-                                                <span className="text-sm font-bold text-duo-eel">{step}</span>
+                                                <span className="text-sm font-medium text-foreground/80">{step}</span>
                                             </div>
                                         ))}
                                     </div>
                                 </TabsContent>
                                 <TabsContent value="agents" className="mt-0 space-y-6">
-                                    <div className="space-y-2">
-                                        <h4 className="text-lg font-black text-duo-eel">Custom Implementations</h4>
-                                        <p className="text-sm font-bold text-duo-wolf italic">Protocol details for developers:</p>
+                                    <div className="space-y-1">
+                                        <h4 className="text-lg font-semibold text-foreground tracking-tight">Custom Implementation</h4>
+                                        <p className="text-xs font-medium text-muted-foreground/60 italic">Developer protocol specifications:</p>
                                     </div>
                                     <div className="grid gap-3">
                                         {[
@@ -302,11 +304,11 @@ Guidelines:
                                             "Resource: debo://profile for behavior instructions",
                                             "Prompt: debo-homie for Debo-style orchestration"
                                         ].map((step, i) => (
-                                            <div key={i} className="flex items-center gap-5 p-4 rounded-2xl bg-duo-polar border-2 border-duo-swan">
-                                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-duo-beetle text-white font-black text-xs shadow-[0_3px_0_#B86CE6]">
+                                            <div key={i} className="flex items-center gap-5 p-4 rounded-xl bg-muted/20 border border-border/50">
+                                                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/20 text-primary font-bold text-[10px]">
                                                     {i + 1}
                                                 </div>
-                                                <span className="text-sm font-bold text-duo-eel">{step}</span>
+                                                <span className="text-sm font-medium text-foreground/80">{step}</span>
                                             </div>
                                         ))}
                                     </div>
@@ -314,15 +316,16 @@ Guidelines:
                                 <TabsContent value="http" className="mt-0 space-y-8">
                                     <div className="space-y-4">
                                         <div className="space-y-1">
-                                            <h4 className="text-lg font-black text-duo-eel text-center">Smoke Test</h4>
-                                            <p className="text-sm font-bold text-duo-wolf text-center italic">Verify connection via cURL:</p>
+                                            <h4 className="text-lg font-semibold text-foreground tracking-tight text-center">Protocol Smoke Test</h4>
+                                            <p className="text-xs font-medium text-muted-foreground/60 text-center italic">Verify handshake via cURL:</p>
                                         </div>
                                         <div className="relative group">
-                                            <pre className="bg-duo-polar p-6 rounded-2xl text-[12px] text-duo-eel overflow-x-auto font-mono border-2 border-duo-swan">
+                                            <pre className="bg-muted/30 p-6 rounded-2xl text-[12px] text-foreground/80 overflow-x-auto font-mono border border-border/50">
 {httpProbe}
                                             </pre>
                                             <Button
-                                                className="btn-3d btn-3d-white absolute top-4 right-4 h-10 bg-duo-snow text-duo-eel font-black text-[10px] uppercase rounded-xl border-2 border-duo-swan"
+                                                variant="outline"
+                                                className="absolute top-4 right-4 h-9 rounded-lg text-[9px] font-bold uppercase tracking-widest bg-background/50 backdrop-blur-md"
                                                 onClick={() => copyToClipboard(httpProbe, "HTTP test")}
                                             >
                                                 Copy cURL
@@ -338,17 +341,18 @@ Guidelines:
                 {/* Instructions / AI Behavior */}
                 <div className="lg:col-span-5 space-y-6">
                     <div className="flex items-center gap-3 px-1">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-duo-fox/10 border-2 border-duo-fox text-duo-fox">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/5 border border-primary/10 text-primary">
                             <Sparkles className="h-5 w-5" />
                         </div>
-                        <h3 className="text-2xl font-heading font-black text-duo-eel">AI Behavior</h3>
+                        <h3 className="text-2xl font-heading font-semibold text-foreground tracking-tight">Core Behavior</h3>
                     </div>
                     
-                    <div className="duo-card bg-duo-fox/5 border-duo-fox/30 space-y-6 flex flex-col h-[calc(100%-4rem)]">
+                    <div className="minimal-card p-8 bg-primary/5 border-primary/10 space-y-6 flex flex-col h-[calc(100%-4rem)]">
                         <div className="flex items-center justify-between">
-                            <span className="text-[11px] font-black uppercase tracking-widest text-duo-fox">System Prompt</span>
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-primary/60">System Protocol</span>
                             <Button 
-                                className="btn-3d btn-3d-white h-10 bg-duo-snow text-duo-fox border-2 border-duo-fox/20 font-black text-[10px] uppercase rounded-xl px-4"
+                                variant="outline"
+                                className="h-9 rounded-lg bg-background/50 backdrop-blur-md text-[9px] font-bold uppercase tracking-widest border-primary/20 text-primary"
                                 onClick={() => copyToClipboard(samplePrompt, "Prompt")}
                             >
                                 <Copy className="h-4 w-4 mr-2" />
@@ -356,70 +360,71 @@ Guidelines:
                             </Button>
                         </div>
                         <div className="flex-1 min-h-0 relative">
-                            <div className="h-full rounded-2xl bg-duo-snow border-2 border-duo-fox/20 p-5 text-[12px] leading-relaxed font-bold text-duo-eel italic overflow-y-auto scrollbar-hide shadow-inner">
+                            <div className="h-full rounded-xl bg-background/40 border border-primary/10 p-5 text-[12px] leading-relaxed font-medium text-foreground/70 italic overflow-y-auto scrollbar-hide shadow-inner">
                                 {samplePrompt}
                             </div>
                         </div>
-                        <p className="text-[10px] font-bold text-duo-wolf italic text-center">Paste this into your agent's system instructions for best results.</p>
+                        <p className="text-[9px] font-bold text-primary/30 italic text-center uppercase tracking-widest">Inject into agent system instructions</p>
                     </div>
                 </div>
             </div>
 
             {/* BOTTOM SECTION: TOOL DIRECTORY */}
             <section className="space-y-8">
-                <div className="flex flex-col items-center gap-2 text-center">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-duo-macaw/10 border-2 border-duo-macaw text-duo-macaw mb-2">
+                <div className="flex flex-col items-center gap-3 text-center">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/5 border border-primary/10 text-primary mb-2 shadow-xl shadow-primary/5">
                         <Cpu className="h-6 w-6" />
                     </div>
-                    <h3 className="text-3xl font-heading font-black text-duo-eel uppercase tracking-tight">Capability Registry</h3>
-                    <p className="text-sm font-bold text-duo-wolf">Your agent will have access to the following tools via this MCP endpoint.</p>
+                    <h3 className="text-3xl font-heading font-semibold text-foreground uppercase tracking-tighter">Capability Registry</h3>
+                    <p className="text-sm font-medium text-muted-foreground/40">Registered tools available via the Debo MCP endpoint.</p>
                 </div>
                 
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {[
-                        { name: "get_info", desc: "Complete life documentary (Primary)", icon: Sparkles, color: "duo-orange" },
-                        { name: "ask_debo", desc: "Natural chat with memory context", icon: MessageSquareText, color: "duo-macaw" },
-                        { name: "create_journal", desc: "Save new journal entries", color: "duo-green" },
-                        { name: "update_journal", desc: "Update existing journals", color: "duo-green" },
-                        { name: "delete_journal", desc: "Remove journal entries", color: "duo-red" },
-                        { name: "get_journals", desc: "List recent journals", color: "duo-wolf" },
-                        { name: "search_journals", desc: "Semantic search journals", color: "duo-macaw" },
-                        { name: "add_memory", desc: "Store persistent user facts", color: "duo-orange" },
-                        { name: "get_memories", desc: "Query stored memories", color: "duo-orange" },
-                        { name: "get_timeline", desc: "Build life timelines", color: "duo-beetle" },
-                        { name: "query_graph", desc: "Analyze patterns in graph", color: "duo-beetle" },
-                        { name: "import_ai_context", desc: "Import external AI exports", icon: DatabaseZap, color: "duo-macaw" },
-                        { name: "list_chat_threads", desc: "Browse chat history", icon: MessageSquareText, color: "duo-wolf" },
-                        { name: "get_chat_thread", desc: "Read specific chat threads", color: "duo-wolf" },
+                        { name: "get_info", desc: "Complete life documentary (Primary)", icon: Sparkles, color: "text-primary" },
+                        { name: "ask_debo", desc: "Natural chat with memory context", icon: MessageSquareText, color: "text-primary" },
+                        { name: "create_journal", desc: "Save new journal entries", color: "text-primary/60" },
+                        { name: "update_journal", desc: "Update existing journals", color: "text-primary/60" },
+                        { name: "delete_journal", desc: "Remove journal entries", color: "text-destructive/60" },
+                        { name: "get_journals", desc: "List recent journals", color: "text-muted-foreground/60" },
+                        { name: "search_journals", desc: "Semantic search journals", color: "text-primary" },
+                        { name: "add_memory", desc: "Store persistent user facts", color: "text-primary/80" },
+                        { name: "get_memories", desc: "Query stored memories", color: "text-primary/80" },
+                        { name: "get_timeline", desc: "Build life timelines", color: "text-primary/40" },
+                        { name: "query_graph", desc: "Analyze patterns in graph", color: "text-primary/40" },
+                        { name: "import_ai_context", desc: "Import external AI exports", icon: DatabaseZap, color: "text-primary" },
+                        { name: "list_chat_threads", desc: "Browse chat history", icon: MessageSquareText, color: "text-muted-foreground/60" },
+                        { name: "get_chat_thread", desc: "Read specific chat threads", color: "text-muted-foreground/60" },
                     ].map(tool => {
                         const ToolIcon = ("icon" in tool ? tool.icon : Cpu) as any
                         return (
                             <div 
                                 key={tool.name} 
-                                className="duo-card flex flex-col gap-3 bg-duo-snow p-5 hover:bg-duo-polar group"
+                                className="minimal-card flex flex-col gap-4 bg-card/40 p-6 hover:bg-card/60 border border-border/50 group transition-all"
                             >
                                 <div className="flex items-center justify-between">
-                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-duo-polar border-2 border-duo-swan group-hover:border-duo-macaw group-hover:bg-duo-macaw/5 transition-colors">
-                                        <ToolIcon className={cn("h-5 w-5", `text-${tool.color}`)} />
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted/20 border border-border/50 group-hover:border-primary/20 group-hover:bg-primary/5 transition-colors">
+                                        <ToolIcon className={cn("h-5 w-5", tool.color)} />
                                     </div>
-                                    <div className="h-2 w-2 rounded-full bg-duo-green shadow-[0_0_8px_#58CC02] group-hover:scale-125 transition-transform" />
+                                    <div className="h-1.5 w-1.5 rounded-full bg-primary/40 shadow-[0_0_8px_rgba(37,99,235,0.4)] group-hover:scale-125 transition-transform" />
                                 </div>
-                                <div className="space-y-1">
-                                    <code className="text-[13px] font-black text-duo-eel font-mono block">{tool.name}</code>
-                                    <p className="text-[10px] font-bold text-duo-wolf leading-tight">{tool.desc}</p>
+                                <div className="space-y-1.5">
+                                    <code className="text-[12px] font-bold text-foreground/80 font-mono block tracking-tight">{tool.name}</code>
+                                    <p className="text-[10px] font-medium text-muted-foreground/40 leading-relaxed">{tool.desc}</p>
                                 </div>
                             </div>
                         )
                     })}
                 </div>
                 
-                <div className="flex items-center gap-6 text-[11px] font-black text-duo-swan uppercase tracking-[0.3em] pt-8 justify-center">
-                    <div className="h-1 flex-1 bg-duo-swan/30 rounded-full" />
+                <div className="flex items-center gap-6 text-[10px] font-bold text-muted-foreground/10 uppercase tracking-[0.4em] pt-12 justify-center">
+                    <div className="h-px flex-1 bg-border/40" />
                     Registry Synchronized
-                    <div className="h-1 flex-1 bg-duo-swan/30 rounded-full" />
+                    <div className="h-px flex-1 bg-border/40" />
                 </div>
             </section>
         </div>
     )
+}
 
 }
