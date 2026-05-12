@@ -26,35 +26,35 @@ export default async function DashboardLayout({
   return (
       <SidebarProvider>
         <AppSidebar />
-        <SidebarInset className="relative flex h-svh flex-col overflow-hidden bg-background md:peer-data-[variant=inset]:m-4 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-[3rem] md:peer-data-[variant=inset]:shadow-[0_0_80px_rgba(0,0,0,0.08)] md:peer-data-[variant=inset]:border-4 md:peer-data-[variant=inset]:border-border/40">
+        <SidebarInset className="relative flex h-svh flex-col overflow-hidden bg-background ">
           {/* Dashboard Header */}
-          <header className="sticky top-0 z-30 flex h-24 w-full items-center justify-between border-b-2 border-border/20 bg-background/60 px-8 backdrop-blur-2xl lg:px-12">
+          <header className="sticky top-0 z-30 flex h-20 w-full items-center justify-between border-b border-border/10 bg-background/60 px-8 backdrop-blur-2xl lg:px-12">
             <div className="flex items-center gap-6">
               <SidebarTrigger className="flex md:hidden text-muted-foreground hover:text-foreground transition-colors" />
-              <div className="flex flex-col gap-0.5">
-                <div className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground/50">
-                  Dashboard
+              <div className="flex flex-col gap-0">
+                <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/30">
+                  Debo Studio
                 </div>
-                <h2 className="font-heading text-2xl font-black tracking-tight text-foreground">
+                <h2 className="font-heading text-xl font-semibold tracking-tight text-foreground">
                   Overview
                 </h2>
               </div>
             </div>
 
             <div className="flex items-center gap-4">
-              <div className="hidden items-center gap-3 rounded-2xl border-2 border-border/50 bg-muted/30 px-4 py-2 transition-all focus-within:border-duo-macaw focus-within:bg-card md:flex shadow-inner">
-                <Search className="h-4 w-4 text-muted-foreground/60" />
-                <span className="text-xs font-bold text-muted-foreground/40">Search anything...</span>
-                <kbd className="ml-4 rounded-lg bg-card px-2 py-1 text-[10px] font-black text-muted-foreground/30 border-b-2 border-border shadow-sm">⌘K</kbd>
+              <div className="hidden items-center gap-3 rounded-xl border border-border/20 bg-muted/20 px-4 py-2 transition-all focus-within:border-primary/40 focus-within:bg-card md:flex">
+                <Search className="h-4 w-4 text-muted-foreground/40" />
+                <span className="text-xs font-medium text-muted-foreground/40">Search memory...</span>
+                <kbd className="ml-4 rounded-md bg-card px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground/20 border border-border/40">⌘K</kbd>
               </div>
               
-              <Button variant="duolingo-outline" size="icon" className="rounded-2xl h-11 w-11 shadow-sm border-2">
-                <Bell className="h-5.5 w-5.5" />
+              <Button variant="ghost" size="icon" className="rounded-xl h-10 w-10 border border-border/20 hover:bg-muted/40">
+                <Bell className="h-5 w-5 text-muted-foreground/60" />
               </Button>
               
-              <Button variant="duolingo" className="hidden h-11 gap-2 rounded-2xl px-6 text-xs font-black uppercase tracking-wider sm:flex">
-                <Plus className="h-5 w-5 stroke-[4]" />
-                <span>New Journal</span>
+              <Button variant="default" className="hidden h-10 gap-2 rounded-xl px-5 text-xs font-semibold tracking-tight sm:flex bg-primary text-primary-foreground hover:bg-primary/90 transition-all">
+                <Plus className="h-4 w-4" />
+                <span>New Entry</span>
               </Button>
             </div>
           </header>

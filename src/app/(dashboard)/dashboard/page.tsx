@@ -35,56 +35,59 @@ export default async function DashboardPage(props: {
   const firstName = (user.displayName ?? "there").split(" ")[0];
 
   return (
-    <div className="min-h-full bg-background/50">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-6 py-12 lg:px-12 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+    <div className="min-h-full bg-background/30">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-16 px-6 py-16 lg:px-12">
         
-        <header className="space-y-8">
-          <div className="flex flex-col gap-3">
-            <h1 className="text-6xl font-heading font-black tracking-tight text-foreground md:text-7xl lg:text-8xl">
-              Hi, <span className="text-duo-macaw">{firstName}</span>.
+        <header className="space-y-12">
+          <div className="flex flex-col gap-4">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-heading font-semibold tracking-tight text-foreground">
+              Welcome back, <span className="text-primary/60">{firstName}</span>.
             </h1>
-            <p className="max-w-2xl text-2xl font-bold leading-relaxed text-muted-foreground">
-              Ready to grow your <span className="text-foreground decoration-duo-bee decoration-4 underline underline-offset-8">memory palace</span> today?
+            <p className="max-w-2xl text-lg md:text-xl font-medium leading-relaxed text-muted-foreground/80">
+              Your personal memory palace is ready. Capture something new or explore your history.
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-8">
-            <Link href="/dashboard/journal/text/new" className="group flex flex-col items-start gap-6 rounded-[2.5rem] border-2 border-duo-fox/30 bg-card p-8 transition-all hover:-translate-y-2 hover:border-duo-fox hover:shadow-[0_12px_0_var(--duo-fox-shadow)] active:translate-y-1 active:shadow-none">
-              <div className="flex h-16 w-16 items-center justify-center rounded-[1.25rem] bg-duo-fox/10 border-2 border-duo-fox text-duo-fox shadow-[0_6px_0_var(--duo-fox-shadow)] group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                <PenLine className="h-8 w-8" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Link href="/dashboard/journal/text/new" className="minimal-card p-8 group hover:border-primary/20 transition-all duration-300">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/5 border border-primary/10 text-primary/60 group-hover:scale-105 transition-transform">
+                <PenLine className="h-6 w-6" />
               </div>
-              <div className="flex flex-col gap-1">
-                <span className="font-black text-2xl text-foreground">Text</span>
-                <span className="text-sm font-bold text-muted-foreground">Pen down your deep thoughts</span>
-              </div>
-            </Link>
-            
-            <Link href="/dashboard/capture?type=audio" className="group flex flex-col items-start gap-6 rounded-[2.5rem] border-2 border-duo-macaw/30 bg-card p-8 transition-all hover:-translate-y-2 hover:border-duo-macaw hover:shadow-[0_12px_0_var(--duo-macaw-shadow)] active:translate-y-1 active:shadow-none">
-              <div className="flex h-16 w-16 items-center justify-center rounded-[1.25rem] bg-duo-macaw/10 border-2 border-duo-macaw text-duo-macaw shadow-[0_6px_0_var(--duo-macaw-shadow)] group-hover:scale-110 group-hover:-rotate-3 transition-all duration-300">
-                <Mic2 className="h-8 w-8" />
-              </div>
-              <div className="flex flex-col gap-1">
-                <span className="font-black text-2xl text-foreground">Audio</span>
-                <span className="text-sm font-bold text-muted-foreground">Capture the sound of life</span>
+              <div className="mt-6 flex flex-col gap-1">
+                <span className="font-semibold text-xl text-foreground tracking-tight">Text Journal</span>
+                <span className="text-sm font-medium text-muted-foreground/60">Capture deep thoughts and notes</span>
               </div>
             </Link>
             
-            <Link href="/dashboard/capture?type=video" className="group flex flex-col items-start gap-6 rounded-[2.5rem] border-2 border-duo-beetle/30 bg-card p-8 transition-all hover:-translate-y-2 hover:border-duo-beetle hover:shadow-[0_12px_0_var(--duo-beetle-shadow)] active:translate-y-1 active:shadow-none">
-              <div className="flex h-16 w-16 items-center justify-center rounded-[1.25rem] bg-duo-beetle/10 border-2 border-duo-beetle text-duo-beetle shadow-[0_12px_0_var(--duo-beetle-shadow)] group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
-                <Video className="h-8 w-8" />
+            <Link href="/dashboard/capture?type=audio" className="minimal-card p-8 group hover:border-primary/20 transition-all duration-300">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/5 border border-primary/10 text-primary/60 group-hover:scale-105 transition-transform">
+                <Mic2 className="h-6 w-6" />
               </div>
-              <div className="flex flex-col gap-1">
-                <span className="font-black text-2xl text-foreground">Video</span>
-                <span className="text-sm font-bold text-muted-foreground">Document visual moments</span>
+              <div className="mt-6 flex flex-col gap-1">
+                <span className="font-semibold text-xl text-foreground tracking-tight">Audio Capture</span>
+                <span className="text-sm font-medium text-muted-foreground/60">Record voice notes and meetings</span>
+              </div>
+            </Link>
+            
+            <Link href="/dashboard/capture?type=video" className="minimal-card p-8 group hover:border-primary/20 transition-all duration-300">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/5 border border-primary/10 text-primary/60 group-hover:scale-105 transition-transform">
+                <Video className="h-6 w-6" />
+              </div>
+              <div className="mt-6 flex flex-col gap-1">
+                <span className="font-semibold text-xl text-foreground tracking-tight">Video Journal</span>
+                <span className="text-sm font-medium text-muted-foreground/60">Document moments with visual context</span>
               </div>
             </Link>
           </div>
         </header>
 
         <section className="space-y-8">
-          <div className="flex items-center justify-between border-b-4 border-muted/20 pb-4">
-            <h2 className="text-3xl font-heading font-black text-foreground uppercase tracking-tight">Recent Journals</h2>
-            <div className="h-1.5 w-24 rounded-full bg-duo-macaw/40" />
+          <div className="flex items-center justify-between border-b border-border/10 pb-6">
+            <div className="space-y-1">
+              <h2 className="text-2xl font-heading font-semibold text-foreground tracking-tight">Recent Activity</h2>
+              <p className="text-sm font-medium text-muted-foreground/40 uppercase tracking-widest">History Engine</p>
+            </div>
+            <div className="h-1 w-12 rounded-full bg-primary/20" />
           </div>
           <JournalsGrid
             journals={journals}

@@ -32,23 +32,23 @@ const faqs = [
 
 export function FAQ() {
   return (
-    <section className="py-24 bg-duo-polar border-t-2 border-duo-swan">
+    <section className="py-32 bg-muted/30 border-t border-border/10">
       <div className="container mx-auto max-w-3xl px-6">
-        <h2 className="text-4xl font-heading font-black text-center text-duo-eel mb-16 uppercase tracking-wider">
-          Frequently Asked <span className="text-duo-macaw">Questions</span>
+        <h2 className="text-3xl md:text-4xl font-heading font-semibold text-center text-foreground mb-20 tracking-tight">
+          Frequently Asked <span className="text-primary/60">Questions</span>
         </h2>
         
-        <Accordion type="single" collapsible className="w-full space-y-4">
+        <Accordion type="single" collapsible className="w-full space-y-3">
           {faqs.map((faq, i) => (
             <AccordionItem 
               key={i} 
               value={`item-${i}`}
-              className="bg-background border-2 border-duo-swan rounded-[2rem] px-8 shadow-[0_4px_0_var(--duo-swan)]"
+              className="bg-card border border-border/60 rounded-xl px-6 transition-all hover:border-primary/20"
             >
-              <AccordionTrigger className="text-left font-black text-duo-eel hover:no-underline py-8 text-lg uppercase tracking-tight">
+              <AccordionTrigger className="text-left font-semibold text-foreground hover:no-underline py-6 text-base tracking-tight">
                 {faq.question}
               </AccordionTrigger>
-              <AccordionContent className="text-duo-wolf pb-8 font-bold leading-relaxed text-base">
+              <AccordionContent className="text-muted-foreground pb-6 font-medium leading-relaxed text-sm">
                 {faq.answer}
               </AccordionContent>
             </AccordionItem>
@@ -56,6 +56,5 @@ export function FAQ() {
         </Accordion>
       </div>
     </section>
-
   );
 }

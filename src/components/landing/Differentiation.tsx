@@ -50,13 +50,13 @@ const features = [
 
 export function Differentiation() {
   return (
-    <section id="comparison" className="py-24 bg-background border-t border-border/10 overflow-hidden">
+    <section id="comparison" className="py-32 bg-background border-t border-border/10 overflow-hidden">
       <div className="container mx-auto max-w-6xl px-6">
-        <div className="text-center mb-20 space-y-4">
-          <h2 className="text-4xl md:text-6xl font-heading font-black text-foreground leading-tight">
-            How Debo <span className="text-primary italic">compares.</span>
+        <div className="text-center mb-24 space-y-6">
+          <h2 className="text-4xl md:text-5xl font-heading font-semibold text-foreground tracking-tight leading-[1.1]">
+            How Debo <span className="text-primary/60 italic">compares.</span>
           </h2>
-          <p className="max-w-2xl mx-auto text-xl text-muted-foreground font-bold leading-relaxed">
+          <p className="max-w-2xl mx-auto text-lg text-muted-foreground font-medium leading-relaxed">
             Personal memory is different from general knowledge. Debo is built specifically to connect your life context over decades.
           </p>
         </div>
@@ -64,8 +64,8 @@ export function Differentiation() {
         <div className="overflow-x-auto pb-8">
           <div className="min-w-[800px]">
             {/* Header */}
-            <div className="grid grid-cols-[1fr_repeat(4,160px)] gap-4 items-end mb-8 px-4">
-              <div className="text-xs font-black uppercase tracking-[0.2em] text-duo-wolf pb-4">Capability</div>
+            <div className="grid grid-cols-[1fr_repeat(4,160px)] gap-4 items-end mb-10 px-4">
+              <div className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/40 pb-4">Capability</div>
               <ColumnHeader label="Notes Apps" icon={Minus} />
               <ColumnHeader label="Chatbots" icon={Zap} />
               <ColumnHeader label="Workspaces" icon={Shield} />
@@ -73,17 +73,17 @@ export function Differentiation() {
             </div>
 
             {/* Rows */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               {features.map((feature, i) => (
                 <div 
-                  key={i} 
-                  className="grid grid-cols-[1fr_repeat(4,160px)] gap-4 items-center p-4 rounded-2xl border-2 border-border/10 bg-card transition-all hover:border-primary/20 hover:shadow-xl"
+                  key={feature.name} 
+                  className="grid grid-cols-[1fr_repeat(4,160px)] gap-4 items-center p-5 rounded-xl border border-border/40 bg-card/30 transition-all hover:border-primary/20 hover:bg-card/50"
                 >
-                  <div className="text-lg font-bold text-foreground">{feature.name}</div>
+                  <div className="text-base font-semibold text-foreground tracking-tight">{feature.name}</div>
                   <div className="flex justify-center"><StatusIcon status={feature.notes} /></div>
                   <div className="flex justify-center"><StatusIcon status={feature.chatbots} /></div>
                   <div className="flex justify-center"><StatusIcon status={feature.workspaces} /></div>
-                  <div className="flex justify-center bg-duo-macaw/5 rounded-xl py-3 -my-3 border-x-2 border-duo-macaw/10">
+                  <div className="flex justify-center bg-primary/5 rounded-lg py-3 -my-3 border-x border-primary/10">
                     <StatusIcon status={feature.debo} isHighlight />
                   </div>
                 </div>
@@ -92,13 +92,13 @@ export function Differentiation() {
           </div>
         </div>
 
-        <div className="mt-16 flex flex-col md:flex-row items-center justify-center gap-8 text-center md:text-left">
-           <div className="flex items-center gap-3 px-6 py-4 rounded-3xl bg-muted border-2 border-border max-w-md shadow-xl shadow-black/5">
-             <div className="w-12 h-12 rounded-2xl bg-primary/10 border-2 border-primary flex items-center justify-center shrink-0">
-               <Sparkles className="w-6 h-6 text-primary" />
+        <div className="mt-20 flex flex-col md:flex-row items-center justify-center gap-8 text-center md:text-left">
+           <div className="flex items-center gap-4 px-6 py-4 rounded-xl bg-muted/30 border border-border max-w-md backdrop-blur-sm">
+             <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+               <Sparkles className="w-5 h-5 text-primary" />
              </div>
-             <p className="text-sm font-bold text-muted-foreground">
-               "Notes apps store data. Chatbots know the world. <span className="text-foreground">Debo knows you.</span>"
+             <p className="text-xs font-medium text-muted-foreground leading-relaxed">
+               "Notes apps store data. Chatbots know the world. <span className="text-foreground font-semibold">Debo knows you.</span>"
              </p>
            </div>
         </div>
@@ -110,16 +110,16 @@ export function Differentiation() {
 function ColumnHeader({ label, icon: Icon, isHighlight = false }: { label: string, icon: any, isHighlight?: boolean }) {
   return (
     <div className={cn(
-      "flex flex-col items-center gap-4 pb-4 px-2",
-      isHighlight ? "text-duo-macaw scale-110" : "text-duo-wolf"
+      "flex flex-col items-center gap-4 pb-4 px-2 transition-all duration-300",
+      isHighlight ? "text-primary scale-105" : "text-muted-foreground/40"
     )}>
       <div className={cn(
-        "w-12 h-12 rounded-2xl border-2 flex items-center justify-center",
-        isHighlight ? "bg-duo-macaw/10 border-duo-macaw shadow-[0_4px_0_var(--duo-macaw-shadow)]" : "bg-duo-polar border-duo-swan"
+        "w-10 h-10 rounded-xl border flex items-center justify-center",
+        isHighlight ? "bg-primary/10 border-primary/40 shadow-sm" : "bg-muted/30 border-border"
       )}>
-        <Icon className="w-6 h-6" />
+        <Icon className="w-5 h-5" />
       </div>
-      <div className="text-sm font-black uppercase tracking-widest">{label}</div>
+      <div className="text-[10px] font-semibold uppercase tracking-wider">{label}</div>
     </div>
   );
 }
@@ -128,8 +128,8 @@ function StatusIcon({ status, isHighlight = false }: { status: boolean | string,
   if (status === "partial") {
     return (
       <div className="flex flex-col items-center">
-         <Minus className="w-5 h-5 text-duo-wolf" />
-         <span className="text-[8px] font-black uppercase tracking-tighter text-duo-wolf/60 mt-1">Limited</span>
+         <Minus className="w-4 h-4 text-muted-foreground/40" />
+         <span className="text-[8px] font-semibold uppercase tracking-tighter text-muted-foreground/30 mt-1">Partial</span>
       </div>
     );
   }
@@ -137,14 +137,14 @@ function StatusIcon({ status, isHighlight = false }: { status: boolean | string,
   if (status) {
     return (
       <div className={cn(
-        "w-8 h-8 rounded-full flex items-center justify-center border-2 transition-transform",
-        isHighlight ? "bg-duo-macaw border-duo-macaw text-white scale-110" : "bg-duo-feather border-duo-feather text-white"
+        "w-6 h-6 rounded-full flex items-center justify-center transition-all",
+        isHighlight ? "bg-primary text-primary-foreground scale-110 shadow-sm" : "bg-muted-foreground/10 text-muted-foreground"
       )}>
-        <Check className="w-5 h-5" />
+        <Check className="w-3.5 h-3.5" />
       </div>
     );
   }
   
-  return <div className="w-2 h-2 rounded-full bg-duo-swan" />;
+  return <div className="w-1.5 h-1.5 rounded-full bg-border/40" />;
 }
 

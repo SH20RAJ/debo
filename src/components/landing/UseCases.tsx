@@ -28,59 +28,55 @@ const useCases = [
 
 export function UseCases() {
   return (
-    <section id="use-cases" className="py-32 bg-background relative overflow-hidden">
-      {/* Abstract Background Shapes */}
-      <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-      <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-
+    <section id="use-cases" className="py-40 bg-background relative overflow-hidden">
       <div className="container mx-auto max-w-4xl px-6 relative z-10">
-        <div className="text-center mb-24 space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border-2 border-primary text-primary font-black uppercase tracking-widest text-[10px]">
-            <Search className="w-3 h-3" />
+        <div className="text-center mb-32 space-y-6">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 border border-primary/20 text-primary font-medium tracking-tight text-xs">
+            <Search className="w-3.5 h-3.5" />
             <span>Search your life</span>
           </div>
-          <h2 className="text-4xl md:text-6xl font-heading font-black text-foreground leading-tight">
-            Built for <span className="text-primary italic">heavy thinkers.</span>
+          <h2 className="text-4xl md:text-6xl font-heading font-semibold text-foreground tracking-tight leading-[1.1]">
+            Built for <span className="text-primary/60 italic">heavy thinkers.</span>
           </h2>
-          <p className="text-xl text-muted-foreground font-bold max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg text-muted-foreground font-medium max-w-2xl mx-auto leading-relaxed">
             Founders, operators, and creators use Debo to bridge the gap between daily chaos and long-term clarity.
           </p>
         </div>
 
-        <div className="space-y-16">
+        <div className="space-y-24">
           {useCases.map((useCase, index) => (
-            <div key={index} className="flex flex-col gap-6 max-w-2xl mx-auto">
-              <div className="flex items-center gap-3">
-                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-duo-wolf/40">For {useCase.persona}</div>
-                <div className="flex-1 h-px bg-duo-swan/20" />
+            <div key={index} className="flex flex-col gap-8 max-w-2xl mx-auto">
+              <div className="flex items-center gap-4">
+                <div className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/30">For {useCase.persona}</div>
+                <div className="flex-1 h-px bg-border/40" />
               </div>
               
               {/* User Question */}
               <div className="flex items-start gap-4 self-end flex-row-reverse">
-                <div className="w-12 h-12 rounded-2xl bg-muted border-2 border-border flex items-center justify-center shrink-0">
-                  <User className="w-6 h-6 text-muted-foreground" />
+                <div className="w-10 h-10 rounded-full bg-muted border border-border flex items-center justify-center shrink-0">
+                  <User className="w-5 h-5 text-muted-foreground" />
                 </div>
-                <div className="bg-background p-6 rounded-[2rem] rounded-tr-none border-4 border-border shadow-xl shadow-black/5">
-                  <p className="text-lg font-black text-foreground uppercase tracking-tight italic">
-                    "{useCase.question}"
+                <div className="bg-background px-6 py-4 rounded-2xl rounded-tr-none border border-border shadow-sm">
+                  <p className="text-base font-medium text-foreground italic leading-snug">
+                    &ldquo;{useCase.question}&rdquo;
                   </p>
                 </div>
               </div>
 
               {/* Debo Answer */}
               <div className="flex items-start gap-4 self-start">
-                <div className="w-12 h-12 rounded-2xl bg-primary border-2 border-primary-foreground/20 flex items-center justify-center shadow-xl shadow-black/5 shrink-0">
-                  <Sparkles className="w-6 h-6 text-white" />
+                <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                  <Sparkles className="w-5 h-5 text-primary" />
                 </div>
                 <div className="space-y-3 max-w-md">
-                  <div className="bg-muted p-8 rounded-[2rem] rounded-tl-none border-4 border-border shadow-xl shadow-black/5">
-                    <p className="text-lg text-foreground font-bold leading-relaxed">
+                  <div className="bg-muted/30 p-6 rounded-2xl rounded-tl-none border border-border/50 backdrop-blur-sm">
+                    <p className="text-base text-foreground font-medium leading-relaxed">
                       {useCase.answer}
                     </p>
                   </div>
                   <div className="flex items-center gap-2 px-4">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Source:</span>
-                    <span className="text-[11px] font-black uppercase tracking-wider text-primary">{useCase.sources}</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/30">Source:</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-primary/60">{useCase.sources}</span>
                   </div>
                 </div>
               </div>
@@ -88,8 +84,8 @@ export function UseCases() {
           ))}
         </div>
 
-        <div className="mt-32 text-center">
-           <Link href="/join" className="duo-btn duo-btn--primary px-10 py-4 text-lg shadow-[0_6px_0_var(--duo-feather-shadow)]">
+        <div className="mt-40 text-center">
+           <Link href="/join" className="minimal-btn-primary px-12 py-4 text-base">
               Start building your memory
            </Link>
         </div>

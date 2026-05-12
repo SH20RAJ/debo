@@ -22,15 +22,15 @@ const problems = [
 
 export function Problem() {
   return (
-    <section className="py-24 bg-muted/50 border-t border-border/10">
+    <section className="py-32 bg-muted/30 border-y border-border/10">
       <div className="container mx-auto max-w-5xl px-6">
-        <div className="mb-16 text-center space-y-4">
-          <h2 className="text-4xl md:text-5xl font-heading font-black text-foreground leading-tight">
+        <div className="mb-20 text-center space-y-6">
+          <h2 className="text-4xl md:text-5xl font-heading font-semibold text-foreground leading-[1.1]">
             Your memories are <br />
-            <span className="text-destructive italic">disappearing.</span>
+            <span className="text-primary/60 italic">disappearing.</span>
           </h2>
-          <p className="max-w-2xl mx-auto text-xl text-muted-foreground font-bold leading-relaxed">
-            Scattered thoughts across voice notes, journals, and random apps never connect. You forget what you promised, what you did, and who you were.
+          <p className="max-w-2xl mx-auto text-lg text-muted-foreground font-medium leading-relaxed">
+            Scattered thoughts across random apps never connect. You forget what you promised, what you did, and who you were.
           </p>
         </div>
         
@@ -40,14 +40,14 @@ export function Problem() {
             return (
               <div 
                 key={problem.title}
-                className="duo-card p-8 flex flex-col items-center text-center border-border/10 bg-card shadow-xl shadow-black/5"
+                className="minimal-card flex flex-col items-center text-center"
               >
-                <div className="w-16 h-16 rounded-2xl bg-background border-2 border-border text-primary flex items-center justify-center mb-6">
-                  <Icon className="w-8 h-8" />
+                <div className="w-12 h-12 rounded-xl bg-background border border-border text-primary/60 flex items-center justify-center mb-6">
+                  <Icon className="w-6 h-6" />
                 </div>
                 
-                <h3 className="text-xl font-black mb-3 text-foreground uppercase tracking-wider">{problem.title}</h3>
-                <p className="text-muted-foreground font-bold leading-relaxed text-sm">
+                <h3 className="text-lg font-semibold mb-3 text-foreground tracking-tight">{problem.title}</h3>
+                <p className="text-muted-foreground font-medium leading-relaxed text-sm">
                   {problem.description}
                 </p>
               </div>

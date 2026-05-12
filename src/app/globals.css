@@ -98,16 +98,16 @@
 	--duo-fox-shadow: #E68600;
 	--duo-beetle-shadow: #B86CE6;
 
-	/* === SHADCN OVERRIDES === */
+	/* Minimal UI Overrides */
 	--background: var(--duo-snow);
 	--foreground: var(--duo-eel);
 	--card: var(--duo-snow);
 	--card-foreground: var(--duo-eel);
 	--popover: var(--duo-snow);
 	--popover-foreground: var(--duo-eel);
-	--primary: var(--duo-feather);
+	--primary: var(--duo-macaw); /* Switch to a calmer blue accent */
 	--primary-foreground: #ffffff;
-	--secondary: var(--duo-snow);
+	--secondary: var(--duo-polar);
 	--secondary-foreground: var(--duo-eel);
 	--muted: var(--duo-polar);
 	--muted-foreground: var(--duo-wolf);
@@ -118,143 +118,91 @@
 	--border: var(--duo-swan);
 	--input: var(--duo-swan);
 	--ring: var(--duo-macaw);
-	--radius: 1rem;
+	--radius: 0.6rem; /* Much smaller radius for minimal look */
 	--highlight: oklch(0.852 0.199 91.936);
 	--brand: oklch(0.623 0.214 259.815);
 
 	/* Sidebar */
-	--sidebar-background: var(--duo-polar);
+	--sidebar-background: var(--duo-snow);
 	--sidebar-foreground: var(--duo-eel);
 	--sidebar-border: var(--duo-swan);
-	--sidebar-accent: var(--duo-swan);
+	--sidebar-accent: var(--duo-polar);
 	--sidebar-accent-foreground: var(--duo-eel);
-
-	/* Assistant UI Duolingo Theme */
-	--aui-background: var(--duo-snow);
-	--aui-foreground: var(--duo-eel);
-	--aui-muted: var(--duo-polar);
-	--aui-muted-foreground: var(--duo-wolf);
-	--aui-border: var(--duo-swan);
-	--aui-input: var(--duo-swan);
-	--aui-ring: var(--duo-macaw);
-	--aui-primary: var(--duo-feather);
-	--aui-primary-foreground: #ffffff;
-	--aui-accent: var(--duo-macaw);
-	--aui-accent-foreground: #ffffff;
-	--aui-radius: 1.5rem;
 }
 
 .dark {
 	/* Override Brand Vars for Dark Mode */
-	--duo-snow: #131f24;
-	--duo-eel: #e8edef;
-	--duo-polar: #1a2c34;
-	--duo-wolf: #84949b;
-	--duo-swan: #37464f;
-	--duo-hare: #52656d;
+	--duo-snow: #09090b; /* Zinc 950 */
+	--duo-eel: #fafafa; /* Zinc 50 */
+	--duo-polar: #18181b; /* Zinc 900 */
+	--duo-wolf: #a1a1aa; /* Zinc 400 */
+	--duo-swan: #27272a; /* Zinc 800 */
+	--duo-hare: #3f3f46; /* Zinc 700 */
 
-	--background: #0f191e;
-	--foreground: #e8edef;
-	--card: #162028;
-	--card-foreground: #e8edef;
-	--popover: #162028;
-	--popover-foreground: #e8edef;
-	--primary: var(--duo-feather);
+	--background: #09090b;
+	--foreground: #fafafa;
+	--card: #09090b;
+	--card-foreground: #fafafa;
+	--popover: #09090b;
+	--popover-foreground: #fafafa;
+	--primary: #3b82f6; /* Clean blue */
 	--primary-foreground: #ffffff;
-	--secondary: #1a2c34;
-	--secondary-foreground: #e8edef;
-	--muted: #1a2c34;
-	--muted-foreground: #84949b;
-	--accent: #1a2c34;
-	--accent-foreground: #e8edef;
-	--destructive: var(--duo-cardinal);
+	--secondary: #18181b;
+	--secondary-foreground: #fafafa;
+	--muted: #18181b;
+	--muted-foreground: #a1a1aa;
+	--accent: #18181b;
+	--accent-foreground: #fafafa;
+	--destructive: #ef4444;
 	--destructive-foreground: #ffffff;
-	--border: #2a3940;
-	--input: #2a3940;
-	--ring: var(--duo-macaw);
-	--radius: 1rem;
-	--highlight: oklch(0.852 0.199 91.936);
-	--brand: oklch(0.707 0.165 254.624);
+	--border: #27272a;
+	--input: #27272a;
+	--ring: #3b82f6;
+	--radius: 0.6rem;
 
 	/* Sidebar */
-	--sidebar-background: #0c1518;
-	--sidebar-foreground: #e8edef;
-	--sidebar-border: #1e2d35;
-	--sidebar-accent: #1a2c34;
-	--sidebar-accent-foreground: #e8edef;
-
-	/* Assistant UI Duolingo Theme */
-	--aui-background: #0f191e;
-	--aui-foreground: #e8edef;
-	--aui-muted: #1a2c34;
-	--aui-muted-foreground: #84949b;
-	--aui-border: #2a3940;
-	--aui-input: #2a3940;
-	--aui-ring: var(--duo-macaw);
-	--aui-primary: var(--duo-feather);
-	--aui-primary-foreground: #ffffff;
-	--aui-accent: var(--duo-macaw);
-	--aui-accent-foreground: #ffffff;
-	--aui-radius: 1.5rem;
+	--sidebar-background: #09090b;
+	--sidebar-foreground: #fafafa;
+	--sidebar-border: #27272a;
+	--sidebar-accent: #18181b;
+	--sidebar-accent-foreground: #fafafa;
 }
 
 @layer base {
 	* {
-		/* @apply border-border outline-ring/50; */
+		@apply border-border/40;
 	}
 
 	body {
-		@apply bg-background text-foreground;
+		@apply bg-background text-foreground antialiased selection:bg-primary/20 selection:text-primary;
 		font-family: var(--font-body);
 	}
 
 	h1, h2, h3, h4, h5, h6 {
-		@apply font-heading font-extrabold;
+		@apply font-heading font-semibold tracking-tight;
 	}
 }
 
-@utility btn-3d {
-	@apply relative transition-all duration-200 hover:-translate-y-0.5 active:translate-y-[4px] active:shadow-none;
-	box-shadow: 0 4px 0 var(--shadow-color, transparent);
-
-	&:hover {
-		box-shadow: 0 6px 0 var(--shadow-color, transparent);
-	}
+@utility minimal-card {
+	@apply rounded-xl border border-border/50 bg-card/50 p-6 transition-all duration-300;
+	@apply hover:border-primary/20 hover:bg-card/80 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)];
 }
 
-@utility btn-3d-green {
-	--shadow-color: var(--duo-feather-shadow);
+@utility minimal-btn {
+	@apply inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 active:scale-95 disabled:opacity-50;
 }
 
-@utility btn-3d-blue {
-	--shadow-color: var(--duo-macaw-shadow);
+@utility minimal-btn-primary {
+	@apply minimal-btn bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm;
 }
 
-@utility btn-3d-red {
-	--shadow-color: var(--duo-cardinal-shadow);
-}
-
-@utility btn-3d-white {
-	--shadow-color: var(--duo-swan);
-}
-
-@utility hover-bounce {
-	@apply transition-transform duration-200 hover:scale-105 active:scale-95;
+@utility minimal-btn-outline {
+	@apply minimal-btn border border-border bg-transparent hover:bg-muted hover:text-foreground;
 }
 
 @utility hover-pop {
-	@apply transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)];
-	@apply hover:-translate-y-2 hover:scale-[1.01] active:translate-y-1 active:scale-[0.98];
-}
-
-@utility duo-card {
-	@apply rounded-[2.5rem] border-2 border-duo-swan bg-card p-8 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)];
-	@apply relative hover:-translate-y-3 hover:border-border hover:shadow-[0_20px_40px_rgba(0,0,0,0.1)] active:translate-y-1 active:shadow-none;
-	box-shadow: 0 8px 0 var(--border);
-
-	&:active {
-		box-shadow: 0 0px 0 var(--border);
-	}
+	@apply transition-all duration-300 ease-out;
+	@apply hover:-translate-y-1 hover:shadow-lg active:translate-y-0 active:shadow-none;
 }
 
 @utility grad-blue {

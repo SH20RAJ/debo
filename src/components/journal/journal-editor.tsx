@@ -53,7 +53,8 @@ export function JournalEditor({
     const parseAndExtractMedia = useCallback((text: string) => {
         const extracted = extractMediaFromContent(text);
         const items: CaptureMediaItem[] = extracted.map((media, idx) => ({
-            id: `media-${idx}-${Date.now()}`,
+            // Use a more stable ID based on index and src/label to avoid Date.now() re-renders
+            id: `media-${idx}-${media.kind}-${media.src.substring(0, 10)}`,
             kind: media.kind,
             label: media.label,
             size: media.size,
@@ -73,14 +74,26 @@ export function JournalEditor({
     // Handle content changes - use ref to avoid re-rendering PlateEditor
     const handleContentChange = useCallback((newContent: string) => {
         contentRef.current = newContent;
+        
         // Re-parse to detect any changes in media lines
         const items = parseAndExtractMedia(newContent);
-        setMediaItems(items);
+        
+        // Only update state if items actually changed to avoid unnecessary re-renders
+        setMediaItems(prev => {
+            if (prev.length !== items.length) return items;
+            const hasChanged = items.some((item, i) => 
+                item.kind !== prev[i].kind || 
+                item.src !== prev[i].src || 
+                item.label !== prev[i].label
+            );
+            return hasChanged ? items : prev;
+        });
+
         // Trigger auto-save via a lightweight mechanism
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
         timeoutRef.current = setTimeout(() => {
             handleSaveRef.current();
-        }, 1500);
+        }, 2000);
     }, [parseAndExtractMedia]);
 
     // Remove media item (removes from content and preview)
@@ -131,13 +144,13 @@ export function JournalEditor({
                 setTimeout(() => setSaveStatus("idle"), 2000);
                 return newId;
             } else {
-                toast.error(result.error || "Sync failed.");
                 setSaveStatus("idle");
+                return currentId;
             }
         } catch {
             setSaveStatus("idle");
+            return currentId;
         }
-        return currentId;
     }, []);
 
     // Stable ref to auto-save so the content onChange callback doesn't need state deps
@@ -159,7 +172,7 @@ export function JournalEditor({
 
         timeoutRef.current = setTimeout(() => {
             handleSaveRef.current();
-        }, 1500);
+        }, 2000);
 
         return () => {
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -210,24 +223,24 @@ export function JournalEditor({
             {/* Header */}
             <div className="max-w-screen-xl mx-auto w-full px-6 py-10 flex items-center justify-between">
                 <Button
-                    variant="duolingo-outline"
+                    variant="ghost"
                     size="icon"
                     onClick={() => router.push("/dashboard/journals")}
-                    className="rounded-2xl hover-bounce h-12 w-12"
+                    className="rounded-full h-10 w-10 border border-border/50 hover:bg-muted/40 transition-all"
                 >
-                    <ArrowLeft className="h-6 w-6 text-foreground" />
+                    <ArrowLeft className="h-5 w-5 text-foreground/70" />
                 </Button>
 
                 <div className="flex items-center gap-4">
                     {saveStatus === "saving" && (
-                        <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-duo-macaw animate-pulse">
-                            <Loader2 className="h-4 w-4 animate-spin" />
+                        <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-primary/60 animate-pulse">
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
                             <span>Syncing...</span>
                         </div>
                     )}
                     {saveStatus === "saved" && (
-                        <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-duo-green animate-in fade-in zoom-in duration-300">
-                            <Check className="h-4 w-4" />
+                        <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-green-500/60 animate-in fade-in zoom-in duration-300">
+                            <Check className="h-3.5 w-3.5" />
                             <span>Saved</span>
                         </div>
                     )}
@@ -235,66 +248,68 @@ export function JournalEditor({
             </div>
 
             {/* Content Area */}
-            <main className="max-w-4xl mx-auto w-full px-6 flex-1 pb-40 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <div className="space-y-6">
+            <main className="max-w-4xl mx-auto w-full px-6 flex-1 pb-40">
+                <div className="space-y-8">
                     <input
                         type="text"
-                        placeholder="What's on your mind?"
+                        placeholder="Untitled Memory"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
-                        className="w-full text-5xl font-heading font-black tracking-tight bg-transparent border-none outline-none placeholder:text-muted-foreground/30 text-foreground px-0"
+                        className="w-full text-4xl md:text-5xl font-heading font-semibold tracking-tight bg-transparent border-none outline-none placeholder:text-muted-foreground/20 text-foreground px-0"
                     />
 
                     {/* Tags UI */}
                     <div className="flex flex-wrap items-center gap-2">
                         {tags.map(tag => (
-                            <span key={tag} className="inline-flex items-center gap-1 rounded-lg bg-primary/10 text-primary px-2.5 py-1 text-xs font-bold tracking-wider uppercase border border-primary/20">
+                            <span key={tag} className="inline-flex items-center gap-1.5 rounded-md bg-primary/5 text-primary/80 px-2 py-1 text-xs font-medium border border-primary/10">
                                 #{tag}
-                                <button onClick={() => removeTag(tag)} className="hover:bg-primary/20 rounded-full p-0.5 ml-1 transition-colors text-primary/70 hover:text-primary">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                                <button onClick={() => removeTag(tag)} className="hover:text-primary transition-colors">
+                                    <X className="h-3 w-3" />
                                 </button>
                             </span>
                         ))}
                         <input
                             type="text"
-                            placeholder={tags.length === 0 ? "Add tags (e.g. #work, #health)..." : "Add tag..."}
+                            placeholder={tags.length === 0 ? "Add tags..." : ""}
                             value={tagInput}
                             onChange={(e) => setTagInput(e.target.value)}
                             onKeyDown={handleAddTag}
-                            className="bg-transparent border-none outline-none text-sm text-muted-foreground font-bold placeholder:text-muted-foreground/30 min-w-[120px]"
+                            className="bg-transparent border-none outline-none text-sm text-muted-foreground/60 font-medium placeholder:text-muted-foreground/20 min-w-[120px]"
                         />
                     </div>
 
                     {/* Media Preview - Only show above editor, not inline */}
                     {hasMedia && currentMedia && (
-                        <MediaBlock
-                            key={currentMedia.id}
-                            kind={currentMedia.kind}
-                            label={currentMedia.label}
-                            size={currentMedia.size}
-                            src={currentMedia.src}
-                            codeLine={currentMedia.line}
-                            onRemove={() => handleRemoveMedia(currentMedia.id)}
-                        />
+                        <div className="pt-4">
+                            <MediaBlock
+                                key={currentMedia.id}
+                                kind={currentMedia.kind}
+                                label={currentMedia.label}
+                                size={currentMedia.size}
+                                src={currentMedia.src}
+                                codeLine={currentMedia.line}
+                                onRemove={() => handleRemoveMedia(currentMedia.id)}
+                            />
+                        </div>
                     )}
 
                     {/* Media Navigation and Add Button */}
                     {hasMedia && mediaItems.length > 1 && (
-                        <div className="flex items-center justify-center gap-4 py-3 bg-muted/30 rounded-xl">
+                        <div className="flex items-center justify-center gap-4 py-2 bg-muted/20 rounded-lg">
                             <button
                                 onClick={() => setCurrentMediaIndex((i) => (i === 0 ? mediaItems.length - 1 : i - 1))}
-                                className="flex h-9 w-9 items-center justify-center rounded-full bg-muted/40 text-muted-foreground hover:bg-muted/60 transition"
+                                className="flex h-8 w-8 items-center justify-center rounded-full bg-muted/40 text-muted-foreground hover:bg-muted/60 transition"
                             >
-                                <ChevronLeft className="h-5 w-5" />
+                                <ChevronLeft className="h-4 w-4" />
                             </button>
-                            <span className="text-sm font-black text-foreground">
+                            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
                                 {currentMediaIndex + 1} / {mediaItems.length}
                             </span>
                             <button
                                 onClick={() => setCurrentMediaIndex((i) => (i === mediaItems.length - 1 ? 0 : i + 1))}
-                                className="flex h-9 w-9 items-center justify-center rounded-full bg-muted/40 text-muted-foreground hover:bg-muted/60 transition"
+                                className="flex h-8 w-8 items-center justify-center rounded-full bg-muted/40 text-muted-foreground hover:bg-muted/60 transition"
                             >
-                                <ChevronRight className="h-5 w-5" />
+                                <ChevronRight className="h-4 w-4" />
                             </button>
                         </div>
                     )}
@@ -303,19 +318,19 @@ export function JournalEditor({
                     <div className="flex items-center gap-3">
                         <button
                             onClick={() => setShowAddMedia(!showAddMedia)}
-                            className="inline-flex items-center gap-2 rounded-xl border border-dashed border-border/50 px-4 py-2 text-sm font-bold text-muted-foreground hover:bg-muted/20 hover:text-foreground transition-colors"
+                            className="inline-flex items-center gap-2 rounded-md border border-dashed border-border/60 px-4 py-2 text-xs font-medium text-muted-foreground/60 hover:bg-muted/20 hover:text-foreground transition-all"
                         >
-                            <Plus className="h-4 w-4" />
-                            Add Media
+                            <Plus className="h-3.5 w-3.5" />
+                            Attach Media
                         </button>
                     </div>
 
                     {/* Add Media Dialog */}
                     {showAddMedia && (
-                        <div className="rounded-2xl border border-border/30 bg-muted/20 p-4 space-y-4">
+                        <div className="minimal-card p-6 space-y-6">
                             <div className="flex items-center justify-between">
-                                <h3 className="text-sm font-black text-foreground">Add Media from URL</h3>
-                                <button onClick={() => setShowAddMedia(false)} className="text-muted-foreground/50 hover:text-muted-foreground">
+                                <h3 className="text-sm font-semibold text-foreground">Attach Media from URL</h3>
+                                <button onClick={() => setShowAddMedia(false)} className="text-muted-foreground/40 hover:text-muted-foreground transition-colors">
                                     <X className="h-4 w-4" />
                                 </button>
                             </div>
@@ -327,13 +342,13 @@ export function JournalEditor({
                                         key={kind}
                                         onClick={() => setNewMediaKind(kind)}
                                         className={cn(
-                                            "flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold uppercase transition-colors",
+                                            "flex items-center gap-2 rounded-md px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider transition-all",
                                             newMediaKind === kind
-                                                ? "bg-duo-feather/20 text-duo-feather border border-duo-feather/30"
-                                                : "bg-muted/30 text-muted-foreground border border-border/30 hover:bg-muted/50"
+                                                ? "bg-primary/10 text-primary border border-primary/20"
+                                                : "bg-muted/30 text-muted-foreground border border-border/40 hover:bg-muted/50"
                                         )}
                                     >
-                                        {kind === "video" ? <Video className="h-4 w-4" /> : kind === "audio" ? <Mic2 className="h-4 w-4" /> : <ImageIcon className="h-4 w-4" />}
+                                        {kind === "video" ? <Video className="h-3.5 w-3.5" /> : kind === "audio" ? <Mic2 className="h-3.5 w-3.5" /> : <ImageIcon className="h-3.5 w-3.5" />}
                                         {kind}
                                     </button>
                                 ))}
@@ -345,7 +360,7 @@ export function JournalEditor({
                                 value={newMediaUrl}
                                 onChange={(e) => setNewMediaUrl(e.target.value)}
                                 placeholder="Paste media URL (r2:// or https://)"
-                                className="w-full rounded-xl border border-border/30 bg-card px-4 py-3 text-sm font-bold text-foreground placeholder:text-muted-foreground/40 outline-none focus:border-duo-feather/50"
+                                className="w-full rounded-md border border-border/60 bg-background px-4 py-2.5 text-sm font-medium text-foreground placeholder:text-muted-foreground/20 outline-none focus:border-primary/40 transition-colors"
                             />
 
                             {/* Label Input */}
@@ -354,33 +369,35 @@ export function JournalEditor({
                                 value={newMediaLabel}
                                 onChange={(e) => setNewMediaLabel(e.target.value)}
                                 placeholder="Optional label"
-                                className="w-full rounded-xl border border-border/30 bg-card px-4 py-3 text-sm font-bold text-foreground placeholder:text-muted-foreground/40 outline-none focus:border-duo-feather/50"
+                                className="w-full rounded-md border border-border/60 bg-background px-4 py-2.5 text-sm font-medium text-foreground placeholder:text-muted-foreground/20 outline-none focus:border-primary/40 transition-colors"
                             />
 
                             {/* Add Button */}
-                            <Button onClick={handleAddMediaFromUrl} className="w-full bg-duo-feather text-white hover:bg-duo-feather/90">
-                                Add to Journal
+                            <Button onClick={handleAddMediaFromUrl} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-md py-5 font-semibold tracking-tight">
+                                Attach to Memory
                             </Button>
                         </div>
                     )}
 
                     {/* Plate.js Editor (replaced Novel) */}
-                    <div className="min-h-[60vh] pt-6 border-t border-border/30">
+                    <div className="min-h-[60vh] pt-10 border-t border-border/10">
                         <PlateEditor
                             initialValue={initialContent}
                             onChange={handleContentChange}
-                            placeholder="Start writing your thoughts..."
+                            placeholder="Start writing..."
                             variant="fullWidth"
                         />
                     </div>
 
                     {/* Editor hint */}
-                    <p className="text-xs font-bold text-muted-foreground/40 text-center">
-                        Media lines (video:, audio:, - video:) are automatically extracted and shown above. Remove the line text to detach from preview.
+                    <p className="text-[10px] font-medium text-muted-foreground/20 text-center uppercase tracking-widest">
+                        Media lines are extracted automatically.
                     </p>
 
                     {relatedJournals && relatedJournals.length > 0 && (
-                        <RelatedJournals journals={relatedJournals} />
+                        <div className="pt-20">
+                            <RelatedJournals journals={relatedJournals} />
+                        </div>
                     )}
                 </div>
             </main>

@@ -37,27 +37,27 @@ const trustMarkers = [
 
 export function Privacy() {
   return (
-    <section id="privacy" className="py-24 bg-background border-t-2 border-duo-swan">
+    <section id="privacy" className="py-32 bg-background border-t border-border/10">
       <div className="container mx-auto max-w-6xl px-6">
-        <div className="flex flex-col lg:flex-row gap-16 items-center">
-          <div className="lg:w-1/3 space-y-8 text-center lg:text-left">
-            <h2 className="text-4xl md:text-5xl font-heading font-black text-duo-eel leading-tight">
+        <div className="flex flex-col lg:flex-row gap-20 items-start">
+          <div className="lg:w-1/3 space-y-8 text-center lg:text-left lg:sticky lg:top-32">
+            <h2 className="text-4xl md:text-5xl font-heading font-semibold text-foreground tracking-tight leading-[1.1]">
               Trust is the <br />
-              <span className="text-duo-macaw italic">core engine.</span>
+              <span className="text-primary/60 italic">core engine.</span>
             </h2>
-            <p className="text-xl text-duo-wolf font-bold leading-relaxed">
+            <p className="text-lg text-muted-foreground font-medium leading-relaxed">
               We architected Debo for deeply personal data. No vague claims—just specific, technical commitments to your privacy.
             </p>
           </div>
           
-          <div className="lg:w-2/3 grid sm:grid-cols-2 gap-8">
+          <div className="lg:w-2/3 grid sm:grid-cols-2 gap-6">
             {trustMarkers.map((marker, i) => (
-              <div key={i} className="duo-card p-8 flex flex-col gap-4 shadow-[0_4px_0_var(--duo-swan)] transition-all hover:translate-y-[-4px]">
-                <div className="w-14 h-14 rounded-2xl bg-duo-polar border-2 border-duo-swan flex items-center justify-center text-duo-macaw shadow-[0_4px_0_var(--duo-swan)]">
-                  <marker.icon className="w-7 h-7" />
+              <div key={i} className="minimal-card flex flex-col gap-5 p-8 transition-all duration-300 hover:border-primary/20 hover:shadow-sm">
+                <div className="w-12 h-12 rounded-xl bg-background border border-border flex items-center justify-center text-primary/60">
+                  <marker.icon className="w-6 h-6" />
                 </div>
-                <h3 className="text-xl font-black text-duo-eel uppercase tracking-wider">{marker.title}</h3>
-                <p className="text-duo-wolf font-bold leading-relaxed text-sm">
+                <h3 className="text-lg font-semibold text-foreground tracking-tight">{marker.title}</h3>
+                <p className="text-muted-foreground font-medium leading-relaxed text-sm">
                   {marker.description}
                 </p>
               </div>
