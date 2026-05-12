@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { RelatedJournals } from "@/components/dashboard/journal/related-journals";
 import { ArrowLeft, Loader2, Check, ChevronLeft, ChevronRight, Plus, Video, Mic2, Image as ImageIcon, X } from "lucide-react";
 import { MediaBlock, extractMediaFromContent, mediaSrcFromR2, type MediaKind } from "./media-block";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { PlateEditor } from "@/components/editor/plate-editor";
 
@@ -35,7 +34,7 @@ export function JournalEditor({
     initialTags?: string[],
     relatedJournals?: any[]
 }) {
-    const [content, setContent] = useState(initialContent);
+    const contentRef = useRef(initialContent);
     const [title, setTitle] = useState(initialTitle);
     const [tags, setTags] = useState<string[]>(initialTags);
     const [tagInput, setTagInput] = useState("");
@@ -71,12 +70,17 @@ export function JournalEditor({
         setMediaItems(items);
     }, [initialContent, parseAndExtractMedia]);
 
-    // Handle content changes - re-parse media
+    // Handle content changes - use ref to avoid re-rendering PlateEditor
     const handleContentChange = useCallback((newContent: string) => {
-        setContent(newContent);
+        contentRef.current = newContent;
         // Re-parse to detect any changes in media lines
         const items = parseAndExtractMedia(newContent);
         setMediaItems(items);
+        // Trigger auto-save via a lightweight mechanism
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        timeoutRef.current = setTimeout(() => {
+            handleSaveRef.current();
+        }, 1500);
     }, [parseAndExtractMedia]);
 
     // Remove media item (removes from content and preview)
@@ -85,18 +89,18 @@ export function JournalEditor({
         if (!media) return;
 
         // Remove the line from content
-        const newContent = content
+        const newContent = contentRef.current
             .split("\n")
             .filter(line => line !== media.line && line.trim() !== media.line.trim())
             .join("\n");
 
-        setContent(newContent);
+        contentRef.current = newContent;
         setMediaItems(prev => prev.filter(m => m.id !== mediaId));
 
         if (currentMediaIndex >= mediaItems.length - 1 && currentMediaIndex > 0) {
             setCurrentMediaIndex(prev => prev - 1);
         }
-    }, [content, mediaItems, currentMediaIndex]);
+    }, [mediaItems, currentMediaIndex]);
 
     // Add media via URL (MCP or manual)
     const handleAddMedia = useCallback((kind: MediaKind, src: string, label?: string) => {
@@ -104,11 +108,11 @@ export function JournalEditor({
         const fileLabel = label || `${kind}-${Date.now()}.${extension}`;
         const line = `- ${kind}: ${fileLabel} (Unknown size) ${src}`;
 
-        const newContent = content ? `${content}\n\n${line}` : line;
-        setContent(newContent);
+        const newContent = contentRef.current ? `${contentRef.current}\n\n${line}` : line;
+        contentRef.current = newContent;
 
         toast.success(`${kind} added to journal`);
-    }, [content]);
+    }, []);
 
     const handleSave = useCallback(async (currentContent: string, currentId: string, currentTitle: string, currentTags: string[]) => {
         if (!currentContent.trim() && !currentTitle.trim()) return currentId;
@@ -136,20 +140,31 @@ export function JournalEditor({
         return currentId;
     }, []);
 
+    // Stable ref to auto-save so the content onChange callback doesn't need state deps
+    const handleSaveRef = useRef(() => {
+        handleSave(contentRef.current, id, title, tags);
+    });
     useEffect(() => {
-        if (content === initialContent && title === initialTitle && JSON.stringify(tags) === JSON.stringify(initialTags) && id) return;
-        if (!content.trim() && !title.trim() && !id) return;
+        handleSaveRef.current = () => {
+            handleSave(contentRef.current, id, title, tags);
+        };
+    }, [id, title, tags, handleSave]);
+
+    // Auto-save on title/tag changes (content auto-save is handled in handleContentChange)
+    useEffect(() => {
+        if (title === initialTitle && JSON.stringify(tags) === JSON.stringify(initialTags) && id) return;
+        if (!contentRef.current.trim() && !title.trim() && !id) return;
 
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
         timeoutRef.current = setTimeout(() => {
-            handleSave(content, id, title, tags);
+            handleSaveRef.current();
         }, 1500);
 
         return () => {
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
         };
-    }, [content, id, title, tags, handleSave, initialContent, initialTitle, initialTags]);
+    }, [id, title, tags, initialTitle, initialTags]);
 
     const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter' || e.key === ',') {
@@ -174,14 +189,14 @@ export function JournalEditor({
         const size = "Added via URL";
 
         const line = `- ${newMediaKind}: ${label} (${size}) ${url}`;
-        const newContent = content ? `${content}\n\n${line}` : line;
+        const newContent = contentRef.current ? `${contentRef.current}\n\n${line}` : line;
 
-        setContent(newContent);
+        contentRef.current = newContent;
         setNewMediaUrl("");
         setNewMediaLabel("");
         setShowAddMedia(false);
         toast.success(`${newMediaKind} added to journal`);
-    }, [content, newMediaUrl, newMediaLabel, newMediaKind]);
+    }, [newMediaUrl, newMediaLabel, newMediaKind]);
 
     const removeTag = (tagToRemove: string) => {
         setTags(tags.filter(tag => tag !== tagToRemove));
@@ -352,7 +367,7 @@ export function JournalEditor({
                     {/* Plate.js Editor (replaced Novel) */}
                     <div className="min-h-[60vh] pt-6 border-t border-border/30">
                         <PlateEditor
-                            initialValue={content}
+                            initialValue={initialContent}
                             onChange={handleContentChange}
                             placeholder="Start writing your thoughts..."
                             variant="fullWidth"
