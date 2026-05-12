@@ -1,68 +1,80 @@
-import Image from "next/image";
 import Link from "next/link";
 import { 
   Sparkles, 
   Brain, 
-  Mic2, 
+  Mic, 
   Database, 
   Zap, 
   Heart, 
-  ShieldCheck,
-  Bot
+  Shield,
+  Bot,
+  ArrowRight,
+  User,
+  CheckCircle2,
+  Lock
 } from "lucide-react";
 import { Metadata } from "next";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "Debo Pitch — The Future of Memory",
-  description: "Debo is your personal intelligence layer. A Jarvis-like companion for your life documentary.",
+  title: "Debo — The Vision",
+  description: "A personal intelligence layer for your life documentary.",
 };
 
 export default function PitchPage() {
   return (
-    <div className="min-h-screen bg-duo-snow font-body text-duo-eel overflow-x-hidden">
-      {/* Hero Section */}
-      <section className="relative px-6 py-20 lg:py-32">
-        <div className="mx-auto max-w-7xl">
-          <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
-            <div className="space-y-8">
-              <div className="inline-flex items-center gap-2 rounded-full border-2 border-duo-macaw bg-duo-macaw/10 px-4 py-2 text-sm font-black uppercase tracking-wider text-duo-macaw">
-                <Sparkles className="h-4 w-4" />
-                Project Jarvis: Live Intelligence
+    <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/20">
+      {/* Vision Hero */}
+      <section className="relative px-6 pt-32 pb-40 overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[800px] bg-gradient-to-b from-primary/[0.02] to-transparent pointer-events-none" />
+        
+        <div className="mx-auto max-w-7xl relative z-10 text-center lg:text-left">
+          <div className="grid gap-20 lg:grid-cols-2 lg:items-center">
+            <div className="space-y-12">
+              <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-primary/10 bg-primary/[0.03] text-primary/40 font-bold tracking-[0.2em] text-[10px] uppercase mx-auto lg:mx-0">
+                <Sparkles className="h-3.5 w-3.5" />
+                Project Intelligence
               </div>
-              <h1 className="font-display text-5xl font-black leading-[1.1] tracking-tight text-duo-eel sm:text-7xl">
-                your second brain, <span className="text-duo-feather">always listening.</span>
+              <h1 className="text-6xl md:text-8xl font-heading font-semibold tracking-tighter leading-[0.95] text-foreground">
+                Your second <br />
+                <span className="text-primary/40">brain.</span>
               </h1>
-              <p className="max-w-xl text-xl font-bold leading-relaxed text-duo-wolf">
-                Debo is a calm, personal intelligence layer for your life. It remembers every journal, connects every pattern, and talks back in real-time.
+              <p className="max-w-xl text-xl md:text-2xl font-medium leading-relaxed text-muted-foreground/60 mx-auto lg:mx-0 tracking-tight">
+                Debo is a calm, personal memory engine. It remembers what you say, connects the patterns, and helps you reflect in real-time.
               </p>
-              <div className="flex flex-col gap-4 sm:flex-row">
-                <Link href="/join" className="duo-btn--primary duo-btn h-16 px-10 text-lg shadow-[0_6px_0_var(--duo-feather-shadow)]">
-                  Start Your Journey
+              <div className="flex flex-col gap-6 sm:flex-row justify-center lg:justify-start">
+                <Link href="/join" className="minimal-btn-primary h-14 px-10 text-xs font-bold uppercase tracking-[0.2em] shadow-2xl shadow-primary/20">
+                  Initialize Memory
                 </Link>
-                <Link href="#vision" className="duo-btn--secondary duo-btn h-16 px-10 text-lg shadow-[0_6px_0_var(--duo-swan)]">
-                  Read the Pitch
+                <Link href="#vision" className="minimal-btn-outline h-14 px-10 text-xs font-bold uppercase tracking-[0.2em] border border-border/40 bg-card/40 backdrop-blur-sm">
+                  The Protocol
                 </Link>
               </div>
             </div>
-            <div className="relative">
-              <div className="aspect-square relative flex items-center justify-center">
-                {/* Visual Representation of Debo */}
-                <div className="absolute inset-0 bg-duo-feather/5 rounded-full animate-pulse scale-110" />
-                <div className="absolute inset-0 bg-duo-feather/10 rounded-full animate-pulse delay-75" />
-                <div className="relative h-64 w-64 lg:h-80 lg:w-80 rounded-[3.5rem] bg-duo-snow border-4 border-duo-feather shadow-[0_12px_0_var(--duo-feather-shadow)] flex items-center justify-center">
-                   <Image src="/mascot.png" alt="Duo" width={200} height={200} className="object-contain" />
+
+            <div className="relative hidden lg:block">
+              <div className="relative rounded-3xl border border-border/40 bg-card/30 backdrop-blur-3xl p-12 shadow-2xl shadow-primary/[0.02] space-y-10">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground/30">
+                    <span>Active Stream</span>
+                    <div className="flex items-center gap-1.5">
+                      <div className="size-1.5 rounded-full bg-primary animate-pulse" />
+                      Live
+                    </div>
+                  </div>
+                  <div className="p-6 bg-muted/10 rounded-2xl border border-border/20">
+                    <p className="text-sm font-medium text-foreground/40 italic leading-relaxed">
+                      "Remember to follow up on the memory engine proposal."
+                    </p>
+                  </div>
                 </div>
-                
-                {/* Floating Tags */}
-                <div className="absolute top-0 right-0 animate-bounce">
-                   <div className="duo-badge bg-duo-bee shadow-[0_4px_0_var(--duo-bee-shadow)] text-duo-eel py-3 px-6 text-sm">
-                      <Mic2 className="h-4 w-4" /> Voice Capture
-                   </div>
-                </div>
-                <div className="absolute bottom-10 left-0 animate-bounce delay-150">
-                   <div className="duo-badge bg-duo-macaw shadow-[0_4px_0_var(--duo-macaw-shadow)] text-white py-3 px-6 text-sm">
-                      <Database className="h-4 w-4" /> 100% Private
-                   </div>
+                <div className="flex items-center gap-4">
+                  <div className="px-5 py-3 rounded-xl bg-primary/[0.02] border border-primary/10 text-[10px] font-bold text-primary/40 uppercase tracking-widest">
+                    Fact Extracted
+                  </div>
+                  <div className="px-5 py-3 rounded-xl bg-primary/[0.02] border border-primary/10 text-[10px] font-bold text-primary/40 uppercase tracking-widest">
+                    Pattern Logged
+                  </div>
                 </div>
               </div>
             </div>
@@ -70,129 +82,106 @@ export default function PitchPage() {
         </div>
       </section>
 
-      {/* The Problem */}
-      <section id="vision" className="bg-duo-polar px-6 py-24">
-        <div className="mx-auto max-w-4xl text-center space-y-12">
-          <h2 className="font-display text-4xl font-black text-duo-eel sm:text-5xl">
-            the cognitive <span className="text-duo-cardinal">overload.</span>
-          </h2>
-          <p className="text-2xl font-bold leading-relaxed text-duo-wolf">
-            We capture more data than ever, but we remember less. Our journals are graveyards of thoughts, and our memories are fading silos.
-          </p>
-          <div className="grid gap-6 sm:grid-cols-3">
+      {/* The Cognitive Crisis */}
+      <section id="vision" className="bg-card/30 border-y border-border/20 px-6 py-32">
+        <div className="mx-auto max-w-5xl text-center space-y-16">
+          <div className="space-y-4">
+            <h2 className="text-4xl md:text-5xl font-heading font-semibold text-foreground tracking-tight">
+              Information <span className="text-primary/40 italic">without meaning.</span>
+            </h2>
+            <p className="text-lg md:text-xl font-medium text-muted-foreground/60 max-w-2xl mx-auto leading-relaxed">
+              We capture everything but remember nothing. Our journals are graveyards of thoughts, and our memories are fading silos.
+            </p>
+          </div>
+          <div className="grid gap-6 md:grid-cols-3">
              {[
-               { icon: Brain, label: "Fading Memory", color: "text-duo-cardinal" },
-               { icon: Zap, label: "Fragmented Data", color: "text-duo-fox" },
-               { icon: Database, label: "Lost Insights", color: "text-duo-beetle" }
+               { label: "Fading Memory", desc: "Context lost over time." },
+               { label: "Fragmented Data", desc: "Scattered across apps." },
+               { label: "Lost Insights", desc: "No way to find patterns." }
              ].map((item, i) => (
-               <div key={i} className="rounded-3xl border-2 border-duo-swan bg-duo-snow p-8 shadow-[0_4px_0_var(--duo-swan)]">
-                  <item.icon className={`h-10 w-10 mx-auto mb-4 ${item.color}`} />
-                  <span className="font-black uppercase tracking-wider text-sm">{item.label}</span>
+               <div key={i} className="rounded-2xl border border-border/30 bg-background/50 p-8 text-center space-y-4">
+                  <div className="text-[10px] font-bold uppercase tracking-[0.4em] text-primary/40 mb-2">Issue {i + 1}</div>
+                  <div className="font-bold text-base text-foreground/80">{item.label}</div>
+                  <div className="text-xs font-medium text-muted-foreground/40 leading-relaxed">{item.desc}</div>
                </div>
              ))}
           </div>
         </div>
       </section>
 
-      {/* The Solution: Debo */}
-      <section className="px-6 py-24">
+      {/* The Core Capabilities */}
+      <section className="px-6 py-32">
         <div className="mx-auto max-w-7xl">
-           <div className="text-center mb-20 space-y-4">
-              <h2 className="font-display text-4xl font-black sm:text-6xl text-duo-eel">
-                meet <span className="text-duo-feather">debo.</span>
+           <div className="text-center lg:text-left mb-24 space-y-4">
+              <div className="text-[10px] font-bold uppercase tracking-[0.4em] text-primary/40">Capabilities</div>
+              <h2 className="text-4xl md:text-6xl font-heading font-semibold text-foreground tracking-tight">
+                Built for <span className="text-primary/40 italic">permanence.</span>
               </h2>
-              <p className="text-xl font-bold text-duo-wolf">Your personal intelligence layer.</p>
            </div>
 
-           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               <FeatureCard 
-                icon={Mic2}
-                title="Jarvis Voice"
-                description="Ambient, real-time voice intelligence. Talk to your past, plan your future, and reflect on your day."
-                color="bg-duo-green"
+                icon={Mic}
+                title="Ambient Voice"
+                desc="Record thoughts as they happen. Sub-100ms processing."
               />
               <FeatureCard 
                 icon={Database}
-                title="Memory Palace"
-                description="Structured extraction of atomic facts. Debo remembers your preferences, commitments, and key life events."
-                color="bg-duo-blue"
+                title="Atomic Memory"
+                desc="Facts extracted into a clean, searchable database."
               />
               <FeatureCard 
                 icon={Brain}
                 title="Pattern Engine"
-                description="Graph-based analysis that identifies emotional trends, recurring themes, and growth areas over time."
-                color="bg-duo-purple"
+                desc="Identify recurring themes and growth areas automatically."
               />
               <FeatureCard 
-                icon={ShieldCheck}
-                title="Privacy First"
-                description="Your life data stays yours. Encrypted, private, and grounded only in your own historical evidence."
-                color="bg-duo-orange"
+                icon={Lock}
+                title="Private Core"
+                desc="Your data is encrypted and grounded only in your evidence."
               />
               <FeatureCard 
                 icon={Zap}
-                title="Omni-Input"
-                description="Import from ChatGPT, Claude, or journals. Voice, video, and image support for multimodal capture."
-                color="bg-duo-macaw"
+                title="High Density"
+                desc="Minimalist UI designed for power users and speed."
               />
               <FeatureCard 
                 icon={Bot}
-                title="MCP Ready"
-                description="Connect Debo to your favorite AI tools like Cursor or Claude Desktop via Model Context Protocol."
-                color="bg-duo-eel"
+                title="MCP Integrated"
+                desc="Connect your memory to any AI tool seamlessly."
               />
            </div>
         </div>
       </section>
 
-      {/* Voice Demo Section */}
-      <section className="bg-duo-feather px-6 py-24 text-white">
-         <div className="mx-auto max-w-5xl text-center space-y-12">
-            <h2 className="font-display text-4xl font-black sm:text-6xl leading-tight">
-               sub-100ms latency. <br/>feels like <span className="text-duo-mask">magic.</span>
-            </h2>
-            <div className="relative mx-auto h-64 w-64 sm:h-80 sm:w-80">
-               <div className="absolute inset-0 bg-white/20 rounded-full animate-ping" />
-               <div className="relative h-full w-full rounded-full border-8 border-white bg-white/10 backdrop-blur-xl flex flex-col items-center justify-center gap-4">
-                  <Mic2 className="h-20 w-20" />
-                  <div className="flex gap-1 h-8">
-                     {[...Array(5)].map((_, i) => (
-                       <div key={i} className="w-1.5 bg-white rounded-full animate-bounce" style={{ animationDelay: `${i * 100}ms` }} />
-                     ))}
-                  </div>
-               </div>
-            </div>
-            <p className="text-2xl font-bold opacity-90 italic">
-               &quot;Debo, what did I learn about focus last Tuesday?&quot;
-            </p>
-         </div>
-      </section>
-
-      {/* Vision Pillars */}
-      <section className="px-6 py-24 bg-duo-snow">
+      {/* The Ethics */}
+      <section className="px-6 py-32 bg-card/20 border-t border-border/10">
          <div className="mx-auto max-w-7xl">
-            <div className="grid gap-16 lg:grid-cols-2">
+            <div className="grid gap-20 lg:grid-cols-2 items-center">
                <div className="space-y-12">
-                  <h3 className="font-display text-4xl font-black text-duo-eel">the four pillars of debo.</h3>
-                  <div className="space-y-8">
-                     <Pillar icon={Zap} title="Expressive" text="Simple, direct, and active language. We keep it brief and focused." />
-                     <Pillar icon={Sparkles} title="Playful" text="Creative energy that turns journaling into a game you want to win." />
-                     <Pillar icon={Heart} title="Embracing" text="Your life&apos;s #1 cheerleader. supportive, inclusive, and always in your corner." />
-                     <Pillar icon={ShieldCheck} title="Worldly" text="Broad perspectives that connect your personal growth to the wider world." />
+                  <div className="space-y-4">
+                    <div className="text-[10px] font-bold uppercase tracking-[0.4em] text-primary/40">Philosophy</div>
+                    <h3 className="text-4xl md:text-5xl font-heading font-semibold text-foreground tracking-tight">The property of mind.</h3>
+                  </div>
+                  <div className="space-y-10">
+                     <Pillar title="Expressive" text="Simple, direct, and active language." />
+                     <Pillar title="Playful" text="Light interaction, serious utility." />
+                     <Pillar title="Embracing" text="Designed for human growth." />
+                     <Pillar title="Private" text="No tracking. No ads. No training." />
                   </div>
                </div>
-               <div className="rounded-[3rem] border-4 border-duo-swan bg-duo-snow p-12 shadow-[0_12px_0_var(--duo-swan)] flex flex-col justify-between">
+               <div className="rounded-3xl border border-border/40 bg-background/50 p-12 shadow-2xl shadow-primary/[0.01] flex flex-col justify-between space-y-12">
                   <div className="space-y-6">
-                     <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-duo-macaw/10 text-duo-macaw">
-                        <ShieldCheck className="h-8 w-8" />
+                     <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/5 border border-primary/10 text-primary/40">
+                        <Shield className="h-6 w-6" />
                      </div>
-                     <h4 className="text-3xl font-black text-duo-eel leading-tight">Your data is your property.</h4>
-                     <p className="text-xl font-bold text-duo-wolf leading-relaxed">
-                        We don&apos;t sell insights. We don&apos;t train on your life. Debo is a private instance, grounded only in what you tell it.
+                     <h4 className="text-3xl font-semibold text-foreground/80 tracking-tight leading-tight">Your data is yours.</h4>
+                     <p className="text-lg font-medium text-muted-foreground/40 leading-relaxed">
+                        We don't sell insights. We don't train on your life. Debo is a private instance, grounded only in what you tell it.
                      </p>
                   </div>
-                  <Link href="/join" className="duo-btn--info duo-btn h-16 w-full mt-12 text-lg shadow-[0_6px_0_var(--duo-macaw-shadow)] uppercase tracking-widest">
-                     Claim Your Palace
+                  <Link href="/join" className="minimal-btn-primary h-14 w-full text-xs font-bold uppercase tracking-widest shadow-xl shadow-primary/20">
+                     Start Now
                   </Link>
                </div>
             </div>
@@ -200,21 +189,20 @@ export default function PitchPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t-2 border-duo-swan bg-duo-snow px-6 py-16">
-        <div className="mx-auto max-w-7xl flex flex-col items-center gap-8">
+      <footer className="border-t border-border/10 bg-background px-6 py-20">
+        <div className="mx-auto max-w-7xl flex flex-col md:flex-row justify-between items-center gap-12">
            <div className="flex items-center gap-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-xl border-2 border-duo-feather-shadow bg-duo-feather text-sm font-black text-white shadow-[0_3px_0_var(--duo-feather-shadow)]">
-                D
-              </span>
-              <span className="font-display text-xl font-black tracking-tight text-duo-feather">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/5 border border-primary/10 text-primary/40">
+                <Database className="h-4 w-4" />
+              </div>
+              <span className="text-xl font-heading font-semibold tracking-tight text-foreground/80">
                 debo
               </span>
            </div>
-           <p className="text-sm font-bold text-duo-wolf">© 2026 Debo. Built for the persistent.</p>
-           <div className="flex gap-8 text-sm font-black uppercase tracking-widest text-duo-swan">
-              <Link href="/privacy" className="hover:text-duo-wolf transition">Privacy</Link>
-              <Link href="/terms" className="hover:text-duo-wolf transition">Terms</Link>
-              <Link href="/pitch" className="text-duo-feather">Pitch</Link>
+           <div className="flex gap-10 text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground/20">
+              <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
+              <Link href="/terms" className="hover:text-primary transition-colors">Terms</Link>
+              <Link href="/pitch" className="text-primary">Vision</Link>
            </div>
         </div>
       </footer>
@@ -222,42 +210,29 @@ export default function PitchPage() {
   );
 }
 
-interface FeatureCardProps {
-  icon: React.ElementType;
-  title: string;
-  description: string;
-  color: string;
-}
-
-function FeatureCard({ icon: Icon, title, description, color }: FeatureCardProps) {
+function FeatureCard({ icon: Icon, title, desc }: { icon: any, title: string, desc: string }) {
   return (
-    <div className="rounded-[2.5rem] border-2 border-duo-swan bg-duo-snow p-8 transition-all hover:-translate-y-2 shadow-[0_8px_0_var(--duo-swan)]">
-       <div className={`mb-6 flex h-14 w-14 items-center justify-center rounded-2xl ${color} text-white shadow-[0_4px_0_rgba(0,0,0,0.1)]`}>
-          <Icon className="h-7 w-7" />
+    <div className="group rounded-2xl border border-border/20 bg-card/10 p-10 transition-all hover:border-primary/20">
+       <div className="mb-8 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/5 border border-primary/10 text-primary/40 group-hover:text-primary transition-colors">
+          <Icon className="h-6 w-6" />
        </div>
-       <h3 className="mb-3 text-xl font-black text-duo-eel">{title}</h3>
-       <p className="font-bold leading-relaxed text-duo-wolf text-sm">
-          {description}
+       <h3 className="mb-3 text-lg font-bold text-foreground/80 tracking-tight">{title}</h3>
+       <p className="text-xs font-medium text-muted-foreground/40 leading-relaxed">
+          {desc}
        </p>
     </div>
   );
 }
 
-interface PillarProps {
-  icon: React.ElementType;
-  title: string;
-  text: string;
-}
-
-function Pillar({ icon: Icon, title, text }: PillarProps) {
+function Pillar({ title, text }: { title: string, text: string }) {
   return (
-    <div className="flex gap-6">
-       <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-duo-feather/10 text-duo-feather">
-          <Icon className="h-6 w-6" />
+    <div className="flex gap-6 group">
+       <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-primary/20 mt-1 transition-colors group-hover:border-primary">
+          <div className="size-1 bg-primary/20 group-hover:bg-primary transition-colors rounded-full" />
        </div>
        <div className="space-y-1">
-          <h4 className="text-lg font-black text-duo-eel">{title}</h4>
-          <p className="font-bold text-duo-wolf leading-snug">{text}</p>
+          <h4 className="text-base font-bold text-foreground/80 tracking-tight">{title}</h4>
+          <p className="text-sm font-medium text-muted-foreground/40 leading-relaxed">{text}</p>
        </div>
     </div>
   );
