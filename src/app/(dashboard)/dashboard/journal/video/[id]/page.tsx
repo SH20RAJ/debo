@@ -24,20 +24,20 @@ export default async function VideoJournalPage({
     params: Promise<{ id: string }>
 }) {
     const resolvedParams = await params;
-    const journal = await getJournalEntry(resolvedParams.id, "video");
+    const entry = await getJournalEntry(resolvedParams.id, "video");
     
-    if (!journal) {
+    if (!entry || entry.type !== "video") {
         notFound();
     }
 
     return (
         <MediaJournalView 
-            id={journal.id}
+            id={entry.id}
             type="video"
-            title={journal.title || ""}
-            transcript={journal.transcript || ""}
-            driveWebUrl={journal.driveWebUrl || ""}
-            createdAt={journal.createdAt}
+            title={entry.title || ""}
+            transcript={entry.transcript || ""}
+            driveWebUrl={entry.driveWebUrl || ""}
+            createdAt={entry.createdAt}
         />
     );
 }

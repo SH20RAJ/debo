@@ -31,7 +31,7 @@ import {
 } from './prompt';
 
 export async function POST(req: NextRequest) {
-  const { apiKey: key, ctx, messages: messagesRaw, model } = await req.json();
+  const { apiKey: key, ctx, messages: messagesRaw, model } = (await req.json()) as any;
 
   const { children, selection, toolName: toolNameParam } = ctx;
 
@@ -72,11 +72,11 @@ export async function POST(req: NextRequest) {
             : ['generate', 'comment'];
           const modelId = model || 'google/gemini-2.5-flash';
 
-          const { output: AIToolName } = await generateText({
+          const { output: AIToolName } = (await generateText({
             model: gatewayProvider(modelId),
             output: Output.choice({ options: enumOptions }),
             prompt,
-          });
+          })) as any;
 
           writer.write({
             data: AIToolName as ToolName,

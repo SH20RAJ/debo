@@ -275,7 +275,7 @@ const DragHandle = React.memo(function DragHandle({
             }
 
             const elements = createDragPreviewElements(editor, blocks);
-            previewRef.current?.append(...elements);
+            (previewRef.current as any)?.append(...elements);
             previewRef.current?.classList.remove('hidden');
             previewRef.current?.classList.add('opacity-0');
             editor.setOption(DndPlugin, 'multiplePreviewRef', previewRef);
@@ -406,7 +406,7 @@ const createDragPreviewElements = (
 
         // Move all children to the inner container
         while (cloned.firstChild) {
-          innerContainer.append(cloned.firstChild);
+          (innerContainer as any).append(cloned.firstChild as any);
         }
 
         // Apply the original element's styles to maintain appearance
@@ -423,7 +423,7 @@ const createDragPreviewElements = (
 
     ids.push(node.id as string);
     const wrapper = document.createElement('div');
-    wrapper.append(newDomNode);
+    (wrapper as any).append(newDomNode as any);
     wrapper.style.display = 'flow-root';
 
     const lastDomNode = blocks[index - 1];

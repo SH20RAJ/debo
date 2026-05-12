@@ -6,16 +6,17 @@ import { composio } from "@/lib/composio";
  * @param toolkits List of toolkits to fetch (e.g., ["google-drive", "gmail"])
  */
 export async function getComposioTools(userId: string, toolkits: string[] = ["googledrive"]) {
-  const session = await composio.create(userId);
-  return await session.tools({ 
-    toolkits 
+  const session = await composio.create(userId, {
+    toolkits,
+    sessionPreset: "direct_tools",
   });
+  return await session.tools();
 }
 
 /**
  * Pre-defined Google Drive tools from Composio.
  * Note: These require the user to have connected their account via OAuth.
  */
-export const googleDriveTools = await composio.tools({
+export const googleDriveTools = await composio.tools.get("default", {
   toolkits: ["googledrive"],
 });

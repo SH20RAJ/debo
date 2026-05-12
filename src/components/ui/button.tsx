@@ -19,6 +19,14 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "text-primary underline-offset-4 hover:underline",
+        "duolingo-fox":
+          "bg-duo-fox text-white border-b-4 border-b-[#E68600] hover:bg-duo-fox/90 active:border-b-0 active:translate-y-1",
+        duolingo:
+          "bg-duo-fox text-white border-b-4 border-b-[#E68600] hover:bg-duo-fox/90 active:border-b-0 active:translate-y-1",
+        "duolingo-outline":
+          "bg-white text-duo-fox border-2 border-duo-swan border-b-4 border-b-[#E5E5E5] hover:bg-duo-polar active:border-b-0 active:translate-y-1 dark:bg-[#1a2c34] dark:border-b-[#37464f] dark:hover:bg-[#37464f]/30",
+        "duolingo-green":
+          "bg-duo-feather text-white border-b-4 border-b-[#46A302] hover:bg-duo-feather/90 active:border-b-0 active:translate-y-1",
       },
       size: {
         default:

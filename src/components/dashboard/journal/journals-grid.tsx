@@ -36,6 +36,14 @@ interface JournalProps {
   driveWebUrl?: string | null;
 }
 
+interface JournalsGridProps {
+  journals: JournalProps[];
+  initialQuery: string;
+  initialSort: "asc" | "desc";
+  totalCount: number;
+  initialFilter?: "all" | "text" | "video" | "audio";
+}
+
 export function JournalsGrid({ journals, initialQuery, initialSort, totalCount, initialFilter = "all" }: JournalsGridProps) {
   const router = useRouter();
   const pathname = usePathname();

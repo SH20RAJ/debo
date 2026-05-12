@@ -24,20 +24,20 @@ export default async function AudioJournalPage({
     params: Promise<{ id: string }>
 }) {
     const resolvedParams = await params;
-    const journal = await getJournalEntry(resolvedParams.id, "audio");
+    const entry = await getJournalEntry(resolvedParams.id, "audio");
     
-    if (!journal) {
+    if (!entry || entry.type !== "audio") {
         notFound();
     }
 
     return (
         <MediaJournalView 
-            id={journal.id}
+            id={entry.id}
             type="audio"
-            title={journal.title || ""}
-            transcript={journal.transcript || ""}
-            driveWebUrl={journal.driveWebUrl || ""}
-            createdAt={journal.createdAt}
+            title={entry.title || ""}
+            transcript={entry.transcript || ""}
+            driveWebUrl={entry.driveWebUrl || ""}
+            createdAt={entry.createdAt}
         />
     );
 }

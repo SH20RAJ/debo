@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     model = 'gpt-4o-mini',
     prompt,
     system,
-  } = await req.json();
+  } = (await req.json()) as any;
 
   const apiKey = key || process.env.AI_GATEWAY_API_KEY;
 

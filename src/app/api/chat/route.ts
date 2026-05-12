@@ -1,14 +1,18 @@
 import { mastra } from "@/mastra";
-import { stack } from "@/lib/stack";
+import { stackServerApp } from "@/stack/server";
 import { MASTRA_RESOURCE_ID_KEY, MASTRA_THREAD_ID_KEY, RequestContext } from "@mastra/core/request-context";
-import { createAssistantResponse } from "assistant-stream";
+import { handleChatStream } from "@mastra/ai-sdk";
+import { createAssistantStreamResponse } from "assistant-stream";
 
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
-  const { messages, threadId: requestedThreadId } = await req.json();
-  const user = await stack.getUser();
+  const { messages, threadId: requestedThreadId } = (await req.json()) as {
+    messages: any[];
+    threadId?: string;
+  };
 
+  const user = await stackServerApp.getUser();
   if (!user) {
     return new Response("Unauthorized", { status: 401 });
   }
@@ -36,22 +40,45 @@ export async function POST(req: Request) {
     console.log(`[Chat] Injecting dynamic tools for: ${toolkits.join(", ")}`);
   }
 
-  return createAssistantResponse(async ({ forwardStream }) => {
-    const result = await agent.stream(messages, {
-      memory: {
-        threadId,
-        resourceId: userId,
-      },
-      tools: {
-        ...agent.tools,
-        ...dynamicTools,
-      },
-      requestContext,
-      onStepFinish: (step) => {
-        console.log(`[Chat] Step finished: ${step.stepType}`);
-      },
+  return createAssistantStreamResponse(async (controller) => {
+    const stream = await handleChatStream({
+      mastra,
+      agentId: "debo",
+      version: "v6",
+      params: {
+        messages,
+        memory: {
+          thread: { id: threadId },
+          resource: userId,
+        },
+        clientTools: dynamicTools,
+        requestContext,
+      } as any,
     });
 
-    await forwardStream(result.toDataStream());
+    const reader = stream.getReader();
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      
+      const part = value as any;
+      
+      // Map AI SDK parts to assistant-stream chunks
+      switch (part.type) {
+        case "text-delta":
+          controller.appendText(part.delta);
+          break;
+        case "tool-call":
+          controller.addToolCallPart({
+            toolCallId: part.toolCallId,
+            toolName: part.toolName,
+            args: part.args,
+          });
+          break;
+        case "error":
+          console.error("[Chat] Stream part error:", part.error || part.errorText);
+          break;
+      }
+    }
   });
 }

@@ -44,7 +44,7 @@ export function CaptureStudio() {
   const [mediaBlob, setMediaBlob] = useState<Blob | null>(null);
   const [mediaUrl, setMediaUrl] = useState<string | null>(null);
   const [imagePreviews, setImagePreviews] = useState<{ url: string; name: string }[]>([]);
-  const [activeApps, setActiveApps] = useState<string[]>([]);
+  const [activeApps, setActiveApps] = useState<{ slug: string; id: string }[]>([]);
   const [isCheckingApps, setIsCheckingApps] = useState(true);
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
@@ -373,7 +373,7 @@ export function CaptureStudio() {
             {/* Center Overlay Content (when idle or ready) */}
             {(status === "idle" || (status === "ready" && mode !== "video")) && (
               <div className="relative z-10 text-center space-y-8 px-8 max-w-lg">
-                {!activeApps.includes("googledrive") && !isCheckingApps && (mode === "audio" || mode === "video") ? (
+                {!activeApps.some(app => app.slug === "googledrive") && !isCheckingApps && (mode === "audio" || mode === "video") ? (
                   <>
                     <div className="mx-auto h-32 w-32 rounded-[2.5rem] bg-duo-orange/10 text-duo-orange flex items-center justify-center border-4 border-duo-orange shadow-2xl">
                        <HardDrive className="h-16 w-16" />
@@ -435,13 +435,13 @@ export function CaptureStudio() {
                 ) : (
                   <Button 
                     onClick={startRecording}
-                    disabled={!activeApps.includes("googledrive") && (mode === "audio" || mode === "video")}
+                    disabled={!activeApps.some(app => app.slug === "googledrive") && (mode === "audio" || mode === "video")}
                     variant="duolingo"
                     size="lg"
                     className={cn(
                       "h-20 px-12 rounded-[2rem] uppercase font-black tracking-widest text-lg active:translate-y-2 active:shadow-none transition-all",
                       status === "ready" ? "bg-duo-wolf shadow-[0_8px_0_var(--duo-eel)]" : `bg-duo-feather shadow-[0_8px_0_var(--duo-feather-shadow)]`,
-                      (!activeApps.includes("googledrive") && (mode === "audio" || mode === "video")) && "opacity-50 grayscale cursor-not-allowed"
+                      (!activeApps.some(app => app.slug === "googledrive") && (mode === "audio" || mode === "video")) && "opacity-50 grayscale cursor-not-allowed"
                     )}
                   >
                     {status === "ready" ? "Retake" : `Start ${activeMode.label}`}

@@ -29,7 +29,7 @@ export async function uploadMediaToDrive(params: {
 
         // 0. Verify Google Drive connection
         const activeApps = await getComposioActiveApps();
-        if (!activeApps.includes("googledrive")) {
+        if (!activeApps.some(app => app.slug === "googledrive")) {
             return { success: false, error: "Google Drive is not connected via Composio" };
         }
 
@@ -317,7 +317,7 @@ export type JournalEntry = {
     duration?: number | null;
 };
 
-export const getJournalEntry = cache(async (id: string, type: "text" | "video" | "audio" = "text", userId?: string) => {
+export const getJournalEntry = cache(async <T extends "text" | "video" | "audio">(id: string, type: T = "text" as T, userId?: string) => {
     const resolvedUserId = await resolveUserId(userId, true);
     if (!resolvedUserId) return null;
 
@@ -326,17 +326,17 @@ export const getJournalEntry = cache(async (id: string, type: "text" | "video" |
             const j = await db.query.journals.findFirst({
                 where: and(eq(journals.id, id), eq(journals.userId, resolvedUserId)),
             });
-            return j ? { ...j, type: "text" as const } : null;
+            return j ? ({ ...j, type: "text" as const } as unknown as JournalEntry & { type: T }) : null;
         } else if (type === "video") {
             const j = await db.query.videoJournals.findFirst({
                 where: and(eq(videoJournals.id, id), eq(videoJournals.userId, resolvedUserId)),
             });
-            return j ? { ...j, type: "video" as const } : null;
+            return j ? ({ ...j, type: "video" as const } as unknown as JournalEntry & { type: T }) : null;
         } else {
             const j = await db.query.audioJournals.findFirst({
                 where: and(eq(audioJournals.id, id), eq(audioJournals.userId, resolvedUserId)),
             });
-            return j ? { ...j, type: "audio" as const } : null;
+            return j ? ({ ...j, type: "audio" as const } as unknown as JournalEntry & { type: T }) : null;
         }
     } catch (error) {
         logDatabaseIssue("journal entry read", error);

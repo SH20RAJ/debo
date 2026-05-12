@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils';
 import { useStackApp } from '@stackframe/stack';
 
 const VoiceContent = () => {
-  const { state, audioTrack, agentTranscripts } = useVoiceAssistant();
+  const { state, audioTrack, agentTranscriptions } = useVoiceAssistant();
   const { localParticipant } = useLocalParticipant();
   const [isMuted, setIsMuted] = useState(false);
 
@@ -86,7 +86,7 @@ const VoiceContent = () => {
           <div className="min-h-[4rem] flex items-center justify-center">
             <p className="text-2xl font-black text-duo-eel leading-tight transition-all duration-500">
               {isSpeaking ? (
-                agentTranscripts[agentTranscripts.length - 1]?.text
+                agentTranscriptions[agentTranscriptions.length - 1]?.text
               ) : isThinking ? (
                 <span className="text-duo-canary italic opacity-80">Synthesizing...</span>
               ) : isListening ? (

@@ -68,7 +68,7 @@ export function DateElement(props: PlateElementProps<TDateElement>) {
                 );
               }}
               mode="single"
-              initialFocus
+              autoFocus
             />
           </PopoverContent>
         </Popover>
