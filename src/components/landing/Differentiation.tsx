@@ -50,13 +50,13 @@ const features = [
 
 export function Differentiation() {
   return (
-    <section id="comparison" className="py-24 bg-background border-t-2 border-duo-swan overflow-hidden">
+    <section id="comparison" className="py-24 bg-background border-t border-border/10 overflow-hidden">
       <div className="container mx-auto max-w-6xl px-6">
         <div className="text-center mb-20 space-y-4">
-          <h2 className="text-4xl md:text-6xl font-heading font-black text-duo-eel leading-tight">
-            How Debo <span className="text-duo-macaw italic">compares.</span>
+          <h2 className="text-4xl md:text-6xl font-heading font-black text-foreground leading-tight">
+            How Debo <span className="text-primary italic">compares.</span>
           </h2>
-          <p className="max-w-2xl mx-auto text-xl text-duo-wolf font-bold leading-relaxed">
+          <p className="max-w-2xl mx-auto text-xl text-muted-foreground font-bold leading-relaxed">
             Personal memory is different from general knowledge. Debo is built specifically to connect your life context over decades.
           </p>
         </div>
@@ -77,9 +77,9 @@ export function Differentiation() {
               {features.map((feature, i) => (
                 <div 
                   key={i} 
-                  className="grid grid-cols-[1fr_repeat(4,160px)] gap-4 items-center p-4 rounded-2xl border-2 border-duo-swan bg-background transition-all hover:border-duo-macaw/20 hover:shadow-lg"
+                  className="grid grid-cols-[1fr_repeat(4,160px)] gap-4 items-center p-4 rounded-2xl border-2 border-border/10 bg-card transition-all hover:border-primary/20 hover:shadow-xl"
                 >
-                  <div className="text-lg font-bold text-duo-eel">{feature.name}</div>
+                  <div className="text-lg font-bold text-foreground">{feature.name}</div>
                   <div className="flex justify-center"><StatusIcon status={feature.notes} /></div>
                   <div className="flex justify-center"><StatusIcon status={feature.chatbots} /></div>
                   <div className="flex justify-center"><StatusIcon status={feature.workspaces} /></div>
@@ -93,12 +93,12 @@ export function Differentiation() {
         </div>
 
         <div className="mt-16 flex flex-col md:flex-row items-center justify-center gap-8 text-center md:text-left">
-           <div className="flex items-center gap-3 px-6 py-4 rounded-3xl bg-duo-polar border-2 border-duo-swan max-w-md">
-             <div className="w-12 h-12 rounded-2xl bg-duo-macaw/10 border-2 border-duo-macaw flex items-center justify-center shrink-0">
-               <Sparkles className="w-6 h-6 text-duo-macaw" />
+           <div className="flex items-center gap-3 px-6 py-4 rounded-3xl bg-muted border-2 border-border max-w-md shadow-xl shadow-black/5">
+             <div className="w-12 h-12 rounded-2xl bg-primary/10 border-2 border-primary flex items-center justify-center shrink-0">
+               <Sparkles className="w-6 h-6 text-primary" />
              </div>
-             <p className="text-sm font-bold text-duo-wolf">
-               "Notes apps store data. Chatbots know the world. <span className="text-duo-eel">Debo knows you.</span>"
+             <p className="text-sm font-bold text-muted-foreground">
+               "Notes apps store data. Chatbots know the world. <span className="text-foreground">Debo knows you.</span>"
              </p>
            </div>
         </div>

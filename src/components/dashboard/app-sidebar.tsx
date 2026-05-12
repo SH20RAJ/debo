@@ -9,7 +9,6 @@ import {
   Library,
   LogOut,
   Mic2,
-  Sparkles,
   Zap,
   BarChart3,
   Plug,
@@ -42,41 +41,23 @@ type NavItem = {
   title: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
-  color: string;
   exact?: boolean;
 };
 
-const groups: { title: string; items: NavItem[] }[] = [
-  {
-    title: "Core",
-    items: [
-      { title: "Home", href: "/dashboard", icon: Home, color: "text-duo-macaw", exact: true },
-      { title: "Chat", href: "/dashboard/chat", icon: MessageSquareText, color: "text-duo-macaw" },
-    ],
-  },
-  {
-    title: "Intelligence",
-    items: [
-      { title: "Insights", href: "/dashboard/insights", icon: BarChart3, color: "text-duo-bee" },
-      { title: "Memories", href: "/dashboard/memories", icon: Database, color: "text-duo-macaw" },
-    ],
-  },
-  {
-    title: "Records",
-    items: [
-      { title: "Journals", href: "/dashboard/journals", icon: Library, color: "text-duo-macaw" },
-      { title: "Timeline", href: "/dashboard/timeline", icon: Clock, color: "text-duo-humpback" },
-    ],
-  },
-  {
-    title: "Studio",
-    items: [
-      { title: "Talk", href: "/dashboard/talk", icon: Radio, color: "text-duo-macaw" },
-      { title: "Capture", href: "/dashboard/capture", icon: Mic2, color: "text-duo-feather" },
-      { title: "MCP", href: "/dashboard/mcp", icon: Terminal, color: "text-duo-macaw" },
-      { title: "Connectors", href: "/dashboard/connectors", icon: Plug, color: "text-duo-fox" },
-    ],
-  },
+const exploreItems: NavItem[] = [
+  { title: "Home", href: "/dashboard", icon: Home, exact: true },
+  { title: "Chat", href: "/dashboard/chat", icon: MessageSquareText },
+  { title: "Journals", href: "/dashboard/journals", icon: Library },
+  { title: "Memories", href: "/dashboard/memories", icon: Database },
+];
+
+const systemItems: NavItem[] = [
+  { title: "Insights", href: "/dashboard/insights", icon: BarChart3 },
+  { title: "Timeline", href: "/dashboard/timeline", icon: Clock },
+  { title: "Connectors", href: "/dashboard/connectors", icon: Plug },
+  { title: "Talk", href: "/dashboard/talk", icon: Radio },
+  { title: "Capture", href: "/dashboard/capture", icon: Mic2 },
+  { title: "MCP", href: "/dashboard/mcp", icon: Terminal },
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -88,116 +69,102 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     return pathname === href || pathname.startsWith(`${href}/`);
   };
 
+  const renderMenuItems = (items: NavItem[]) => (
+    <SidebarMenu className="gap-1">
+      {items.map((item) => (
+        <SidebarMenuItem key={item.href}>
+          <SidebarMenuButton
+            asChild
+            isActive={isActive(item.href, item.exact)}
+            tooltip={item.title}
+            className={cn(
+              "h-10 rounded-lg border border-transparent text-sm transition-all duration-200",
+              "hover:bg-muted/50 hover:text-foreground",
+              "data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:font-bold",
+              "active:scale-[0.98]"
+            )}
+          >
+            <Link href={item.href}>
+              <item.icon className={cn("h-4.5 w-4.5 transition-transform group-hover:scale-110", isActive(item.href, item.exact) && "scale-110")} />
+              <span>{item.title}</span>
+            </Link>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      ))}
+    </SidebarMenu>
+  );
+
   return (
-    <Sidebar variant="inset" collapsible="icon" {...props} className="border-r-4 border-border/30 bg-sidebar-background">
-      <SidebarHeader className="flex h-28 items-center px-6 gap-4 border-b-2 border-border/20 mb-2">
-        <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors -ml-2 hover:bg-border/20" />
-        <Link href="/dashboard" className="flex items-center gap-3 w-full overflow-hidden whitespace-nowrap group">
-          <div className="flex size-11 items-center justify-center rounded-[1.25rem] border-2 border-duo-macaw bg-duo-macaw/10 text-duo-macaw shadow-[0_5px_0_var(--duo-macaw-shadow)] transition-all group-hover:-translate-y-0.5 group-hover:shadow-[0_6px_0_var(--duo-macaw-shadow)] active:translate-y-0.5 active:shadow-none">
-            <Zap className="h-6 w-6 fill-current" />
+    <Sidebar variant="inset" collapsible="icon" {...props} className="border-r border-border/5 bg-sidebar-background">
+      <SidebarHeader className="flex h-16 items-center px-4 gap-3 border-b border-border/5">
+        <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors -ml-1 h-8 w-8" />
+        <Link href="/dashboard" className="flex items-center gap-2 w-full overflow-hidden whitespace-nowrap group">
+          <div className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary shadow-sm transition-all group-hover:scale-105">
+            <Zap className="h-4 w-4 fill-current" />
           </div>
-          <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-            <span className="font-heading text-3xl font-black tracking-tight text-foreground leading-none">
-              debo
-            </span>
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-duo-macaw/60 mt-0.5">
-              Intelligence
-            </span>
-          </div>
+          <span className="font-heading text-xl font-black tracking-tight text-foreground leading-none group-data-[collapsible=icon]:hidden">
+            debo
+          </span>
         </Link>
       </SidebarHeader>
 
-      <SidebarContent className="gap-8 px-4 pt-4">
-        {groups.map((group) => (
-          <SidebarGroup key={group.title} className="p-0">
-            <SidebarGroupLabel className="mb-3 px-4 text-[10px] font-black uppercase tracking-[0.35em] text-duo-wolf/40 group-data-[collapsible=icon]:hidden">
-              {group.title}
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu className="gap-2.5 px-1">
-                {group.items.map((item: any) => (
-                    <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={isActive(item.href, item.exact)}
-                        tooltip={item.title}
-                        className={cn(
-                          "h-14 rounded-2xl border-2 border-transparent text-[13px] font-black uppercase tracking-wider text-muted-foreground transition-all shadow-none hover-pop",
-                          "hover:border-border hover:bg-card hover:shadow-[0_4px_0_var(--border)]",
-                          "data-[active=true]:border-duo-macaw data-[active=true]:bg-duo-macaw/10 data-[active=true]:text-duo-macaw data-[active=true]:shadow-[0_4px_0_var(--duo-macaw-shadow)]",
-                          "active:translate-y-[2px] active:shadow-none"
-                        )}
-                      >
-                        <Link href={item.href}>
-                          <item.icon className={cn("h-6 w-6 transition-transform group-hover:scale-110", isActive(item.href, item.exact) && "scale-110")} />
-                          <span>{item.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
+      <SidebarContent className="gap-4 px-2 pt-4">
+        <SidebarGroup className="p-0">
+          <SidebarGroupLabel className="px-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30 group-data-[collapsible=icon]:hidden mb-1">
+            Explore
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            {renderMenuItems(exploreItems)}
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup className="p-0">
+          <SidebarGroupLabel className="px-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30 group-data-[collapsible=icon]:hidden mb-1">
+            System
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            {renderMenuItems(systemItems)}
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="space-y-4 p-4 pt-0">
-        <SidebarMenu className="gap-2.5 px-1">
-            <SidebarMenuItem>
-                <SidebarMenuButton
-                    asChild
-                    isActive={pathname === "/dashboard/settings"}
-                    tooltip="Settings"
-                    className={cn(
-                      "h-14 rounded-2xl border-2 border-transparent text-[13px] font-black uppercase tracking-wider text-muted-foreground transition-all shadow-none hover-pop",
-                      "hover:border-border hover:bg-card hover:shadow-[0_4px_0_var(--border)]",
-                      "data-[active=true]:border-duo-macaw data-[active=true]:bg-duo-macaw/10 data-[active=true]:text-duo-macaw data-[active=true]:shadow-[0_4px_0_var(--duo-macaw-shadow)]"
-                    )}
-                >
-                    <Link href="/dashboard/settings">
-                        <Settings className="h-6 w-6" />
-                        <span>Settings</span>
-                    </Link>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
+      <SidebarFooter className="p-2 border-t border-border/5 space-y-1">
+        <SidebarMenu className="gap-1">
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              isActive={pathname === "/dashboard/settings"}
+              tooltip="Settings"
+              className={cn(
+                "h-10 rounded-lg border border-transparent text-sm transition-all duration-200",
+                "hover:bg-muted/50 hover:text-foreground",
+                "data-[active=true]:bg-primary/10 data-[active=true]:text-primary"
+              )}
+            >
+              <Link href="/dashboard/settings">
+                <Settings className="h-4.5 w-4.5" />
+                <span>Settings</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
 
-            <SidebarMenuItem>
-                <SidebarMenuButton
-                    onClick={() => user?.signOut()}
-                    tooltip="Sign Out"
-                    className={cn(
-                      "h-14 rounded-2xl border-2 border-transparent text-[13px] font-black uppercase tracking-wider text-duo-cardinal transition-all shadow-none",
-                      "hover:border-duo-cardinal hover:bg-duo-cardinal/10 hover:translate-y-[-2px] hover:shadow-[0_4px_0_var(--duo-cardinal-shadow)]",
-                      "active:translate-y-[2px] active:shadow-none"
-                    )}
-                >
-                    <LogOut className="h-6 w-6" />
-                    <span>Sign Out</span>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              onClick={() => user?.signOut()}
+              tooltip="Sign Out"
+              className="h-10 rounded-lg border border-transparent text-sm text-destructive hover:bg-destructive/5 transition-all"
+            >
+              <LogOut className="h-4.5 w-4.5" />
+              <span>Sign Out</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
         </SidebarMenu>
 
-        <div className="flex flex-col gap-4 px-3 pb-4 border-t-2 border-border/20 pt-6">
-          <div className="flex items-center justify-between w-full group-data-[collapsible=icon]:justify-center">
-            <ThemeToggle />
-            <div className="flex items-center gap-3 group-data-[collapsible=icon]:hidden">
-              <div className="relative">
-                <div className="h-2.5 w-2.5 rounded-full bg-duo-feather shadow-[0_0_8px_var(--duo-feather)]" />
-                <div className="absolute inset-0 h-2.5 w-2.5 rounded-full bg-duo-feather animate-ping opacity-75" />
-              </div>
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-duo-feather">Live Sync</span>
-            </div>
-          </div>
-          
-          <div className="relative flex items-center justify-center pt-2 group-data-[collapsible=icon]:hidden">
-            <div className="group/mascot relative cursor-pointer">
-              <div className="absolute inset-0 bg-duo-macaw/20 blur-xl rounded-full scale-0 group-hover/mascot:scale-150 transition-transform duration-500" />
-              <img 
-                src="/debo.png" 
-                alt="Debo Mascot" 
-                className="relative z-10 w-20 h-20 object-contain transition-all duration-300 hover-pop drop-shadow-xl" 
-              />
-            </div>
+        <div className="pt-2 flex items-center justify-between px-2 group-data-[collapsible=icon]:justify-center">
+          <ThemeToggle />
+          <div className="flex items-center gap-2 group-data-[collapsible=icon]:hidden opacity-40 hover:opacity-100 transition-opacity">
+            <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+            <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Live</span>
           </div>
         </div>
       </SidebarFooter>

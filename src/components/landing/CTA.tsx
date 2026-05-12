@@ -7,8 +7,8 @@ export function CTA() {
   return (
     <section className="py-24 bg-background relative overflow-hidden">
       {/* Background decorations */}
-      <div className="absolute top-1/2 left-0 -translate-y-1/2 w-64 h-64 bg-duo-macaw/5 rounded-full blur-3xl" />
-      <div className="absolute top-1/2 right-0 -translate-y-1/2 w-64 h-64 bg-duo-feather/5 rounded-full blur-3xl" />
+      <div className="absolute top-1/2 left-0 -translate-y-1/2 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
+      <div className="absolute top-1/2 right-0 -translate-y-1/2 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
 
       <div className="container mx-auto max-w-5xl px-6 relative z-10">
         <div className="bg-duo-eel rounded-[4rem] p-12 md:p-20 text-center relative overflow-hidden border-[12px] border-white/10 shadow-2xl">
@@ -23,12 +23,12 @@ export function CTA() {
           <div className="max-w-3xl mx-auto space-y-10 relative z-10">
             <div className="space-y-4">
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 text-white font-black uppercase tracking-[0.2em] text-[10px]">
-                <Sparkles className="h-3.5 w-3.5 text-duo-canary" />
+                <Sparkles className="h-3.5 w-3.5 text-primary" />
                 <span>Zero Context Required</span>
               </div>
               <h2 className="text-4xl md:text-6xl font-heading font-black text-white leading-[1.1]">
                 Stop forgetting. <br />
-                <span className="text-duo-canary">Start remembering.</span>
+                <span className="text-primary">Start remembering.</span>
               </h2>
               <p className="text-xl text-white/70 font-bold max-w-xl mx-auto leading-relaxed">
                 Join the early adopters building their private memory engine today. It takes 10 seconds to record your first memory.
@@ -89,7 +89,7 @@ export function CTA() {
 function TrustItem({ label }: { label: string }) {
   return (
     <div className="flex items-center gap-2">
-      <div className="w-1.5 h-1.5 rounded-full bg-duo-canary" />
+      <div className="w-1.5 h-1.5 rounded-full bg-primary" />
       <span className="text-[10px] font-black uppercase tracking-widest text-white/50">{label}</span>
     </div>
   );
