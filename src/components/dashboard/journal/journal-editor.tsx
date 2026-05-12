@@ -8,10 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2, Cloud } from "lucide-react";
 import dynamic from "next/dynamic";
 
-const BlockEditor = dynamic(() => import("@/components/journal/block-editor"), { 
-    ssr: false,
-    loading: () => <div className="h-[500px] w-full bg-muted/20 animate-pulse rounded-2xl" />
-});
+import { PlateEditor } from "@/components/editor/plate-editor";
 
 export function JournalEditor({ 
     initialContent = "", 
@@ -114,8 +111,8 @@ export function JournalEditor({
                     className="w-full text-4xl font-extrabold tracking-tight bg-transparent border-none outline-none placeholder:text-muted-foreground/30 px-0"
                 />
                 
-                <BlockEditor 
-                    initialContent={content} 
+                <PlateEditor 
+                    initialValue={content} 
                     onChange={(markdown) => setContent(markdown)} 
                 />
             </div>

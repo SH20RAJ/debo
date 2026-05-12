@@ -9,25 +9,25 @@ type HeroProps = {
 
 export function Hero({ isSignedIn = false }: HeroProps) {
   return (
-    <section className="relative bg-background px-6 pt-20 pb-32 overflow-hidden">
+    <section className="relative bg-background px-6 pt-12 pb-24 overflow-hidden">
       {/* Background radial glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[600px] bg-gradient-to-b from-duo-macaw/5 to-transparent pointer-events-none" />
 
       <div className="container mx-auto max-w-7xl relative z-10">
-        <div className="flex flex-col lg:flex-row items-center gap-20 lg:gap-32">
+        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
           
           {/* Left Side: Content */}
-          <div className="flex-1 space-y-12 text-center lg:text-left">
+          <div className="flex-1 space-y-8 text-center lg:text-left">
             <div className="space-y-6">
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border-2 border-duo-macaw bg-duo-macaw/10 text-duo-macaw font-black uppercase tracking-[0.2em] text-[10px]">
                 <Sparkles className="h-3.5 w-3.5" />
                 <span>Next-Gen Personal Memory</span>
               </div>
-              <h1 className="text-6xl md:text-8xl font-heading font-black text-duo-eel tracking-tight leading-[0.95]">
+              <h1 className="text-5xl md:text-7xl font-heading font-black text-duo-eel tracking-tight leading-[0.95]">
                 Never forget <br />
                 <span className="text-duo-feather">another thought.</span>
               </h1>
-              <p className="text-xl md:text-2xl text-duo-wolf max-w-2xl mx-auto lg:mx-0 font-bold leading-relaxed">
+              <p className="text-lg md:text-xl text-duo-wolf max-w-xl mx-auto lg:mx-0 font-bold leading-relaxed">
                 Debo turns your voice notes, journals, and calendar context into a searchable record of your life.
               </p>
             </div>
@@ -35,10 +35,10 @@ export function Hero({ isSignedIn = false }: HeroProps) {
             <div className="flex flex-col sm:flex-row items-center gap-6 justify-center lg:justify-start">
               <Link
                 href={isSignedIn ? "/dashboard" : "/join"}
-                className="duo-btn duo-btn--primary group flex items-center justify-center gap-3 w-full sm:w-auto px-12 py-6 text-xl shadow-[0_8px_0_var(--duo-feather-shadow)]"
+                className="duo-btn duo-btn--primary group flex items-center justify-center gap-3 w-full sm:w-auto px-8 py-4 text-lg shadow-[0_6px_0_var(--duo-feather-shadow)]"
               >
                 Start Remembering
-                <ArrowRight className="h-6 w-6 transition-transform group-hover:translate-x-1" />
+                <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
               </Link>
               <div className="flex -space-x-3 items-center">
                 {[1, 2, 3].map((i) => (
@@ -70,8 +70,8 @@ export function Hero({ isSignedIn = false }: HeroProps) {
             <div className="absolute -top-10 -right-10 w-32 h-32 bg-duo-bee/10 rounded-full blur-2xl animate-pulse" />
             <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-duo-macaw/10 rounded-full blur-2xl animate-pulse" />
 
-            <div className="relative rounded-[3.5rem] border-4 border-duo-swan bg-background p-8 md:p-12 shadow-[0_16px_0_var(--duo-swan)]">
-              <div className="space-y-12">
+            <div className="relative rounded-[3rem] border-4 border-duo-swan bg-background p-6 md:p-10 shadow-[0_12px_0_var(--duo-swan)]">
+              <div className="space-y-8">
                 {/* Voice Input Visualization */}
                 <div className="space-y-5">
                   <div className="flex items-center justify-between">
@@ -96,13 +96,13 @@ export function Hero({ isSignedIn = false }: HeroProps) {
                 </div>
 
                 {/* AI Logic Bridge */}
-                <div className="flex flex-col items-center gap-4">
-                  <div className="w-px h-12 bg-gradient-to-b from-duo-swan to-duo-macaw" />
-                  <div className="px-6 py-2 rounded-full bg-duo-macaw text-white text-[12px] font-black uppercase tracking-widest shadow-[0_4px_0_var(--duo-macaw-shadow)] flex items-center gap-2">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="w-px h-10 bg-gradient-to-b from-duo-swan to-duo-macaw" />
+                  <div className="px-5 py-1.5 rounded-full bg-duo-macaw text-white text-[11px] font-black uppercase tracking-widest shadow-[0_4px_0_var(--duo-macaw-shadow)] flex items-center gap-2">
                     <Brain className="w-4 h-4" />
                     Memory Injected
                   </div>
-                  <div className="w-px h-12 bg-gradient-to-b from-duo-macaw to-duo-swan" />
+                  <div className="w-px h-10 bg-gradient-to-b from-duo-macaw to-duo-swan" />
                 </div>
 
                 {/* Extracted Memory Cards */}
