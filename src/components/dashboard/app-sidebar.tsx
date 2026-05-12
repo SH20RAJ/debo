@@ -122,9 +122,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         isActive={isActive(item.href, item.exact)}
                         tooltip={item.title}
                         className={cn(
-                          "h-14 rounded-2xl border-2 border-transparent text-[13px] font-black uppercase tracking-wider text-duo-wolf transition-all shadow-none",
-                          "hover:border-duo-swan hover:bg-white hover:translate-y-[-2px] hover:shadow-[0_4px_0_var(--duo-swan)]",
-                          "data-[active=true]:border-duo-macaw data-[active=true]:bg-duo-macaw/10 data-[active=true]:text-duo-macaw data-[active=true]:shadow-[0_4px_0_var(--duo-macaw-shadow)] data-[active=true]:translate-y-[-2px]",
+                          "h-14 rounded-2xl border-2 border-transparent text-[13px] font-black uppercase tracking-wider text-duo-wolf transition-all shadow-none hover-pop",
+                          "hover:border-duo-swan hover:bg-white hover:shadow-[0_4px_0_var(--duo-swan)]",
+                          "data-[active=true]:border-duo-macaw data-[active=true]:bg-duo-macaw/10 data-[active=true]:text-duo-macaw data-[active=true]:shadow-[0_4px_0_var(--duo-macaw-shadow)]",
                           "active:translate-y-[2px] active:shadow-none"
                         )}
                       >
@@ -149,9 +149,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     isActive={pathname === "/dashboard/settings"}
                     tooltip="Settings"
                     className={cn(
-                      "h-14 rounded-2xl border-2 border-transparent text-[13px] font-black uppercase tracking-wider text-duo-wolf transition-all shadow-none",
-                      "hover:border-duo-swan hover:bg-white hover:translate-y-[-2px] hover:shadow-[0_4px_0_var(--duo-swan)]",
-                      "data-[active=true]:border-duo-macaw data-[active=true]:bg-duo-macaw/10 data-[active=true]:text-duo-macaw data-[active=true]:shadow-[0_4px_0_var(--duo-macaw-shadow)] data-[active=true]:translate-y-[-2px]"
+                      "h-14 rounded-2xl border-2 border-transparent text-[13px] font-black uppercase tracking-wider text-duo-wolf transition-all shadow-none hover-pop",
+                      "hover:border-duo-swan hover:bg-white hover:shadow-[0_4px_0_var(--duo-swan)]",
+                      "data-[active=true]:border-duo-macaw data-[active=true]:bg-duo-macaw/10 data-[active=true]:text-duo-macaw data-[active=true]:shadow-[0_4px_0_var(--duo-macaw-shadow)]"
                     )}
                 >
                     <Link href="/dashboard/settings">
