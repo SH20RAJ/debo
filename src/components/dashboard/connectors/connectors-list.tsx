@@ -60,47 +60,36 @@ export function ConnectorsList({
         const Icon = connector.icon;
 
         return (
-          <div key={connector.id} className="duo-card group flex flex-col justify-between overflow-hidden p-0 border-b-4">
+          <div key={connector.id} className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-border/50 bg-card p-6 transition-all duration-300 hover:border-primary/20 hover:shadow-sm">
             {/* Header */}
-            <div className="flex items-start justify-between p-5 pb-0">
+            <div className="flex items-start justify-between mb-6">
               <div className={cn(
-                "flex h-14 w-14 items-center justify-center rounded-2xl border-b-4 transition-transform group-hover:scale-105", 
-                connector.surface,
-                connector.surface.replace('border-', 'border-b-')
+                "flex h-14 w-14 items-center justify-center rounded-xl border border-border/40 bg-muted/30 transition-transform group-hover:scale-105", 
+                connector.color.replace('text-', 'bg-').replace('500', '50/10')
               )}>
                 <Icon className={cn("h-7 w-7", connector.color)} />
               </div>
-              <div className="flex flex-col gap-2 items-end">
-                <StatusBadge active={composioActive} label="Tools" />
-              </div>
+              <StatusBadge active={composioActive} label="Tools" />
             </div>
 
             {/* Info */}
-            <div className="px-5 py-4">
-              <h3 className="text-xl font-black text-duo-eel">{connector.name}</h3>
-              <p className="text-sm font-bold text-duo-wolf mt-1">{connector.detail}</p>
+            <div className="mb-8">
+              <h3 className="text-xl font-semibold text-foreground tracking-tight">{connector.name}</h3>
+              <p className="text-sm font-medium text-muted-foreground mt-2 leading-relaxed">{connector.detail}</p>
             </div>
 
             {/* Actions */}
-            <div className="flex flex-col gap-2 p-5 pt-0">
+            <div className="space-y-3">
               <Button
                 type="button"
-                variant={
-                  composioActive 
-                    ? "duolingo-outline" 
-                    : connector.id.includes("google") 
-                      ? "duolingo-macaw" 
-                      : connector.id === "slack" 
-                        ? "duolingo-beetle" 
-                        : "duolingo-fox"
-                }
-                size="sm"
-                className="w-full gap-2 text-xs h-12 rounded-2xl"
+                variant={composioActive ? "outline" : "default"}
+                size="lg"
+                className="w-full gap-2 rounded-xl h-11"
                 disabled={loading || isDisconnecting === connector.composioSlug || composioActive}
                 onClick={() => handleComposioConnect(connector.composioSlug!)}
               >
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4 fill-current" />}
-                {composioActive ? "Agent Tools Active" : "Connect AI Agent Tools"}
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className={cn("h-4 w-4", !composioActive && "fill-current")} />}
+                {composioActive ? "Agent Tools Active" : "Connect Tools"}
               </Button>
 
               {composioActive && (
@@ -108,13 +97,13 @@ export function ConnectorsList({
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="w-full text-[10px] font-black uppercase tracking-widest text-duo-wolf/40 hover:text-duo-cardinal hover:bg-duo-cardinal/5"
+                  className="w-full text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 hover:text-destructive hover:bg-destructive/5"
                   disabled={isDisconnecting === connector.composioSlug}
                   onClick={() => handleComposioDisconnect(connector.composioSlug!)}
                 >
                   {isDisconnecting === connector.composioSlug ? (
                     <Loader2 className="h-3 w-3 animate-spin mr-2" />
-                  ) : "Disconnect"}
+                  ) : "Disconnect Integration"}
                 </Button>
               )}
             </div>
@@ -128,12 +117,12 @@ export function ConnectorsList({
 function StatusBadge({ active, label }: { active: boolean; label: string }) {
   return (
     <div className={cn(
-      "flex items-center gap-1.5 rounded-full border-2 px-2.5 py-0.5 text-[9px] font-black uppercase tracking-wider",
+      "flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest",
       active
-        ? "border-duo-feather bg-duo-green/10 text-duo-green"
-        : "border-duo-swan bg-duo-polar text-duo-wolf/40"
+        ? "border-primary/20 bg-primary/5 text-primary"
+        : "border-border bg-muted/30 text-muted-foreground/50"
     )}>
-      <div className={cn("h-1.5 w-1.5 rounded-full", active ? "bg-duo-green shadow-[0_0_8px_var(--duo-green)]" : "bg-duo-wolf/30")} />
+      <div className={cn("h-1.5 w-1.5 rounded-full", active ? "bg-primary shadow-[0_0_8px_rgba(37,99,235,0.4)]" : "bg-muted-foreground/30")} />
       {label}
     </div>
   );

@@ -25,41 +25,41 @@ export function MediaJournalView({
     const router = useRouter();
 
     return (
-        <div className="w-full flex flex-col min-h-screen bg-duo-polar">
+        <div className="w-full flex flex-col min-h-screen bg-background">
             {/* Header */}
-            <div className="max-w-screen-xl mx-auto w-full px-6 py-10 flex items-center justify-between">
+            <div className="max-w-screen-xl mx-auto w-full px-6 py-8 flex items-center justify-between">
                 <Button
-                    variant="duolingo-outline"
+                    variant="outline"
                     size="icon"
                     onClick={() => router.push("/dashboard/journals")}
-                    className="rounded-2xl hover-bounce h-12 w-12"
+                    className="rounded-xl h-10 w-10"
                 >
-                    <ArrowLeft className="h-6 w-6 text-duo-eel" />
+                    <ArrowLeft className="h-5 w-5" />
                 </Button>
 
                 <div className="flex items-center gap-4">
-                    <div className="bg-white border-2 border-duo-swan px-4 py-2 rounded-xl flex items-center gap-2">
+                    <div className="bg-card border border-border px-4 py-1.5 rounded-full flex items-center gap-2">
                          <div className={cn(
-                             "h-3 w-3 rounded-full",
-                             type === "audio" ? "bg-duo-macaw" : "bg-duo-feather"
+                             "h-2 w-2 rounded-full",
+                             type === "audio" ? "bg-primary" : "bg-primary/60"
                          )} />
-                         <span className="text-[10px] font-black uppercase tracking-widest text-duo-eel">
-                             {type} Journal
+                         <span className="text-[10px] font-bold uppercase tracking-widest text-foreground">
+                             {type} Entry
                          </span>
                     </div>
                 </div>
             </div>
 
             {/* Main Content Area */}
-            <main className="max-w-4xl mx-auto w-full px-6 flex-1 pb-40 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <main className="max-w-4xl mx-auto w-full px-6 flex-1 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 <div className="space-y-12">
                     {/* Title and Date */}
-                    <div className="space-y-4">
-                        <h1 className="text-5xl font-heading font-black tracking-tight text-duo-eel lowercase">
-                            {title || `untitled ${type} moment`}
+                    <div className="space-y-3">
+                        <h1 className="text-4xl md:text-5xl font-heading font-semibold tracking-tight text-foreground">
+                            {title || `Untitled ${type} moment`}
                         </h1>
-                        <p className="font-bold text-duo-wolf">
-                            captured on {new Date(createdAt).toLocaleDateString(undefined, { 
+                        <p className="font-medium text-muted-foreground">
+                            Captured on {new Date(createdAt).toLocaleDateString(undefined, { 
                                 weekday: 'long', 
                                 year: 'numeric', 
                                 month: 'long', 
@@ -69,7 +69,7 @@ export function MediaJournalView({
                     </div>
 
                     {/* Media Player Card */}
-                    <div className="relative rounded-[2.5rem] border-4 border-duo-swan bg-black overflow-hidden shadow-[0_12px_0_var(--duo-swan)] group aspect-video flex items-center justify-center">
+                    <div className="relative rounded-3xl border border-border/50 bg-black/95 overflow-hidden shadow-sm group aspect-video flex items-center justify-center">
                         {type === "video" ? (
                             driveWebUrl ? (
                                 <iframe 
@@ -78,24 +78,24 @@ export function MediaJournalView({
                                     allow="autoplay"
                                 />
                             ) : (
-                                <div className="flex flex-col items-center gap-4 text-white/40">
-                                    <Video className="h-20 w-20" />
-                                    <p className="font-black uppercase tracking-widest">Video processing or unavailable</p>
+                                <div className="flex flex-col items-center gap-4 text-white/20">
+                                    <Video className="h-16 w-16" />
+                                    <p className="text-xs font-bold uppercase tracking-widest">Media is processing</p>
                                 </div>
                             )
                         ) : (
-                            <div className="w-full h-full bg-duo-macaw/5 flex flex-col items-center justify-center gap-8">
-                                <div className="h-32 w-32 rounded-[2.5rem] bg-duo-macaw flex items-center justify-center text-white shadow-2xl">
-                                    <Mic2 className="h-16 w-16" />
+                            <div className="w-full h-full bg-primary/5 flex flex-col items-center justify-center gap-8">
+                                <div className="h-24 w-24 rounded-2xl bg-primary flex items-center justify-center text-white shadow-xl shadow-primary/20">
+                                    <Mic2 className="h-10 w-10" />
                                 </div>
                                 {driveWebUrl ? (
                                     <audio 
                                         src={driveWebUrl} 
                                         controls 
-                                        className="w-full max-w-md"
+                                        className="w-full max-w-md accent-primary"
                                     />
                                 ) : (
-                                    <p className="font-black uppercase tracking-widest text-duo-macaw/40">Audio processing or unavailable</p>
+                                    <p className="text-xs font-bold uppercase tracking-widest text-primary/40">Audio is processing</p>
                                 )}
                             </div>
                         )}
@@ -106,30 +106,30 @@ export function MediaJournalView({
                                 href={driveWebUrl} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
-                                className="absolute top-6 right-6 z-20 h-12 w-12 rounded-2xl bg-black/40 backdrop-blur-md text-white border-2 border-white/20 flex items-center justify-center hover:bg-black/60 transition-all opacity-0 group-hover:opacity-100"
+                                className="absolute top-4 right-4 z-20 h-10 w-10 rounded-xl bg-black/40 backdrop-blur-md text-white border border-white/20 flex items-center justify-center hover:bg-black/60 transition-all opacity-0 group-hover:opacity-100"
                             >
-                                <HardDrive className="h-6 w-6" />
+                                <HardDrive className="h-5 w-5" />
                             </a>
                         )}
                     </div>
 
                     {/* Transcript / Context Section */}
-                    <div className="bg-white border-4 border-duo-swan rounded-[2.5rem] p-10 shadow-[0_8px_0_var(--duo-swan)] space-y-8">
+                    <div className="bg-card border border-border/50 rounded-3xl p-8 md:p-10 shadow-sm space-y-8">
                         <div className="flex items-center gap-4">
-                            <div className="h-10 w-10 rounded-xl bg-duo-macaw/10 text-duo-macaw flex items-center justify-center">
+                            <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
                                 <Sparkles className="h-5 w-5" />
                             </div>
-                            <h2 className="text-xl font-black text-duo-eel uppercase tracking-tight">Context & Transcription</h2>
+                            <h2 className="text-xl font-semibold text-foreground tracking-tight">Contextual Insights</h2>
                         </div>
                         
-                        <div className="prose prose-duo max-w-none">
+                        <div className="prose prose-zinc dark:prose-invert max-w-none">
                             {transcript ? (
-                                <p className="text-lg font-bold text-duo-eel leading-relaxed italic">
-                                    "{transcript}"
+                                <p className="text-lg font-medium text-foreground/80 leading-relaxed italic">
+                                    &ldquo;{transcript}&rdquo;
                                 </p>
                             ) : (
-                                <p className="text-lg font-bold text-duo-wolf italic">
-                                    No transcript or notes provided for this moment.
+                                <p className="text-lg font-medium text-muted-foreground/50 italic">
+                                    No transcription available for this capture.
                                 </p>
                             )}
                         </div>

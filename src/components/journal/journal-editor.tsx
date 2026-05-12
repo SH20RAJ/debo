@@ -390,9 +390,9 @@ export function JournalEditor({
                     </div>
 
                     {/* Editor hint */}
-                    <p className="text-[10px] font-medium text-muted-foreground/20 text-center uppercase tracking-widest">
+                    {/* <p className="text-[10px] font-medium text-muted-foreground/20 text-center uppercase tracking-widest">
                         Media lines are extracted automatically.
-                    </p>
+                    </p> */}
 
                     {relatedJournals && relatedJournals.length > 0 && (
                         <div className="pt-20">

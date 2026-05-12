@@ -29,9 +29,9 @@ import { cn } from "@/lib/utils";
 type CaptureMode = "audio" | "video" | "image";
 
 const modes = [
-  { id: "audio" as const, label: "Audio", icon: Mic2, color: "bg-duo-macaw", shadow: "shadow-duo-macaw-shadow", accent: "text-duo-macaw" }, // Blue
-  { id: "video" as const, label: "Video", icon: VideoIcon, color: "bg-duo-feather", shadow: "shadow-duo-feather-shadow", accent: "text-duo-feather" }, // Green
-  { id: "image" as const, label: "Photos", icon: FileImage, color: "bg-duo-fox", shadow: "shadow-duo-fox-shadow", accent: "text-duo-fox" }, // Orange
+  { id: "audio" as const, label: "Audio", icon: Mic2, color: "bg-primary", shadow: "shadow-primary/20", accent: "text-primary" },
+  { id: "video" as const, label: "Video", icon: VideoIcon, color: "bg-primary/80", shadow: "shadow-primary/20", accent: "text-primary" },
+  { id: "image" as const, label: "Photos", icon: FileImage, color: "bg-primary/60", shadow: "shadow-primary/20", accent: "text-primary" },
 ];
 
 export function CaptureStudio() {
@@ -243,21 +243,21 @@ export function CaptureStudio() {
   return (
     <div className={cn(
       "min-h-full transition-all duration-500",
-      isFullscreen ? "bg-[#091416] p-0" : "bg-duo-polar py-8 px-4"
+      isFullscreen ? "bg-background p-0" : "bg-background/30 py-10 px-6"
     )}>
       <div className={cn(
-        "mx-auto space-y-8 transition-all duration-500",
-        isFullscreen ? "max-w-none h-screen flex flex-col" : "max-w-6xl"
+        "mx-auto space-y-10 transition-all duration-500",
+        isFullscreen ? "max-w-none h-screen flex flex-col" : "max-w-5xl"
       )}>
         
         {/* Header - Hidden in Fullscreen */}
         {!isFullscreen && (
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
             <div className="space-y-1">
-              <h1 className="text-4xl font-heading font-black text-duo-eel lowercase">capture moment</h1>
-              <p className="font-bold text-duo-wolf">document your life in real-time.</p>
+              <h1 className="text-3xl font-heading font-semibold text-foreground tracking-tight">Capture Moment</h1>
+              <p className="font-medium text-muted-foreground/60 text-sm">Document your life in high fidelity.</p>
             </div>
-            <div className="flex bg-duo-snow border-2 border-duo-swan rounded-2xl p-1 shadow-[0_4px_0_var(--duo-swan)] h-14 items-center">
+            <div className="flex bg-muted/20 border border-border/10 rounded-xl p-1 h-12 items-center">
               {modes.map((m) => (
                 <button
                   key={m.id}
@@ -268,12 +268,12 @@ export function CaptureStudio() {
                     setImagePreviews([]);
                   }}
                   className={cn(
-                    "flex items-center gap-2 px-6 h-full rounded-xl text-[11px] font-black uppercase tracking-wider transition-all",
-                    mode === m.id ? `${m.color} text-white ${m.shadow} scale-105` : "text-duo-wolf hover:bg-duo-polar"
+                    "flex items-center gap-2 px-5 h-full rounded-lg text-xs font-semibold tracking-tight transition-all",
+                    mode === m.id ? "bg-background text-foreground shadow-sm" : "text-muted-foreground/60 hover:text-foreground"
                   )}
                 >
                   <m.icon className="h-4 w-4" />
-                  <span className="hidden sm:inline">{m.label}</span>
+                  <span>{m.label}</span>
                 </button>
               ))}
             </div>
@@ -282,22 +282,22 @@ export function CaptureStudio() {
 
         {/* Main Content Area */}
         <div className={cn(
-          "flex flex-col gap-8 transition-all",
+          "flex flex-col gap-10 transition-all",
           isFullscreen ? "flex-1 relative" : ""
         )}>
           {/* Stage Area */}
           <div className={cn(
-            "relative rounded-[2.5rem] border-4 flex flex-col items-center justify-center transition-all duration-500 overflow-hidden bg-black shadow-[0_12px_0_var(--duo-swan)] group",
-            status === "recording" ? "border-duo-cardinal" : "border-duo-swan",
-            isFullscreen ? "h-full border-0 rounded-0 shadow-none m-0" : "aspect-video w-full"
+            "relative rounded-2xl border border-border/10 flex flex-col items-center justify-center transition-all duration-500 overflow-hidden bg-black group",
+            status === "recording" ? "border-red-500/50" : "border-border/10",
+            isFullscreen ? "h-full border-0 rounded-0 m-0" : "aspect-video w-full"
           )}>
             
             {/* Fullscreen Toggle */}
             <button
               onClick={() => setIsFullscreen(!isFullscreen)}
-              className="absolute top-6 right-6 z-50 h-12 w-12 rounded-2xl bg-black/40 backdrop-blur-md text-white border-2 border-white/20 flex items-center justify-center hover:bg-black/60 transition-all opacity-0 group-hover:opacity-100"
+              className="absolute top-6 right-6 z-50 h-10 w-10 rounded-lg bg-black/40 backdrop-blur-md text-white border border-white/10 flex items-center justify-center hover:bg-black/60 transition-all opacity-0 group-hover:opacity-100"
             >
-              {isFullscreen ? <Minimize2 className="h-6 w-6" /> : <Maximize2 className="h-6 w-6" />}
+              {isFullscreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
             </button>
 
             {/* Video Feed */}
@@ -327,15 +327,15 @@ export function CaptureStudio() {
 
             {/* Recording Pulse Animation */}
             {status === "recording" && mode !== "video" && (
-              <div className="absolute inset-0 flex items-center justify-center bg-duo-macaw/5 animate-pulse">
-                 <div className="flex items-end gap-2 h-32">
-                    {[...Array(16)].map((_, i) => (
+              <div className="absolute inset-0 flex items-center justify-center bg-primary/5 animate-pulse">
+                 <div className="flex items-end gap-1.5 h-24">
+                    {[...Array(12)].map((_, i) => (
                       <div 
                         key={i} 
-                        className="w-2 bg-duo-macaw rounded-full animate-bounce" 
+                        className="w-1.5 bg-primary/40 rounded-full animate-bounce" 
                         style={{ 
-                          height: `${30 + Math.random() * 70}%`,
-                          animationDuration: `${0.6 + Math.random()}s`
+                          height: `${40 + Math.random() * 60}%`,
+                          animationDuration: `${0.8 + Math.random()}s`
                         }} 
                       />
                     ))}
@@ -344,19 +344,19 @@ export function CaptureStudio() {
             )}
 
             {/* Status Indicators */}
-            <div className="absolute top-6 left-6 flex items-center gap-4 z-20">
+            <div className="absolute top-6 left-6 flex items-center gap-3 z-20">
                <div className={cn(
-                 "h-4 w-4 rounded-full",
-                 status === "recording" ? "bg-duo-cardinal animate-ping" : "bg-duo-swan/50"
+                 "h-2.5 w-2.5 rounded-full",
+                 status === "recording" ? "bg-red-500 animate-pulse" : "bg-white/20"
                )} />
-               <div className="bg-black/40 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/10">
-                 <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white">
-                    {status === "recording" ? "LIVE" : status === "ready" ? "CAPTURE READY" : "IDLE"}
+               <div className="bg-black/40 backdrop-blur-md px-3 py-1 rounded-md border border-white/10">
+                 <span className="text-[9px] font-semibold uppercase tracking-widest text-white/80">
+                    {status === "recording" ? "Live Recording" : status === "ready" ? "Review Content" : "Ready"}
                  </span>
                </div>
                {status !== "idle" && (
-                <div className="bg-black/40 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/10">
-                  <span className="text-lg font-black text-white font-display">
+                <div className="bg-black/40 backdrop-blur-md px-3 py-1 rounded-md border border-white/10">
+                  <span className="text-sm font-semibold text-white tabular-nums">
                     {formatTime(timer)}
                   </span>
                 </div>
@@ -365,45 +365,41 @@ export function CaptureStudio() {
 
             {/* Center Overlay Content (when idle or ready) */}
             {(status === "idle" || (status === "ready" && mode !== "video")) && (
-              <div className="relative z-10 text-center space-y-8 px-8 max-w-lg">
+              <div className="relative z-10 text-center space-y-6 px-8 max-w-sm">
                 {!activeApps.some(app => app.slug === "googledrive") && !isCheckingApps && (mode === "audio" || mode === "video") ? (
                   <>
-                    <div className="mx-auto h-32 w-32 rounded-[2.5rem] bg-duo-orange/10 text-duo-orange flex items-center justify-center border-4 border-duo-orange shadow-2xl">
-                       <HardDrive className="h-16 w-16" />
+                    <div className="mx-auto h-20 w-20 rounded-2xl bg-orange-500/10 text-orange-500 flex items-center justify-center border border-orange-500/20">
+                       <HardDrive className="h-10 w-10" />
                     </div>
-                    <div className="space-y-4">
-                      <p className="text-2xl font-black text-white drop-shadow-lg lowercase">drive not connected</p>
-                      <p className="text-sm font-bold text-white/60">Connect your Google Drive to save audio and video captures.</p>
+                    <div className="space-y-2">
+                      <p className="text-xl font-semibold text-white tracking-tight">Drive disconnected</p>
+                      <p className="text-xs font-medium text-white/40">Connect Google Drive to store high-fidelity captures.</p>
                       <Button 
                         onClick={() => router.push("/dashboard/connectors")}
-                        variant="duolingo"
-                        className="bg-duo-macaw shadow-[0_4px_0_var(--duo-macaw-shadow)]"
+                        className="mt-4 h-9 px-6 rounded-lg text-xs"
                       >
-                        Connect Now
+                        Connect Drive
                       </Button>
                     </div>
                   </>
                 ) : status === "idle" ? (
                   <>
-                    <div className={cn(
-                      "mx-auto h-32 w-32 rounded-[2.5rem] flex items-center justify-center text-white shadow-2xl transition-transform hover:scale-110",
-                      activeMode.color
-                    )}>
-                       <activeMode.icon className="h-16 w-16" />
+                    <div className="mx-auto h-20 w-20 rounded-2xl bg-white/5 flex items-center justify-center text-white/80 border border-white/10 transition-transform group-hover:scale-105">
+                       <activeMode.icon className="h-10 w-10" />
                     </div>
-                    <div className="space-y-2">
-                      <p className="text-2xl font-black text-white drop-shadow-lg lowercase">ready to capture?</p>
-                      <p className="text-sm font-bold text-white/60">tap record below to start your {activeMode.label} journal.</p>
+                    <div className="space-y-1">
+                      <p className="text-xl font-semibold text-white tracking-tight">Ready to Capture</p>
+                      <p className="text-xs font-medium text-white/40">Start recording your {activeMode.label.toLowerCase()} journal.</p>
                     </div>
                   </>
                 ) : (
                   <>
-                    <div className="h-24 w-24 rounded-[2rem] bg-duo-feather/20 text-duo-feather border-4 border-duo-feather flex items-center justify-center mx-auto">
-                       <CheckCircle2 className="h-12 w-12" />
+                    <div className="h-20 w-20 rounded-2xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center mx-auto">
+                       <CheckCircle2 className="h-10 w-10" />
                     </div>
-                    <div className="space-y-2">
-                      <p className="text-2xl font-black text-white drop-shadow-lg lowercase">captured!</p>
-                      <p className="text-sm font-bold text-white/60">review and sync your moment below.</p>
+                    <div className="space-y-1">
+                      <p className="text-xl font-semibold text-white tracking-tight">Capture Complete</p>
+                      <p className="text-xs font-medium text-white/40">Sync this moment to your memory palace.</p>
                     </div>
                   </>
                 )}
@@ -412,8 +408,8 @@ export function CaptureStudio() {
 
             {/* Bottom Controls Overlay */}
             <div className={cn(
-              "absolute bottom-10 flex flex-col items-center gap-6 z-20 w-full",
-              isFullscreen ? "bottom-20" : ""
+              "absolute bottom-8 flex flex-col items-center gap-6 z-20 w-full",
+              isFullscreen ? "bottom-16" : ""
             )}>
               <div className="flex gap-4">
                 {status === "recording" ? (
@@ -421,23 +417,22 @@ export function CaptureStudio() {
                     onClick={stopRecording}
                     variant="destructive"
                     size="lg"
-                    className="h-20 px-12 rounded-[2rem] shadow-[0_8px_0_var(--duo-cardinal-shadow)] uppercase font-black tracking-widest text-lg active:translate-y-2 active:shadow-none transition-all"
+                    className="h-14 px-10 rounded-xl font-semibold tracking-tight text-sm active:scale-95 transition-all"
                   >
-                    <Square className="h-6 w-6 mr-4 fill-current" /> Stop
+                    <Square className="h-4 w-4 mr-3 fill-current" /> Stop Recording
                   </Button>
                 ) : (
                   <Button 
                     onClick={startRecording}
                     disabled={!activeApps.some(app => app.slug === "googledrive") && (mode === "audio" || mode === "video")}
-                    variant="duolingo"
                     size="lg"
                     className={cn(
-                      "h-20 px-12 rounded-[2rem] uppercase font-black tracking-widest text-lg active:translate-y-2 active:shadow-none transition-all",
-                      status === "ready" ? "bg-duo-wolf shadow-[0_8px_0_var(--duo-eel)]" : `bg-duo-feather shadow-[0_8px_0_var(--duo-feather-shadow)]`,
+                      "h-14 px-10 rounded-xl font-semibold tracking-tight text-sm active:scale-95 transition-all",
+                      status === "ready" ? "bg-muted text-foreground border border-border/10" : "bg-primary text-primary-foreground",
                       (!activeApps.some(app => app.slug === "googledrive") && (mode === "audio" || mode === "video")) && "opacity-50 grayscale cursor-not-allowed"
                     )}
                   >
-                    {status === "ready" ? "Retake" : `Start ${activeMode.label}`}
+                    {status === "ready" ? "Retake Capture" : `Start ${activeMode.label}`}
                   </Button>
                 )}
               </div>
@@ -447,64 +442,64 @@ export function CaptureStudio() {
           {/* Context & Metadata - Moved to Bottom */}
           <div className={cn(
             "transition-all duration-500",
-            isFullscreen ? "fixed bottom-0 left-0 right-0 z-50 p-6 bg-gradient-to-t from-black/80 to-transparent pt-20" : "w-full"
+            isFullscreen ? "fixed bottom-0 left-0 right-0 z-50 p-8 bg-gradient-to-t from-black/80 to-transparent pt-20" : "w-full"
           )}>
             <div className={cn(
-              "bg-white border-4 border-duo-swan rounded-[2.5rem] shadow-[0_12px_0_var(--duo-swan)] transition-all overflow-hidden",
-              !showContext && !isFullscreen && "h-20"
+              "minimal-card transition-all overflow-hidden border border-border/10",
+              !showContext && !isFullscreen && "h-16"
             )}>
                <div 
                  onClick={() => setShowContext(!showContext)}
-                 className="flex items-center justify-between px-8 h-20 cursor-pointer hover:bg-duo-polar transition-colors"
+                 className="flex items-center justify-between px-6 h-16 cursor-pointer hover:bg-muted/10 transition-colors"
                >
-                 <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-xl bg-duo-macaw/10 text-duo-macaw flex items-center justify-center">
-                      <Sparkles className="h-5 w-5" />
+                 <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-lg bg-primary/5 text-primary flex items-center justify-center border border-primary/10">
+                      <Sparkles className="h-4 w-4" />
                     </div>
-                    <span className="text-lg font-black text-duo-eel uppercase tracking-tight">Context & Insights</span>
+                    <span className="text-sm font-semibold text-foreground tracking-tight">Context & Metadata</span>
                  </div>
-                 <ChevronDown className={cn("h-6 w-6 text-duo-swan transition-transform", showContext && "rotate-180")} />
+                 <ChevronDown className={cn("h-5 w-5 text-muted-foreground/30 transition-transform", showContext && "rotate-180")} />
                </div>
 
                {showContext && (
-                 <div className="p-8 pt-0 grid lg:grid-cols-2 gap-12 animate-in fade-in slide-in-from-top-4 duration-500">
-                    <div className="space-y-6">
-                       <div className="space-y-3">
-                         <label className="text-xs font-black uppercase tracking-widest text-duo-swan px-1">Moment Title</label>
+                 <div className="p-6 pt-0 grid lg:grid-cols-2 gap-10 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="space-y-5">
+                       <div className="space-y-2">
+                         <label className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/40 px-1">Moment Title</label>
                          <Input 
-                           placeholder="What are we calling this moment?"
+                           placeholder="Untitled moment..."
                            value={title}
                            onChange={(e) => setTitle(e.target.value)}
-                           className="h-16 rounded-2xl border-2 border-duo-swan bg-duo-polar text-lg font-bold focus-visible:ring-duo-macaw/20 focus-visible:border-duo-macaw"
+                           className="h-12 rounded-xl border border-border/20 bg-muted/10 text-base font-medium focus-visible:ring-primary/20 focus-visible:border-primary/40"
                          />
                        </div>
-                       <div className="space-y-3">
-                         <label className="text-xs font-black uppercase tracking-widest text-duo-swan px-1">Notes / Transcript / Observations</label>
+                       <div className="space-y-2">
+                         <label className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/40 px-1">Observations</label>
                          <Textarea 
                            placeholder="Describe the context, people, and feelings..."
                            value={notes}
                            onChange={(e) => setNotes(e.target.value)}
-                           className="min-h-[160px] rounded-2xl border-2 border-duo-swan bg-duo-polar font-bold resize-none focus-visible:ring-duo-macaw/20 focus-visible:border-duo-macaw"
+                           className="min-h-[140px] rounded-xl border border-border/20 bg-muted/10 font-medium resize-none focus-visible:ring-primary/20 focus-visible:border-primary/40"
                          />
                        </div>
                     </div>
 
-                    <div className="flex flex-col justify-between gap-8">
+                    <div className="flex flex-col justify-between gap-6">
                        <div className="grid grid-cols-2 gap-4">
-                          <div className="bg-duo-macaw/5 border-2 border-duo-macaw/20 rounded-3xl p-6 flex flex-col gap-4">
-                             <div className="h-10 w-10 rounded-xl bg-duo-macaw/10 text-duo-macaw flex items-center justify-center">
-                                <Brain className="h-5 w-5" />
+                          <div className="bg-primary/5 border border-primary/10 rounded-2xl p-5 flex flex-col gap-3">
+                             <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                                <Brain className="h-4 w-4" />
                              </div>
-                             <p className="text-xs font-bold text-duo-macaw leading-relaxed">
-                               Debo will extract action items and memory facts from this capture.
+                             <p className="text-[11px] font-medium text-muted-foreground/80 leading-relaxed">
+                               Debo extracts action items and patterns automatically.
                              </p>
                           </div>
-                          <div className="bg-duo-fox/5 border-2 border-duo-fox/20 rounded-3xl p-6 flex flex-col gap-4">
-                             <div className="h-10 w-10 rounded-xl bg-duo-fox/10 text-duo-fox flex items-center justify-center">
-                                <History className="h-5 w-5" />
+                          <div className="bg-muted/10 border border-border/10 rounded-2xl p-5 flex flex-col gap-3">
+                             <div className="h-8 w-8 rounded-lg bg-muted/20 text-muted-foreground flex items-center justify-center">
+                                <History className="h-4 w-4" />
                              </div>
-                             <p className="text-xs font-bold text-duo-fox leading-relaxed">
-                               Captured moments are private and encrypted in your palace.
+                             <p className="text-[11px] font-medium text-muted-foreground/60 leading-relaxed">
+                               All captures are encrypted and stored in your private vault.
                              </p>
                           </div>
                        </div>
@@ -512,12 +507,12 @@ export function CaptureStudio() {
                        <Button
                          onClick={handleSave}
                          disabled={isSaving || status === "recording" || (status === "idle" && !notes.trim())}
-                         className="w-full h-20 rounded-[2rem] bg-duo-macaw hover:bg-duo-macaw/90 text-white text-xl font-black uppercase tracking-widest shadow-[0_8px_0_var(--duo-macaw-shadow)] transition-all active:translate-y-2 active:shadow-none"
+                         className="w-full h-14 rounded-xl text-base font-semibold tracking-tight transition-all"
                        >
-                         {isSaving ? <Loader2 className="h-6 w-6 animate-spin" /> : (
+                         {isSaving ? <Loader2 className="h-5 w-5 animate-spin" /> : (
                            <>
-                             <Sparkles className="h-6 w-6 mr-4" />
-                             Sync to Memory Palace
+                             <Sparkles className="h-5 w-5 mr-3" />
+                             Sync to Memory
                            </>
                          )}
                        </Button>
@@ -530,8 +525,8 @@ export function CaptureStudio() {
 
         {/* Footer info - hidden in fullscreen */}
         {!isFullscreen && (
-          <p className="text-[10px] font-black text-center text-duo-swan uppercase tracking-[0.3em] pb-8">
-             Your personal data is encrypted and never sold.
+          <p className="text-[10px] font-semibold text-center text-muted-foreground/20 uppercase tracking-[0.2em] pb-10">
+             End-to-end encrypted • Private Memory Palace
           </p>
         )}
       </div>

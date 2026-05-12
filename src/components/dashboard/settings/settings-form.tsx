@@ -45,43 +45,45 @@ export function SettingsForm({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="grid gap-4 md:grid-cols-3">
         <Link href="/dashboard/connectors" className="group">
           <StatusTile
             icon={Link2}
-            label="Apps"
-            value="Connect"
-            detail="manage external apps"
-            color="text-duo-green"
-            className="group-hover:border-duo-feather transition-colors"
+            label="Integrations"
+            value="Active"
+            detail="Manage external apps"
+            color="text-primary"
+            className="group-hover:border-primary/30 transition-all"
           />
         </Link>
         <StatusTile
           icon={Sparkles}
-          label="AI"
+          label="Model Provider"
           value={activeProviderName}
-          detail="active model"
-          color="text-duo-blue"
+          detail="Active inference"
+          color="text-primary"
         />
         <StatusTile
           icon={Cloud}
-          label="Media"
-          value="R2"
-          detail="audio and video storage"
-          color="text-duo-orange"
+          label="Storage"
+          value="Persistent"
+          detail="Audio & Video R2"
+          color="text-primary"
         />
       </div>
 
-      <Tabs defaultValue="ai" className="space-y-6">
-        <TabsList className="grid h-auto w-full grid-cols-2 gap-2 rounded-2xl border-2 border-duo-swan bg-duo-snow p-2 md:grid-cols-3">
-          <SettingsTab value="ai" icon={Sparkles} label="AI" />
-          <SettingsTab value="capture" icon={Video} label="Capture" />
-          <SettingsTab value="voice" icon={Mic} label="Voice" />
-        </TabsList>
+      <Tabs defaultValue="ai" className="space-y-8">
+        <div className="border-b border-border">
+          <TabsList className="h-auto w-full justify-start gap-8 bg-transparent p-0 rounded-none border-none">
+            <SettingsTab value="ai" icon={Sparkles} label="Models" />
+            <SettingsTab value="capture" icon={Video} label="Capture" />
+            <SettingsTab value="voice" icon={Mic} label="Voice" />
+          </TabsList>
+        </div>
 
-        <TabsContent value="ai" className="mt-0 space-y-4">
-          <SectionHeader title="AI models" text="Choose the model Debo uses." />
+        <TabsContent value="ai" className="mt-0 space-y-6">
+          <SectionHeader title="AI Models" text="Select the intelligence layer Debo uses for processing and memory." />
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {PROVIDERS.map((provider) => (
               <ProviderCard
@@ -94,56 +96,56 @@ export function SettingsForm({
           </div>
         </TabsContent>
 
-        <TabsContent value="capture" className="mt-0 space-y-4">
-          <SectionHeader title="Capture" text="Audio, video, and diary pages save to R2 first." />
-          <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
-            <div className="duo-card grid gap-4 p-5 sm:grid-cols-3">
-              <CaptureTile icon={Mic} label="Audio" detail="Voice journals" color="text-duo-green" />
-              <CaptureTile icon={Video} label="Video" detail="Private vlogs" color="text-duo-blue" />
-              <CaptureTile icon={Images} label="Pages" detail="Diary photos" color="text-duo-orange" />
+        <TabsContent value="capture" className="mt-0 space-y-6">
+          <SectionHeader title="Capture System" text="All media captures are first synced to high-speed R2 storage." />
+          <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+            <div className="grid gap-4 p-6 rounded-2xl border border-border/50 bg-card/50 sm:grid-cols-3">
+              <CaptureTile icon={Mic} label="Audio" detail="Voice journals" color="text-primary" />
+              <CaptureTile icon={Video} label="Video" detail="Private vlogs" color="text-primary" />
+              <CaptureTile icon={Images} label="Pages" detail="Diary photos" color="text-primary" />
             </div>
-            <div className="duo-card flex flex-col justify-between gap-5 p-5">
-              <div className="space-y-2">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-duo-macaw bg-duo-blue/10 text-duo-blue">
+            <div className="flex flex-col justify-between gap-6 p-6 rounded-2xl border border-border/50 bg-card/50">
+              <div className="space-y-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-primary/20 bg-primary/5 text-primary">
                   <Cloud className="h-6 w-6" />
                 </div>
-                <h3 className="text-xl font-black text-duo-eel">Cloudflare R2</h3>
-                <p className="text-sm font-bold leading-6 text-duo-wolf">
-                  Stored media is linked inside the journal entry.
+                <h3 className="text-xl font-semibold text-foreground tracking-tight">Cloudflare R2</h3>
+                <p className="text-sm font-medium leading-relaxed text-muted-foreground">
+                  Ultra-fast, globally distributed storage for all your personal media entries.
                 </p>
               </div>
-              <Button asChild variant="duolingo-macaw" className="w-full gap-2">
+              <Button asChild variant="default" className="w-full gap-2 rounded-xl h-11">
                 <Link href="/dashboard/capture">
                   <Video className="h-4 w-4" />
-                  Open Capture
+                  Launch Capture Studio
                 </Link>
               </Button>
             </div>
           </div>
         </TabsContent>
 
-        <TabsContent value="voice" className="mt-0 space-y-4">
-          <SectionHeader title="Voice" text="Talk to Debo with LiveKit." />
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="duo-card space-y-4 p-5">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-duo-feather bg-duo-green/10 text-duo-green">
+        <TabsContent value="voice" className="mt-0 space-y-6">
+          <SectionHeader title="Voice Intelligence" text="Interact with your memory engine via real-time voice sessions." />
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="p-6 rounded-2xl border border-border/50 bg-card/50 space-y-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-primary/20 bg-primary/5 text-primary">
                 <Radio className="h-6 w-6" />
               </div>
               <div>
-                <h3 className="text-xl font-black text-duo-eel">Live voice</h3>
-                <p className="mt-1 text-sm font-bold leading-6 text-duo-wolf">
-                  Voice sessions can become journal context.
+                <h3 className="text-xl font-semibold text-foreground tracking-tight">Live Session</h3>
+                <p className="mt-2 text-sm font-medium leading-relaxed text-muted-foreground">
+                  Voice-to-voice interaction that automatically indexes into your journal context.
                 </p>
               </div>
             </div>
-            <div className="duo-card space-y-4 p-5">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-duo-beetle bg-duo-purple/10 text-duo-purple">
+            <div className="p-6 rounded-2xl border border-border/50 bg-card/50 space-y-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-primary/20 bg-primary/5 text-primary">
                 <ShieldCheck className="h-6 w-6" />
               </div>
               <div>
-                <h3 className="text-xl font-black text-duo-eel">Private by default</h3>
-                <p className="mt-1 text-sm font-bold leading-6 text-duo-wolf">
-                  You stay in control before actions write to apps.
+                <h3 className="text-xl font-semibold text-foreground tracking-tight">Privacy First</h3>
+                <p className="mt-2 text-sm font-medium leading-relaxed text-muted-foreground">
+                  Your voice data remains private. AI only performs actions with your explicit consent.
                 </p>
               </div>
             </div>
@@ -151,10 +153,10 @@ export function SettingsForm({
         </TabsContent>
       </Tabs>
 
-      <div className="flex justify-center border-t-2 border-duo-swan pt-6">
-        <div className="flex items-center gap-2 rounded-full border-2 border-duo-swan bg-duo-snow px-4 py-2 text-xs font-black uppercase tracking-wider text-duo-wolf">
-          <ShieldCheck className="h-4 w-4 text-duo-green" />
-          Data stays yours
+      <div className="flex justify-center border-t border-border pt-8">
+        <div className="flex items-center gap-2 rounded-full border border-border bg-muted/30 px-6 py-2 text-xs font-bold uppercase tracking-widest text-muted-foreground/60">
+          <ShieldCheck className="h-4 w-4 text-primary" />
+          Data Ownership Verified
         </div>
       </div>
     </div>
@@ -173,7 +175,7 @@ function SettingsTab({
   return (
     <TabsTrigger
       value={value}
-      className="h-12 gap-2 rounded-xl border-2 border-transparent text-sm font-black uppercase tracking-wider text-duo-wolf data-[state=active]:border-duo-swan data-[state=active]:bg-duo-polar data-[state=active]:text-duo-eel"
+      className="h-12 gap-2 rounded-none border-b-2 border-transparent bg-transparent px-0 text-sm font-bold uppercase tracking-widest text-muted-foreground/60 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground transition-all"
     >
       <Icon className="h-4 w-4" />
       {label}
@@ -197,14 +199,14 @@ function StatusTile({
   className?: string;
 }) {
   return (
-    <div className={cn("duo-card flex items-center gap-4 p-5", className)}>
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-duo-swan bg-duo-polar">
+    <div className={cn("flex items-center gap-4 p-6 rounded-2xl border border-border/50 bg-card/50", className)}>
+      <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-border bg-muted/30 shrink-0">
         <Icon className={cn("h-6 w-6", color)} />
       </div>
       <div className="min-w-0">
-        <div className="text-xs font-black uppercase tracking-wider text-duo-wolf">{label}</div>
-        <div className="truncate text-xl font-black text-duo-eel">{value}</div>
-        <div className="text-xs font-bold text-duo-wolf">{detail}</div>
+        <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">{label}</div>
+        <div className="truncate text-lg font-semibold text-foreground tracking-tight leading-tight">{value}</div>
+        <div className="text-[10px] font-medium text-muted-foreground/40 mt-0.5">{detail}</div>
       </div>
     </div>
   );
@@ -212,11 +214,9 @@ function StatusTile({
 
 function SectionHeader({ title, text }: { title: string; text: string }) {
   return (
-    <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
-      <div>
-        <h2 className="text-2xl font-black text-duo-eel">{title}</h2>
-        <p className="mt-1 text-sm font-bold text-duo-wolf">{text}</p>
-      </div>
+    <div className="space-y-1">
+      <h2 className="text-2xl font-semibold text-foreground tracking-tight">{title}</h2>
+      <p className="text-sm font-medium text-muted-foreground">{text}</p>
     </div>
   );
 }
@@ -233,10 +233,10 @@ function CaptureTile({
   color: string;
 }) {
   return (
-    <div className="rounded-2xl border-2 border-duo-swan bg-duo-polar p-4">
-      <Icon className={cn("mb-4 h-7 w-7", color)} />
-      <h3 className="text-lg font-black text-duo-eel">{label}</h3>
-      <p className="text-sm font-bold text-duo-wolf">{detail}</p>
+    <div className="rounded-xl border border-border/40 bg-muted/10 p-5 group hover:border-primary/20 transition-all">
+      <Icon className={cn("mb-4 h-7 w-7 transition-transform group-hover:scale-110", color)} />
+      <h3 className="text-lg font-semibold text-foreground tracking-tight">{label}</h3>
+      <p className="text-xs font-medium text-muted-foreground mt-1">{detail}</p>
     </div>
   );
 }

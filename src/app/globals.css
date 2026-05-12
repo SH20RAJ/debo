@@ -15,38 +15,6 @@
 	--font-sans: var(--font-body), sans-serif;
 	--font-heading: var(--font-display), sans-serif;
 
-	/* Duolingo Colors */
-	--color-duo-green: var(--duo-feather);
-	--color-duo-blue: var(--duo-macaw);
-	--color-duo-red: var(--duo-cardinal);
-	--color-duo-yellow: var(--duo-bee);
-	--color-duo-orange: var(--duo-fox);
-	--color-duo-purple: var(--duo-beetle);
-	--color-duo-feather: var(--duo-feather);
-	--color-duo-macaw: var(--duo-macaw);
-	--color-duo-cardinal: var(--duo-cardinal);
-	--color-duo-bee: var(--duo-bee);
-	--color-duo-fox: var(--duo-fox);
-	--color-duo-beetle: var(--duo-beetle);
-	--color-duo-mask: var(--duo-mask);
-	--color-duo-humpback: var(--duo-humpback);
-	--color-duo-eel: var(--duo-eel);
-	--color-duo-wolf: var(--duo-wolf);
-	--color-duo-hare: var(--duo-hare);
-	--color-duo-swan: var(--duo-swan);
-	--color-duo-polar: var(--duo-polar);
-	--color-duo-snow: var(--duo-snow);
-	--color-brand: var(--brand);
-	--color-highlight: var(--highlight);
-
-	--color-duo-macaw-shadow: var(--duo-macaw-shadow);
-	--color-duo-fox-shadow: var(--duo-fox-shadow);
-	--color-duo-beetle-shadow: var(--duo-beetle-shadow);
-	--color-duo-feather-shadow: var(--duo-feather-shadow);
-	--color-duo-cardinal-shadow: var(--duo-cardinal-shadow);
-	--color-duo-bee-shadow: var(--duo-bee-shadow);
-
-	/* Shadcn UI Variables */
 	--color-border: var(--border);
 	--color-input: var(--input);
 	--color-ring: var(--ring);
@@ -67,98 +35,76 @@
 }
 
 :root {
-	--font-body: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
-	--font-display: "Avenir Next", "Trebuchet MS", "Segoe UI", sans-serif;
+	--font-body: "Inter", "Segoe UI", "Helvetica Neue", sans-serif;
+	--font-display: "Outfit", "Segoe UI", sans-serif;
 
-	/* === CORE BRAND === */
-	--duo-feather: #58CC02;
-	--duo-mask: #89E219;
-
-	/* === SECONDARY === */
-	--duo-macaw: #1CB0F6;
-	--duo-cardinal: #FF4B4B;
-	--duo-bee: #FFC800;
-	--duo-fox: #FF9600;
-	--duo-beetle: #CE82FF;
-	--duo-humpback: #2B70C9;
-
-	/* === NEUTRALS === */
-	--duo-eel: #4B4B4B;
-	--duo-wolf: #777777;
-	--duo-hare: #AFAFAF;
-	--duo-swan: #E5E5E5;
-	--duo-polar: #F7F7F7;
-	--duo-snow: #FFFFFF;
-
-	/* === SHADOW COLORS === */
-	--duo-feather-shadow: #46A302;
-	--duo-macaw-shadow: #1899D6;
-	--duo-cardinal-shadow: #E53535;
-	--duo-bee-shadow: #E6B400;
-	--duo-fox-shadow: #E68600;
-	--duo-beetle-shadow: #B86CE6;
-
-	/* Minimal UI Overrides */
-	--background: var(--duo-snow);
-	--foreground: var(--duo-eel);
-	--card: var(--duo-snow);
-	--card-foreground: var(--duo-eel);
-	--popover: var(--duo-snow);
-	--popover-foreground: var(--duo-eel);
-	--primary: var(--duo-macaw); /* Switch to a calmer blue accent */
+	/* Core Minimal Palette */
+	--background: #ffffff;
+	--foreground: #09090b;
+	
+	--card: #ffffff;
+	--card-foreground: #09090b;
+	
+	--popover: #ffffff;
+	--popover-foreground: #09090b;
+	
+	--primary: #2563eb;
 	--primary-foreground: #ffffff;
-	--secondary: var(--duo-polar);
-	--secondary-foreground: var(--duo-eel);
-	--muted: var(--duo-polar);
-	--muted-foreground: var(--duo-wolf);
-	--accent: var(--duo-macaw);
-	--accent-foreground: #ffffff;
-	--destructive: var(--duo-cardinal);
+	
+	--secondary: #f4f4f5;
+	--secondary-foreground: #18181b;
+	
+	--muted: #f4f4f5;
+	--muted-foreground: #71717a;
+	
+	--accent: #f4f4f5;
+	--accent-foreground: #18181b;
+	
+	--destructive: #ef4444;
 	--destructive-foreground: #ffffff;
-	--border: var(--duo-swan);
-	--input: var(--duo-swan);
-	--ring: var(--duo-macaw);
-	--radius: 0.6rem; /* Much smaller radius for minimal look */
-	--highlight: oklch(0.852 0.199 91.936);
-	--brand: oklch(0.623 0.214 259.815);
+	
+	--border: #e4e4e7;
+	--input: #e4e4e7;
+	--ring: #2563eb;
+	
+	--radius: 0.75rem;
 
 	/* Sidebar */
-	--sidebar-background: var(--duo-snow);
-	--sidebar-foreground: var(--duo-eel);
-	--sidebar-border: var(--duo-swan);
-	--sidebar-accent: var(--duo-polar);
-	--sidebar-accent-foreground: var(--duo-eel);
+	--sidebar-background: #ffffff;
+	--sidebar-foreground: #09090b;
+	--sidebar-border: #e4e4e7;
+	--sidebar-accent: #f4f4f5;
+	--sidebar-accent-foreground: #18181b;
 }
 
 .dark {
-	/* Override Brand Vars for Dark Mode */
-	--duo-snow: #09090b; /* Zinc 950 */
-	--duo-eel: #fafafa; /* Zinc 50 */
-	--duo-polar: #18181b; /* Zinc 900 */
-	--duo-wolf: #a1a1aa; /* Zinc 400 */
-	--duo-swan: #27272a; /* Zinc 800 */
-	--duo-hare: #3f3f46; /* Zinc 700 */
-
 	--background: #09090b;
 	--foreground: #fafafa;
+	
 	--card: #09090b;
 	--card-foreground: #fafafa;
+	
 	--popover: #09090b;
 	--popover-foreground: #fafafa;
-	--primary: #3b82f6; /* Clean blue */
+	
+	--primary: #3b82f6;
 	--primary-foreground: #ffffff;
+	
 	--secondary: #18181b;
 	--secondary-foreground: #fafafa;
+	
 	--muted: #18181b;
 	--muted-foreground: #a1a1aa;
+	
 	--accent: #18181b;
 	--accent-foreground: #fafafa;
+	
 	--destructive: #ef4444;
 	--destructive-foreground: #ffffff;
+	
 	--border: #27272a;
 	--input: #27272a;
 	--ring: #3b82f6;
-	--radius: 0.6rem;
 
 	/* Sidebar */
 	--sidebar-background: #09090b;
@@ -206,15 +152,15 @@
 }
 
 @utility grad-blue {
-	background: linear-gradient(135deg, var(--duo-macaw) 0%, var(--duo-humpback) 100%);
+	background: linear-gradient(135deg, var(--primary) 0%, #1e40af 100%);
 }
 
 @utility glass {
-	@apply bg-background/40 backdrop-blur-2xl border border-duo-swan/20 shadow-2xl;
+	@apply bg-background/40 backdrop-blur-2xl border border-border/20 shadow-2xl;
 }
 
 @utility glass-card {
-	@apply bg-card/60 backdrop-blur-3xl border border-duo-swan/10 shadow-[0_8px_32px_rgba(0,0,0,0.12)];
+	@apply bg-card/60 backdrop-blur-3xl border border-border/10 shadow-[0_8px_32px_rgba(0,0,0,0.12)];
 }
 
 
