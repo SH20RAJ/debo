@@ -89,15 +89,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   };
 
   return (
-    <Sidebar variant="inset" collapsible="icon" {...props} className="border-r-4 border-duo-swan bg-duo-polar">
-      <SidebarHeader className="flex h-28 items-center px-6 gap-4 border-b-2 border-duo-swan/30 mb-2">
-        <SidebarTrigger className="text-duo-wolf hover:text-duo-eel transition-colors -ml-2 hover:bg-duo-swan/20" />
+    <Sidebar variant="inset" collapsible="icon" {...props} className="border-r-4 border-border/30 bg-sidebar-background">
+      <SidebarHeader className="flex h-28 items-center px-6 gap-4 border-b-2 border-border/20 mb-2">
+        <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors -ml-2 hover:bg-border/20" />
         <Link href="/dashboard" className="flex items-center gap-3 w-full overflow-hidden whitespace-nowrap group">
           <div className="flex size-11 items-center justify-center rounded-[1.25rem] border-2 border-duo-macaw bg-duo-macaw/10 text-duo-macaw shadow-[0_5px_0_var(--duo-macaw-shadow)] transition-all group-hover:-translate-y-0.5 group-hover:shadow-[0_6px_0_var(--duo-macaw-shadow)] active:translate-y-0.5 active:shadow-none">
             <Zap className="h-6 w-6 fill-current" />
           </div>
           <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-            <span className="font-heading text-3xl font-black tracking-tight text-duo-eel leading-none">
+            <span className="font-heading text-3xl font-black tracking-tight text-foreground leading-none">
               debo
             </span>
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-duo-macaw/60 mt-0.5">
@@ -122,8 +122,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         isActive={isActive(item.href, item.exact)}
                         tooltip={item.title}
                         className={cn(
-                          "h-14 rounded-2xl border-2 border-transparent text-[13px] font-black uppercase tracking-wider text-duo-wolf transition-all shadow-none hover-pop",
-                          "hover:border-duo-swan hover:bg-white hover:shadow-[0_4px_0_var(--duo-swan)]",
+                          "h-14 rounded-2xl border-2 border-transparent text-[13px] font-black uppercase tracking-wider text-muted-foreground transition-all shadow-none hover-pop",
+                          "hover:border-border hover:bg-card hover:shadow-[0_4px_0_var(--border)]",
                           "data-[active=true]:border-duo-macaw data-[active=true]:bg-duo-macaw/10 data-[active=true]:text-duo-macaw data-[active=true]:shadow-[0_4px_0_var(--duo-macaw-shadow)]",
                           "active:translate-y-[2px] active:shadow-none"
                         )}
@@ -149,8 +149,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     isActive={pathname === "/dashboard/settings"}
                     tooltip="Settings"
                     className={cn(
-                      "h-14 rounded-2xl border-2 border-transparent text-[13px] font-black uppercase tracking-wider text-duo-wolf transition-all shadow-none hover-pop",
-                      "hover:border-duo-swan hover:bg-white hover:shadow-[0_4px_0_var(--duo-swan)]",
+                      "h-14 rounded-2xl border-2 border-transparent text-[13px] font-black uppercase tracking-wider text-muted-foreground transition-all shadow-none hover-pop",
+                      "hover:border-border hover:bg-card hover:shadow-[0_4px_0_var(--border)]",
                       "data-[active=true]:border-duo-macaw data-[active=true]:bg-duo-macaw/10 data-[active=true]:text-duo-macaw data-[active=true]:shadow-[0_4px_0_var(--duo-macaw-shadow)]"
                     )}
                 >
@@ -177,7 +177,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </SidebarMenuItem>
         </SidebarMenu>
 
-        <div className="flex flex-col gap-4 px-3 pb-4 border-t-2 border-duo-swan/20 pt-6">
+        <div className="flex flex-col gap-4 px-3 pb-4 border-t-2 border-border/20 pt-6">
           <div className="flex items-center justify-between w-full group-data-[collapsible=icon]:justify-center">
             <ThemeToggle />
             <div className="flex items-center gap-3 group-data-[collapsible=icon]:hidden">

@@ -122,6 +122,13 @@
 	--highlight: oklch(0.852 0.199 91.936);
 	--brand: oklch(0.623 0.214 259.815);
 
+	/* Sidebar */
+	--sidebar-background: var(--duo-polar);
+	--sidebar-foreground: var(--duo-eel);
+	--sidebar-border: var(--duo-swan);
+	--sidebar-accent: var(--duo-swan);
+	--sidebar-accent-foreground: var(--duo-eel);
+
 	/* Assistant UI Duolingo Theme */
 	--aui-background: var(--duo-snow);
 	--aui-foreground: var(--duo-eel);
@@ -140,30 +147,49 @@
 .dark {
 	/* Override Brand Vars for Dark Mode */
 	--duo-snow: #131f24;
-	--duo-eel: #ffffff;
+	--duo-eel: #e8edef;
 	--duo-polar: #1a2c34;
 	--duo-wolf: #84949b;
 	--duo-swan: #37464f;
 	--duo-hare: #52656d;
 
-	--background: var(--duo-snow);
-	--foreground: var(--duo-eel);
-	--card: var(--duo-snow);
-	--card-foreground: var(--duo-eel);
+	--background: #0f191e;
+	--foreground: #e8edef;
+	--card: #162028;
+	--card-foreground: #e8edef;
+	--popover: #162028;
+	--popover-foreground: #e8edef;
 	--primary: var(--duo-feather);
-	--muted: var(--duo-polar);
-	--muted-foreground: var(--duo-wolf);
-	--border: var(--duo-swan);
+	--primary-foreground: #ffffff;
+	--secondary: #1a2c34;
+	--secondary-foreground: #e8edef;
+	--muted: #1a2c34;
+	--muted-foreground: #84949b;
+	--accent: #1a2c34;
+	--accent-foreground: #e8edef;
+	--destructive: var(--duo-cardinal);
+	--destructive-foreground: #ffffff;
+	--border: #2a3940;
+	--input: #2a3940;
+	--ring: var(--duo-macaw);
+	--radius: 1rem;
 	--highlight: oklch(0.852 0.199 91.936);
 	--brand: oklch(0.707 0.165 254.624);
 
+	/* Sidebar */
+	--sidebar-background: #0c1518;
+	--sidebar-foreground: #e8edef;
+	--sidebar-border: #1e2d35;
+	--sidebar-accent: #1a2c34;
+	--sidebar-accent-foreground: #e8edef;
+
 	/* Assistant UI Duolingo Theme */
-	--aui-background: var(--duo-snow);
-	--aui-foreground: var(--duo-eel);
-	--aui-muted: var(--duo-polar);
-	--aui-muted-foreground: var(--duo-wolf);
-	--aui-border: var(--duo-swan);
-	--aui-input: var(--duo-swan);
+	--aui-background: #0f191e;
+	--aui-foreground: #e8edef;
+	--aui-muted: #1a2c34;
+	--aui-muted-foreground: #84949b;
+	--aui-border: #2a3940;
+	--aui-input: #2a3940;
 	--aui-ring: var(--duo-macaw);
 	--aui-primary: var(--duo-feather);
 	--aui-primary-foreground: #ffffff;

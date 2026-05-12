@@ -36,7 +36,12 @@ export async function POST(req: Request) {
     if (toolkits.length > 0) {
       const { getComposioTools } = await import("@/mastra/tools/composio-tools");
       dynamicTools = await getComposioTools(userId, toolkits);
-      console.log(`[Chat] Injected dynamic tools for: ${toolkits.join(", ")}`);
+      const toolCount = Object.keys(dynamicTools).length;
+      if (toolCount > 0) {
+        console.log(`[Chat] Loaded ${toolCount} Composio tools for: ${toolkits.join(", ")}`);
+      } else {
+        console.warn(`[Chat] No tools loaded for: ${toolkits.join(", ")}`);
+      }
     }
   } catch (error) {
     // Composio tool loading failed — continue without external tools
