@@ -13,11 +13,6 @@ export function Navbar({ isSignedIn = false }: NavbarProps) {
           <Link href="/" className="flex items-center space-x-2">
             <span className="font-heading font-black text-3xl tracking-tight text-duo-feather">debo</span>
           </Link>
-          <nav className="hidden md:flex items-center space-x-8 text-sm font-black uppercase tracking-widest text-duo-wolf">
-            <Link href="#features" className="hover:text-duo-eel transition-colors">Features</Link>
-            <Link href="#use-cases" className="hover:text-duo-eel transition-colors">Use Cases</Link>
-            <Link href="#privacy" className="hover:text-duo-eel transition-colors">Privacy</Link>
-          </nav>
         </div>
         <div className="flex items-center space-x-4">
           <ThemeToggle />
