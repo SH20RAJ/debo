@@ -9,6 +9,9 @@ import { cache } from "react";
 import { logDatabaseIssue } from "@/lib/db/errors";
 import { composio } from "@/lib/composio";
 import { getComposioActiveApps } from "./composio";
+import fs from "fs";
+import path from "path";
+import os from "os";
 
 // Video Journal Actions
 
@@ -43,28 +46,31 @@ export async function uploadMediaToDrive(formData: FormData) : Promise<{ success
 
         // 1. Ensure 'debo' folder exists
         console.log("[DriveUpload] Searching for 'debo' folder...");
-        const searchResult = await (composio.tools.execute as any)("GOOGLEDRIVE_SEARCH_FILES", {
+        const searchResult = await (composio.tools.execute as any)("GOOGLEDRIVE_FIND_FILE", {
             userId: resolvedUserId,
             arguments: {
-                query: "name = 'debo' and mimeType = 'application/vnd.google-apps.folder' and trashed = false",
+                q: "name = 'debo' and mimeType = 'application/vnd.google-apps.folder' and trashed = false",
             }
         });
+        
         console.log("[DriveUpload] Search result:", JSON.stringify(searchResult, null, 2));
 
-        let folderId: string;
-        if (searchResult.items && searchResult.items.length > 0) {
-            folderId = searchResult.items[0].id;
+        let folderId: string | undefined;
+        const files = (searchResult as any).data?.files || (searchResult as any).files;
+        
+        if (files && files.length > 0) {
+            folderId = files[0].id;
             console.log("[DriveUpload] Found existing folder:", folderId);
         } else {
             console.log("[DriveUpload] Creating 'debo' folder...");
-            const createResult = await (composio.tools.execute as any)("GOOGLEDRIVE_CREATE_A_NEW_FOLDER", {
+            const createResult = await (composio.tools.execute as any)("GOOGLEDRIVE_CREATE_FOLDER", {
                 userId: resolvedUserId,
                 arguments: {
                     name: "debo"
                 }
             });
             console.log("[DriveUpload] Create result:", JSON.stringify(createResult, null, 2));
-            folderId = (createResult as any).id;
+            folderId = (createResult as any).data?.id || (createResult as any).id;
         }
 
         if (!folderId) {
@@ -73,27 +79,44 @@ export async function uploadMediaToDrive(formData: FormData) : Promise<{ success
         }
 
         // 2. Upload file
-        console.log("[DriveUpload] Uploading file:", fileName, "to folder:", folderId);
-        const uploadResult = await (composio.tools.execute as any)("GOOGLEDRIVE_UPLOAD_A_FILE_TO_GOOGLE_DRIVE", {
-            userId: resolvedUserId,
-            arguments: {
-                name: fileName,
-                file_to_upload: fileContent,
-                parent: folderId
+        console.log("[DriveUpload] Preparing file for upload:", fileName);
+        
+        // Create a temporary file to upload
+        const tempDir = os.tmpdir();
+        const tempFilePath = path.join(tempDir, `debo_upload_${Date.now()}_${fileName}`);
+        await fs.promises.writeFile(tempFilePath, buffer);
+
+        try {
+            console.log("[DriveUpload] Uploading file:", fileName, "to folder:", folderId);
+            const uploadResult = await (composio.tools.execute as any)("GOOGLEDRIVE_UPLOAD_FILE", {
+                userId: resolvedUserId,
+                arguments: {
+                    file_to_upload: tempFilePath,
+                    folder_to_upload_to: folderId
+                }
+            });
+            console.log("[DriveUpload] Upload result:", JSON.stringify(uploadResult, null, 2));
+
+            const driveData = (uploadResult as any).data || uploadResult;
+
+            if (!driveData.id) {
+                console.error("[DriveUpload] Upload failed or returned no ID");
+                return { success: false, error: "Upload succeeded but no file ID returned" };
             }
-        });
-        console.log("[DriveUpload] Upload result:", JSON.stringify(uploadResult, null, 2));
 
-        if (!(uploadResult as any).id) {
-            console.error("[DriveUpload] Upload failed or returned no ID");
-            return { success: false, error: "Upload succeeded but no file ID returned" };
+            return {
+                success: true,
+                driveFileId: driveData.id,
+                driveWebUrl: driveData.webViewLink
+            };
+        } finally {
+            // Clean up temp file
+            try {
+                await fs.promises.unlink(tempFilePath);
+            } catch (err) {
+                console.warn("[DriveUpload] Failed to delete temp file:", tempFilePath);
+            }
         }
-
-        return {
-            success: true,
-            driveFileId: (uploadResult as any).id,
-            driveWebUrl: (uploadResult as any).webViewLink
-        };
     } catch (error) {
         console.error("[DriveUpload] EXCEPTION:", error);
         return { 
