@@ -30,6 +30,13 @@ export async function connectComposioApp(appName: string = "googledrive") {
     }
 
     // 2. Create a connection link
+    console.log("Initiating Composio connection link for user:", user.id, "config:", authConfigId);
+    
+    if (!composio.connectedAccounts) {
+      console.error("CRITICAL: composio.connectedAccounts is undefined. SDK may not be initialized correctly.");
+      throw new Error("Composio SDK error: connectedAccounts is undefined");
+    }
+
     const connection = await composio.connectedAccounts.link(
       user.id,
       authConfigId,
@@ -55,6 +62,11 @@ export async function getComposioActiveApps() {
   if (!user) return [];
 
   try {
+    if (!composio.connectedAccounts) {
+      console.error("CRITICAL: composio.connectedAccounts is undefined in getComposioActiveApps.");
+      return [];
+    }
+
     const connections = await composio.connectedAccounts.list({
       userIds: [user.id],
     });

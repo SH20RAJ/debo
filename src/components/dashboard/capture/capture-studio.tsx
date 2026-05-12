@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { saveJournal } from "@/actions/journals";
+import { getComposioActiveApps } from "@/actions/composio";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -42,6 +43,8 @@ export function CaptureStudio() {
   const [mediaBlob, setMediaBlob] = useState<Blob | null>(null);
   const [mediaUrl, setMediaUrl] = useState<string | null>(null);
   const [imagePreviews, setImagePreviews] = useState<{ url: string; name: string }[]>([]);
+  const [activeApps, setActiveApps] = useState<string[]>([]);
+  const [isCheckingApps, setIsCheckingApps] = useState(true);
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -61,6 +64,20 @@ export function CaptureStudio() {
     if (typeParam && modes.some(m => m.id === typeParam)) {
       setMode(typeParam);
     }
+    
+    // Check for active apps
+    const checkApps = async () => {
+      setIsCheckingApps(true);
+      try {
+        const apps = await getComposioActiveApps();
+        setActiveApps(apps);
+      } catch (err) {
+        console.error("Failed to check active apps:", err);
+      } finally {
+        setIsCheckingApps(false);
+      }
+    };
+    checkApps();
   }, [typeParam]);
 
   useEffect(() => {
@@ -151,19 +168,71 @@ export function CaptureStudio() {
     try {
       const activeMode = modes.find(m => m.id === mode)!;
       const finalTitle = title.trim() || `New ${activeMode.label} Moment`;
-      
-      const content = `# ${finalTitle}\n\n[Captured ${activeMode.label}]\n\n${notes}`;
-      
-      const result = await saveJournal(content, undefined, finalTitle, undefined, ["capture", mode]);
-      
-      if (result.success) {
-        toast.success("Moment captured successfully!");
-        router.push(`/dashboard/journal/${result.data}`);
+      const now = new Date();
+      const dateStr = now.toISOString().split("T")[0];
+      const timeStr = now.toTimeString().split(" ")[0].replace(/:/g, "-").substring(0, 5);
+      const extension = mode === "video" ? "mp4" : mode === "audio" ? "webm" : "jpg";
+      const fileName = `${dateStr}_${timeStr}_${finalTitle.replace(/\s+/g, "-")}.${extension}`;
+
+      let driveFileId = "";
+      let driveWebUrl = "";
+
+      if (mediaBlob && (mode === "audio" || mode === "video")) {
+        const reader = new FileReader();
+        const base64Promise = new Promise<string>((resolve) => {
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(mediaBlob);
+        });
+        const base64Content = await base64Promise;
+
+        const { uploadMediaToDrive } = await import("@/actions/media-journals");
+        const uploadResult = await uploadMediaToDrive({
+          userId: "", // Will be resolved server-side
+          fileContent: base64Content,
+          fileName,
+          mimeType: mediaBlob.type
+        });
+
+        if (!uploadResult.success) {
+          throw new Error(uploadResult.error);
+        }
+
+        driveFileId = uploadResult.driveFileId!;
+        driveWebUrl = uploadResult.driveWebUrl!;
+      }
+
+      if (mode === "audio" || mode === "video") {
+        const { saveAudioJournal, saveVideoJournal } = await import("@/actions/media-journals");
+        const saveFn = mode === "video" ? saveVideoJournal : saveAudioJournal;
+        const result = await saveFn({
+          title: finalTitle,
+          driveFileId,
+          driveWebUrl,
+          transcript: notes,
+          userId: undefined
+        });
+
+        if (result.success) {
+          toast.success("Moment captured and synced!");
+          router.push(`/dashboard/journal/${mode}/${result.data}`);
+        } else {
+          toast.error(result.error);
+        }
       } else {
-        toast.error(result.error);
+        // Text/Image (legacy fallback for text)
+        const content = `# ${finalTitle}\n\n[Captured ${activeMode.label}]\n\n${notes}`;
+        const result = await saveJournal(content, undefined, finalTitle, undefined, ["capture", mode]);
+        
+        if (result.success) {
+          toast.success("Moment captured successfully!");
+          router.push(`/dashboard/journal/text/${result.data}`);
+        } else {
+          toast.error(result.error);
+        }
       }
     } catch (err) {
-      toast.error("Failed to save capture.");
+      console.error("Save error:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to save capture.");
     } finally {
       setIsSaving(false);
     }
@@ -303,7 +372,24 @@ export function CaptureStudio() {
             {/* Center Overlay Content (when idle or ready) */}
             {(status === "idle" || (status === "ready" && mode !== "video")) && (
               <div className="relative z-10 text-center space-y-8 px-8 max-w-lg">
-                {status === "idle" ? (
+                {!activeApps.includes("googledrive") && !isCheckingApps && (mode === "audio" || mode === "video") ? (
+                  <>
+                    <div className="mx-auto h-32 w-32 rounded-[2.5rem] bg-duo-orange/10 text-duo-orange flex items-center justify-center border-4 border-duo-orange shadow-2xl">
+                       <HardDrive className="h-16 w-16" />
+                    </div>
+                    <div className="space-y-4">
+                      <p className="text-2xl font-black text-white drop-shadow-lg lowercase">drive not connected</p>
+                      <p className="text-sm font-bold text-white/60">Connect your Google Drive to save audio and video captures.</p>
+                      <Button 
+                        onClick={() => router.push("/dashboard/connectors")}
+                        variant="duolingo"
+                        className="bg-duo-macaw shadow-[0_4px_0_var(--duo-macaw-shadow)]"
+                      >
+                        Connect Now
+                      </Button>
+                    </div>
+                  </>
+                ) : status === "idle" ? (
                   <>
                     <div className={cn(
                       "mx-auto h-32 w-32 rounded-[2.5rem] flex items-center justify-center text-white shadow-2xl transition-transform hover:scale-110",
@@ -348,11 +434,13 @@ export function CaptureStudio() {
                 ) : (
                   <Button 
                     onClick={startRecording}
+                    disabled={!activeApps.includes("googledrive") && (mode === "audio" || mode === "video")}
                     variant="duolingo"
                     size="lg"
                     className={cn(
                       "h-20 px-12 rounded-[2rem] uppercase font-black tracking-widest text-lg active:translate-y-2 active:shadow-none transition-all",
-                      status === "ready" ? "bg-duo-wolf shadow-[0_8px_0_var(--duo-eel)]" : `bg-duo-feather shadow-[0_8px_0_var(--duo-feather-shadow)]`
+                      status === "ready" ? "bg-duo-wolf shadow-[0_8px_0_var(--duo-eel)]" : `bg-duo-feather shadow-[0_8px_0_var(--duo-feather-shadow)]`,
+                      (!activeApps.includes("googledrive") && (mode === "audio" || mode === "video")) && "opacity-50 grayscale cursor-not-allowed"
                     )}
                   >
                     {status === "ready" ? "Retake" : `Start ${activeMode.label}`}

@@ -7,8 +7,73 @@ import { eq, desc, asc, and, count } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { cache } from "react";
 import { logDatabaseIssue } from "@/lib/db/errors";
+import { composio } from "@/lib/composio";
+import { getComposioActiveApps } from "./composio";
 
 // Video Journal Actions
+
+/**
+ * Uploads a file to Google Drive in the 'debo' folder.
+ */
+export async function uploadMediaToDrive(params: {
+    userId?: string;
+    fileContent: string; // Base64 or URL
+    fileName: string;
+    mimeType: string;
+}) {
+    try {
+        const resolvedUserId = await resolveUserId(params.userId, true);
+        if (!resolvedUserId) {
+            return { success: false, error: "Unauthorized" };
+        }
+
+        // 0. Verify Google Drive connection
+        const activeApps = await getComposioActiveApps();
+        if (!activeApps.includes("googledrive")) {
+            return { success: false, error: "Google Drive is not connected via Composio" };
+        }
+
+        // 1. Ensure 'debo' folder exists
+        const searchResult = await composio.tools.execute("GOOGLEDRIVE_SEARCH_FILES", {
+            userId: resolvedUserId,
+            arguments: {
+                query: "name = 'debo' and mimeType = 'application/vnd.google-apps.folder' and trashed = false",
+            }
+        });
+
+        let folderId: string;
+        if (searchResult.items && searchResult.items.length > 0) {
+            folderId = searchResult.items[0].id;
+        } else {
+            const createResult = await composio.tools.execute("GOOGLEDRIVE_CREATE_A_NEW_FOLDER", {
+                userId: resolvedUserId,
+                arguments: {
+                    name: "debo"
+                }
+            });
+            folderId = (createResult as any).id;
+        }
+
+        // 2. Upload file
+        const uploadResult = await composio.tools.execute("GOOGLEDRIVE_UPLOAD_A_FILE_TO_GOOGLE_DRIVE", {
+            userId: resolvedUserId,
+            arguments: {
+                name: params.fileName,
+                file_to_upload: params.fileContent,
+                parent: folderId
+            }
+        });
+
+        return {
+            success: true,
+            driveFileId: (uploadResult as any).id,
+            driveWebUrl: (uploadResult as any).webViewLink
+        };
+    } catch (error) {
+        console.error("Failed to upload to Drive:", error);
+        return { success: false, error: "Failed to upload to Google Drive" };
+    }
+}
 
 export const getVideoJournals = cache(async (
     sortOrder: "asc" | "desc" = "desc",
