@@ -49,6 +49,9 @@ export async function connectComposioApp(appName: string = "googledrive") {
       redirect(connection.redirectUrl);
     }
   } catch (error) {
+    if ((error as any)?.digest?.startsWith("NEXT_REDIRECT")) {
+      throw error;
+    }
     console.error("Error initiating Composio connection:", error);
     throw error;
   }
