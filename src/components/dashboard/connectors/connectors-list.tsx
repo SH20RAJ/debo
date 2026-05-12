@@ -6,7 +6,8 @@ import {
   Zap,
 } from "lucide-react";
 import { toast } from "sonner";
-import { connectComposioApp } from "@/actions/composio";
+import { connectComposioApp, disconnectComposioApp } from "@/actions/composio";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { CONNECTORS } from "@/config/connectors";
 import { cn } from "@/lib/utils";
@@ -14,10 +15,12 @@ import { cn } from "@/lib/utils";
 export function ConnectorsList({
   composioApps = [],
 }: {
-  composioApps?: string[];
+  composioApps?: { slug: string; id: string }[];
   userId: string;
 }) {
+  const router = useRouter();
   const [isConnecting, setIsConnecting] = useState<string | null>(null);
+  const [isDisconnecting, setIsDisconnecting] = useState<string | null>(null);
 
   async function handleComposioConnect(appName: string) {
     setIsConnecting(appName);
@@ -30,9 +33,23 @@ export function ConnectorsList({
     }
   }
 
+  async function handleComposioDisconnect(appName: string) {
+    if (!confirm(`Are you sure you want to disconnect ${appName}? This will revoke AI agent access.`)) return;
+    setIsDisconnecting(appName);
+    try {
+      await disconnectComposioApp(appName);
+      toast.success(`${appName} disconnected successfully.`);
+      router.refresh();
+    } catch (error: any) {
+      toast.error(`Could not disconnect: ${error.message}`);
+    } finally {
+      setIsDisconnecting(null);
+    }
+  }
+
   function isComposioConnected(slug?: string) {
     if (!slug) return false;
-    return composioApps.includes(slug.toLowerCase());
+    return composioApps.some(app => app.slug === slug.toLowerCase());
   }
 
   return (
@@ -71,12 +88,27 @@ export function ConnectorsList({
                 variant={composioActive ? "duolingo-outline" : "duolingo-fox"}
                 size="sm"
                 className="w-full gap-2 text-xs h-10"
-                disabled={loading || composioActive}
+                disabled={loading || isDisconnecting === connector.composioSlug || composioActive}
                 onClick={() => handleComposioConnect(connector.composioSlug!)}
               >
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
                 {composioActive ? "Agent Tools Active" : "Connect AI Agent Tools"}
               </Button>
+
+              {composioActive && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="w-full text-[10px] font-black uppercase tracking-widest text-duo-wolf/40 hover:text-duo-cardinal hover:bg-duo-cardinal/5"
+                  disabled={isDisconnecting === connector.composioSlug}
+                  onClick={() => handleComposioDisconnect(connector.composioSlug!)}
+                >
+                  {isDisconnecting === connector.composioSlug ? (
+                    <Loader2 className="h-3 w-3 animate-spin mr-2" />
+                  ) : "Disconnect"}
+                </Button>
+              )}
             </div>
           </div>
         );

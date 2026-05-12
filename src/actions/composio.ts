@@ -75,9 +75,42 @@ export async function getComposioActiveApps() {
     });
     return connections.items
       .filter((c) => c.status === "ACTIVE")
-      .map((c) => c.toolkit.slug.toLowerCase());
+      .map((c) => ({
+        slug: c.toolkit.slug.toLowerCase(),
+        id: c.id
+      }));
   } catch (error) {
     console.error("Error fetching Composio connections:", error);
     return [];
+  }
+}
+
+/**
+ * Disconnects a Composio app for the current user.
+ */
+export async function disconnectComposioApp(toolkitSlug: string) {
+  const user = await stackServerApp.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  try {
+    if (!composio.connectedAccounts) {
+      throw new Error("Composio SDK not initialized");
+    }
+
+    const connections = await composio.connectedAccounts.list({
+      userIds: [user.id],
+      toolkitSlugs: [toolkitSlug]
+    });
+
+    const activeConnections = connections.items.filter(c => c.status === "ACTIVE");
+    
+    for (const conn of activeConnections) {
+      await composio.connectedAccounts.delete(conn.id);
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error(`Error disconnecting ${toolkitSlug}:`, error);
+    throw error;
   }
 }

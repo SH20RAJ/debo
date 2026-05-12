@@ -13,6 +13,7 @@ import {
   Brain,
   History,
   Upload,
+  HardDrive,
   Maximize2,
   Minimize2,
   ChevronDown,
