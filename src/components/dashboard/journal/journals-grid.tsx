@@ -108,7 +108,7 @@ export function JournalsGrid({ journals, initialQuery, initialSort, totalCount, 
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-duo-wolf/40 transition-colors group-focus-within:text-duo-macaw" />
           <Input
             placeholder="Search memories..."
-            className="pl-11 h-12 rounded-2xl bg-white border-2 border-duo-swan/50 focus-visible:ring-0 focus-visible:border-duo-macaw transition-all font-bold text-duo-eel"
+            className="pl-11 h-12 rounded-2xl bg-card border-2 border-border/50 focus-visible:ring-0 focus-visible:border-duo-macaw transition-all font-bold text-foreground"
             value={query}
             onChange={(e) => {
                 setQuery(e.target.value);
@@ -136,19 +136,19 @@ export function JournalsGrid({ journals, initialQuery, initialSort, totalCount, 
 
       {/* Filter Tabs */}
       <Tabs value={filter} onValueChange={(v) => updateUrl(query, sort, v as "all" | "text" | "video" | "audio", 1)}>
-        <TabsList className="flex w-full sm:w-fit gap-2 rounded-2xl bg-duo-polar/50 p-1.5 border-2 border-duo-swan/30">
-          <TabsTrigger value="all" className="flex-1 sm:flex-none h-10 rounded-xl px-6 text-xs font-black uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-duo-eel data-[state=active]:shadow-[0_4px_0_var(--duo-swan)]">
+        <TabsList className="flex w-full sm:w-fit gap-2 rounded-2xl bg-muted/50 p-1.5 border-2 border-border/50">
+          <TabsTrigger value="all" className="flex-1 sm:flex-none h-10 rounded-xl px-6 text-xs font-black uppercase tracking-widest transition-all data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-[0_4px_0_var(--duo-swan)]">
             All
           </TabsTrigger>
-          <TabsTrigger value="text" className="flex-1 sm:flex-none h-10 rounded-xl px-6 text-xs font-black uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-duo-fox data-[state=active]:shadow-[0_4px_0_var(--duo-fox-shadow)]">
+          <TabsTrigger value="text" className="flex-1 sm:flex-none h-10 rounded-xl px-6 text-xs font-black uppercase tracking-widest transition-all data-[state=active]:bg-card data-[state=active]:text-duo-fox data-[state=active]:shadow-[0_4px_0_var(--duo-fox-shadow)]">
             <FileText className="h-4 w-4 mr-2" />
             Text
           </TabsTrigger>
-          <TabsTrigger value="video" className="flex-1 sm:flex-none h-10 rounded-xl px-6 text-xs font-black uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-duo-beetle data-[state=active]:shadow-[0_4px_0_var(--duo-beetle-shadow)]">
+          <TabsTrigger value="video" className="flex-1 sm:flex-none h-10 rounded-xl px-6 text-xs font-black uppercase tracking-widest transition-all data-[state=active]:bg-card data-[state=active]:text-duo-beetle data-[state=active]:shadow-[0_4px_0_var(--duo-beetle-shadow)]">
             <Video className="h-4 w-4 mr-2" />
             Video
           </TabsTrigger>
-          <TabsTrigger value="audio" className="flex-1 sm:flex-none h-10 rounded-xl px-6 text-xs font-black uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-duo-macaw data-[state=active]:shadow-[0_4px_0_var(--duo-macaw-shadow)]">
+          <TabsTrigger value="audio" className="flex-1 sm:flex-none h-10 rounded-xl px-6 text-xs font-black uppercase tracking-widest transition-all data-[state=active]:bg-card data-[state=active]:text-duo-macaw data-[state=active]:shadow-[0_4px_0_var(--duo-macaw-shadow)]">
             <AudioLines className="h-4 w-4 mr-2" />
             Audio
           </TabsTrigger>
@@ -157,8 +157,8 @@ export function JournalsGrid({ journals, initialQuery, initialSort, totalCount, 
 
       {/* Stats Bar */}
       <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.2em] text-duo-wolf/40">
-        <span className="flex items-center gap-1.5 rounded-full border-2 border-duo-swan px-3 py-1 bg-white">
-          <div className="h-1.5 w-1.5 rounded-full bg-duo-wolf/40" />
+        <span className="flex items-center gap-1.5 rounded-full border-2 border-border px-3 py-1 bg-card">
+          <div className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40" />
           {totalCount} {totalCount === 1 ? "entry" : "entries"}
         </span>
         {query && (
@@ -234,9 +234,9 @@ function JournalCard({ journal, isDeleting, onDelete }: { journal: JournalProps;
 
   return (
     <div className={cn(
-      "group relative flex flex-col rounded-[2rem] border-2 border-duo-swan/50 bg-white p-6 transition-all duration-300",
-      "hover:translate-y-[-4px] hover:shadow-[0_8px_0_var(--duo-swan)]",
-      "overflow-hidden border-b-6"
+      "group relative flex flex-col rounded-[2.5rem] border-2 border-border/50 bg-card p-8 transition-all duration-300",
+      "hover:-translate-y-2 hover:shadow-[0_12px_0_var(--border)] hover:border-border/50",
+      "overflow-hidden border-b-8"
     )}>
       {/* Type-specific top bar */}
       <div className={cn(

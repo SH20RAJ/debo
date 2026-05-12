@@ -177,7 +177,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </SidebarMenuItem>
         </SidebarMenu>
 
-        <div className="flex flex-col gap-4 px-3 pb-2 border-t-2 border-duo-swan/30 pt-6">
+        <div className="flex flex-col gap-4 px-3 pb-4 border-t-2 border-duo-swan/20 pt-6">
           <div className="flex items-center justify-between w-full group-data-[collapsible=icon]:justify-center">
             <ThemeToggle />
             <div className="flex items-center gap-3 group-data-[collapsible=icon]:hidden">
@@ -188,11 +188,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-duo-feather">Live Sync</span>
             </div>
           </div>
+          
           <div className="relative flex items-center justify-center pt-2 group-data-[collapsible=icon]:hidden">
-            <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-24 h-24 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-bounce-subtle">
-               <img src="/debo.png" alt="Debo Mascot" className="w-full h-full object-contain" />
+            <div className="group/mascot relative cursor-pointer">
+              <div className="absolute inset-0 bg-duo-macaw/20 blur-xl rounded-full scale-0 group-hover/mascot:scale-150 transition-transform duration-500" />
+              <img 
+                src="/debo.png" 
+                alt="Debo Mascot" 
+                className="relative z-10 w-20 h-20 object-contain transition-all duration-300 hover-pop drop-shadow-xl" 
+              />
             </div>
-            <img src="/debo.png" alt="Debo Mascot" className="w-16 h-16 object-contain opacity-20 hover:opacity-100 transition-opacity cursor-pointer" />
           </div>
         </div>
       </SidebarFooter>
