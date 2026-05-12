@@ -15,14 +15,22 @@ import { getComposioActiveApps } from "./composio";
 /**
  * Uploads a file to Google Drive in the 'debo' folder.
  */
-export async function uploadMediaToDrive(params: {
-    userId: string;
-    fileContent: string;
-    fileName: string;
-    mimeType: string;
-}) : Promise<{ success: boolean; driveFileId?: string; driveWebUrl?: string; error?: string }> {
+export async function uploadMediaToDrive(formData: FormData) : Promise<{ success: boolean; driveFileId?: string; driveWebUrl?: string; error?: string }> {
     try {
-        const resolvedUserId = await resolveUserId(params.userId, true);
+        const userId = formData.get("userId") as string;
+        const file = formData.get("file") as File;
+        const fileName = formData.get("fileName") as string;
+
+        if (!file) {
+            return { success: false, error: "No file provided" };
+        }
+
+        // Convert file to base64 on the server
+        const bytes = await file.arrayBuffer();
+        const buffer = Buffer.from(bytes);
+        const fileContent = `data:${file.type};base64,${buffer.toString("base64")}`;
+
+        const resolvedUserId = await resolveUserId(userId, true);
         if (!resolvedUserId) {
             return { success: false, error: "Unauthorized" };
         }
@@ -65,12 +73,12 @@ export async function uploadMediaToDrive(params: {
         }
 
         // 2. Upload file
-        console.log("[DriveUpload] Uploading file:", params.fileName, "to folder:", folderId);
+        console.log("[DriveUpload] Uploading file:", fileName, "to folder:", folderId);
         const uploadResult = await (composio.tools.execute as any)("GOOGLEDRIVE_UPLOAD_A_FILE_TO_GOOGLE_DRIVE", {
             userId: resolvedUserId,
             arguments: {
-                name: params.fileName,
-                file_to_upload: params.fileContent,
+                name: fileName,
+                file_to_upload: fileContent,
                 parent: folderId
             }
         });

@@ -179,20 +179,13 @@ export function CaptureStudio() {
       let driveWebUrl = "";
 
       if (mediaBlob && (mode === "audio" || mode === "video")) {
-        const reader = new FileReader();
-        const base64Promise = new Promise<string>((resolve) => {
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.readAsDataURL(mediaBlob);
-        });
-        const base64Content = await base64Promise;
+        const formData = new FormData();
+        formData.append("file", mediaBlob);
+        formData.append("fileName", fileName);
+        formData.append("userId", ""); // Handled server-side
 
         const { uploadMediaToDrive } = await import("@/actions/media-journals");
-        const uploadResult = await uploadMediaToDrive({
-          userId: "", // Will be resolved server-side
-          fileContent: base64Content,
-          fileName,
-          mimeType: mediaBlob.type
-        });
+        const uploadResult = await uploadMediaToDrive(formData);
 
         if (!uploadResult.success) {
           throw new Error(uploadResult.error);
