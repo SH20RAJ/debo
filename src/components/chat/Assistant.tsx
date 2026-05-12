@@ -19,23 +19,28 @@ export function Assistant() {
 
   return (
     <AssistantRuntimeProvider runtime={runtime} aui={aui}>
-      <div className="grid h-[calc(100vh-100px)] grid-cols-[280px_1fr] gap-0 overflow-hidden rounded-2xl border-4 border-duo-swan bg-background shadow-[0_8px_0_var(--duo-swan)]">
-        <aside className="border-r-4 border-duo-swan bg-duo-polar/50 p-4">
-          <div className="mb-6 flex items-center gap-3 px-2">
-            <div className="h-10 w-10 rounded-xl bg-duo-macaw flex items-center justify-center shadow-[0_4px_0_#1899D6]">
-              <span className="text-xl font-black text-white">D</span>
+      <div className="flex h-full overflow-hidden border-t-2 border-duo-swan/20">
+        <aside className="w-80 flex flex-col border-r-2 border-duo-swan/20 bg-duo-polar/30 p-6 hidden md:flex">
+          <div className="mb-8 flex items-center gap-4 px-2">
+            <div className="h-12 w-12 rounded-[1.25rem] bg-duo-macaw flex items-center justify-center border-2 border-duo-macaw shadow-[0_4px_0_var(--duo-macaw-shadow)] active:translate-y-1 active:shadow-none transition-all">
+               <img src="/debo.png" alt="Debo" className="h-8 w-8 object-contain" />
             </div>
             <div>
-              <h2 className="text-sm font-black uppercase tracking-wider text-duo-wolf">Debo Chat</h2>
-              <div className="flex items-center gap-1.5">
-                <div className="h-2 w-2 rounded-full bg-duo-feather animate-pulse" />
-                <span className="text-[10px] font-bold text-duo-wolf/60 uppercase">Online</span>
+              <h2 className="text-lg font-black tracking-tight text-duo-eel leading-none">Debo AI</h2>
+              <div className="flex items-center gap-1.5 mt-1">
+                <div className="relative">
+                  <div className="h-2 w-2 rounded-full bg-duo-feather shadow-[0_0_8px_var(--duo-feather)]" />
+                  <div className="absolute inset-0 h-2 w-2 rounded-full bg-duo-feather animate-ping opacity-75" />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-duo-feather">Active Now</span>
               </div>
             </div>
           </div>
-          <ThreadList />
+          <div className="flex-1 overflow-y-auto no-scrollbar">
+            <ThreadList />
+          </div>
         </aside>
-        <main className="relative flex flex-col bg-background">
+        <main className="relative flex-1 flex flex-col bg-white">
           <Thread />
         </main>
       </div>

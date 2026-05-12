@@ -20,13 +20,21 @@ const buttonVariants = cva(
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "text-primary underline-offset-4 hover:underline",
         "duolingo-fox":
-          "bg-duo-fox text-white border-b-4 border-b-[#E68600] hover:bg-duo-fox/90 active:border-b-0 active:translate-y-1",
+          "bg-duo-fox text-white border-b-4 border-b-duo-fox-shadow hover:bg-duo-fox/90 active:border-b-0 active:translate-y-1 transition-all",
         duolingo:
-          "bg-duo-fox text-white border-b-4 border-b-[#E68600] hover:bg-duo-fox/90 active:border-b-0 active:translate-y-1",
+          "bg-duo-fox text-white border-b-4 border-b-duo-fox-shadow hover:bg-duo-fox/90 active:border-b-0 active:translate-y-1 transition-all",
         "duolingo-outline":
-          "bg-white text-duo-fox border-2 border-duo-swan border-b-4 border-b-[#E5E5E5] hover:bg-duo-polar active:border-b-0 active:translate-y-1 dark:bg-[#1a2c34] dark:border-b-[#37464f] dark:hover:bg-[#37464f]/30",
+          "bg-white text-duo-fox border-2 border-duo-swan border-b-4 border-b-duo-swan hover:bg-duo-polar active:border-b-0 active:translate-y-1 transition-all dark:bg-[#1a2c34] dark:border-b-[#37464f] dark:hover:bg-[#37464f]/30",
         "duolingo-green":
-          "bg-duo-feather text-white border-b-4 border-b-[#46A302] hover:bg-duo-feather/90 active:border-b-0 active:translate-y-1",
+          "bg-duo-feather text-white border-b-4 border-b-duo-feather-shadow hover:bg-duo-feather/90 active:border-b-0 active:translate-y-1 transition-all",
+        "duolingo-macaw":
+          "bg-duo-macaw text-white border-b-4 border-b-duo-macaw-shadow hover:bg-duo-macaw/90 active:border-b-0 active:translate-y-1 transition-all",
+        "duolingo-beetle":
+          "bg-duo-beetle text-white border-b-4 border-b-duo-beetle-shadow hover:bg-duo-beetle/90 active:border-b-0 active:translate-y-1 transition-all",
+        "duolingo-cardinal":
+          "bg-duo-cardinal text-white border-b-4 border-b-duo-cardinal-shadow hover:bg-duo-cardinal/90 active:border-b-0 active:translate-y-1 transition-all",
+        "duolingo-bee":
+          "bg-duo-bee text-white border-b-4 border-b-duo-bee-shadow hover:bg-duo-bee/90 active:border-b-0 active:translate-y-1 transition-all",
       },
       size: {
         default:

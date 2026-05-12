@@ -6,6 +6,7 @@ import { Search, SortDesc, SortAsc, Trash2, Plus, Loader2, Sparkles, ChevronLeft
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { format, formatDistanceToNow } from "date-fns";
 import { deleteJournal } from "@/actions/journals";
@@ -59,7 +60,7 @@ export function JournalsGrid({ journals, initialQuery, initialSort, totalCount, 
   const pageSize = 12;
   const totalPages = Math.ceil(totalCount / pageSize);
 
-  const updateUrl = useCallback((newQuery: string, newSort: string, newFilter: "all" | "text" | "video" | "audio", newPage: number = 1) => {
+  const updateUrl = useCallback((newQuery: string, newSort: "asc" | "desc", newFilter: "all" | "text" | "video" | "audio", newPage: number = 1) => {
     setSort(newSort);
     setFilter(newFilter);
     startTransition(() => {
@@ -103,11 +104,11 @@ export function JournalsGrid({ journals, initialQuery, initialSort, totalCount, 
     <div className="space-y-8 pb-20">
       {/* Minimal Header */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="relative w-full sm:w-80">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
+        <div className="relative w-full sm:w-96 group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-duo-wolf/40 transition-colors group-focus-within:text-duo-macaw" />
           <Input
             placeholder="Search memories..."
-            className="pl-9 h-10 rounded-xl bg-muted/40 border-0 focus-visible:ring-1 focus-visible:ring-duo-macaw/20"
+            className="pl-11 h-12 rounded-2xl bg-white border-2 border-duo-swan/50 focus-visible:ring-0 focus-visible:border-duo-macaw transition-all font-bold text-duo-eel"
             value={query}
             onChange={(e) => {
                 setQuery(e.target.value);
@@ -115,19 +116,19 @@ export function JournalsGrid({ journals, initialQuery, initialSort, totalCount, 
             }}
           />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <Button
-            variant="outline"
+            variant="duolingo-outline"
             size="sm"
             onClick={() => updateUrl(query, sort === "desc" ? "asc" : "desc", filter, 1)}
-            className="h-10 rounded-xl border-duo-swan/50"
+            className="h-12 w-12 p-0 rounded-2xl"
           >
-            {sort === "desc" ? <SortDesc className="h-4 w-4" /> : <SortAsc className="h-4 w-4" />}
+            {sort === "desc" ? <SortDesc className="h-5 w-5" /> : <SortAsc className="h-5 w-5" />}
           </Button>
           <Link href="/dashboard/journal/new">
-            <Button className="h-10 rounded-xl gap-2 bg-duo-feather hover:bg-duo-feather/90 shadow-md shadow-duo-feather-shadow/20">
-              <Plus className="h-4 w-4" />
-              New
+            <Button variant="duolingo-green" className="h-12 rounded-2xl gap-2 px-6 shadow-duo-feather-shadow">
+              <Plus className="h-5 w-5 stroke-[3]" />
+              <span className="font-black uppercase tracking-wider text-xs">New</span>
             </Button>
           </Link>
         </div>
@@ -135,32 +136,35 @@ export function JournalsGrid({ journals, initialQuery, initialSort, totalCount, 
 
       {/* Filter Tabs */}
       <Tabs value={filter} onValueChange={(v) => updateUrl(query, sort, v as "all" | "text" | "video" | "audio", 1)}>
-        <TabsList className="grid w-full grid-cols-4 rounded-xl bg-muted/50 p-1">
-          <TabsTrigger value="all" className="rounded-lg data-[state=active]:bg-background">
+        <TabsList className="flex w-full sm:w-fit gap-2 rounded-2xl bg-duo-polar/50 p-1.5 border-2 border-duo-swan/30">
+          <TabsTrigger value="all" className="flex-1 sm:flex-none h-10 rounded-xl px-6 text-xs font-black uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-duo-eel data-[state=active]:shadow-[0_4px_0_var(--duo-swan)]">
             All
           </TabsTrigger>
-          <TabsTrigger value="text" className="rounded-lg data-[state=active]:bg-background">
-            <FileText className="h-3.5 w-3.5 mr-1.5" />
+          <TabsTrigger value="text" className="flex-1 sm:flex-none h-10 rounded-xl px-6 text-xs font-black uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-duo-fox data-[state=active]:shadow-[0_4px_0_var(--duo-fox-shadow)]">
+            <FileText className="h-4 w-4 mr-2" />
             Text
           </TabsTrigger>
-          <TabsTrigger value="video" className="rounded-lg data-[state=active]:bg-background">
-            <Video className="h-3.5 w-3.5 mr-1.5" />
+          <TabsTrigger value="video" className="flex-1 sm:flex-none h-10 rounded-xl px-6 text-xs font-black uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-duo-beetle data-[state=active]:shadow-[0_4px_0_var(--duo-beetle-shadow)]">
+            <Video className="h-4 w-4 mr-2" />
             Video
           </TabsTrigger>
-          <TabsTrigger value="audio" className="rounded-lg data-[state=active]:bg-background">
-            <AudioLines className="h-3.5 w-3.5 mr-1.5" />
+          <TabsTrigger value="audio" className="flex-1 sm:flex-none h-10 rounded-xl px-6 text-xs font-black uppercase tracking-widest transition-all data-[state=active]:bg-white data-[state=active]:text-duo-macaw data-[state=active]:shadow-[0_4px_0_var(--duo-macaw-shadow)]">
+            <AudioLines className="h-4 w-4 mr-2" />
             Audio
           </TabsTrigger>
         </TabsList>
       </Tabs>
 
       {/* Stats Bar */}
-      <div className="flex items-center gap-4 text-xs font-medium text-muted-foreground/60">
-        <span>{totalCount} {totalCount === 1 ? "entry" : "entries"}</span>
+      <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.2em] text-duo-wolf/40">
+        <span className="flex items-center gap-1.5 rounded-full border-2 border-duo-swan px-3 py-1 bg-white">
+          <div className="h-1.5 w-1.5 rounded-full bg-duo-wolf/40" />
+          {totalCount} {totalCount === 1 ? "entry" : "entries"}
+        </span>
         {query && (
-          <span className="flex items-center gap-1 text-duo-macaw">
-            <Sparkles className="h-3 w-3" />
-            filtering
+          <span className="flex items-center gap-1.5 rounded-full border-2 border-duo-macaw/30 px-3 py-1 bg-duo-macaw/5 text-duo-macaw">
+            <Sparkles className="h-3 w-3 fill-current" />
+            AI Search active
           </span>
         )}
       </div>
@@ -183,33 +187,33 @@ export function JournalsGrid({ journals, initialQuery, initialSort, totalCount, 
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 pt-8">
+        <div className="flex items-center justify-center gap-4 pt-12">
             <Button
-                variant="outline"
+                variant="duolingo-outline"
                 size="sm"
                 disabled={currentPage <= 1 || isPending}
                 onClick={() => updateUrl(query, sort, filter, currentPage - 1)}
-                className="rounded-xl border-duo-swan/50 h-10 px-4"
+                className="rounded-2xl h-12 px-6"
             >
-                <ChevronLeft className="h-4 w-4 mr-2" />
-                Prev
+                <ChevronLeft className="h-5 w-5 mr-2 stroke-[3]" />
+                <span className="font-black uppercase tracking-wider text-xs">Prev</span>
             </Button>
 
-            <div className="flex items-center gap-1 px-4">
-                <span className="text-sm font-bold text-duo-eel">{currentPage}</span>
-                <span className="text-sm font-medium text-duo-swan">/</span>
-                <span className="text-sm font-medium text-duo-wolf">{totalPages}</span>
+            <div className="flex items-center gap-2 px-6 h-12 rounded-2xl bg-duo-polar/50 border-2 border-duo-swan/30">
+                <span className="text-sm font-black text-duo-eel">{currentPage}</span>
+                <span className="text-sm font-bold text-duo-swan">/</span>
+                <span className="text-sm font-bold text-duo-wolf/60">{totalPages}</span>
             </div>
 
             <Button
-                variant="outline"
+                variant="duolingo-outline"
                 size="sm"
                 disabled={currentPage >= totalPages || isPending}
                 onClick={() => updateUrl(query, sort, filter, currentPage + 1)}
-                className="rounded-xl border-duo-swan/50 h-10 px-4"
+                className="rounded-2xl h-12 px-6"
             >
-                Next
-                <ChevronRight className="h-4 w-4 ml-2" />
+                <span className="font-black uppercase tracking-wider text-xs">Next</span>
+                <ChevronRight className="h-5 w-5 ml-2 stroke-[3]" />
             </Button>
         </div>
       )}
@@ -229,26 +233,40 @@ function JournalCard({ journal, isDeleting, onDelete }: { journal: JournalProps;
   };
 
   return (
-    <div className="group relative flex flex-col rounded-2xl border border-duo-swan/30 bg-card p-5 transition-all duration-200 hover:border-duo-swan/60 hover:shadow-lg hover:shadow-duo-swan/5 overflow-hidden">
-      {/* Type-specific overlay for video/audio */}
-      {journal.type === "video" && journal.thumbnailUrl && (
-        <div className="absolute top-0 left-0 w-full h-1 bg-duo-macaw opacity-50" />
-      )}
+    <div className={cn(
+      "group relative flex flex-col rounded-[2rem] border-2 border-duo-swan/50 bg-white p-6 transition-all duration-300",
+      "hover:translate-y-[-4px] hover:shadow-[0_8px_0_var(--duo-swan)]",
+      "overflow-hidden border-b-6"
+    )}>
+      {/* Type-specific top bar */}
+      <div className={cn(
+        "absolute top-0 left-0 w-full h-1.5 opacity-60",
+        journal.type === "video" ? "bg-duo-beetle" : 
+        journal.type === "audio" ? "bg-duo-macaw" : "bg-duo-fox"
+      )} />
 
-      <div className="flex items-start justify-between mb-3 relative z-10">
-        <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground/40">
-          <div className="flex items-center justify-center size-5 rounded-md bg-muted/60 text-muted-foreground/60 mr-1">
-            {journal.type === "video" ? <Video className="h-3 w-3" /> : 
-             journal.type === "audio" ? <AudioLines className="h-3 w-3" /> : 
-             <FileText className="h-3 w-3" />}
+      <div className="flex items-start justify-between mb-4 relative z-10">
+        <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-wider">
+          <div className={cn(
+            "flex items-center justify-center size-7 rounded-xl border-2 shadow-[0_2px_0_rgba(0,0,0,0.1)]",
+            journal.type === "video" ? "bg-duo-purple/10 border-duo-beetle text-duo-purple" : 
+            journal.type === "audio" ? "bg-duo-macaw/10 border-duo-macaw text-duo-macaw" : 
+            "bg-duo-orange/10 border-duo-fox text-duo-orange"
+          )}>
+            {journal.type === "video" ? <Video className="h-4 w-4" /> : 
+             journal.type === "audio" ? <AudioLines className="h-4 w-4" /> : 
+             <FileText className="h-4 w-4" />}
           </div>
-          <span>{format(new Date(journal.createdAt), "MMM d")}</span>
-          <span className="text-duo-swan">•</span>
-          {journal.duration ? (
-            <span className="text-duo-macaw/80">{formatDuration(journal.duration)}</span>
-          ) : (
-            <span>{formatDistanceToNow(new Date(journal.createdAt), { addSuffix: true })}</span>
-          )}
+          <div className="flex flex-col gap-0.5">
+            <span className="text-duo-eel">{format(new Date(journal.createdAt), "MMM d, yyyy")}</span>
+            <div className="flex items-center gap-1.5 text-duo-wolf/40">
+              {journal.duration ? (
+                <span className="text-duo-macaw/80">{formatDuration(journal.duration)}</span>
+              ) : (
+                <span>{formatDistanceToNow(new Date(journal.createdAt), { addSuffix: true })}</span>
+              )}
+            </div>
+          </div>
         </div>
 
         <AlertDialog>
@@ -274,10 +292,10 @@ function JournalCard({ journal, isDeleting, onDelete }: { journal: JournalProps;
         </AlertDialog>
       </div>
 
-      <Link href={`/dashboard/journal/${journal.id}?type=${journal.type}`} className="flex-1 relative z-10">
-        <div className="space-y-3">
+      <Link href={`/dashboard/journal/${journal.id}?type=${journal.type}`} className="flex-1 relative z-10 mt-2">
+        <div className="space-y-4">
           {journal.title && (
-            <h3 className="text-base font-bold tracking-tight text-foreground line-clamp-1 group-hover:text-duo-macaw transition-colors">
+            <h3 className="text-lg font-black tracking-tight text-duo-eel line-clamp-1 group-hover:text-duo-macaw transition-colors">
               {journal.title}
             </h3>
           )}
@@ -295,10 +313,10 @@ function JournalCard({ journal, isDeleting, onDelete }: { journal: JournalProps;
       </Link>
 
       {journal.tags && journal.tags.length > 0 && (
-        <div className="flex flex-wrap gap-2 mt-4 pt-3 border-t border-duo-swan/20 relative z-10">
+        <div className="flex flex-wrap gap-2 mt-5 pt-4 border-t-2 border-duo-swan/20 relative z-10">
           {journal.tags.slice(0, 3).map((tag) => (
-            <span key={tag} className="text-[10px] font-medium uppercase tracking-wider text-duo-macaw/70 bg-duo-macaw/5 px-2 py-1 rounded-md">
-              #{tag}
+            <span key={tag} className="text-[9px] font-black uppercase tracking-widest text-duo-macaw bg-duo-macaw/5 border-2 border-duo-macaw/20 px-2.5 py-1 rounded-xl">
+              {tag}
             </span>
           ))}
         </div>

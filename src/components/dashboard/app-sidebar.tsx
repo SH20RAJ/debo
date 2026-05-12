@@ -89,37 +89,47 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   };
 
   return (
-    <Sidebar variant="inset" collapsible="icon" {...props} className="border-r-4 border-duo-swan bg-background">
-      <SidebarHeader className="flex h-24 items-center px-6 gap-4">
-        <SidebarTrigger className="text-duo-wolf hover:text-duo-eel transition-colors -ml-2" />
+    <Sidebar variant="inset" collapsible="icon" {...props} className="border-r-4 border-duo-swan bg-duo-polar">
+      <SidebarHeader className="flex h-28 items-center px-6 gap-4 border-b-2 border-duo-swan/30 mb-2">
+        <SidebarTrigger className="text-duo-wolf hover:text-duo-eel transition-colors -ml-2 hover:bg-duo-swan/20" />
         <Link href="/dashboard" className="flex items-center gap-3 w-full overflow-hidden whitespace-nowrap group">
-          <div className="flex size-10 items-center justify-center rounded-2xl border-2 border-duo-macaw bg-duo-macaw/10 text-duo-macaw shadow-[0_4px_0_var(--duo-macaw-shadow)] transition-transform group-hover:-translate-y-0.5">
+          <div className="flex size-11 items-center justify-center rounded-[1.25rem] border-2 border-duo-macaw bg-duo-macaw/10 text-duo-macaw shadow-[0_5px_0_var(--duo-macaw-shadow)] transition-all group-hover:-translate-y-0.5 group-hover:shadow-[0_6px_0_var(--duo-macaw-shadow)] active:translate-y-0.5 active:shadow-none">
             <Zap className="h-6 w-6 fill-current" />
           </div>
-          <span className="font-heading text-3xl font-black tracking-tight text-duo-eel group-data-[collapsible=icon]:hidden">
-            debo
-          </span>
+          <div className="flex flex-col group-data-[collapsible=icon]:hidden">
+            <span className="font-heading text-3xl font-black tracking-tight text-duo-eel leading-none">
+              debo
+            </span>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-duo-macaw/60 mt-0.5">
+              Intelligence
+            </span>
+          </div>
         </Link>
       </SidebarHeader>
 
       <SidebarContent className="gap-8 px-4 pt-4">
         {groups.map((group) => (
           <SidebarGroup key={group.title} className="p-0">
-            <SidebarGroupLabel className="mb-4 px-3 text-[11px] font-black uppercase tracking-[0.3em] text-duo-swan group-data-[collapsible=icon]:hidden">
+            <SidebarGroupLabel className="mb-3 px-4 text-[10px] font-black uppercase tracking-[0.35em] text-duo-wolf/40 group-data-[collapsible=icon]:hidden">
               {group.title}
             </SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu className="gap-3">
+              <SidebarMenu className="gap-2.5 px-1">
                 {group.items.map((item: any) => (
                     <SidebarMenuItem key={item.href}>
                       <SidebarMenuButton
                         asChild
                         isActive={isActive(item.href, item.exact)}
                         tooltip={item.title}
-                        className="h-14 rounded-2xl border-2 border-transparent text-[13px] font-black uppercase tracking-wider text-duo-wolf transition-all hover:border-duo-swan hover:bg-duo-polar data-[active=true]:border-duo-macaw data-[active=true]:bg-duo-macaw/10 data-[active=true]:text-duo-macaw shadow-none active:translate-y-1 active:shadow-none"
+                        className={cn(
+                          "h-14 rounded-2xl border-2 border-transparent text-[13px] font-black uppercase tracking-wider text-duo-wolf transition-all shadow-none",
+                          "hover:border-duo-swan hover:bg-white hover:translate-y-[-2px] hover:shadow-[0_4px_0_var(--duo-swan)]",
+                          "data-[active=true]:border-duo-macaw data-[active=true]:bg-duo-macaw/10 data-[active=true]:text-duo-macaw data-[active=true]:shadow-[0_4px_0_var(--duo-macaw-shadow)] data-[active=true]:translate-y-[-2px]",
+                          "active:translate-y-[2px] active:shadow-none"
+                        )}
                       >
                         <Link href={item.href}>
-                          <item.icon className="h-6 w-6" />
+                          <item.icon className={cn("h-6 w-6 transition-transform group-hover:scale-110", isActive(item.href, item.exact) && "scale-110")} />
                           <span>{item.title}</span>
                         </Link>
                       </SidebarMenuButton>
@@ -132,13 +142,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
 
       <SidebarFooter className="space-y-4 p-4 pt-0">
-        <SidebarMenu className="gap-3">
+        <SidebarMenu className="gap-2.5 px-1">
             <SidebarMenuItem>
                 <SidebarMenuButton
                     asChild
                     isActive={pathname === "/dashboard/settings"}
                     tooltip="Settings"
-                    className="h-14 rounded-2xl border-2 border-transparent text-[13px] font-black uppercase tracking-wider text-duo-wolf transition-all hover:border-duo-swan hover:bg-duo-polar data-[active=true]:border-duo-swan data-[active=true]:bg-duo-swan/20"
+                    className={cn(
+                      "h-14 rounded-2xl border-2 border-transparent text-[13px] font-black uppercase tracking-wider text-duo-wolf transition-all shadow-none",
+                      "hover:border-duo-swan hover:bg-white hover:translate-y-[-2px] hover:shadow-[0_4px_0_var(--duo-swan)]",
+                      "data-[active=true]:border-duo-macaw data-[active=true]:bg-duo-macaw/10 data-[active=true]:text-duo-macaw data-[active=true]:shadow-[0_4px_0_var(--duo-macaw-shadow)] data-[active=true]:translate-y-[-2px]"
+                    )}
                 >
                     <Link href="/dashboard/settings">
                         <Settings className="h-6 w-6" />
@@ -151,7 +165,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <SidebarMenuButton
                     onClick={() => user?.signOut()}
                     tooltip="Sign Out"
-                    className="h-14 rounded-2xl border-2 border-transparent text-[13px] font-black uppercase tracking-wider text-duo-cardinal transition-all hover:border-duo-cardinal hover:bg-duo-cardinal/10 shadow-none active:translate-y-1 active:shadow-none"
+                    className={cn(
+                      "h-14 rounded-2xl border-2 border-transparent text-[13px] font-black uppercase tracking-wider text-duo-cardinal transition-all shadow-none",
+                      "hover:border-duo-cardinal hover:bg-duo-cardinal/10 hover:translate-y-[-2px] hover:shadow-[0_4px_0_var(--duo-cardinal-shadow)]",
+                      "active:translate-y-[2px] active:shadow-none"
+                    )}
                 >
                     <LogOut className="h-6 w-6" />
                     <span>Sign Out</span>
@@ -163,9 +181,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <div className="flex items-center justify-between w-full group-data-[collapsible=icon]:justify-center">
             <ThemeToggle />
             <div className="flex items-center gap-3 group-data-[collapsible=icon]:hidden">
-              <div className="h-2.5 w-2.5 rounded-full bg-duo-feather shadow-[0_0_8px_var(--duo-feather)]" />
+              <div className="relative">
+                <div className="h-2.5 w-2.5 rounded-full bg-duo-feather shadow-[0_0_8px_var(--duo-feather)]" />
+                <div className="absolute inset-0 h-2.5 w-2.5 rounded-full bg-duo-feather animate-ping opacity-75" />
+              </div>
               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-duo-feather">Live Sync</span>
             </div>
+          </div>
+          <div className="relative flex items-center justify-center pt-2 group-data-[collapsible=icon]:hidden">
+            <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-24 h-24 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-bounce-subtle">
+               <img src="/debo.png" alt="Debo Mascot" className="w-full h-full object-contain" />
+            </div>
+            <img src="/debo.png" alt="Debo Mascot" className="w-16 h-16 object-contain opacity-20 hover:opacity-100 transition-opacity cursor-pointer" />
           </div>
         </div>
       </SidebarFooter>

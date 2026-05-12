@@ -85,13 +85,21 @@ export function ConnectorsList({
             <div className="flex flex-col gap-2 p-5 pt-0">
               <Button
                 type="button"
-                variant={composioActive ? "duolingo-outline" : "duolingo-fox"}
+                variant={
+                  composioActive 
+                    ? "duolingo-outline" 
+                    : connector.id.includes("google") 
+                      ? "duolingo-macaw" 
+                      : connector.id === "slack" 
+                        ? "duolingo-beetle" 
+                        : "duolingo-fox"
+                }
                 size="sm"
-                className="w-full gap-2 text-xs h-10"
+                className="w-full gap-2 text-xs h-12 rounded-2xl"
                 disabled={loading || isDisconnecting === connector.composioSlug || composioActive}
                 onClick={() => handleComposioConnect(connector.composioSlug!)}
               >
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4 fill-current" />}
                 {composioActive ? "Agent Tools Active" : "Connect AI Agent Tools"}
               </Button>
 

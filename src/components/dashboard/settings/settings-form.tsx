@@ -112,7 +112,7 @@ export function SettingsForm({
                   Stored media is linked inside the journal entry.
                 </p>
               </div>
-              <Button asChild variant="duolingo-blue" className="w-full gap-2">
+              <Button asChild variant="duolingo-macaw" className="w-full gap-2">
                 <Link href="/dashboard/capture">
                   <Video className="h-4 w-4" />
                   Open Capture

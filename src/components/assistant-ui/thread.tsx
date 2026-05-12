@@ -50,7 +50,7 @@ import type { FC } from "react";
 export const Thread: FC = () => {
   return (
     <ThreadPrimitive.Root
-      className="aui-root aui-thread-root @container flex h-full flex-col bg-background"
+      className="aui-root aui-thread-root @container flex h-full flex-col bg-white"
       style={{
         ["--thread-max-width" as string]: "44rem",
         ["--composer-radius" as string]: "24px",
@@ -76,7 +76,7 @@ export const Thread: FC = () => {
             </ThreadPrimitive.Messages>
           </div>
 
-          <ThreadPrimitive.ViewportFooter className="aui-thread-viewport-footer sticky bottom-0 mt-auto flex flex-col gap-4 overflow-visible rounded-t-(--composer-radius) bg-background pb-4 md:pb-6">
+          <ThreadPrimitive.ViewportFooter className="aui-thread-viewport-footer sticky bottom-0 mt-auto flex flex-col gap-4 overflow-visible bg-white pb-6 pt-4 px-2">
             <ThreadScrollToBottom />
             <Composer />
           </ThreadPrimitive.ViewportFooter>
@@ -111,14 +111,17 @@ const ThreadScrollToBottom: FC = () => {
 
 const ThreadWelcome: FC = () => {
   return (
-    <div className="aui-thread-welcome-root my-auto flex grow flex-col">
-      <div className="aui-thread-welcome-center flex w-full grow flex-col items-center justify-center">
-        <div className="aui-thread-welcome-message flex size-full flex-col justify-center px-4">
-          <h1 className="aui-thread-welcome-message-inner fade-in slide-in-from-bottom-1 animate-in fill-mode-both font-semibold text-2xl duration-200">
-            Hello there!
+    <div className="aui-thread-welcome-root my-auto flex grow flex-col items-center justify-center py-10">
+      <div className="aui-thread-welcome-center flex w-full grow flex-col items-center justify-center text-center">
+        <div className="mb-6 h-24 w-24 rounded-[2.5rem] bg-duo-macaw/10 border-4 border-duo-macaw flex items-center justify-center shadow-[0_8px_0_var(--duo-macaw-shadow)] animate-bounce-subtle">
+           <img src="/debo.png" alt="Debo" className="h-16 w-16 object-contain" />
+        </div>
+        <div className="aui-thread-welcome-message flex w-full flex-col justify-center px-4 max-w-lg">
+          <h1 className="font-heading text-4xl font-black tracking-tight text-duo-eel animate-in fade-in slide-in-from-bottom-4 duration-700">
+            Hey! I'm Debo.
           </h1>
-          <p className="aui-thread-welcome-message-inner fade-in slide-in-from-bottom-1 animate-in fill-mode-both text-muted-foreground text-xl delay-75 duration-200">
-            How can I help you today?
+          <p className="mt-2 text-lg font-bold text-duo-wolf animate-in fade-in slide-in-from-bottom-4 delay-150 duration-700">
+            How can I help you document your day or manage your memory palace?
           </p>
         </div>
       </div>
@@ -142,11 +145,11 @@ const ThreadSuggestionItem: FC = () => {
     <div className="aui-thread-welcome-suggestion-display fade-in slide-in-from-bottom-2 @md:nth-[n+3]:block nth-[n+3]:hidden animate-in fill-mode-both duration-200">
       <SuggestionPrimitive.Trigger send asChild>
         <Button
-          variant="ghost"
-          className="aui-thread-welcome-suggestion h-auto w-full @md:flex-col flex-wrap items-start justify-start gap-1 rounded-3xl border bg-background px-4 py-3 text-start text-sm transition-colors hover:bg-muted"
+          variant="duolingo-outline"
+          className="aui-thread-welcome-suggestion h-auto w-full @md:flex-col flex-wrap items-start justify-start gap-1 rounded-[1.5rem] border-2 px-6 py-4 text-start text-sm"
         >
-          <SuggestionPrimitive.Title className="aui-thread-welcome-suggestion-text-1 font-medium" />
-          <SuggestionPrimitive.Description className="aui-thread-welcome-suggestion-text-2 text-muted-foreground empty:hidden" />
+          <SuggestionPrimitive.Title className="font-black text-duo-eel text-sm" />
+          <SuggestionPrimitive.Description className="text-xs font-bold text-duo-wolf/60 empty:hidden" />
         </Button>
       </SuggestionPrimitive.Trigger>
     </div>
@@ -159,12 +162,12 @@ const Composer: FC = () => {
       <ComposerPrimitive.AttachmentDropzone asChild>
         <div
           data-slot="aui_composer-shell"
-          className="flex w-full flex-col gap-2 rounded-(--composer-radius) border bg-background p-(--composer-padding) transition-shadow focus-within:border-ring/75 focus-within:ring-2 focus-within:ring-ring/20 data-[dragging=true]:border-ring data-[dragging=true]:border-dashed data-[dragging=true]:bg-accent/50"
+          className="flex w-full flex-col gap-3 rounded-[1.5rem] border-2 border-duo-swan/50 bg-white p-3 transition-all focus-within:border-duo-macaw focus-within:ring-0 shadow-[0_4px_0_var(--duo-swan)]"
         >
           <ComposerAttachments />
           <ComposerPrimitive.Input
-            placeholder="Send a message..."
-            className="aui-composer-input max-h-32 min-h-10 w-full resize-none bg-transparent px-1.75 py-1 text-sm outline-none placeholder:text-muted-foreground/80"
+            placeholder="Type a message..."
+            className="aui-composer-input max-h-32 min-h-12 w-full resize-none bg-transparent px-3 py-2 text-sm font-bold text-duo-eel outline-none placeholder:text-duo-wolf/40"
             rows={1}
             autoFocus
             aria-label="Message input"
@@ -182,29 +185,27 @@ const ComposerAction: FC = () => {
       <ComposerAddAttachment />
       <AuiIf condition={(s) => !s.thread.isRunning}>
         <ComposerPrimitive.Send asChild>
-          <TooltipIconButton
-            tooltip="Send message"
-            side="bottom"
+          <Button
             type="button"
-            variant="default"
+            variant="duolingo-macaw"
             size="icon"
-            className="aui-composer-send size-8 rounded-full"
+            className="aui-composer-send size-10 rounded-xl"
             aria-label="Send message"
           >
-            <ArrowUpIcon className="aui-composer-send-icon size-4" />
-          </TooltipIconButton>
+            <ArrowUpIcon className="aui-composer-send-icon size-5 stroke-[3]" />
+          </Button>
         </ComposerPrimitive.Send>
       </AuiIf>
       <AuiIf condition={(s) => s.thread.isRunning}>
         <ComposerPrimitive.Cancel asChild>
           <Button
             type="button"
-            variant="default"
+            variant="duolingo-cardinal"
             size="icon"
-            className="aui-composer-cancel size-8 rounded-full"
+            className="aui-composer-cancel size-10 rounded-xl"
             aria-label="Stop generating"
           >
-            <SquareIcon className="aui-composer-cancel-icon size-3 fill-current" />
+            <SquareIcon className="aui-composer-cancel-icon size-4 fill-current" />
           </Button>
         </ComposerPrimitive.Cancel>
       </AuiIf>
@@ -237,7 +238,7 @@ const AssistantMessage: FC = () => {
     >
       <div
         data-slot="aui_assistant-message-content"
-        className="wrap-break-word px-2 text-foreground leading-relaxed"
+        className="wrap-break-word px-4 py-2 text-duo-eel font-medium leading-relaxed bg-duo-polar/40 rounded-[1.5rem] border-2 border-duo-swan/30"
       >
         <MessagePrimitive.GroupedParts
           groupBy={(part) => {
@@ -356,10 +357,10 @@ const UserMessage: FC = () => {
       <UserMessageAttachments />
 
       <div className="aui-user-message-content-wrapper relative col-start-2 min-w-0">
-        <div className="aui-user-message-content wrap-break-word peer rounded-2xl bg-muted px-4 py-2.5 text-foreground empty:hidden">
+        <div className="aui-user-message-content wrap-break-word peer rounded-[1.5rem] bg-duo-macaw px-5 py-3 text-white font-bold shadow-[0_4px_0_var(--duo-macaw-shadow)] border-2 border-duo-macaw-shadow/20 empty:hidden">
           <MessagePrimitive.Parts />
         </div>
-        <div className="aui-user-action-bar-wrapper absolute start-0 top-1/2 -translate-x-full -translate-y-1/2 pe-2 peer-empty:hidden rtl:translate-x-full">
+        <div className="aui-user-action-bar-wrapper absolute start-0 top-1/2 -translate-x-full -translate-y-1/2 pe-4 peer-empty:hidden rtl:translate-x-full">
           <UserActionBar />
         </div>
       </div>

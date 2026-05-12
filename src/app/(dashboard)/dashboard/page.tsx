@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { Mic2, Video, PenLine } from "lucide-react";
 
 import { resolveUserId } from "@/actions/auth-sync";
-import { getJournals, getJournalsCount } from "@/actions/journals";
+import { getAllJournals, getAllJournalsCount } from "@/actions/media-journals";
 import { JournalsGrid } from "@/components/dashboard/journal/journals-grid";
 import { stackServerApp } from "@/stack/server";
 
@@ -29,41 +29,54 @@ export default async function DashboardPage(props: {
   const pageSize = 12;
   const offset = (page - 1) * pageSize;
 
-  const journals = await getJournals(sort, pageSize, offset, userId, query);
-  const totalCount = await getJournalsCount(query, userId);
+  const journals = await getAllJournals(sort, pageSize, offset, "all", userId);
+  const totalCount = await getAllJournalsCount("all", userId);
 
   const firstName = (user.displayName ?? "there").split(" ")[0];
 
   return (
-    <div className="min-h-full bg-background">
+    <div className="min-h-full bg-duo-polar/30">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-5 py-8 lg:px-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
         
-        <header className="space-y-4">
-          <h1 className="text-4xl font-heading font-black tracking-tight text-duo-eel md:text-5xl">
-            Hi, {firstName}.
-          </h1>
-          <p className="max-w-2xl text-lg font-bold leading-7 text-duo-wolf">
-            Quickly capture your thoughts.
-          </p>
+        <header className="space-y-6">
+          <div className="flex flex-col gap-2">
+            <h1 className="text-5xl font-heading font-black tracking-tight text-duo-eel md:text-6xl">
+              Hi, {firstName}.
+            </h1>
+            <p className="max-w-2xl text-xl font-bold leading-7 text-duo-wolf">
+              What's on your mind today?
+            </p>
+          </div>
           
-          <div className="flex flex-wrap gap-4 pt-4">
-            <Link href="/dashboard/journal/new" className="flex items-center gap-3 rounded-2xl border-2 border-duo-fox bg-duo-orange/10 px-6 py-4 transition hover:bg-duo-orange/20">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-background border-2 border-duo-fox text-duo-orange">
-                <PenLine className="h-5 w-5" />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-4">
+            <Link href="/dashboard/journal/new" className="group flex items-center gap-4 rounded-[2rem] border-2 border-duo-fox bg-white p-6 transition-all hover:translate-y-[-4px] hover:shadow-[0_8px_0_var(--duo-fox-shadow)] active:translate-y-0 active:shadow-none">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-duo-orange/10 border-2 border-duo-fox text-duo-orange shadow-[0_4px_0_var(--duo-fox-shadow)] group-hover:scale-110 transition-transform">
+                <PenLine className="h-7 w-7" />
               </div>
-              <span className="font-bold text-duo-eel">Text</span>
+              <div className="flex flex-col">
+                <span className="font-black text-xl text-duo-eel">Text</span>
+                <span className="text-xs font-bold text-duo-wolf">Write it down</span>
+              </div>
             </Link>
-            <Link href="/dashboard/capture?type=audio" className="flex items-center gap-3 rounded-2xl border-2 border-duo-macaw bg-duo-blue/10 px-6 py-4 transition hover:bg-duo-blue/20">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-background border-2 border-duo-macaw text-duo-blue">
-                <Mic2 className="h-5 w-5" />
+            
+            <Link href="/dashboard/capture?type=audio" className="group flex items-center gap-4 rounded-[2rem] border-2 border-duo-macaw bg-white p-6 transition-all hover:translate-y-[-4px] hover:shadow-[0_8px_0_var(--duo-macaw-shadow)] active:translate-y-0 active:shadow-none">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-duo-macaw/10 border-2 border-duo-macaw text-duo-macaw shadow-[0_4px_0_var(--duo-macaw-shadow)] group-hover:scale-110 transition-transform">
+                <Mic2 className="h-7 w-7" />
               </div>
-              <span className="font-bold text-duo-eel">Audio</span>
+              <div className="flex flex-col">
+                <span className="font-black text-xl text-duo-eel">Audio</span>
+                <span className="text-xs font-bold text-duo-wolf">Voice record</span>
+              </div>
             </Link>
-            <Link href="/dashboard/capture?type=video" className="flex items-center gap-3 rounded-2xl border-2 border-duo-beetle bg-duo-purple/10 px-6 py-4 transition hover:bg-duo-purple/20">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-background border-2 border-duo-beetle text-duo-purple">
-                <Video className="h-5 w-5" />
+
+            <Link href="/dashboard/capture?type=video" className="group flex items-center gap-4 rounded-[2rem] border-2 border-duo-beetle bg-white p-6 transition-all hover:translate-y-[-4px] hover:shadow-[0_8px_0_var(--duo-beetle-shadow)] active:translate-y-0 active:shadow-none">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-duo-purple/10 border-2 border-duo-beetle text-duo-purple shadow-[0_4px_0_var(--duo-beetle-shadow)] group-hover:scale-110 transition-transform">
+                <Video className="h-7 w-7" />
               </div>
-              <span className="font-bold text-duo-eel">Video</span>
+              <div className="flex flex-col">
+                <span className="font-black text-xl text-duo-eel">Video</span>
+                <span className="text-xs font-bold text-duo-wolf">Capture life</span>
+              </div>
             </Link>
           </div>
         </header>
