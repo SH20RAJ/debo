@@ -1,97 +1,57 @@
-import { resolveUserId } from "@/actions/auth-sync";
-import { ensureChatThread, normalizeThreadId } from "@/lib/chat/server";
-import { normalizeChatMessages, streamDeboChat } from "@/lib/chat/debo-tools";
-import { isDatabaseUnavailable, logDatabaseIssue } from "@/lib/db/errors";
-import { NextRequest } from "next/server";
-import MemoryClient from "mem0ai";
+import { mastra } from "@/mastra";
+import { stack } from "@/lib/stack";
+import { MASTRA_RESOURCE_ID_KEY, MASTRA_THREAD_ID_KEY, RequestContext } from "@mastra/core/request-context";
+import { createAssistantResponse } from "assistant-stream";
 
-function getMem0Client() {
-  const apiKey = process.env.MEM0_API_KEY;
-  if (!apiKey) throw new Error("MEM0_API_KEY is not configured.");
-  return new MemoryClient({ apiKey });
-}
+export const maxDuration = 30;
 
-export const maxDuration = 60;
+export async function POST(req: Request) {
+  const { messages, threadId: requestedThreadId } = await req.json();
+  const user = await stack.getUser();
 
-export async function POST(req: NextRequest) {
-  const userId = await resolveUserId(undefined, true);
-  if (!userId) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  if (!user) {
+    return new Response("Unauthorized", { status: 401 });
   }
 
-  try {
-    const body = await req.json().catch(() => ({})) as {
-      id?: unknown;
-      messages?: unknown;
-      message?: unknown;
-      prompt?: unknown;
-    };
-    const rawMessages = Array.isArray(body.messages)
-      ? body.messages
-      : typeof body.message === "string"
-        ? [{ role: "user", content: body.message }]
-        : typeof body.prompt === "string"
-          ? [{ role: "user", content: body.prompt }]
-          : [];
-    const messages = normalizeChatMessages(rawMessages);
+  const userId = user.id;
+  const threadId = requestedThreadId || crypto.randomUUID();
 
-    if (messages.length === 0) {
-      return Response.json({ error: "No message provided" }, { status: 400 });
-    }
+  // Initialize request context for Mastra tools
+  const requestContext = new RequestContext();
+  requestContext.set("userId", userId);
+  requestContext.set(MASTRA_RESOURCE_ID_KEY, userId);
+  requestContext.set(MASTRA_THREAD_ID_KEY, threadId);
 
-    let threadId = normalizeThreadId(body.id) ?? crypto.randomUUID();
+  const agent = mastra.getAgent("debo");
 
-    try {
-      const thread = await ensureChatThread(userId, threadId);
-      threadId = thread.id;
-    } catch (threadError) {
-      if (!isDatabaseUnavailable(threadError)) throw threadError;
-      logDatabaseIssue("chat thread create", threadError);
-    }
+  // Fetch active Composio toolkits for this user
+  const { getComposioActiveApps } = await import("@/actions/composio");
+  const activeApps = await getComposioActiveApps();
+  const toolkits = activeApps.map((app) => app.slug);
 
-    // Save user message to mem0 in background
-    const lastMessage = messages[messages.length - 1];
-    if (lastMessage && lastMessage.role === "user") {
-        const text = lastMessage.parts.map(p => p.type === 'text' ? p.text : '').join(' ');
-        if (text) {
-            Promise.resolve().then(async () => {
-                try {
-                    const client = getMem0Client();
-                    await client.add([{ role: "user", content: text }], { user_id: userId } as any);
-                } catch (err) {
-                    console.error("Mem0 add background error:", err);
-                }
-            });
-        }
-    }
+  let dynamicTools = {};
+  if (toolkits.length > 0) {
+    const { getComposioTools } = await import("@/mastra/tools/composio-tools");
+    dynamicTools = await getComposioTools(userId, toolkits);
+    console.log(`[Chat] Injecting dynamic tools for: ${toolkits.join(", ")}`);
+  }
 
-    const result = await streamDeboChat({
-      userId,
-      messages,
-      maxSteps: 4,
+  return createAssistantResponse(async ({ forwardStream }) => {
+    const result = await agent.stream(messages, {
+      memory: {
+        threadId,
+        resourceId: userId,
+      },
+      tools: {
+        ...agent.tools,
+        ...dynamicTools,
+      },
+      requestContext,
+      onStepFinish: (step) => {
+        console.log(`[Chat] Step finished: ${step.stepType}`);
+      },
     });
 
-    const response = result.toUIMessageStreamResponse();
-    response.headers.append(
-      "Set-Cookie",
-      `debo_active_chat_thread=${encodeURIComponent(threadId)}; Path=/; SameSite=Lax; Max-Age=86400`
-    );
-
-    return response;
-  } catch (error) {
-    console.error("CHAT_API_CRASH:", error);
-    const status =
-      error instanceof Error &&
-      (error.message.includes("another user") || error.message.includes("already exists"))
-        ? 409
-        : 500;
-
-    return Response.json(
-      {
-        error: "Intelligence engine error",
-        message: error instanceof Error ? error.message : String(error),
-      },
-      { status }
-    );
-  }
+    await forwardStream(result.toDataStream());
+  });
 }

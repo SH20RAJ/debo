@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "tw-shimmer";
 
 @plugin "@tailwindcss/typography";
 
@@ -94,6 +95,20 @@
 	--radius: 1rem;
 	--highlight: oklch(0.852 0.199 91.936);
 	--brand: oklch(0.623 0.214 259.815);
+
+	/* Assistant UI Duolingo Theme */
+	--aui-background: var(--duo-snow);
+	--aui-foreground: var(--duo-eel);
+	--aui-muted: var(--duo-polar);
+	--aui-muted-foreground: var(--duo-wolf);
+	--aui-border: var(--duo-swan);
+	--aui-input: var(--duo-swan);
+	--aui-ring: var(--duo-macaw);
+	--aui-primary: var(--duo-feather);
+	--aui-primary-foreground: #ffffff;
+	--aui-accent: var(--duo-macaw);
+	--aui-accent-foreground: #ffffff;
+	--aui-radius: 1.5rem;
 }
 
 .dark {
@@ -115,6 +130,20 @@
 	--border: var(--duo-swan);
 	--highlight: oklch(0.852 0.199 91.936);
 	--brand: oklch(0.707 0.165 254.624);
+
+	/* Assistant UI Duolingo Theme */
+	--aui-background: var(--duo-snow);
+	--aui-foreground: var(--duo-eel);
+	--aui-muted: var(--duo-polar);
+	--aui-muted-foreground: var(--duo-wolf);
+	--aui-border: var(--duo-swan);
+	--aui-input: var(--duo-swan);
+	--aui-ring: var(--duo-macaw);
+	--aui-primary: var(--duo-feather);
+	--aui-primary-foreground: #ffffff;
+	--aui-accent: var(--duo-macaw);
+	--aui-accent-foreground: #ffffff;
+	--aui-radius: 1.5rem;
 }
 
 @layer base {
@@ -188,6 +217,7 @@
 	@apply bg-white/5 backdrop-blur-lg border border-white/5 shadow-xl;
 }
 
+@layer components {
 	.animate-float {
 		animation: float 3s ease-in-out infinite;
 	}
