@@ -73,7 +73,7 @@ export function CTA() {
             Terms of Service
           </Link>
           <Link
-            href="https://discord.gg/debo"
+            href="https://discord.gg/uMv4dyhs"
             className="text-xs font-black text-duo-hare hover:text-duo-eel transition-colors uppercase tracking-[0.2em]"
           >
             Discord Community
