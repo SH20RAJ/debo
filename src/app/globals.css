@@ -4,6 +4,8 @@
 
 @plugin "@tailwindcss/typography";
 
+@plugin "tailwind-scrollbar-hide";
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -11,7 +13,7 @@
 	--color-foreground: var(--foreground);
 	--font-sans: var(--font-body), sans-serif;
 	--font-heading: var(--font-display), sans-serif;
-	
+
 	/* Duolingo Colors */
 	--color-duo-green: var(--duo-feather);
 	--color-duo-blue: var(--duo-macaw);
@@ -33,6 +35,8 @@
 	--color-duo-swan: var(--duo-swan);
 	--color-duo-polar: var(--duo-polar);
 	--color-duo-snow: var(--duo-snow);
+	--color-brand: var(--brand);
+	--color-highlight: var(--highlight);
 }
 
 :root {
@@ -88,6 +92,8 @@
 	--input: var(--duo-swan);
 	--ring: var(--duo-macaw);
 	--radius: 1rem;
+	--highlight: oklch(0.852 0.199 91.936);
+	--brand: oklch(0.623 0.214 259.815);
 }
 
 .dark {
@@ -107,6 +113,8 @@
 	--muted: var(--duo-polar);
 	--muted-foreground: var(--duo-wolf);
 	--border: var(--duo-swan);
+	--highlight: oklch(0.852 0.199 91.936);
+	--brand: oklch(0.707 0.165 254.624);
 }
 
 @layer base {
@@ -127,7 +135,7 @@
 @utility btn-3d {
 	@apply relative transition-all duration-200 hover:-translate-y-0.5 active:translate-y-[4px] active:shadow-none;
 	box-shadow: 0 4px 0 var(--shadow-color, transparent);
-	
+
 	&:hover {
 		box-shadow: 0 6px 0 var(--shadow-color, transparent);
 	}
@@ -341,7 +349,6 @@
 		font-weight: 800;
 	}
 }
-
 
 @keyframes float {
 	0%, 100% { transform: translateY(0); }
