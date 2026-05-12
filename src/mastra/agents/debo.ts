@@ -2,7 +2,6 @@ import { Agent } from '@mastra/core/agent';
 import { Memory } from '@mastra/memory';
 import { getChatModel } from '@/lib/ai/openai';
 import { agentDeboTools } from '../tools/debo-tools';
-import { googleDriveTools } from '../tools/composio-tools';
 import { addMem0MemoryTool, searchMem0MemoryTool } from '../tools/mem0-tools';
 
 export const deboAgent = new Agent({
@@ -26,7 +25,6 @@ export const deboAgent = new Agent({
   model: getChatModel(),
   tools: {
     ...agentDeboTools,
-    ...googleDriveTools,
     addMem0MemoryTool,
     searchMem0MemoryTool,
   },

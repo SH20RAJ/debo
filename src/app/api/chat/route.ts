@@ -26,18 +26,21 @@ export async function POST(req: Request) {
   requestContext.set(MASTRA_RESOURCE_ID_KEY, userId);
   requestContext.set(MASTRA_THREAD_ID_KEY, threadId);
 
-  const agent = mastra.getAgent("debo");
+  // Dynamically inject Composio tools (with graceful error handling)
+  let dynamicTools: Record<string, any> = {};
+  try {
+    const { getComposioActiveApps } = await import("@/actions/composio");
+    const activeApps = await getComposioActiveApps();
+    const toolkits = activeApps.map((app) => app.slug);
 
-  // Fetch active Composio toolkits for this user
-  const { getComposioActiveApps } = await import("@/actions/composio");
-  const activeApps = await getComposioActiveApps();
-  const toolkits = activeApps.map((app) => app.slug);
-
-  let dynamicTools = {};
-  if (toolkits.length > 0) {
-    const { getComposioTools } = await import("@/mastra/tools/composio-tools");
-    dynamicTools = await getComposioTools(userId, toolkits);
-    console.log(`[Chat] Injecting dynamic tools for: ${toolkits.join(", ")}`);
+    if (toolkits.length > 0) {
+      const { getComposioTools } = await import("@/mastra/tools/composio-tools");
+      dynamicTools = await getComposioTools(userId, toolkits);
+      console.log(`[Chat] Injected dynamic tools for: ${toolkits.join(", ")}`);
+    }
+  } catch (error) {
+    // Composio tool loading failed — continue without external tools
+    console.warn("[Chat] Composio tools unavailable, continuing without them:", error);
   }
 
   return createAssistantStreamResponse(async (controller) => {
@@ -51,7 +54,7 @@ export async function POST(req: Request) {
           thread: { id: threadId },
           resource: userId,
         },
-        clientTools: dynamicTools,
+        clientTools: Object.keys(dynamicTools).length > 0 ? dynamicTools : undefined,
         requestContext,
       } as any,
     });

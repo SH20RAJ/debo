@@ -125,7 +125,7 @@ export function JournalsGrid({ journals, initialQuery, initialSort, totalCount, 
           >
             {sort === "desc" ? <SortDesc className="h-5 w-5" /> : <SortAsc className="h-5 w-5" />}
           </Button>
-          <Link href="/dashboard/journal/new">
+          <Link href="/dashboard/journal/text/new">
             <Button variant="duolingo-green" className="h-12 rounded-2xl gap-2 px-6 shadow-duo-feather-shadow">
               <Plus className="h-5 w-5 stroke-[3]" />
               <span className="font-black uppercase tracking-wider text-xs">New</span>
@@ -336,7 +336,7 @@ function EmptyState({ hasQuery }: { hasQuery: boolean }) {
         {hasQuery ? "Try a different search term" : "Start your first memory"}
       </p>
       {!hasQuery && (
-        <Link href="/dashboard/journal/new">
+        <Link href="/dashboard/journal/text/new">
           <Button size="sm" className="rounded-xl">Create Entry</Button>
         </Link>
       )}

@@ -49,7 +49,7 @@ export default async function DashboardPage(props: {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-8">
-            <Link href="/dashboard/journal/new" className="group flex flex-col items-start gap-6 rounded-[2.5rem] border-2 border-duo-fox/30 bg-card p-8 transition-all hover:-translate-y-2 hover:border-duo-fox hover:shadow-[0_12px_0_var(--duo-fox-shadow)] active:translate-y-1 active:shadow-none">
+            <Link href="/dashboard/journal/text/new" className="group flex flex-col items-start gap-6 rounded-[2.5rem] border-2 border-duo-fox/30 bg-card p-8 transition-all hover:-translate-y-2 hover:border-duo-fox hover:shadow-[0_12px_0_var(--duo-fox-shadow)] active:translate-y-1 active:shadow-none">
               <div className="flex h-16 w-16 items-center justify-center rounded-[1.25rem] bg-duo-fox/10 border-2 border-duo-fox text-duo-fox shadow-[0_6px_0_var(--duo-fox-shadow)] group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                 <PenLine className="h-8 w-8" />
               </div>
