@@ -15,12 +15,7 @@ import { getComposioActiveApps } from "./composio";
 /**
  * Uploads a file to Google Drive in the 'debo' folder.
  */
-export async function uploadMediaToDrive(params: {
-    userId?: string;
-    fileContent: string; // Base64 or URL
-    fileName: string;
-    mimeType: string;
-}) {
+}) : Promise<{ success: boolean; driveFileId?: string; driveWebUrl?: string; error?: string }> {
     try {
         const resolvedUserId = await resolveUserId(params.userId, true);
         if (!resolvedUserId) {

@@ -414,8 +414,8 @@ const createDragPreviewElements = (
         cloned.style.padding = '0';
         innerContainer.style.padding = originalStyles.padding;
 
-        scrollWrapper.append(innerContainer);
-        cloned.append(scrollWrapper);
+        (scrollWrapper as any).append(innerContainer as any);
+        (cloned as any).append(scrollWrapper as any);
       }
     };
 
