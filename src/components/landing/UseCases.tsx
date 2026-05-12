@@ -1,25 +1,28 @@
 "use client";
 
-import { Sparkles, User, Search, MessageSquare, Calendar, BarChart3, ClipboardList } from "lucide-react";
+import { Sparkles, User, Search, MessageSquare, Calendar, BarChart3, ClipboardList, PenTool, Lightbulb } from "lucide-react";
 
 const useCases = [
   {
-    question: "What did I say I’d do this week?",
-    answer: "You promised to send the product review deck to Aarav by Friday and follow up with the design team on Tuesday.",
+    persona: "Founders",
+    question: "Why did we decide against the React migration in June?",
+    answer: "Based on your voice note from June 12, the team decided to prioritize the mobile app performance audit instead, citing a lack of senior frontend capacity.",
+    icon: Lightbulb,
+    sources: "Voice note • June 12",
+  },
+  {
+    persona: "Operators",
+    question: "What were the next steps for Sarah?",
+    answer: "You noted on Tuesday that Sarah needs the hiring plan by Friday and needs to follow up with the design team regarding the export UI.",
     icon: ClipboardList,
-    sources: "Voice note + Journal",
+    sources: "Journal • Tuesday",
   },
   {
-    question: "When do I feel most productive?",
-    answer: "You usually get deep work done in the mornings following a workout session.",
+    persona: "Researchers",
+    question: "What patterns are emerging in my user interviews?",
+    answer: "Common themes include frustration with current export tools and a strong desire for more cited evidence in AI answers across all 12 recorded sessions.",
     icon: BarChart3,
-    sources: "Journal + Calendar",
-  },
-  {
-    question: "What did I discuss with Sarah?",
-    answer: "Last Tuesday, you discussed the Q3 roadmap and the need for better export controls.",
-    icon: MessageSquare,
-    sources: "AI Chat + Voice Note",
+    sources: "12 Voice Notes",
   },
 ];
 
@@ -37,23 +40,28 @@ export function UseCases() {
             <span>Search your life</span>
           </div>
           <h2 className="text-4xl md:text-6xl font-heading font-black text-duo-eel leading-tight">
-            Ask your <span className="text-duo-macaw">past self.</span>
+            Built for <span className="text-duo-macaw italic">heavy thinkers.</span>
           </h2>
           <p className="text-xl text-duo-wolf font-bold max-w-2xl mx-auto leading-relaxed">
-            Debo extracts the facts, so you don't have to dig.
+            Founders, operators, and creators use Debo to bridge the gap between daily chaos and long-term clarity.
           </p>
         </div>
 
         <div className="space-y-16">
           {useCases.map((useCase, index) => (
             <div key={index} className="flex flex-col gap-6 max-w-2xl mx-auto">
+              <div className="flex items-center gap-3">
+                <div className="text-[10px] font-black uppercase tracking-[0.3em] text-duo-wolf/40">For {useCase.persona}</div>
+                <div className="flex-1 h-px bg-duo-swan/20" />
+              </div>
+              
               {/* User Question */}
               <div className="flex items-start gap-4 self-end flex-row-reverse">
                 <div className="w-12 h-12 rounded-2xl bg-duo-swan/20 border-2 border-duo-swan flex items-center justify-center shrink-0">
                   <User className="w-6 h-6 text-duo-wolf" />
                 </div>
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] rounded-tr-none border-4 border-duo-swan shadow-[0_6px_0_var(--duo-swan)]">
-                  <p className="text-lg font-black text-duo-eel dark:text-white uppercase tracking-tight italic">
+                <div className="bg-white p-6 rounded-[2rem] rounded-tr-none border-4 border-duo-swan shadow-[0_6px_0_var(--duo-swan)]">
+                  <p className="text-lg font-black text-duo-eel uppercase tracking-tight italic">
                     "{useCase.question}"
                   </p>
                 </div>
@@ -65,8 +73,8 @@ export function UseCases() {
                   <Sparkles className="w-6 h-6 text-white" />
                 </div>
                 <div className="space-y-3 max-w-md">
-                  <div className="bg-duo-polar dark:bg-slate-900 p-8 rounded-[2rem] rounded-tl-none border-4 border-duo-swan shadow-[0_8px_0_var(--duo-swan)]">
-                    <p className="text-lg text-duo-eel dark:text-slate-200 font-bold leading-relaxed">
+                  <div className="bg-duo-polar p-8 rounded-[2rem] rounded-tl-none border-4 border-duo-swan shadow-[0_8px_0_var(--duo-swan)]">
+                    <p className="text-lg text-duo-eel font-bold leading-relaxed">
                       {useCase.answer}
                     </p>
                   </div>
@@ -81,21 +89,16 @@ export function UseCases() {
         </div>
 
         <div className="mt-32 text-center">
-          <div className="p-1 rounded-full bg-duo-swan/30 inline-flex">
-             <div className="px-6 py-2 rounded-full bg-background border-2 border-duo-swan text-[12px] font-black uppercase tracking-[0.2em] text-duo-wolf">
-               + {useCaseData.length * 10} more capabilities
-             </div>
-          </div>
+           <Link href="/join" className="duo-btn duo-btn--primary px-10 py-4 text-lg shadow-[0_6px_0_var(--duo-feather-shadow)]">
+              Start building your memory
+           </Link>
         </div>
       </div>
     </section>
   );
 }
 
-const useCaseData = [
-  "Mood tracking", "Daily summaries", "Action items", "Dream analysis", 
-  "Conflict resolution", "Meeting prep", "Reminders", "Timeline",
-  "Habit spotting", "Evidence extraction"
-];
+import Link from "next/link";
+
 
 

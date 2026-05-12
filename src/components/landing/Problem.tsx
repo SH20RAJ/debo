@@ -1,22 +1,22 @@
 "use client";
 
-import { MicOff, SearchX, BrainCircuit } from "lucide-react";
+import { MicOff, SearchX, BrainCircuit, CloudOff, Ghost, Clock9 } from "lucide-react";
 
 const problems = [
   {
-    icon: MicOff,
-    title: "Voice notes disappear",
-    description: "You record a thought but never listen back. It becomes just another file in a folder you'll never open.",
+    icon: Ghost,
+    title: "Memories become ghosts",
+    description: "You record a voice note or write a journal entry, but you never look back. Your life context is locked in dead files.",
   },
   {
-    icon: BrainCircuit,
-    title: "Journals don’t connect",
-    description: "Your diary is a graveyard of insights. You can't see how your mood last year connects to your work today.",
+    icon: Clock9,
+    title: "Promises fall through",
+    description: "You tell someone you'll follow up on a specific date. Without a personal memory engine, that promise is lost in the noise.",
   },
   {
-    icon: SearchX,
-    title: "AI tools forget you",
-    description: "Generic AI doesn't know your context. It doesn't remember your promises, your people, or your personal history.",
+    icon: CloudOff,
+    title: "The context tax",
+    description: "Scattered context means you spend hours digging for that one decision from a meeting three months ago.",
   },
 ];
 
@@ -25,12 +25,12 @@ export function Problem() {
     <section className="py-24 bg-duo-polar border-t-2 border-duo-swan">
       <div className="container mx-auto max-w-5xl px-6">
         <div className="mb-16 text-center space-y-4">
-          <h2 className="text-4xl md:text-5xl font-heading font-black text-duo-eel">
-            You already capture your life. <br />
-            <span className="text-duo-cardinal">You just can’t search it.</span>
+          <h2 className="text-4xl md:text-5xl font-heading font-black text-duo-eel leading-tight">
+            Your memories are <br />
+            <span className="text-duo-cardinal italic">disappearing.</span>
           </h2>
           <p className="max-w-2xl mx-auto text-xl text-duo-wolf font-bold leading-relaxed">
-            Your memories are scattered across voice notes, journals, screenshots, and random apps. Search doesn’t understand the meaning.
+            Scattered thoughts across voice notes, journals, and random apps never connect. You forget what you promised, what you did, and who you were.
           </p>
         </div>
         
@@ -47,7 +47,7 @@ export function Problem() {
                 </div>
                 
                 <h3 className="text-xl font-black mb-3 text-duo-eel uppercase tracking-wider">{problem.title}</h3>
-                <p className="text-duo-wolf font-bold leading-relaxed">
+                <p className="text-duo-wolf font-bold leading-relaxed text-sm">
                   {problem.description}
                 </p>
               </div>
@@ -56,9 +56,9 @@ export function Problem() {
         </div>
       </div>
     </section>
-
   );
 }
+
 
 
 

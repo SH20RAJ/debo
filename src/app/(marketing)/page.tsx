@@ -6,6 +6,7 @@ import { Solution } from "@/components/landing/Solution";
 import { UseCases } from "@/components/landing/UseCases";
 import { Differentiation } from "@/components/landing/Differentiation";
 import { Privacy } from "@/components/landing/Privacy";
+import { SocialProof } from "@/components/landing/SocialProof";
 import { FAQ } from "@/components/landing/FAQ";
 import { CTA } from "@/components/landing/CTA";
 
@@ -21,9 +22,14 @@ export default async function LandingPage() {
       <UseCases />
       <Differentiation />
       <Privacy />
+      <Differentiation />
+      
+      <SocialProof />
       <FAQ />
       <CTA />
     </>
   );
 }
+
+
 
