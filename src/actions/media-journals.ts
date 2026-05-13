@@ -15,23 +15,89 @@ import os from "os";
 
 // Video Journal Actions
 
+type DriveUploadResult = {
+    success: boolean;
+    driveFileId?: string;
+    driveWebUrl?: string;
+    folderId?: string;
+    folderPath?: string;
+    error?: string;
+};
+
+function extractDriveItems(result: unknown): any[] {
+    const data = (result as any)?.data ?? result;
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.files)) return data.files;
+    if (Array.isArray(data?.items)) return data.items;
+    if (Array.isArray(data?.folders)) return data.folders;
+    if (data?.id) return [data];
+    return [];
+}
+
+function extractDriveFile(result: unknown) {
+    const data = (result as any)?.data ?? result;
+    return Array.isArray(data) ? data[0] : data;
+}
+
+function sanitizeDriveName(value: string) {
+    return value
+        .replace(/[\\/:\*\?"<>\|\u0000-\u001f]/g, "-")
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, 120) || "Untitled";
+}
+
+async function findDriveFolder(userId: string, name: string, parentId?: string) {
+    const result = await (composio.tools.execute as any)("GOOGLEDRIVE_FIND_FOLDER", {
+        userId,
+        arguments: {
+            name_exact: name,
+            ...(parentId ? { parent_folder_id: parentId } : {}),
+        },
+    });
+
+    return extractDriveItems(result).find((item) => item?.id);
+}
+
+async function ensureDriveFolder(userId: string, name: string, parentId?: string) {
+    const cleanName = sanitizeDriveName(name);
+    const existing = await findDriveFolder(userId, cleanName, parentId);
+    if (existing?.id) return existing.id as string;
+
+    const result = await (composio.tools.execute as any)("GOOGLEDRIVE_CREATE_FOLDER", {
+        userId,
+        arguments: {
+            name: cleanName,
+            ...(parentId ? { parent_id: parentId } : {}),
+        },
+    });
+
+    const created = extractDriveFile(result);
+    const folderId = created?.id;
+    if (!folderId) {
+        throw new Error(`Could not create Google Drive folder "${cleanName}"`);
+    }
+
+    return folderId as string;
+}
+
 /**
- * Uploads a file to Google Drive in the 'debo' folder.
+ * Uploads media to an organized Google Drive path:
+ * Debo/{Audio Journals|Video Journals}/YYYY-MM
  */
-export async function uploadMediaToDrive(formData: FormData) : Promise<{ success: boolean; driveFileId?: string; driveWebUrl?: string; error?: string }> {
+export async function uploadMediaToDrive(formData: FormData) : Promise<DriveUploadResult> {
     try {
         const userId = formData.get("userId") as string;
         const file = formData.get("file") as File;
-        const fileName = formData.get("fileName") as string;
+        const fileName = sanitizeDriveName((formData.get("fileName") as string) || file?.name || "media.webm");
+        const mediaType = formData.get("mediaType") === "video" ? "video" : "audio";
 
         if (!file) {
             return { success: false, error: "No file provided" };
         }
 
-        // Convert file to base64 on the server
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
-        const fileContent = `data:${file.type};base64,${buffer.toString("base64")}`;
 
         const resolvedUserId = await resolveUserId(userId, true);
         if (!resolvedUserId) {
@@ -44,50 +110,19 @@ export async function uploadMediaToDrive(formData: FormData) : Promise<{ success
             return { success: false, error: "Google Drive is not connected via Composio" };
         }
 
-        // 1. Ensure 'debo' folder exists
-        console.log("[DriveUpload] Searching for 'debo' folder...");
-        const searchResult = await (composio.tools.execute as any)("GOOGLEDRIVE_FIND_FILE", {
-            userId: resolvedUserId,
-            arguments: {
-                q: "name = 'debo' and mimeType = 'application/vnd.google-apps.folder' and trashed = false",
-            }
-        });
-        
-        console.log("[DriveUpload] Search result:", JSON.stringify(searchResult, null, 2));
+        const now = new Date();
+        const monthFolder = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+        const libraryFolder = mediaType === "video" ? "Video Journals" : "Audio Journals";
+        const rootFolderId = await ensureDriveFolder(resolvedUserId, "Debo");
+        const libraryFolderId = await ensureDriveFolder(resolvedUserId, libraryFolder, rootFolderId);
+        const folderId = await ensureDriveFolder(resolvedUserId, monthFolder, libraryFolderId);
+        const folderPath = `Debo/${libraryFolder}/${monthFolder}`;
 
-        let folderId: string | undefined;
-        const files = (searchResult as any).data?.files || (searchResult as any).files;
-        
-        if (files && files.length > 0) {
-            folderId = files[0].id;
-            console.log("[DriveUpload] Found existing folder:", folderId);
-        } else {
-            console.log("[DriveUpload] Creating 'debo' folder...");
-            const createResult = await (composio.tools.execute as any)("GOOGLEDRIVE_CREATE_FOLDER", {
-                userId: resolvedUserId,
-                arguments: {
-                    name: "debo"
-                }
-            });
-            console.log("[DriveUpload] Create result:", JSON.stringify(createResult, null, 2));
-            folderId = (createResult as any).data?.id || (createResult as any).id;
-        }
-
-        if (!folderId) {
-            console.error("[DriveUpload] Failed to resolve folderId");
-            return { success: false, error: "Could not create or find 'debo' folder in Drive" };
-        }
-
-        // 2. Upload file
-        console.log("[DriveUpload] Preparing file for upload:", fileName);
-        
-        // Create a temporary file to upload
-        const tempDir = os.tmpdir();
-        const tempFilePath = path.join(tempDir, `debo_upload_${Date.now()}_${fileName}`);
+        const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "debo-drive-"));
+        const tempFilePath = path.join(tempDir, fileName);
         await fs.promises.writeFile(tempFilePath, buffer);
 
         try {
-            console.log("[DriveUpload] Uploading file:", fileName, "to folder:", folderId);
             const uploadResult = await (composio.tools.execute as any)("GOOGLEDRIVE_UPLOAD_FILE", {
                 userId: resolvedUserId,
                 arguments: {
@@ -95,26 +130,26 @@ export async function uploadMediaToDrive(formData: FormData) : Promise<{ success
                     folder_to_upload_to: folderId
                 }
             });
-            console.log("[DriveUpload] Upload result:", JSON.stringify(uploadResult, null, 2));
 
-            const driveData = (uploadResult as any).data || uploadResult;
+            const driveData = extractDriveFile(uploadResult);
 
             if (!driveData.id) {
-                console.error("[DriveUpload] Upload failed or returned no ID");
                 return { success: false, error: "Upload succeeded but no file ID returned" };
             }
 
             return {
                 success: true,
                 driveFileId: driveData.id,
-                driveWebUrl: driveData.webViewLink
+                driveWebUrl: driveData.webViewLink,
+                folderId,
+                folderPath,
             };
         } finally {
-            // Clean up temp file
             try {
                 await fs.promises.unlink(tempFilePath);
+                await fs.promises.rmdir(tempDir);
             } catch (err) {
-                console.warn("[DriveUpload] Failed to delete temp file:", tempFilePath);
+                console.warn("[DriveUpload] Failed to clean temporary file:", tempFilePath);
             }
         }
     } catch (error) {

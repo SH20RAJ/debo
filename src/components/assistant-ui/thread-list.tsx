@@ -16,7 +16,7 @@ import type { FC } from "react";
 
 export const ThreadList: FC = () => {
   return (
-    <ThreadListPrimitive.Root className="aui-root aui-thread-list-root flex flex-col gap-1">
+    <ThreadListPrimitive.Root className="aui-root aui-thread-list-root flex flex-col gap-2">
       <ThreadListNew />
       <AuiIf condition={(s) => s.threads.isLoading}>
         <ThreadListSkeleton />
@@ -35,7 +35,7 @@ const ThreadListNew: FC = () => {
     <ThreadListPrimitive.New asChild>
       <Button
         variant="outline"
-        className="aui-thread-list-new h-10 justify-start gap-2 rounded-lg px-3 text-sm font-medium shadow-none"
+        className="aui-thread-list-new h-10 justify-start gap-2 rounded-xl bg-background px-3 text-sm font-medium shadow-none"
       >
         <PlusIcon className="size-4" />
         New chat
@@ -63,7 +63,7 @@ const ThreadListSkeleton: FC = () => {
 
 const ThreadListItem: FC = () => {
   return (
-    <ThreadListItemPrimitive.Root className="aui-thread-list-item group flex h-10 items-center gap-2 rounded-lg border border-transparent text-muted-foreground transition-all hover:bg-background data-active:border-border data-active:bg-background data-active:text-foreground">
+    <ThreadListItemPrimitive.Root className="aui-thread-list-item group flex h-10 items-center gap-2 rounded-xl border border-transparent text-muted-foreground transition-all hover:bg-background data-active:border-border/70 data-active:bg-background data-active:text-foreground data-active:shadow-sm">
       <ThreadListItemPrimitive.Trigger className="aui-thread-list-item-trigger flex h-full min-w-0 flex-1 items-center px-3 text-start text-sm">
         <span className="aui-thread-list-item-title min-w-0 flex-1 truncate">
           <ThreadListItemPrimitive.Title fallback="New chat" />
