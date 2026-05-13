@@ -63,14 +63,34 @@ function requireUserId(context: unknown) {
   return userId;
 }
 
+function isMeaningfulJournalContent(content: string, explicitlyRequested = false) {
+  const normalized = content.trim();
+  const words = normalized.split(/\s+/).filter(Boolean);
+  const casualGreeting = /^(hi|hey|hello|yo|sup|thanks|thank you|ok|okay|k|hmm|test)[!.?\s]*$/i;
+
+  if (casualGreeting.test(normalized)) return false;
+  if (explicitlyRequested) return normalized.length >= 8 && words.length >= 2;
+
+  return normalized.length >= 40 && words.length >= 6;
+}
+
 export const createJournalTool = createTool({
   id: 'create_journal',
-  description: 'Create a new journal entry.',
+  description: 'Create a new journal entry only when the user explicitly asks to save one. Never use this for greetings, casual chat, or short messages.',
   inputSchema: z.object({
     content: z.string().describe('The content of the journal entry.'),
     title: z.string().optional().describe('An optional title for the journal.'),
+    explicitlyRequested: z.boolean().optional().default(false).describe('True only when the user clearly asked to save or create a journal entry.'),
   }),
   execute: async (input, context) => {
+    if (!input.explicitlyRequested || !isMeaningfulJournalContent(input.content, input.explicitlyRequested)) {
+      return {
+        success: false,
+        skipped: true,
+        reason: 'Journal creation requires a clear user request and meaningful journal content.',
+      };
+    }
+
     const { saveJournal } = await import('@/actions/journals');
     const userId = requireUserId(context);
     return await saveJournal(input.content, undefined, input.title, userId);
