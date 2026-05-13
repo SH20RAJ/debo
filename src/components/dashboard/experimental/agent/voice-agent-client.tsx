@@ -1,189 +1,257 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import {
-  RoomAudioRenderer,
   BarVisualizer,
-  useVoiceAssistant,
+  RoomAudioRenderer,
+  StartAudio,
   useLocalParticipant,
+  useVoiceAssistant,
 } from "@livekit/components-react";
 import "@livekit/components-styles";
-import { Button } from "@/components/ui/button";
-import { Mic, MicOff, Loader2, Sparkles, Bot, PhoneOff } from "lucide-react";
+import { Bot, Loader2, Mic, MicOff, PhoneOff, Sparkles } from "lucide-react";
 import { toast } from "sonner";
-import dynamic from "next/dynamic";
 
-const LiveKitRoomDynamic = dynamic(
-    () => import("@livekit/components-react").then((mod) => mod.LiveKitRoom),
-    { ssr: false }
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+const LiveKitRoom = dynamic(
+  () => import("@livekit/components-react").then((mod) => mod.LiveKitRoom),
+  { ssr: false },
 );
 
+type LiveKitTokenResponse = {
+  token?: string;
+  serverUrl?: string;
+  roomName?: string;
+  participantName?: string;
+  error?: string;
+};
+
 export function VoiceAgentClient() {
-  const [token, setToken] = useState<string | null>(null);
+  const [session, setSession] = useState<{
+    token: string;
+    serverUrl: string;
+    roomName: string;
+    participantName: string;
+  } | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
-  const [serverUrl, setServerUrl] = useState<string>("");
 
   const startSession = async () => {
     setIsConnecting(true);
     try {
-      const res = await fetch("/api/livekit/token");
-      const data = await res.json() as { token?: string; serverUrl?: string };
-      if (data.token) {
-        setToken(data.token);
-        setServerUrl(data.serverUrl || process.env.NEXT_PUBLIC_LIVEKIT_URL || "");
-      } else {
-        toast.error("Intelligence link failed. Check configuration.");
+      const response = await fetch(`/api/livekit/token?room=debo-talk-${Date.now()}`, {
+        cache: "no-store",
+      });
+      const data = (await response.json()) as LiveKitTokenResponse;
+
+      if (!response.ok || !data.token || !data.serverUrl) {
+        throw new Error(data.error || "LiveKit is not ready.");
       }
-    } catch (e) {
-      console.error(e);
-      toast.error("Error connecting to intelligence.");
+
+      setSession({
+        token: data.token,
+        serverUrl: data.serverUrl,
+        roomName: data.roomName || "debo-talk",
+        participantName: data.participantName || "You",
+      });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not start voice chat.");
     } finally {
       setIsConnecting(false);
     }
   };
 
-  const endSession = () => {
-    setToken(null);
-  };
+  const endSession = () => setSession(null);
 
-  return (
-    <div className="flex-1 w-full flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] p-4">
-      {!token ? (
-        <div className="text-center space-y-12 max-w-md w-full animate-in fade-in slide-in-from-bottom-4 duration-1000">
-          
-          <div className="space-y-4">
-            <h1 className="text-3xl font-heading font-black text-duo-eel">Talk to Debo</h1>
-            <p className="text-sm font-bold text-duo-wolf">
-                Real-time, zero-latency conversation with your second brain.
+  if (!session) {
+    return (
+      <div className="flex min-h-[calc(100vh-5rem)] flex-1 items-center justify-center px-6 py-10">
+        <div className="flex w-full max-w-xl flex-col items-center gap-8 text-center">
+          <div className="flex size-20 items-center justify-center rounded-3xl border border-border/70 bg-background shadow-sm">
+            <img src="/debo.png" alt="Debo" className="size-12 object-contain" />
+          </div>
+
+          <div className="space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">
+              Live voice
+            </p>
+            <h1 className="text-4xl font-semibold tracking-tight text-foreground md:text-5xl">
+              Talk to Debo
+            </h1>
+            <p className="mx-auto max-w-md text-base leading-7 text-muted-foreground">
+              Start a voice session with memory context. Debo can listen, answer, and remember only when you ask.
             </p>
           </div>
 
-          <Button 
-            size="lg" 
-            onClick={startSession} 
+          <Button
+            size="lg"
+            onClick={startSession}
             disabled={isConnecting}
-            variant="default"
-            className="w-full h-20 text-xl rounded-3xl shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
+            className="h-14 rounded-2xl px-8 text-base font-semibold"
           >
             {isConnecting ? (
               <>
-                <Loader2 className="mr-3 h-6 w-6 animate-spin" />
-                Linking...
+                <Loader2 className="mr-2 size-5 animate-spin" />
+                Connecting
               </>
             ) : (
               <>
-                <Mic className="mr-3 h-6 w-6" />
-                Enter Room
+                <Mic className="mr-2 size-5" />
+                Start Talking
               </>
             )}
           </Button>
 
-          <div className="flex items-center justify-center gap-6 text-[10px] font-black text-duo-swan uppercase tracking-[0.2em]">
-            <span>Cloud Link</span>
-            <span>Encrypted</span>
-            <span>Real-time</span>
+          <div className="flex flex-wrap justify-center gap-2 text-xs text-muted-foreground">
+            <span className="rounded-full border border-border/70 px-3 py-1.5">LiveKit room</span>
+            <span className="rounded-full border border-border/70 px-3 py-1.5">Dashboard memories</span>
+            <span className="rounded-full border border-border/70 px-3 py-1.5">Low-latency voice</span>
           </div>
         </div>
-      ) : (
-        <div className="w-full h-full max-w-4xl flex flex-col items-center">
-          <LiveKitRoomDynamic
-            serverUrl={serverUrl}
-            token={token}
-            connect={true}
-            audio={true}
-            video={false}
-            onDisconnected={endSession}
-            onError={(e) => {
-                console.error("LiveKit Error:", e);
-                toast.error("Link broken. Re-connecting...");
-                setToken(null);
-            }}
-            className="w-full flex-1 flex flex-col"
-          >
-            <AgentInterface onEnd={endSession} />
-            <RoomAudioRenderer />
-          </LiveKitRoomDynamic>
-        </div>
-      )}
-    </div>
+      </div>
+    );
+  }
+
+  return (
+    <LiveKitRoom
+      serverUrl={session.serverUrl}
+      token={session.token}
+      connect
+      audio
+      video={false}
+      onDisconnected={endSession}
+      onError={(error) => {
+        console.error("[Talk] LiveKit error:", error);
+        toast.error("Voice session ended. Please start again.");
+        endSession();
+      }}
+      className="flex min-h-[calc(100vh-5rem)] flex-1 flex-col bg-background"
+    >
+      <VoiceRoom
+        roomName={session.roomName}
+        participantName={session.participantName}
+        onEnd={endSession}
+      />
+      <RoomAudioRenderer />
+      <StartAudio
+        label="Enable audio"
+        className="fixed bottom-6 left-1/2 z-50 h-11 -translate-x-1/2 rounded-full border border-border bg-background px-5 text-sm font-medium shadow-lg"
+      />
+    </LiveKitRoom>
   );
 }
 
-function AgentInterface({ onEnd }: { onEnd: () => void }) {
-  const { state, audioTrack } = useVoiceAssistant();
+function VoiceRoom({
+  roomName,
+  participantName,
+  onEnd,
+}: {
+  roomName: string;
+  participantName: string;
+  onEnd: () => void;
+}) {
+  const { state, audioTrack, agentTranscriptions, agent } = useVoiceAssistant();
   const { localParticipant } = useLocalParticipant();
   const [isMuted, setIsMuted] = useState(false);
 
   useEffect(() => {
-    if (localParticipant) {
-        setIsMuted(!localParticipant.isMicrophoneEnabled);
-    }
-  }, [localParticipant]);
+    setIsMuted(!localParticipant.isMicrophoneEnabled);
+  }, [localParticipant.isMicrophoneEnabled]);
+
+  const latestAgentText = useMemo(() => {
+    return agentTranscriptions
+      .map((segment) => segment.text)
+      .filter(Boolean)
+      .slice(-2)
+      .join(" ");
+  }, [agentTranscriptions]);
 
   const toggleMute = async () => {
-    const nextMute = !isMuted;
-    await localParticipant.setMicrophoneEnabled(!nextMute);
-    setIsMuted(nextMute);
+    const nextMuted = !isMuted;
+    await localParticipant.setMicrophoneEnabled(!nextMuted);
+    setIsMuted(nextMuted);
   };
 
+  const statusLabel = agent
+    ? state === "speaking"
+      ? "Debo is speaking"
+      : state === "listening"
+        ? "Debo is listening"
+        : "Debo is thinking"
+    : "Waiting for Debo";
+
   return (
-    <div className="flex-1 w-full flex flex-col items-center justify-between py-12">
-      <div className="w-full flex justify-between items-center px-4">
-        <div className="flex items-center gap-3">
-            <div className={`h-2 w-2 rounded-full ${state === 'speaking' ? 'bg-duo-green animate-pulse' : 'bg-duo-green'}`} />
-            <span className="text-xs font-black tracking-widest uppercase text-duo-wolf">Live Intelligence</span>
+    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-5 md:px-8 md:py-8">
+      <header className="flex items-center justify-between gap-4">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold text-foreground">{statusLabel}</p>
+          <p className="truncate text-xs text-muted-foreground">
+            {participantName} in {roomName}
+          </p>
         </div>
-        <div className="text-[10px] font-black text-duo-swan uppercase tracking-[0.2em]">
-            Room Synced
+        <div className="flex items-center gap-2 rounded-full border border-border/70 bg-background px-3 py-1.5 text-xs text-muted-foreground shadow-sm">
+          <Sparkles className="size-3.5 text-primary" />
+          Context on
         </div>
-      </div>
+      </header>
 
-      <div className="flex flex-col items-center gap-12 w-full">
-        <div className="relative">
-            <div className={`absolute inset-0 bg-duo-green/20 rounded-full blur-3xl transition-all duration-1000 ${state === 'speaking' ? 'opacity-100 scale-150' : 'opacity-0 scale-100'}`} />
-            <div className={`w-56 h-56 rounded-[3rem] border-4 border-duo-swan flex items-center justify-center bg-white relative z-10 transition-all duration-500 shadow-xl ${state === 'speaking' ? 'scale-105 border-duo-green shadow-duo-green/20' : 'scale-100'}`}>
-                {state === 'speaking' ? (
-                     <div className="w-32 h-32 flex items-center justify-center">
-                        <BarVisualizer trackRef={audioTrack} barCount={7} className="h-12 w-full text-duo-green" />
-                     </div>
-                ) : (
-                    <Bot className="h-24 w-24 text-duo-swan" />
-                )}
-            </div>
-            
-            <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 whitespace-nowrap">
-                <span className="text-xs font-black uppercase tracking-[0.4em] text-duo-wolf">
-                    {state === 'speaking' ? 'Speaking' : state === 'listening' ? 'Listening' : 'Thinking'}
-                </span>
-            </div>
+      <main className="flex flex-1 flex-col items-center justify-center gap-10 py-10 text-center">
+        <div className="relative flex size-56 items-center justify-center rounded-[2rem] border border-border/70 bg-background shadow-[0_24px_80px_rgba(0,0,0,0.08)] dark:shadow-[0_24px_90px_rgba(0,0,0,0.35)]">
+          <div
+            className={cn(
+              "absolute inset-8 rounded-full bg-primary/10 blur-3xl transition-all duration-700",
+              state === "speaking" ? "scale-125 opacity-100" : "scale-95 opacity-40",
+            )}
+          />
+          {state === "speaking" && audioTrack ? (
+            <BarVisualizer
+              state={state}
+              trackRef={audioTrack}
+              barCount={9}
+              className="relative z-10 h-20 w-36 text-primary"
+            />
+          ) : (
+            <Bot className="relative z-10 size-20 text-muted-foreground/50" />
+          )}
         </div>
-      </div>
 
-      <div className="w-full max-w-md flex flex-col items-center gap-8">
-        <div className="flex items-center gap-4">
-            <Button
-                variant="outline"
-                size="icon"
-                onClick={toggleMute}
-                className={`w-16 h-16 rounded-2xl border-2 transition-all duration-300 ${isMuted ? 'bg-duo-red/10 border-duo-red text-duo-red' : 'bg-white border-duo-swan text-duo-wolf hover:border-duo-green hover:text-duo-green'}`}
-            >
-                {isMuted ? <MicOff className="h-6 w-6" /> : <Mic className="h-6 w-6" />}
-            </Button>
-            
-            <Button
-                variant="destructive"
-                size="icon"
-                onClick={onEnd}
-                className="w-16 h-16 rounded-2xl border-b-4 active:border-b-0 active:translate-y-1 transition-all duration-100"
-            >
-                <PhoneOff className="h-6 w-6" />
-            </Button>
+        <div className="min-h-24 w-full max-w-2xl rounded-2xl border border-border/70 bg-muted/20 px-6 py-5 text-left">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+            Debo
+          </p>
+          <p className="mt-3 text-lg leading-8 text-foreground">
+            {latestAgentText || "Say something when you are ready."}
+          </p>
         </div>
-        
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-duo-swan">
-            {isMuted ? 'Microphone Muted' : 'Debo is listening'}
-        </p>
-      </div>
+      </main>
+
+      <footer className="flex items-center justify-center gap-3 pb-3">
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          onClick={toggleMute}
+          className={cn(
+            "size-14 rounded-2xl",
+            isMuted && "border-destructive/40 bg-destructive/10 text-destructive",
+          )}
+          aria-label={isMuted ? "Unmute microphone" : "Mute microphone"}
+        >
+          {isMuted ? <MicOff className="size-5" /> : <Mic className="size-5" />}
+        </Button>
+        <Button
+          type="button"
+          variant="destructive"
+          size="icon"
+          onClick={onEnd}
+          className="size-14 rounded-2xl"
+          aria-label="End voice session"
+        >
+          <PhoneOff className="size-5" />
+        </Button>
+      </footer>
     </div>
   );
 }

@@ -12,13 +12,6 @@ import {
 import { z } from "zod";
 
 import { getChatModel } from "@/lib/ai/openai";
-import MemoryClient from "mem0ai";
-
-function getMem0Client() {
-  const apiKey = process.env.MEM0_API_KEY;
-  if (!apiKey) throw new Error("MEM0_API_KEY is not configured.");
-  return new MemoryClient({ apiKey });
-}
 
 export const DEBO_SYSTEM_PROMPT = `You are Debo, a calm Jarvis-like personal intelligence assistant for journaling, memory, and reflection. You are the user's trusted cognitive layer - their second brain, their memory palace, their reflective companion.
 
@@ -32,6 +25,12 @@ PERSONALITY & VOICE:
 CORE IDENTITY:
 When asked who you are or what you do, respond like this:
 "I'm Debo - your personal intelligence layer. I remember what you tell me, connect patterns across your journals and experiences, and help you reflect on your life. Think of me as your memory palace and reflective companion."
+
+MEMORY SOURCE:
+- Your memory source is the same memory system the user manages at /dashboard/memories.
+- Use get_memories when personal context would help.
+- Use add_memory only when the user clearly asks you to remember something, or after they approve your offer to remember it.
+- Never store greetings, test messages, jokes, or throwaway chat as memories.
 
 STRATEGIC TOOL USAGE:
 CRITICAL: When the user asks about their past, preferences, experiences, or anything personal, you MUST first retrieve relevant data using search_journals, get_memories, or get_timeline before answering. Never claim to know something you haven't verified.
@@ -62,7 +61,7 @@ WHEN TO CREATE/UPDATE JOURNALS:
 
 WHEN TO ADD MEMORIES:
 - The user explicitly says "remember this" or "I want to remember"
-- You discover a significant durable fact about them
+- The user approves your offer to remember a significant durable fact
 - The user shares a preference, commitment, or important relationship
 - Ask permission: "Want me to remember that for future reference?"
 
@@ -116,6 +115,7 @@ type CreateToolOptions = {
 type MemoryResultItem = {
   id?: unknown;
   content?: unknown;
+  createdAt?: unknown;
   date?: unknown;
   label?: unknown;
   sourceType?: unknown;
@@ -246,7 +246,7 @@ export function createDeboRuntimeTools(userId: string, options: CreateToolOption
       },
     },
     addMemoryTool: {
-      description: "Add a durable memory fact or preference.",
+      description: "Add a durable memory fact or preference to the same store shown at /dashboard/memories. Only use after a clear user request or approval.",
       inputSchema: z.object({
         fact: z.string().min(1).describe("The memory to store."),
       }),
@@ -262,7 +262,7 @@ export function createDeboRuntimeTools(userId: string, options: CreateToolOption
         depth: z.enum(["brief", "detailed", "full"]).optional().default("detailed").describe("Detail level of the documentary."),
       }),
       execute: async (input: { focus?: string; depth?: "brief" | "detailed" | "full" }) => {
-        const { getRelevantMemories } = await import("@/lib/memory/query");
+        const { getMemories } = await import("@/actions/memories");
         const { getJournals } = await import("@/actions/journals");
         const { queryGraph } = await import("@/lib/life/graph");
         const { getLifeTimeline } = await import("@/lib/life/timeline");
@@ -271,14 +271,14 @@ export function createDeboRuntimeTools(userId: string, options: CreateToolOption
         const limit = depth === "brief" ? 10 : depth === "full" ? 100 : 30;
 
         // Get all data
-        const memories = await getRelevantMemories(userId, "");
+        const memories = await getMemories("", limit, 0, userId);
         const journals = await getJournals("desc", limit, 0, userId);
         const timeline = await getLifeTimeline(userId, "daily");
         const patterns = await queryGraph("What are the main patterns and important events in my life?", userId);
 
         // Build comprehensive documentary
         const content = buildLifeDocumentary({
-          memories: memories.items as Array<{ content?: unknown; label?: unknown; date?: unknown }>,
+          memories: (memories.success ? memories.data ?? [] : []) as Array<{ content?: unknown; sourceType?: unknown; createdAt?: unknown }>,
           journals: journals as Array<{ title?: unknown; content?: unknown; createdAt?: unknown; tags?: unknown }>,
           timeline: timeline as Array<{ date?: unknown; label?: unknown; summary?: unknown }>,
           patterns,
@@ -289,7 +289,7 @@ export function createDeboRuntimeTools(userId: string, options: CreateToolOption
         return {
           documentary: content,
           stats: {
-            memories: memories.items.length,
+            memories: memories.success ? memories.data?.length ?? 0 : 0,
             journals: journals.length,
             timelineDays: (timeline as Array<unknown>).length,
             topEmotions: patterns.topEmotions?.slice(0, 5).map((e: { name?: unknown }) => e.name) || [],
@@ -299,18 +299,20 @@ export function createDeboRuntimeTools(userId: string, options: CreateToolOption
       },
     },
     getMemoriesTool: {
-      description: "Query persistent memories and facts about the user.",
+      description: "Query persistent memories and facts about the user from the same store shown at /dashboard/memories.",
       inputSchema: z.object({
         query: z.string().optional().default(""),
         limit: z.coerce.number().min(1).max(20).optional().default(5),
       }),
       execute: async (input: { query?: string; limit?: number }) => {
-        const { getRelevantMemories } = await import("@/lib/memory/query");
-        const memories = await getRelevantMemories(userId, input.query ?? "");
-        return (memories.items as MemoryResultItem[]).slice(0, input.limit ?? 5).map((memory) => ({
+        const { getMemories } = await import("@/actions/memories");
+        const memories = await getMemories(input.query ?? "", input.limit ?? 5, 0, userId);
+        if (!memories.success) return { error: memories.error || "Unable to fetch memories" };
+
+        return ((memories.data ?? []) as MemoryResultItem[]).map((memory) => ({
           id: memory.id,
           content: memory.content,
-          date: memory.date,
+          date: memory.date || memory.createdAt,
           source: memory.label || memory.sourceType,
         }));
       },
@@ -572,19 +574,18 @@ export async function streamDeboChat(input: {
   
   let systemPrompt = DEBO_SYSTEM_PROMPT;
   
-  // Try to inject context from Mem0 based on the last message
+  // Inject context from the same memory store used by /dashboard/memories.
   try {
     const lastMessage = messages[messages.length - 1];
     if (lastMessage && lastMessage.role === "user") {
         const query = lastMessage.parts.map(p => p.type === 'text' ? p.text : '').join(' ');
         if (query) {
-            const client = getMem0Client();
-            const results = await client.search(query, { filters: { user_id: input.userId }, limit: 10 } as any);
-            const items = results.results || results || [];
-            const memoriesList = Array.isArray(items) ? items : [];
+            const { getMemories } = await import("@/actions/memories");
+            const memories = await getMemories(query, 10, 0, input.userId);
+            const memoriesList = memories.success ? memories.data ?? [] : [];
             
             if (memoriesList.length > 0) {
-                const contextStrs = memoriesList.map((m: any) => `- ${m.memory || m.content || m.text}`);
+                const contextStrs = memoriesList.map((m: any) => `- ${m.content}`);
                 systemPrompt += `\n\n### RELEVANT MEMORIES FOR THIS CONVERSATION:\n${contextStrs.join('\n')}\n(Use these facts about the user to personalize your response.)`;
             }
         }
@@ -706,7 +707,7 @@ function safeParse(value: string) {
 }
 
 type DocumentaryInput = {
-  memories: Array<{ content?: unknown; label?: unknown; date?: unknown }>;
+  memories: Array<{ content?: unknown; label?: unknown; sourceType?: unknown; date?: unknown; createdAt?: unknown }>;
   journals: Array<{ title?: unknown; content?: unknown; createdAt?: unknown; tags?: unknown }>;
   timeline: Array<{ date?: unknown; label?: unknown; summary?: unknown }>;
   patterns: { insights?: unknown[]; topEmotions?: unknown[] };
@@ -724,12 +725,16 @@ function buildLifeDocumentary(input: DocumentaryInput): string {
   sections.push("*Generated from your journal entries, memories, and patterns.*\n");
 
   // Identity & Key Facts
-  const facts = memories.filter(m => m.label === "fact" || m.label === "person");
+  const facts = memories.filter(m => {
+    const label = m.label || m.sourceType;
+    return label === "fact" || label === "person";
+  });
   if (facts.length > 0) {
     sections.push("## KEY FACTS ABOUT THE USER\n");
     facts.slice(0, 20).forEach(f => {
       const content = String(f.content || "");
-      const date = f.date ? new Date(String(f.date)).toLocaleDateString() : "";
+      const dateValue = f.date || f.createdAt;
+      const date = dateValue ? new Date(String(dateValue)).toLocaleDateString() : "";
       sections.push(`- **${content}**${date ? ` (${date})` : ""}\n`);
     });
     sections.push("\n");

@@ -4,11 +4,90 @@ import { resolveUserId } from "./auth-sync";
 import { cache } from "react";
 import { revalidatePath } from "next/cache";
 import MemoryClient from "mem0ai";
+import { db } from "@/db";
+import { memoryEntities, memoryFacts } from "@/db/schema";
+import { extractMemory } from "@/lib/memory/extract";
+import { getRelevantMemories, type RelevantMemory } from "@/lib/memory/query";
+import { storeMemory } from "@/lib/memory/store";
+import { eq } from "drizzle-orm";
+
+const LOCAL_FACT_PREFIX = "local:fact:";
+const LOCAL_ENTITY_PREFIX = "local:entity:";
+
+type DashboardMemory = {
+  id: string;
+  content: string;
+  source: string;
+  sourceType: string;
+  score: number;
+  createdAt?: string;
+};
 
 function getMem0Client() {
   const apiKey = process.env.MEM0_API_KEY;
-  if (!apiKey) throw new Error("MEM0_API_KEY is not configured.");
+  if (!apiKey) return null;
   return new MemoryClient({ apiKey });
+}
+
+function formatMem0Memory(memory: any): DashboardMemory | null {
+  const content = memory.memory || memory.content || memory.text;
+  if (typeof content !== "string" || !content.trim()) return null;
+
+  return {
+    id: String(memory.id),
+    content: content.trim(),
+    source: "Mem0",
+    sourceType: "fact",
+    score: Number(memory.score ?? 1),
+    createdAt: memory.created_at || memory.createdAt,
+  };
+}
+
+function formatLocalMemory(memory: RelevantMemory): DashboardMemory | null {
+  if (!memory.content?.trim()) return null;
+  const prefix = memory.source === "entity" ? LOCAL_ENTITY_PREFIX : LOCAL_FACT_PREFIX;
+
+  return {
+    id: `${prefix}${memory.id}`,
+    content: memory.content,
+    source: "Debo",
+    sourceType: memory.sourceType,
+    score: memory.score,
+    createdAt: memory.date,
+  };
+}
+
+function mergeMemories(mem0Items: DashboardMemory[], localItems: DashboardMemory[]) {
+  const byContent = new Map<string, DashboardMemory>();
+
+  for (const item of [...mem0Items, ...localItems]) {
+    const key = item.content.toLowerCase().replace(/\s+/g, " ").trim();
+    const existing = byContent.get(key);
+    if (!existing || item.score > existing.score || existing.source !== "Mem0") {
+      byContent.set(key, item);
+    }
+  }
+
+  return Array.from(byContent.values()).sort((left, right) => {
+    const scoreDelta = right.score - left.score;
+    if (Math.abs(scoreDelta) > 0.01) return scoreDelta;
+
+    const leftDate = left.createdAt ? new Date(left.createdAt).getTime() : 0;
+    const rightDate = right.createdAt ? new Date(right.createdAt).getTime() : 0;
+    return rightDate - leftDate;
+  });
+}
+
+function parseLocalMemoryId(memoryId: string) {
+  if (memoryId.startsWith(LOCAL_FACT_PREFIX)) {
+    return { table: "fact" as const, id: memoryId.slice(LOCAL_FACT_PREFIX.length) };
+  }
+
+  if (memoryId.startsWith(LOCAL_ENTITY_PREFIX)) {
+    return { table: "entity" as const, id: memoryId.slice(LOCAL_ENTITY_PREFIX.length) };
+  }
+
+  return null;
 }
 
 export const getMemories = cache(async (query: string = "", limit: number = 20, offset: number = 0, userId?: string) => {
@@ -16,34 +95,39 @@ export const getMemories = cache(async (query: string = "", limit: number = 20, 
   if (!resolvedUserId) return { success: false, error: "Unauthorized" };
 
   try {
+    const normalizedQuery = query.trim();
     const client = getMem0Client();
-    
-    let items = [];
-    if (query.trim() === "") {
-        const results = await client.getAll({ filters: { user_id: resolvedUserId } } as any);
-        items = results.results || results || [];
-        if (Array.isArray(results)) {
-            items = results;
+
+    let mem0Items: DashboardMemory[] = [];
+    if (client) {
+      try {
+        let items = [];
+        if (normalizedQuery === "") {
+          const results = await client.getAll({ filters: { user_id: resolvedUserId } } as any);
+          items = Array.isArray(results) ? results : results.results || [];
+        } else {
+          const results = await client.search(normalizedQuery, {
+            filters: { user_id: resolvedUserId },
+            limit: Math.max(limit + offset, 20),
+          } as any);
+          items = Array.isArray(results) ? results : results.results || [];
         }
-    } else {
-        const results = await client.search(query, { filters: { user_id: resolvedUserId } } as any);
-        items = results.results || results || [];
+
+        mem0Items = items.map(formatMem0Memory).filter(Boolean) as DashboardMemory[];
+      } catch (error) {
+        console.warn("Mem0 fetch failed, using local memories:", error);
+      }
     }
-    
-    const formattedData = Array.isArray(items) ? items.slice(offset, offset + limit).map((memory: any) => ({
-      id: memory.id,
-      content: memory.memory || memory.content || memory.text,
-      source: "Mem0",
-      sourceType: "user",
-      score: memory.score || 1.0,
-      createdAt: memory.created_at || memory.createdAt,
-    })) : [];
+
+    const local = await getRelevantMemories(resolvedUserId, normalizedQuery, 100, 0);
+    const localItems = local.items.map(formatLocalMemory).filter(Boolean) as DashboardMemory[];
+    const combined = mergeMemories(mem0Items, localItems);
 
     return {
       success: true,
-      data: formattedData,
-      totalCount: formattedData.length,
-      insights: [],
+      data: combined.slice(offset, offset + limit),
+      totalCount: combined.length,
+      insights: local.insights,
     };
   } catch (error) {
     console.error("Fetch memories error:", error);
@@ -56,7 +140,22 @@ export async function deleteMemory(memoryId: string, userId?: string) {
   if (!resolvedUserId) return { success: false, error: "Unauthorized" };
 
   try {
+    const local = parseLocalMemoryId(memoryId);
+    if (local?.table === "fact") {
+      await db.delete(memoryFacts).where(eq(memoryFacts.id, local.id));
+      revalidatePath("/dashboard/memories");
+      return { success: true };
+    }
+
+    if (local?.table === "entity") {
+      await db.delete(memoryEntities).where(eq(memoryEntities.id, local.id));
+      revalidatePath("/dashboard/memories");
+      return { success: true };
+    }
+
     const client = getMem0Client();
+    if (!client) return { success: false, error: "MEM0_API_KEY is not configured" };
+
     await client.delete(memoryId);
 
     revalidatePath("/dashboard/memories");
@@ -72,7 +171,27 @@ export async function getMemory(memoryId: string, userId?: string) {
   if (!resolvedUserId) return { success: false, error: "Unauthorized" };
 
   try {
+    const local = parseLocalMemoryId(memoryId);
+    if (local) {
+      const memory = local.table === "fact"
+        ? await db.query.memoryFacts.findFirst({ where: eq(memoryFacts.id, local.id) })
+        : await db.query.memoryEntities.findFirst({ where: eq(memoryEntities.id, local.id) });
+
+      if (memory) {
+        return {
+          success: true,
+          data: {
+            ...memory,
+            content: "content" in memory ? memory.content : memory.name,
+            kind: local.table,
+          },
+        };
+      }
+    }
+
     const client = getMem0Client();
+    if (!client) return { success: false, error: "MEM0_API_KEY is not configured" };
+
     const memory = await client.get(memoryId);
     
     if (memory) {
@@ -91,8 +210,28 @@ export async function updateMemory(memoryId: string, content: string, userId?: s
   if (!resolvedUserId) return { success: false, error: "Unauthorized" };
 
   try {
+    const local = parseLocalMemoryId(memoryId);
+    if (local?.table === "fact") {
+      await db.update(memoryFacts).set({ content }).where(eq(memoryFacts.id, local.id));
+      revalidatePath("/dashboard/memories");
+      return { success: true, data: memoryId };
+    }
+
+    if (local?.table === "entity") {
+      await db.update(memoryEntities).set({
+        name: content,
+        normalizedName: content.replace(/\s+/g, " ").trim().toLowerCase(),
+        updatedAt: new Date(),
+      }).where(eq(memoryEntities.id, local.id));
+      revalidatePath("/dashboard/memories");
+      return { success: true, data: memoryId };
+    }
+
     const client = getMem0Client();
+    if (!client) return { success: false, error: "MEM0_API_KEY is not configured" };
+
     await client.update(memoryId, { text: content });
+    await storeMemory(resolvedUserId, await extractMemory(content));
 
     revalidatePath("/dashboard/memories");
     return { success: true, data: memoryId };
@@ -107,10 +246,24 @@ export async function addMemory(fact: string, userId?: string) {
   if (!resolvedUserId) return { success: false, error: "Unauthorized" };
 
   try {
+    const cleanFact = fact.replace(/\s+/g, " ").trim();
+    if (!cleanFact) return { success: false, error: "Memory cannot be empty" };
+
     const client = getMem0Client();
-    const result = await client.add([{ role: "user" as const, content: fact }], { user_id: resolvedUserId } as any);
+    let result: unknown = null;
+
+    if (client) {
+      try {
+        result = await client.add([{ role: "user" as const, content: cleanFact }], { user_id: resolvedUserId } as any);
+      } catch (error) {
+        console.warn("Mem0 add failed, storing locally:", error);
+      }
+    }
+
+    const localResult = await storeMemory(resolvedUserId, await extractMemory(cleanFact));
+
     revalidatePath("/dashboard/memories");
-    return { success: true, data: result };
+    return { success: true, data: { mem0: result, local: localResult } };
   } catch (error) {
     console.error("Add memory error:", error);
     return { success: false, error: "Failed to store memory" };
@@ -126,13 +279,23 @@ export async function importMemories(jsonContent: string) {
     if (!Array.isArray(data))
       throw new Error("Invalid format. Expected an array of facts.");
 
-    const client = getMem0Client();
     const messages = data.map(item => ({
         role: "user" as const,
         content: typeof item === "string" ? item : item.content || item.fact || JSON.stringify(item)
     }));
 
-    await client.add(messages, { user_id: userId } as any);
+    const client = getMem0Client();
+    if (client) {
+      try {
+        await client.add(messages, { user_id: userId } as any);
+      } catch (error) {
+        console.warn("Mem0 import failed, storing locally:", error);
+      }
+    }
+
+    for (const message of messages) {
+      await storeMemory(userId, await extractMemory(message.content));
+    }
 
     revalidatePath("/dashboard/memories");
     return { success: true };

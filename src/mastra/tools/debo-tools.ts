@@ -23,6 +23,7 @@ type DeboToolContext = {
 type MemoryResultItem = {
   id?: unknown;
   content?: unknown;
+  createdAt?: unknown;
   date?: unknown;
   label?: unknown;
   sourceType?: unknown;
@@ -147,7 +148,7 @@ export const searchJournalsTool = createTool({
 
 export const addMemoryTool = createTool({
   id: 'add_memory',
-  description: 'Add a new memory fact or preference.',
+  description: 'Add a new memory fact or preference to the same store shown at /dashboard/memories. Only use after a clear user request or approval.',
   inputSchema: z.object({
     fact: z.string().describe('The memory content to store.'),
   }),
@@ -160,21 +161,23 @@ export const addMemoryTool = createTool({
 
 export const getMemoriesTool = createTool({
   id: 'get_memories',
-  description: 'Query persistent memories and facts about the user.',
+  description: 'Query persistent memories and facts about the user from the same store shown at /dashboard/memories.',
   inputSchema: z.object({
     query: z.string().optional().default('').describe('Optional memory search query.'),
     limit: z.coerce.number().optional().default(5).describe('Maximum number of memories to return.'),
   }),
   execute: async (input, context) => {
-    const { getRelevantMemories } = await import('@/lib/memory/query');
+    const { getMemories } = await import('@/actions/memories');
     const userId = requireUserId(context);
     const query = typeof input.query === 'string' ? input.query : '';
     const limit = typeof input.limit === 'number' ? input.limit : 5;
-    const memories = await getRelevantMemories(userId, query);
-    return (memories.items as MemoryResultItem[]).slice(0, limit).map((memory) => ({
+    const memories = await getMemories(query, limit, 0, userId);
+    if (!memories.success) return { error: memories.error || 'Unable to fetch memories' };
+
+    return ((memories.data ?? []) as MemoryResultItem[]).map((memory) => ({
       id: memory.id,
       content: memory.content,
-      date: memory.date,
+      date: memory.date || memory.createdAt,
       source: memory.label || memory.sourceType,
     }));
   },

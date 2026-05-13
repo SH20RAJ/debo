@@ -12,7 +12,6 @@ import {
   Zap,
   BarChart3,
   Plug,
-  Clock,
   Terminal,
   Radio,
 } from "lucide-react"
@@ -49,7 +48,6 @@ const mainItems: NavItem[] = [
   { title: "Chat", href: "/dashboard/chat", icon: MessageSquareText },
   { title: "Journals", href: "/dashboard/journals", icon: Library },
   { title: "Memories", href: "/dashboard/memories", icon: Database },
-  { title: "Timeline", href: "/dashboard/timeline", icon: Clock },
 ];
 
 const toolItems: NavItem[] = [

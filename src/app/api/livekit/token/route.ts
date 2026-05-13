@@ -1,10 +1,18 @@
-import { AccessToken } from "livekit-server-sdk";
+import { AccessToken, AgentDispatchClient } from "livekit-server-sdk";
 import { NextRequest, NextResponse } from "next/server";
 import { stackServerApp } from "@/stack/server";
 import { resolveUserId } from "@/actions/auth-sync";
 
+export const dynamic = "force-dynamic";
+
 function toRoomSafeId(value: string) {
   return value.replace(/[^a-zA-Z0-9_-]/g, "-").slice(0, 72);
+}
+
+function toHttpLiveKitUrl(value: string) {
+  if (value.startsWith("wss://")) return value.replace("wss://", "https://");
+  if (value.startsWith("ws://")) return value.replace("ws://", "http://");
+  return value;
 }
 
 export async function GET(req: NextRequest) {
@@ -17,6 +25,11 @@ export async function GET(req: NextRequest) {
     const user = await stackServerApp.getUser();
     const participantName = user?.displayName || "Debo User";
     const participantIdentity = toRoomSafeId(userId);
+    const metadata = JSON.stringify({
+      userId,
+      displayName: participantName,
+      source: "dashboard-talk",
+    });
 
     const requestedRoom = req.nextUrl.searchParams.get("room");
     const roomName = requestedRoom
@@ -38,6 +51,10 @@ export async function GET(req: NextRequest) {
       identity: participantIdentity,
       name: participantName,
       ttl: "10m",
+      metadata,
+      attributes: {
+        "debo.userId": userId,
+      },
     });
 
     at.addGrant({
@@ -49,10 +66,21 @@ export async function GET(req: NextRequest) {
       canPublishData: true,
     });
 
+    let dispatchId: string | undefined;
+    try {
+      const dispatchClient = new AgentDispatchClient(toHttpLiveKitUrl(serverUrl), apiKey, apiSecret);
+      const dispatch = await dispatchClient.createDispatch(roomName, "debo-voice", { metadata });
+      dispatchId = dispatch.id;
+    } catch (error) {
+      console.warn("[LiveKit] Agent dispatch failed. The room can still connect if an agent worker auto-dispatches:", error);
+    }
+
     return NextResponse.json({
       token: await at.toJwt(),
       serverUrl,
       roomName,
+      participantName,
+      dispatchId,
     });
   } catch (error) {
     console.error("Error generating LiveKit token:", error);
