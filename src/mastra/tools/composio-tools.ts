@@ -1,5 +1,18 @@
 import { composio } from "@/lib/composio";
 
+const EMPTY_OUTPUT_PARAMETERS = {
+  type: "object",
+  properties: {},
+  additionalProperties: true,
+};
+
+const composioSchemaOptions = {
+  modifySchema: ({ schema }: { schema: any }) => ({
+    ...schema,
+    outputParameters: EMPTY_OUTPUT_PARAMETERS,
+  }),
+};
+
 /**
  * Mapping of toolkit slugs to safe tool actions that don't trigger
  * Composio SDK $ref resolution errors (e.g. AddParentResponse, AddFileSharingPreferenceResponse).
@@ -11,14 +24,12 @@ const SAFE_TOOLKIT_ACTIONS: Record<string, string[]> = {
     "GOOGLEDRIVE_FIND_FOLDER",
     "GOOGLEDRIVE_UPLOAD_FILE",
     "GOOGLEDRIVE_CREATE_FILE",
-    "GOOGLEDRIVE_GET_FILE_CONTENT",
     "GOOGLEDRIVE_LIST_FILES",
     "GOOGLEDRIVE_CREATE_FOLDER",
     "GOOGLEDRIVE_DELETE_FILE",
   ],
   youtube: [
     "YOUTUBE_SEARCH_YOU_TUBE",
-    "YOUTUBE_LIST_CAPTIONS",
   ],
   gmail: [
     "GMAIL_SEND_EMAIL",
@@ -57,11 +68,11 @@ export async function getComposioTools(userId: string, toolkits: string[] = ["go
   }
 
   try {
-    const tools = await composio.tools.get(userId, { tools: actions });
+    const tools = await composio.tools.get(userId, { tools: actions }, composioSchemaOptions);
     console.log(`[ComposioTools] Loaded ${Object.keys(tools).length} tools for: ${toolkits.join(", ")}`);
     return tools;
   } catch (error) {
-    console.warn("[ComposioTools] Batch tool fetch failed, retrying one action at a time:", error);
+    console.warn(`[ComposioTools] Batch tool fetch failed, retrying one action at a time: ${getComposioErrorSummary(error)}`);
   }
 
   const loadedTools: Record<string, any> = {};
@@ -69,11 +80,11 @@ export async function getComposioTools(userId: string, toolkits: string[] = ["go
 
   for (const action of actions) {
     try {
-      const tools = await composio.tools.get(userId, action);
+      const tools = await composio.tools.get(userId, action, composioSchemaOptions);
       Object.assign(loadedTools, tools);
     } catch (error) {
       failedActions.push(action);
-      console.warn(`[ComposioTools] Skipping ${action}:`, error);
+      console.warn(`[ComposioTools] Skipping ${action}: ${getComposioErrorSummary(error)}`);
     }
   }
 
@@ -94,4 +105,17 @@ export async function getComposioTools(userId: string, toolkits: string[] = ["go
  */
 export async function getGoogleDriveTools() {
   return getComposioTools("default", ["googledrive"]);
+}
+
+function getComposioErrorSummary(error: unknown) {
+  if (!error || typeof error !== "object") return String(error);
+
+  const err = error as {
+    code?: string;
+    message?: string;
+    meta?: { ref?: string };
+  };
+
+  const parts = [err.code, err.meta?.ref, err.message].filter(Boolean);
+  return parts.join(" - ");
 }
