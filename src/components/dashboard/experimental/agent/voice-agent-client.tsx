@@ -62,7 +62,7 @@ export function VoiceAgentClient() {
             size="lg" 
             onClick={startSession} 
             disabled={isConnecting}
-            variant="duolingo"
+            variant="default"
             className="w-full h-20 text-xl rounded-3xl shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
           >
             {isConnecting ? (

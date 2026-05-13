@@ -145,7 +145,7 @@ const ThreadSuggestionItem: FC = () => {
     <div className="aui-thread-welcome-suggestion-display fade-in slide-in-from-bottom-2 @md:nth-[n+3]:block nth-[n+3]:hidden animate-in fill-mode-both duration-200">
       <SuggestionPrimitive.Trigger send asChild>
         <Button
-          variant="duolingo-outline"
+          variant="outline"
           className="aui-thread-welcome-suggestion h-auto w-full @md:flex-col flex-wrap items-start justify-start gap-1 rounded-[1.5rem] border-2 px-6 py-4 text-start text-sm"
         >
           <SuggestionPrimitive.Title className="font-black text-duo-eel text-sm" />
@@ -187,7 +187,7 @@ const ComposerAction: FC = () => {
         <ComposerPrimitive.Send asChild>
           <Button
             type="button"
-            variant="duolingo-macaw"
+            variant="default"
             size="icon"
             className="aui-composer-send size-10 rounded-xl"
             aria-label="Send message"
@@ -200,7 +200,7 @@ const ComposerAction: FC = () => {
         <ComposerPrimitive.Cancel asChild>
           <Button
             type="button"
-            variant="duolingo-cardinal"
+            variant="default"
             size="icon"
             className="aui-composer-cancel size-10 rounded-xl"
             aria-label="Stop generating"

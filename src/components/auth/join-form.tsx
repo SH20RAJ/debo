@@ -27,7 +27,7 @@ export function JoinForm() {
       <div className="w-full space-y-10">
         <div className="w-full">
           <div className="[&_button]:!h-14 [&_button]:!rounded-xl [&_button]:!text-sm [&_button]:!font-bold [&_button]:!uppercase [&_button]:!tracking-widest [&_button]:!border-border/50 [&_button]:!bg-card [&_button]:!text-foreground [&_button]:hover:!bg-primary/5 [&_button]:hover:!border-primary/20 [&_button]:!transition-all [&_button]:active:!scale-95">
-            <OAuthButtonGroup />
+            <OAuthButtonGroup type="sign-up" />
           </div>
         </div>
       </div>

@@ -59,7 +59,7 @@ export async function getComposioTools(userId: string, toolkits: string[] = ["go
 
   try {
     const tools = await composio.tools.get("default", {
-      actions,
+      tools: actions,
     });
     console.log(`[ComposioTools] Loaded ${Object.keys(tools).length} tools for: ${toolkits.join(", ")}`);
     return tools;

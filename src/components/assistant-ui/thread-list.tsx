@@ -34,7 +34,7 @@ const ThreadListNew: FC = () => {
   return (
     <ThreadListPrimitive.New asChild>
       <Button
-        variant="duolingo-outline"
+        variant="outline"
         className="aui-thread-list-new h-12 justify-start gap-3 rounded-2xl px-4 text-xs font-black uppercase tracking-widest shadow-none hover:shadow-[0_4px_0_var(--duo-swan)]"
       >
         <PlusIcon className="size-5 stroke-[3]" />

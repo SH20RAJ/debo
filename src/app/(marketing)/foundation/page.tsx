@@ -38,7 +38,7 @@ export default function FoundationPage() {
               We believe that technology should serve humanity. Our mission extends beyond bits and bytes into the physical world.
             </p>
             <div className="flex justify-center pt-4">
-              <Button asChild variant="duolingo" size="lg" className="rounded-2xl px-12">
+              <Button asChild variant="default" size="lg" className="rounded-2xl px-12">
                 <Link href="https://dodo.pe/debo" target="_blank" rel="noopener noreferrer">
                   Support the Vision
                   <ExternalLink className="ml-2 h-5 w-5" />
@@ -113,7 +113,7 @@ export default function FoundationPage() {
               </div>
 
               <div className="pt-8">
-                <Button asChild variant="duolingo-outline" size="lg" className="w-full sm:w-auto px-8">
+                <Button asChild variant="default" size="lg" className="w-full sm:w-auto px-8">
                   <Link href="https://dodo.pe/debo" target="_blank" rel="noopener noreferrer">
                     Support our Foundation
                   </Link>
