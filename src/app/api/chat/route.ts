@@ -2,7 +2,7 @@ import { mastra } from "@/mastra";
 import { stackServerApp } from "@/stack/server";
 import { MASTRA_RESOURCE_ID_KEY, MASTRA_THREAD_ID_KEY, RequestContext } from "@mastra/core/request-context";
 import { handleChatStream } from "@mastra/ai-sdk";
-import { createAssistantStreamResponse } from "assistant-stream";
+import { createUIMessageStreamResponse } from "ai";
 
 export const maxDuration = 30;
 
@@ -48,45 +48,20 @@ export async function POST(req: Request) {
     console.warn("[Chat] Composio tools unavailable, continuing without them:", error);
   }
 
-  return createAssistantStreamResponse(async (controller) => {
-    const stream = await handleChatStream({
-      mastra,
-      agentId: "debo",
-      version: "v6",
-      params: {
-        messages,
-        memory: {
-          thread: { id: threadId },
-          resource: userId,
-        },
-        toolsets: Object.keys(dynamicTools).length > 0 ? { composio: dynamicTools } : undefined,
-        requestContext,
-      } as any,
-    });
-
-    const reader = stream.getReader();
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      
-      const part = value as any;
-      
-      // Map AI SDK parts to assistant-stream chunks
-      switch (part.type) {
-        case "text-delta":
-          controller.appendText(part.delta);
-          break;
-        case "tool-call":
-          controller.addToolCallPart({
-            toolCallId: part.toolCallId,
-            toolName: part.toolName,
-            args: part.args,
-          });
-          break;
-        case "error":
-          console.error("[Chat] Stream part error:", part.error || part.errorText);
-          break;
-      }
-    }
+  const stream = await handleChatStream({
+    mastra,
+    agentId: "debo",
+    version: "v6",
+    params: {
+      messages,
+      memory: {
+        thread: { id: threadId },
+        resource: userId,
+      },
+      toolsets: Object.keys(dynamicTools).length > 0 ? { composio: dynamicTools } : undefined,
+      requestContext,
+    } as any,
   });
+
+  return createUIMessageStreamResponse({ stream });
 }
