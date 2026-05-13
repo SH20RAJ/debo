@@ -5,6 +5,8 @@ const CREATE_SERVER_BUNDLE_PATH =
   "/@opennextjs/aws/dist/build/createServerBundle.js";
 const CLOUDFLARE_CREATE_SERVER_BUNDLE_PATH =
   "/@opennextjs/cloudflare/dist/cli/build/open-next/createServerBundle.js";
+const BUNDLE_NEXT_SERVER_PATH =
+  "/@opennextjs/aws/dist/build/bundleNextServer.js";
 const ORIGINAL_MATCHES = `const matches = once
         ? [root.find(ruleConfig)].filter((m) => m !== null)
         : root.findAll(ruleConfig);`;
@@ -18,10 +20,13 @@ const PATCHED_RETURN = "return node.commitEdits(edits) ?? code;";
 const ORIGINAL_SERVER_EXTERNALS =
   'external: ["next", "./middleware.mjs", "./next-server.runtime.prod.js"],';
 const PATCHED_SERVER_EXTERNALS =
-  'external: ["next", "./middleware.mjs", "./next-server.runtime.prod.js", "@ast-grep/napi", "@ast-grep/napi-*", "@ast-grep/napi-darwin-arm64", "@ast-grep/napi-darwin-x64", "@ast-grep/napi-linux-x64-gnu", "@ast-grep/napi-linux-arm64-gnu", "xxhash-wasm", "@mastra/core", "@mastra/ai-sdk"],';
+  'external: ["next", "./middleware.mjs", "./next-server.runtime.prod.js", "@ast-grep/napi", "@ast-grep/napi-*", "@ast-grep/napi-darwin-arm64", "@ast-grep/napi-darwin-x64", "@ast-grep/napi-linux-x64-gnu", "@ast-grep/napi-linux-arm64-gnu", "xxhash-wasm", "xxhash-wasm/*", "@mastra/*"],';
 const ORIGINAL_CLOUDFLARE_SERVER_EXTERNALS = 'external: ["./middleware.mjs"],';
 const PATCHED_CLOUDFLARE_SERVER_EXTERNALS =
-  'external: ["./middleware.mjs", "@ast-grep/napi", "@ast-grep/napi-*", "@ast-grep/napi-darwin-arm64", "@ast-grep/napi-darwin-x64", "@ast-grep/napi-linux-x64-gnu", "@ast-grep/napi-linux-arm64-gnu", "xxhash-wasm", "@mastra/core", "@mastra/ai-sdk"],';
+  'external: ["./middleware.mjs", "@ast-grep/napi", "@ast-grep/napi-*", "@ast-grep/napi-darwin-arm64", "@ast-grep/napi-darwin-x64", "@ast-grep/napi-linux-x64-gnu", "@ast-grep/napi-linux-arm64-gnu", "xxhash-wasm", "xxhash-wasm/*", "@mastra/*"],';
+const ORIGINAL_NEXT_SERVER_EXTERNALS = "const externals = [";
+const PATCHED_NEXT_SERVER_EXTERNALS = 'const externals = ["@ast-grep/napi", "@ast-grep/napi-*", "@ast-grep/napi-darwin-arm64", "@ast-grep/napi-darwin-x64", "@ast-grep/napi-linux-x64-gnu", "@ast-grep/napi-linux-arm64-gnu", "xxhash-wasm", "xxhash-wasm/*", "@mastra/*", ';
+
 const BUILD_LAMBDA_MARKER = "    // Build Lambda code";
 const AST_GREP_STUB = String.raw`
     {
@@ -47,7 +52,8 @@ export async function load(url, context, nextLoad) {
     url.endsWith(AST_PATCHER_PATH) ||
     url.endsWith(DYNAMIC_REQUIRES_PATH) ||
     url.endsWith(CREATE_SERVER_BUNDLE_PATH) ||
-    url.endsWith(CLOUDFLARE_CREATE_SERVER_BUNDLE_PATH);
+    url.endsWith(CLOUDFLARE_CREATE_SERVER_BUNDLE_PATH) ||
+    url.endsWith(BUNDLE_NEXT_SERVER_PATH);
 
   if (isPatchTarget) {
     console.log(`[AST Patch] Targeted file: ${url}`);
@@ -91,6 +97,12 @@ export async function load(url, context, nextLoad) {
             )
             .replace(BUILD_LAMBDA_MARKER, `${AST_GREP_STUB}${BUILD_LAMBDA_MARKER}`);
     console.log(`[AST Patch] Patched CLOUDFLARE_CREATE_SERVER_BUNDLE_PATH: ${patchedSource !== source}`);
+  } else if (url.endsWith(BUNDLE_NEXT_SERVER_PATH)) {
+    patchedSource = source.replace(
+      ORIGINAL_NEXT_SERVER_EXTERNALS,
+      PATCHED_NEXT_SERVER_EXTERNALS
+    );
+    console.log(`[AST Patch] Patched BUNDLE_NEXT_SERVER_PATH: ${patchedSource !== source}`);
   } else {
     patchedSource = source.replaceAll(
             "function requirePage($PAGE, $DIST_DIR, $IS_APP_PATH)",

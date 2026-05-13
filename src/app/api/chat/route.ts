@@ -59,7 +59,7 @@ export async function POST(req: Request) {
           thread: { id: threadId },
           resource: userId,
         },
-        clientTools: Object.keys(dynamicTools).length > 0 ? dynamicTools : undefined,
+        toolsets: Object.keys(dynamicTools).length > 0 ? { composio: dynamicTools } : undefined,
         requestContext,
       } as any,
     });

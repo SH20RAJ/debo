@@ -14,7 +14,6 @@ const SAFE_TOOLKIT_ACTIONS: Record<string, string[]> = {
     "GOOGLEDRIVE_GET_FILE_CONTENT",
     "GOOGLEDRIVE_LIST_FILES",
     "GOOGLEDRIVE_CREATE_FOLDER",
-    "GOOGLEDRIVE_COPY_FILE",
     "GOOGLEDRIVE_DELETE_FILE",
   ],
   youtube: [
@@ -58,15 +57,35 @@ export async function getComposioTools(userId: string, toolkits: string[] = ["go
   }
 
   try {
-    const tools = await composio.tools.get("default", {
-      tools: actions,
-    });
+    const tools = await composio.tools.get(userId, { tools: actions });
     console.log(`[ComposioTools] Loaded ${Object.keys(tools).length} tools for: ${toolkits.join(", ")}`);
     return tools;
   } catch (error) {
-    console.error("[ComposioTools] Failed to fetch tools:", error);
-    return {};
+    console.warn("[ComposioTools] Batch tool fetch failed, retrying one action at a time:", error);
   }
+
+  const loadedTools: Record<string, any> = {};
+  const failedActions: string[] = [];
+
+  for (const action of actions) {
+    try {
+      const tools = await composio.tools.get(userId, action);
+      Object.assign(loadedTools, tools);
+    } catch (error) {
+      failedActions.push(action);
+      console.warn(`[ComposioTools] Skipping ${action}:`, error);
+    }
+  }
+
+  if (failedActions.length > 0) {
+    console.warn(`[ComposioTools] Skipped ${failedActions.length} tools: ${failedActions.join(", ")}`);
+  }
+
+  const toolCount = Object.keys(loadedTools).length;
+  if (toolCount === 0) return {};
+
+  console.log(`[ComposioTools] Loaded ${toolCount} tools for: ${toolkits.join(", ")}`);
+  return loadedTools;
 }
 
 /**
