@@ -7,8 +7,6 @@ import { eq, desc, asc, and, count } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { cache } from "react";
 import { logDatabaseIssue } from "@/lib/db/errors";
-import { composio } from "@/lib/composio";
-import { getComposioActiveApps } from "./composio";
 import fs from "fs";
 import path from "path";
 import os from "os";
@@ -47,13 +45,18 @@ function sanitizeDriveName(value: string) {
         .slice(0, 120) || "Untitled";
 }
 
-async function findDriveFolder(userId: string, name: string, parentId?: string) {
-    const result = await (composio.tools.execute as any)("GOOGLEDRIVE_FIND_FOLDER", {
+async function executeDriveTool(userId: string, toolSlug: string, args: Record<string, unknown>) {
+    const { composio } = await import("@/lib/composio");
+    return await (composio.tools.execute as any)(toolSlug, {
         userId,
-        arguments: {
-            name_exact: name,
-            ...(parentId ? { parent_folder_id: parentId } : {}),
-        },
+        arguments: args,
+    });
+}
+
+async function findDriveFolder(userId: string, name: string, parentId?: string) {
+    const result = await executeDriveTool(userId, "GOOGLEDRIVE_FIND_FOLDER", {
+        name_exact: name,
+        ...(parentId ? { parent_folder_id: parentId } : {}),
     });
 
     return extractDriveItems(result).find((item) => item?.id);
@@ -64,12 +67,9 @@ async function ensureDriveFolder(userId: string, name: string, parentId?: string
     const existing = await findDriveFolder(userId, cleanName, parentId);
     if (existing?.id) return existing.id as string;
 
-    const result = await (composio.tools.execute as any)("GOOGLEDRIVE_CREATE_FOLDER", {
-        userId,
-        arguments: {
-            name: cleanName,
-            ...(parentId ? { parent_id: parentId } : {}),
-        },
+    const result = await executeDriveTool(userId, "GOOGLEDRIVE_CREATE_FOLDER", {
+        name: cleanName,
+        ...(parentId ? { parent_id: parentId } : {}),
     });
 
     const created = extractDriveFile(result);
@@ -105,6 +105,7 @@ export async function uploadMediaToDrive(formData: FormData) : Promise<DriveUplo
         }
 
         // 0. Verify Google Drive connection
+        const { getComposioActiveApps } = await import("./composio");
         const activeApps = await getComposioActiveApps();
         if (!activeApps.some(app => app.slug === "googledrive")) {
             return { success: false, error: "Google Drive is not connected via Composio" };
@@ -123,12 +124,9 @@ export async function uploadMediaToDrive(formData: FormData) : Promise<DriveUplo
         await fs.promises.writeFile(tempFilePath, buffer);
 
         try {
-            const uploadResult = await (composio.tools.execute as any)("GOOGLEDRIVE_UPLOAD_FILE", {
-                userId: resolvedUserId,
-                arguments: {
-                    file_to_upload: tempFilePath,
-                    folder_to_upload_to: folderId
-                }
+            const uploadResult = await executeDriveTool(resolvedUserId, "GOOGLEDRIVE_UPLOAD_FILE", {
+                file_to_upload: tempFilePath,
+                folder_to_upload_to: folderId
             });
 
             const driveData = extractDriveFile(uploadResult);
@@ -140,7 +138,7 @@ export async function uploadMediaToDrive(formData: FormData) : Promise<DriveUplo
             return {
                 success: true,
                 driveFileId: driveData.id,
-                driveWebUrl: driveData.webViewLink,
+                driveWebUrl: driveData.webViewLink || driveData.webContentLink || `https://drive.google.com/file/d/${driveData.id}/view`,
                 folderId,
                 folderPath,
             };
@@ -148,7 +146,7 @@ export async function uploadMediaToDrive(formData: FormData) : Promise<DriveUplo
             try {
                 await fs.promises.unlink(tempFilePath);
                 await fs.promises.rmdir(tempDir);
-            } catch (err) {
+            } catch {
                 console.warn("[DriveUpload] Failed to clean temporary file:", tempFilePath);
             }
         }

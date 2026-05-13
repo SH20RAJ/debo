@@ -7,6 +7,25 @@ import { cn } from "@/lib/utils";
 
 type MediaKind = "audio" | "video";
 
+function getDriveFileId(url?: string) {
+    if (!url) return null;
+
+    const pathMatch = url.match(/\/d\/([^/]+)/);
+    if (pathMatch?.[1]) return pathMatch[1];
+
+    try {
+        return new URL(url).searchParams.get("id");
+    } catch {
+        return null;
+    }
+}
+
+function getDrivePreviewUrl(url?: string) {
+    const fileId = getDriveFileId(url);
+    if (fileId) return `https://drive.google.com/file/d/${fileId}/preview`;
+    return url?.replace("/view", "/preview");
+}
+
 export function MediaJournalView({
     id,
     type,
@@ -23,6 +42,7 @@ export function MediaJournalView({
     createdAt: Date;
 }) {
     const router = useRouter();
+    const drivePreviewUrl = getDrivePreviewUrl(driveWebUrl);
 
     return (
         <div className="w-full flex flex-col min-h-screen bg-background">
@@ -71,9 +91,9 @@ export function MediaJournalView({
                     {/* Media Player Card */}
                     <div className="relative rounded-3xl border border-border/50 bg-black/95 overflow-hidden shadow-sm group aspect-video flex items-center justify-center">
                         {type === "video" ? (
-                            driveWebUrl ? (
+                            drivePreviewUrl ? (
                                 <iframe 
-                                    src={driveWebUrl.replace('/view', '/preview')} 
+                                    src={drivePreviewUrl}
                                     className="w-full h-full border-none"
                                     allow="autoplay"
                                 />
@@ -88,11 +108,11 @@ export function MediaJournalView({
                                 <div className="h-24 w-24 rounded-2xl bg-primary flex items-center justify-center text-white shadow-xl shadow-primary/20">
                                     <Mic2 className="h-10 w-10" />
                                 </div>
-                                {driveWebUrl ? (
-                                    <audio 
-                                        src={driveWebUrl} 
-                                        controls 
-                                        className="w-full max-w-md accent-primary"
+                                {drivePreviewUrl ? (
+                                    <iframe
+                                        src={drivePreviewUrl}
+                                        className="h-28 w-full max-w-xl rounded-xl border border-white/10 bg-black"
+                                        allow="autoplay"
                                     />
                                 ) : (
                                     <p className="text-xs font-bold uppercase tracking-widest text-primary/40">Audio is processing</p>

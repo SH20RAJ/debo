@@ -34,6 +34,34 @@ const modes = [
   { id: "image" as const, label: "Photos", icon: FileImage, color: "bg-primary/60", shadow: "shadow-primary/20", accent: "text-primary" },
 ];
 
+function getMediaExtension(blob: Blob | null, mode: CaptureMode) {
+  if (mode === "image") return "jpg";
+
+  const mimeType = blob?.type.split(";")[0].toLowerCase();
+  const byMime: Record<string, string> = {
+    "audio/mp4": "m4a",
+    "audio/mpeg": "mp3",
+    "audio/ogg": "ogg",
+    "audio/wav": "wav",
+    "audio/webm": "webm",
+    "video/mp4": "mp4",
+    "video/ogg": "ogv",
+    "video/quicktime": "mov",
+    "video/webm": "webm",
+  };
+
+  return (mimeType && byMime[mimeType]) || "webm";
+}
+
+function toSafeFilePart(value: string) {
+  return value
+    .trim()
+    .replace(/[^a-z0-9._-]+/gi, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 80) || "moment";
+}
+
 export function CaptureStudio() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -168,20 +196,37 @@ export function CaptureStudio() {
     setIsSaving(true);
     try {
       const activeMode = modes.find(m => m.id === mode)!;
+      const isMediaMode = mode === "audio" || mode === "video";
+
+      if (isMediaMode && status !== "ready") {
+        throw new Error(`Record a ${activeMode.label.toLowerCase()} journal before saving.`);
+      }
+
+      if (isMediaMode && !mediaBlob) {
+        throw new Error("The recording is still missing. Please record again.");
+      }
+
+      if (isMediaMode && !activeApps.some(app => app.slug === "googledrive")) {
+        throw new Error("Connect Google Drive before saving audio or video journals.");
+      }
+
       const finalTitle = title.trim() || `New ${activeMode.label} Moment`;
       const now = new Date();
       const dateStr = now.toISOString().split("T")[0];
       const timeStr = now.toTimeString().split(" ")[0].replace(/:/g, "-").substring(0, 5);
-      const extension = mode === "video" ? "mp4" : mode === "audio" ? "webm" : "jpg";
-      const fileName = `${dateStr}_${timeStr}_${finalTitle.replace(/\s+/g, "-")}.${extension}`;
+      const extension = getMediaExtension(mediaBlob, mode);
+      const fileName = `${dateStr}_${timeStr}_${toSafeFilePart(finalTitle)}.${extension}`;
 
       let driveFileId = "";
       let driveWebUrl = "";
+      let driveFolderId: string | undefined;
+      let driveFolderPath: string | undefined;
 
       if (mediaBlob && (mode === "audio" || mode === "video")) {
         const formData = new FormData();
-        formData.append("file", mediaBlob);
+        formData.append("file", mediaBlob, fileName);
         formData.append("fileName", fileName);
+        formData.append("mediaType", mode);
         formData.append("userId", ""); // Handled server-side
 
         const { uploadMediaToDrive } = await import("@/actions/media-journals");
@@ -191,8 +236,14 @@ export function CaptureStudio() {
           throw new Error(uploadResult.error);
         }
 
-        driveFileId = uploadResult.driveFileId!;
-        driveWebUrl = uploadResult.driveWebUrl!;
+        if (!uploadResult.driveFileId) {
+          throw new Error("Google Drive upload finished without a file id.");
+        }
+
+        driveFileId = uploadResult.driveFileId;
+        driveWebUrl = uploadResult.driveWebUrl || `https://drive.google.com/file/d/${driveFileId}/view`;
+        driveFolderId = uploadResult.folderId;
+        driveFolderPath = uploadResult.folderPath;
       }
 
       if (mode === "audio" || mode === "video") {
@@ -203,11 +254,13 @@ export function CaptureStudio() {
           driveFileId,
           driveWebUrl,
           transcript: notes,
+          duration: timer,
+          folderId: driveFolderId,
           userId: undefined
         });
 
         if (result.success) {
-          toast.success("Moment captured and synced!");
+          toast.success(driveFolderPath ? `Synced to ${driveFolderPath}` : "Moment captured and synced!");
           router.push(`/dashboard/journal/${mode}/${result.data}`);
         } else {
           toast.error(result.error);
@@ -239,6 +292,11 @@ export function CaptureStudio() {
   };
 
   const activeMode = modes.find(m => m.id === mode)!;
+  const isMediaMode = mode === "audio" || mode === "video";
+  const isDriveConnected = activeApps.some(app => app.slug === "googledrive");
+  const canSave = isMediaMode
+    ? status === "ready" && Boolean(mediaBlob) && isDriveConnected
+    : status !== "recording" && (imagePreviews.length > 0 || notes.trim().length > 0);
 
   return (
     <div className={cn(
@@ -373,7 +431,7 @@ export function CaptureStudio() {
                     </div>
                     <div className="space-y-2">
                       <p className="text-xl font-semibold text-white tracking-tight">Drive disconnected</p>
-                      <p className="text-xs font-medium text-white/40">Connect Google Drive to store high-fidelity captures.</p>
+                      <p className="text-xs font-medium text-white/40">Connect Google Drive to save audio and video journals.</p>
                       <Button 
                         onClick={() => router.push("/dashboard/connectors")}
                         className="mt-4 h-9 px-6 rounded-lg text-xs"
@@ -399,7 +457,7 @@ export function CaptureStudio() {
                     </div>
                     <div className="space-y-1">
                       <p className="text-xl font-semibold text-white tracking-tight">Capture Complete</p>
-                      <p className="text-xs font-medium text-white/40">Sync this moment to your memory palace.</p>
+                      <p className="text-xs font-medium text-white/40">Save it to Debo and Google Drive.</p>
                     </div>
                   </>
                 )}
@@ -424,12 +482,12 @@ export function CaptureStudio() {
                 ) : (
                   <Button 
                     onClick={startRecording}
-                    disabled={!activeApps.some(app => app.slug === "googledrive") && (mode === "audio" || mode === "video")}
+                    disabled={isCheckingApps || (!isDriveConnected && (mode === "audio" || mode === "video"))}
                     size="lg"
                     className={cn(
                       "h-14 px-10 rounded-xl font-semibold tracking-tight text-sm active:scale-95 transition-all",
                       status === "ready" ? "bg-muted text-foreground border border-border/10" : "bg-primary text-primary-foreground",
-                      (!activeApps.some(app => app.slug === "googledrive") && (mode === "audio" || mode === "video")) && "opacity-50 grayscale cursor-not-allowed"
+                      (isCheckingApps || (!isDriveConnected && (mode === "audio" || mode === "video"))) && "opacity-50 grayscale cursor-not-allowed"
                     )}
                   >
                     {status === "ready" ? "Retake Capture" : `Start ${activeMode.label}`}
@@ -499,14 +557,14 @@ export function CaptureStudio() {
                                 <History className="h-4 w-4" />
                              </div>
                              <p className="text-[11px] font-medium text-muted-foreground/60 leading-relaxed">
-                               All captures are encrypted and stored in your private vault.
+                               Audio and video stay organized inside Google Drive.
                              </p>
                           </div>
                        </div>
 
                        <Button
                          onClick={handleSave}
-                         disabled={isSaving || status === "recording" || (status === "idle" && !notes.trim())}
+                         disabled={isSaving || !canSave}
                          className="w-full h-14 rounded-xl text-base font-semibold tracking-tight transition-all"
                        >
                          {isSaving ? <Loader2 className="h-5 w-5 animate-spin" /> : (
@@ -526,7 +584,7 @@ export function CaptureStudio() {
         {/* Footer info - hidden in fullscreen */}
         {!isFullscreen && (
           <p className="text-[10px] font-semibold text-center text-muted-foreground/20 uppercase tracking-[0.2em] pb-10">
-             End-to-end encrypted • Private Memory Palace
+             Google Drive sync required for audio and video journals
           </p>
         )}
       </div>
