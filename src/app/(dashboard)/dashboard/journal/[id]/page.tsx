@@ -9,9 +9,9 @@ export default async function JournalRedirectPage({
 }) {
     const resolvedParams = await params;
     const resolvedSearchParams = await searchParams;
-    const type = resolvedSearchParams.type || "text";
+    const requestedType = resolvedSearchParams.type || "text";
+    const type = ["text", "audio", "video"].includes(requestedType) ? requestedType : "text";
     
     // Legacy support: redirect to the new type-specific routes
     redirect(`/dashboard/journal/${type}/${resolvedParams.id}`);
 }
-

@@ -127,9 +127,11 @@ export async function ensureCollection(vectorSize: number) {
     const existingSize = readVectorSize(collectionInfo);
 
     if (existingSize && existingSize !== vectorSize) {
-      throw new Error(
-        `Qdrant collection vector size mismatch. Expected ${existingSize}, received ${vectorSize}.`
+      console.warn(
+        `[Qdrant] Recreating ${getQdrantConfig().collection} because vector size changed from ${existingSize} to ${vectorSize}.`
       );
+      await qdrantRequest(path, { method: "DELETE" });
+      await createCollection(vectorSize);
     }
 
     return;
@@ -139,7 +141,11 @@ export async function ensureCollection(vectorSize: number) {
     }
   }
 
-  await qdrantRequest(path, {
+  await createCollection(vectorSize);
+}
+
+async function createCollection(vectorSize: number) {
+  await qdrantRequest(getCollectionPath(), {
     method: "PUT",
     body: JSON.stringify({
       vectors: {

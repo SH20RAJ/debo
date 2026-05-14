@@ -14,5 +14,5 @@ if (!process.env.COMPOSIO_API_KEY) {
 export const composio = new Composio({
   apiKey: process.env.COMPOSIO_API_KEY || "placeholder_key",
   provider: new MastraProvider(),
-  dangerouslyAllowAutoUploadDownloadFiles: true,
+  dangerouslyAllowAutoUploadDownloadFiles: false,
 });

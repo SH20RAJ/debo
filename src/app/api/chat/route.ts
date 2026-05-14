@@ -175,7 +175,9 @@ export async function POST(req: Request) {
   try {
     const { getComposioActiveApps } = await import("@/actions/composio");
     const activeApps = await getComposioActiveApps();
-    const toolkits = activeApps.map((app) => app.slug);
+    const toolkits = activeApps
+      .map((app) => app.slug)
+      .filter((slug) => !["googledrive", "youtube"].includes(slug));
 
     if (toolkits.length > 0) {
       const { getComposioTools } = await import("@/mastra/tools/composio-tools");

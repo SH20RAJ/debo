@@ -7,9 +7,6 @@ import { eq, desc, asc, and, count } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { cache } from "react";
 import { logDatabaseIssue } from "@/lib/db/errors";
-import fs from "fs";
-import path from "path";
-import os from "os";
 import { generateText } from "ai";
 import { getChatModel } from "@/lib/ai/openai";
 
@@ -45,6 +42,66 @@ function sanitizeDriveName(value: string) {
         .replace(/\s+/g, " ")
         .trim()
         .slice(0, 120) || "Untitled";
+}
+
+function escapeDriveQueryValue(value: string) {
+    return value.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+}
+
+function arrayBufferToBase64(buffer: ArrayBuffer) {
+    const bytes = new Uint8Array(buffer);
+    let binary = "";
+    const chunkSize = 0x8000;
+
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+        binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+    }
+
+    return btoa(binary);
+}
+
+async function getGoogleDriveConnectionId() {
+    const { getComposioActiveApps } = await import("./composio");
+    const activeApps = await getComposioActiveApps();
+    return activeApps.find((app) => app.slug === "googledrive")?.id || null;
+}
+
+async function proxyGoogleDrive<T>(
+    connectedAccountId: string,
+    params: {
+        endpoint: string;
+        method: "GET" | "POST" | "PATCH" | "DELETE";
+        body?: unknown;
+        binaryBody?: { base64: string; content_type: string };
+        parameters?: Array<{ name: string; in: "query" | "header"; value: string }>;
+    }
+) {
+    const { composio } = await import("@/lib/composio");
+    const client = (composio as any).client;
+
+    if (!client?.tools?.proxy) {
+        throw new Error("Composio proxy is not available.");
+    }
+
+    const response = await client.tools.proxy({
+        endpoint: params.endpoint,
+        method: params.method,
+        body: params.body,
+        binary_body: params.binaryBody,
+        connected_account_id: connectedAccountId,
+        parameters: params.parameters?.map((parameter) => ({
+            name: parameter.name,
+            in: parameter.in,
+            value: parameter.value,
+        })),
+    });
+
+    if (response.status < 200 || response.status >= 300) {
+        const message = typeof response.data === "string" ? response.data : JSON.stringify(response.data || {});
+        throw new Error(`Google Drive request failed (${response.status}): ${message.slice(0, 300)}`);
+    }
+
+    return response.data as T;
 }
 
 function fallbackCaptureTitle(mediaType: string) {
@@ -88,31 +145,40 @@ export async function generateCaptureTitle(params: {
     }
 }
 
-async function executeDriveTool(userId: string, toolSlug: string, args: Record<string, unknown>) {
-    const { composio } = await import("@/lib/composio");
-    return await (composio.tools.execute as any)(toolSlug, {
-        userId,
-        arguments: args,
-    });
-}
-
-async function findDriveFolder(userId: string, name: string, parentId?: string) {
-    const result = await executeDriveTool(userId, "GOOGLEDRIVE_FIND_FOLDER", {
-        name_exact: name,
-        ...(parentId ? { parent_folder_id: parentId } : {}),
+async function findDriveFolder(connectedAccountId: string, name: string, parentId?: string) {
+    const escapedName = escapeDriveQueryValue(name);
+    const parentClause = parentId ? ` and '${escapeDriveQueryValue(parentId)}' in parents` : "";
+    const result = await proxyGoogleDrive<{ files?: Array<{ id?: string; name?: string }> }>(connectedAccountId, {
+        endpoint: "https://www.googleapis.com/drive/v3/files",
+        method: "GET",
+        parameters: [
+            {
+                name: "q",
+                in: "query",
+                value: `name='${escapedName}' and mimeType='application/vnd.google-apps.folder' and trashed=false${parentClause}`,
+            },
+            { name: "fields", in: "query", value: "files(id,name)" },
+            { name: "pageSize", in: "query", value: "1" },
+        ],
     });
 
     return extractDriveItems(result).find((item) => item?.id);
 }
 
-async function ensureDriveFolder(userId: string, name: string, parentId?: string) {
+async function ensureDriveFolder(connectedAccountId: string, name: string, parentId?: string) {
     const cleanName = sanitizeDriveName(name);
-    const existing = await findDriveFolder(userId, cleanName, parentId);
+    const existing = await findDriveFolder(connectedAccountId, cleanName, parentId);
     if (existing?.id) return existing.id as string;
 
-    const result = await executeDriveTool(userId, "GOOGLEDRIVE_CREATE_FOLDER", {
-        name: cleanName,
-        ...(parentId ? { parent_id: parentId } : {}),
+    const result = await proxyGoogleDrive<{ id?: string }>(connectedAccountId, {
+        endpoint: "https://www.googleapis.com/drive/v3/files",
+        method: "POST",
+        body: {
+            name: cleanName,
+            mimeType: "application/vnd.google-apps.folder",
+            ...(parentId ? { parents: [parentId] } : {}),
+        },
+        parameters: [{ name: "fields", in: "query", value: "id" }],
     });
 
     const created = extractDriveFile(result);
@@ -122,6 +188,43 @@ async function ensureDriveFolder(userId: string, name: string, parentId?: string
     }
 
     return folderId as string;
+}
+
+async function uploadDriveFile(
+    connectedAccountId: string,
+    file: File,
+    fileName: string,
+    folderId: string
+) {
+    const boundary = `debo_${crypto.randomUUID().replace(/-/g, "")}`;
+    const metadata = JSON.stringify({
+        name: fileName,
+        parents: [folderId],
+    });
+    const contentType = file.type || "application/octet-stream";
+    const fileBuffer = await file.arrayBuffer();
+    const multipartBuffer = await new Blob([
+        `--${boundary}\r\n`,
+        "Content-Type: application/json; charset=UTF-8\r\n\r\n",
+        metadata,
+        `\r\n--${boundary}\r\n`,
+        `Content-Type: ${contentType}\r\n\r\n`,
+        fileBuffer,
+        `\r\n--${boundary}--`,
+    ]).arrayBuffer();
+
+    return proxyGoogleDrive<{ id?: string; webViewLink?: string; webContentLink?: string }>(connectedAccountId, {
+        endpoint: "https://www.googleapis.com/upload/drive/v3/files",
+        method: "POST",
+        binaryBody: {
+            base64: arrayBufferToBase64(multipartBuffer),
+            content_type: `multipart/related; boundary=${boundary}`,
+        },
+        parameters: [
+            { name: "uploadType", in: "query", value: "multipart" },
+            { name: "fields", in: "query", value: "id,webViewLink,webContentLink" },
+        ],
+    });
 }
 
 /**
@@ -139,60 +242,37 @@ export async function uploadMediaToDrive(formData: FormData) : Promise<DriveUplo
             return { success: false, error: "No file provided" };
         }
 
-        const bytes = await file.arrayBuffer();
-        const buffer = Buffer.from(bytes);
-
         const resolvedUserId = await resolveUserId(userId, true);
         if (!resolvedUserId) {
             return { success: false, error: "Unauthorized" };
         }
 
-        // 0. Verify Google Drive connection
-        const { getComposioActiveApps } = await import("./composio");
-        const activeApps = await getComposioActiveApps();
-        if (!activeApps.some(app => app.slug === "googledrive")) {
+        const driveConnectionId = await getGoogleDriveConnectionId();
+        if (!driveConnectionId) {
             return { success: false, error: "Google Drive is not connected via Composio" };
         }
 
         const now = new Date();
         const monthFolder = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
         const libraryFolder = mediaType === "video" ? "Video Journals" : "Audio Journals";
-        const rootFolderId = await ensureDriveFolder(resolvedUserId, "Debo");
-        const libraryFolderId = await ensureDriveFolder(resolvedUserId, libraryFolder, rootFolderId);
-        const folderId = await ensureDriveFolder(resolvedUserId, monthFolder, libraryFolderId);
+        const rootFolderId = await ensureDriveFolder(driveConnectionId, "Debo");
+        const libraryFolderId = await ensureDriveFolder(driveConnectionId, libraryFolder, rootFolderId);
+        const folderId = await ensureDriveFolder(driveConnectionId, monthFolder, libraryFolderId);
         const folderPath = `Debo/${libraryFolder}/${monthFolder}`;
 
-        const tempDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "debo-drive-"));
-        const tempFilePath = path.join(tempDir, fileName);
-        await fs.promises.writeFile(tempFilePath, buffer);
+        const driveData = extractDriveFile(await uploadDriveFile(driveConnectionId, file, fileName, folderId));
 
-        try {
-            const uploadResult = await executeDriveTool(resolvedUserId, "GOOGLEDRIVE_UPLOAD_FILE", {
-                file_to_upload: tempFilePath,
-                folder_to_upload_to: folderId
-            });
-
-            const driveData = extractDriveFile(uploadResult);
-
-            if (!driveData.id) {
-                return { success: false, error: "Upload succeeded but no file ID returned" };
-            }
-
-            return {
-                success: true,
-                driveFileId: driveData.id,
-                driveWebUrl: driveData.webViewLink || driveData.webContentLink || `https://drive.google.com/file/d/${driveData.id}/view`,
-                folderId,
-                folderPath,
-            };
-        } finally {
-            try {
-                await fs.promises.unlink(tempFilePath);
-                await fs.promises.rmdir(tempDir);
-            } catch {
-                console.warn("[DriveUpload] Failed to clean temporary file:", tempFilePath);
-            }
+        if (!driveData.id) {
+            return { success: false, error: "Upload succeeded but no file ID returned" };
         }
+
+        return {
+            success: true,
+            driveFileId: driveData.id,
+            driveWebUrl: driveData.webViewLink || driveData.webContentLink || `https://drive.google.com/file/d/${driveData.id}/view`,
+            folderId,
+            folderPath,
+        };
     } catch (error) {
         console.error("[DriveUpload] EXCEPTION:", error);
         return { 

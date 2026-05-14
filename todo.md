@@ -17,26 +17,26 @@
 - [x] Custom webhook connector (working)
 - [ ] Telegram connector (pending)
 - [ ] WhatsApp connector (pending)
-- [ ] Linear connector (working)
-- [ ] Trello connector (working)
+- [x] Linear connector (working)
+- [x] Trello connector (working)
 - [ ] Asana connector (pending)
 - [ ] Jira connector (pending)
-- [ ] Google Drive connector (pending) - Store video/audio journals
+- [x] Google Drive connector (working) - Store video/audio journals
 
 ### 8. Media Storage (Google Drive)
 - [x] Google Drive OAuth2 integration via Nango
 - [x] Create folder structure: /Debo/Videos/, /Debo/Audios/, /Debo/Transcripts/
-- [ ] Upload video journals to Google Drive
-- [ ] Upload audio journals to Google Drive
-- [ ] Store metadata in database (file ID, Drive URL, thumbnail)
-- [ ] Stream media directly from Drive
+- [x] Upload video journals to Google Drive
+- [x] Upload audio journals to Google Drive
+- [x] Store metadata in database (file ID, Drive URL, thumbnail)
+- [x] Stream media directly from Drive
 
 ### 9. Database Restructure
 - [x] Create `video_journals` table (id, userId, title, driveFileId, driveWebUrl, thumbnailUrl, duration, transcript, createdAt)
 - [x] Create `audio_journals` table (id, userId, title, driveFileId, driveWebUrl, transcript, duration, createdAt)
 - [x] Keep `journals` table for text-only entries
-- [ ] Add sorting options on /dashboard (date, title, type)
-- [ ] Add filter by content type (text/video/audio)
+- [x] Add sorting options on /dashboard (date, title, type)
+- [x] Add filter by content type (text/video/audio)
 
 ### 3. Chat Apps
 - [x] /chat - Web chat with AI
@@ -66,7 +66,7 @@
 
 ### 7. Infrastructure
 - [x] Qdrant for journal vector search (configured)
-- [ ] Fix Qdrant vector size mismatch (4096 vs 1024)
+- [x] Fix Qdrant vector size mismatch (4096 vs 1024)
 - [x] Context7 MCP installed
 - [ ] MemPalace integration (pending)
 
@@ -84,67 +84,66 @@
 - MCP API: /api/mcp
 
 ### 10. Memory System Improvements
-- [ ] Improve memory system architecture
-- [ ] Get and set memories while chatting
-- [ ] Integrate mem0 for memory management
-- [ ] Save important chat events to memories automatically
+- [x] Improve memory system architecture
+- [x] Get and set memories while chatting
+- [x] Integrate mem0 for memory management
+- [x] Save important chat events to memories automatically
 
 ### 11. Chat Page Refinement
-- [ ] Remove chat history from display
-- [ ] Keep minimal UI with just chatbox
-- [ ] Add inline citations when retrieving journal data
-- [ ] Optimize chat performance
+- [x] Remove chat history from display
+- [x] Keep minimal UI with just chatbox
+- [x] Add inline citations when retrieving journal data
+- [x] Optimize chat performance
 
 ### 12. Talk (Voice) Page
-- [ ] Delete existing /dashboard/talk implementation
-- [ ] Recreate with LiveKit integration
-- [ ] Optimize LiveKit usage
+- [x] Delete existing /dashboard/talk implementation
+- [x] Recreate with LiveKit integration
+- [x] Optimize LiveKit usage
 - [ ] Test context access and conversation quality
 - [ ] Verify all APIs from .env are working
 
 ### 13. Dashboard Navigation & Search
-- [ ] Delete /dashboard/timeline
-- [ ] Fix navbar search functionality
-- [ ] Implement semantic search for journals
+- [x] Delete /dashboard/timeline
+- [x] Fix navbar search functionality
+- [x] Implement semantic search for journals
 - [ ] Test search across all content types
 
 ### 14. Settings Page
-- [ ] Remove all existing settings
-- [ ] Keep only AI tone control option
-- [ ] Simplify UI/UX
+- [x] Remove all existing settings
+- [x] Keep only AI tone control option
+- [x] Simplify UI/UX
 
 ### 15. Insights Page
-- [ ] Improve backend logic for /dashboard/insights
-- [ ] Optimize performance
-- [ ] Better data visualization
+- [x] Improve backend logic for /dashboard/insights
+- [x] Optimize performance
+- [x] Better data visualization
 
 ### 16. Capture Page
-- [ ] Delete and recreate /capture
-- [ ] Clean, distraction-free UI/UX design
-- [ ] Auto-generate titles after recording
+- [x] Delete and recreate /capture
+- [x] Clean, distraction-free UI/UX design
+- [x] Auto-generate titles after recording
 - [ ] Analyze video/audio for description
-- [ ] Fallback to date/day if analysis fails
-- [ ] Support video/audio recording
+- [x] Fallback to date/day if analysis fails
+- [x] Support video/audio recording
 
 ### 17. Journal API Fixes
-- [ ] Fix GET /dashboard/journal/{id}?type=text endpoint
-- [ ] Setup AI analysis for journal text/id
-- [ ] Optimize query performance
-- [ ] Fix vector search parameters (nvidia/nv-embedqa-e5-v5)
+- [x] Fix GET /dashboard/journal/{id}?type=text endpoint
+- [x] Setup AI analysis for journal text/id
+- [x] Optimize query performance
+- [x] Fix vector search parameters (nvidia/nv-embedqa-e5-v5)
 
 ### 18. Dependencies & Updates
-- [ ] Upgrade composio-core from 0.9.1 to 0.10.0
-- [ ] Fix asymmetric model 'input_type' parameter
-- [ ] Enable semantic vectors
+- [x] Upgrade composio-core from 0.9.1 to 0.10.0
+- [x] Fix asymmetric model 'input_type' parameter
+- [x] Enable semantic vectors
 
 ### 19. MCP System
-- [ ] Optimize all system prompts in /mcp
+- [x] Optimize all system prompts in /mcp
 - [ ] Verify all 19 tools are working correctly
 - [ ] Test MCP API endpoints
 
 ### 20. Final Deployment
 - [ ] Test all features end-to-end
-- [ ] Verify context access in chat
+- [x] Verify context access in chat
 - [ ] Run `bun run deploy`
 - [ ] Git push all changes 
-

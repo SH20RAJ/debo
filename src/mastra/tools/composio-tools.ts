@@ -19,18 +19,6 @@ const composioSchemaOptions = {
  * We load specific actions instead of entire toolkits.
  */
 const SAFE_TOOLKIT_ACTIONS: Record<string, string[]> = {
-  googledrive: [
-    "GOOGLEDRIVE_FIND_FILE",
-    "GOOGLEDRIVE_FIND_FOLDER",
-    "GOOGLEDRIVE_UPLOAD_FILE",
-    "GOOGLEDRIVE_CREATE_FILE",
-    "GOOGLEDRIVE_LIST_FILES",
-    "GOOGLEDRIVE_CREATE_FOLDER",
-    "GOOGLEDRIVE_DELETE_FILE",
-  ],
-  youtube: [
-    "YOUTUBE_SEARCH_YOU_TUBE",
-  ],
   gmail: [
     "GMAIL_SEND_EMAIL",
     "GMAIL_FETCH_EMAILS",
@@ -48,6 +36,11 @@ const SAFE_TOOLKIT_ACTIONS: Record<string, string[]> = {
   ],
 };
 
+const TOOLKITS_HANDLED_OUTSIDE_AGENT_TOOLS = new Set([
+  "googledrive",
+  "youtube",
+]);
+
 /**
  * Fetches Mastra-compatible tools from Composio for a specific user.
  * Uses specific action IDs instead of full toolkits to avoid $ref resolution bugs.
@@ -55,15 +48,26 @@ const SAFE_TOOLKIT_ACTIONS: Record<string, string[]> = {
 export async function getComposioTools(userId: string, toolkits: string[] = ["googledrive"]) {
   // Gather safe actions for the requested toolkits
   const actions: string[] = [];
+  const skippedToolkits: string[] = [];
   for (const tk of toolkits) {
-    const safe = SAFE_TOOLKIT_ACTIONS[tk.toLowerCase()];
+    const toolkit = tk.toLowerCase();
+    if (TOOLKITS_HANDLED_OUTSIDE_AGENT_TOOLS.has(toolkit)) {
+      skippedToolkits.push(toolkit);
+      continue;
+    }
+
+    const safe = SAFE_TOOLKIT_ACTIONS[toolkit];
     if (safe) {
       actions.push(...safe);
     }
   }
 
   if (actions.length === 0) {
-    console.warn("[ComposioTools] No known safe actions for toolkits:", toolkits);
+    if (skippedToolkits.length > 0) {
+      console.info("[ComposioTools] Skipping app tools handled by dedicated flows:", skippedToolkits.join(", "));
+    } else {
+      console.warn("[ComposioTools] No known safe actions for toolkits:", toolkits);
+    }
     return {};
   }
 
