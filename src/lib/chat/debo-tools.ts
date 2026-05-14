@@ -11,8 +11,6 @@ import {
 } from "ai";
 import { z } from "zod";
 
-import { getChatModel } from "@/lib/ai/openai";
-
 export const DEBO_SYSTEM_PROMPT = `You are Debo, a calm Jarvis-like personal intelligence assistant for journaling, memory, and reflection. You are the user's trusted cognitive layer - their second brain, their memory palace, their reflective companion.
 
 PERSONALITY & VOICE:
@@ -479,6 +477,7 @@ export function createDeboRuntimeTools(userId: string, options: CreateToolOption
         saveToChat?: boolean;
       }) => {
         const { ensureChatThread, persistPlainChatExchange } = await import("@/lib/chat/server");
+        const { getChatModel } = await import("@/lib/ai/openai");
         const thread = await ensureChatThread(userId, input.threadId, input.title || "MCP chat");
         const result = await generateText({
           model: getChatModel(),
@@ -578,6 +577,7 @@ export async function streamDeboChat(input: {
     ? lastMessage.parts.map((part) => part.type === "text" ? part.text : "").join(" ").trim()
     : "";
   const systemPrompt = await buildDeboRuntimeSystemPrompt(input.userId, query);
+  const { getChatModel } = await import("@/lib/ai/openai");
 
   return streamText({
     model: getChatModel(),
@@ -609,8 +609,16 @@ async function buildDeboRuntimeSystemPrompt(userId: string, query?: string) {
     const memoriesList = memories.success ? memories.data ?? [] : [];
 
     if (memoriesList.length > 0) {
-      const contextStrs = memoriesList.map((memory: any) => `- ${memory.content}`);
-      systemPrompt += `\n\n### RELEVANT MEMORIES FROM /dashboard/memories\n${contextStrs.join("\n")}`;
+      const contextStrs = memoriesList
+        .map((memory: MemoryResultItem) =>
+          typeof memory.content === "string" && memory.content.trim()
+            ? `- ${memory.content.trim()}`
+            : null,
+        )
+        .filter((line): line is string => Boolean(line));
+      if (contextStrs.length > 0) {
+        systemPrompt += `\n\n### RELEVANT MEMORIES FROM /dashboard/memories\n${contextStrs.join("\n")}`;
+      }
     }
   } catch (error) {
     console.error("Memory context retrieval failed:", error);

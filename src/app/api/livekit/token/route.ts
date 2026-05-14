@@ -1,9 +1,11 @@
-import { AccessToken, AgentDispatchClient } from "livekit-server-sdk";
+import { AccessToken, RoomAgentDispatch, RoomConfiguration } from "livekit-server-sdk";
 import { NextRequest, NextResponse } from "next/server";
 import { stackServerApp } from "@/stack/server";
 import { resolveUserId } from "@/actions/auth-sync";
 
 export const dynamic = "force-dynamic";
+
+const LIVEKIT_AGENT_NAME = process.env.LIVEKIT_AGENT_NAME || "debo-voice";
 
 function toRoomSafeId(value: string) {
   return value.replace(/[^a-zA-Z0-9_-]/g, "-").slice(0, 72);
@@ -12,6 +14,12 @@ function toRoomSafeId(value: string) {
 function toHttpLiveKitUrl(value: string) {
   if (value.startsWith("wss://")) return value.replace("wss://", "https://");
   if (value.startsWith("ws://")) return value.replace("ws://", "http://");
+  return value;
+}
+
+function toWebSocketLiveKitUrl(value: string) {
+  if (value.startsWith("https://")) return value.replace("https://", "wss://");
+  if (value.startsWith("http://")) return value.replace("http://", "ws://");
   return value;
 }
 
@@ -38,14 +46,23 @@ export async function GET(req: NextRequest) {
 
     const apiKey = process.env.LIVEKIT_API_KEY;
     const apiSecret = process.env.LIVEKIT_API_SECRET;
-    const serverUrl = process.env.LIVEKIT_URL || process.env.NEXT_PUBLIC_LIVEKIT_URL;
+    const configuredServerUrl = process.env.LIVEKIT_URL || process.env.NEXT_PUBLIC_LIVEKIT_URL;
 
-    if (!apiKey || !apiSecret || !serverUrl) {
+    if (!apiKey || !apiSecret || !configuredServerUrl) {
       return NextResponse.json(
         { error: "LiveKit is not configured" },
         { status: 500 },
       );
     }
+
+    const serverUrl = toWebSocketLiveKitUrl(configuredServerUrl);
+    const roomConfig = new RoomConfiguration({ name: roomName });
+    roomConfig.agents = [
+      new RoomAgentDispatch({
+        agentName: LIVEKIT_AGENT_NAME,
+        metadata,
+      }),
+    ];
 
     const at = new AccessToken(apiKey, apiSecret, {
       identity: participantIdentity,
@@ -56,6 +73,7 @@ export async function GET(req: NextRequest) {
         "debo.userId": userId,
       },
     });
+    at.roomConfig = roomConfig;
 
     at.addGrant({
       roomCreate: true,
@@ -66,21 +84,14 @@ export async function GET(req: NextRequest) {
       canPublishData: true,
     });
 
-    let dispatchId: string | undefined;
-    try {
-      const dispatchClient = new AgentDispatchClient(toHttpLiveKitUrl(serverUrl), apiKey, apiSecret);
-      const dispatch = await dispatchClient.createDispatch(roomName, "debo-voice", { metadata });
-      dispatchId = dispatch.id;
-    } catch (error) {
-      console.warn("[LiveKit] Agent dispatch failed. The room can still connect if an agent worker auto-dispatches:", error);
-    }
-
     return NextResponse.json({
       token: await at.toJwt(),
       serverUrl,
+      serverApiUrl: toHttpLiveKitUrl(serverUrl),
       roomName,
       participantName,
-      dispatchId,
+      agentName: LIVEKIT_AGENT_NAME,
+      agentDispatchStatus: "requested",
     });
   } catch (error) {
     console.error("Error generating LiveKit token:", error);

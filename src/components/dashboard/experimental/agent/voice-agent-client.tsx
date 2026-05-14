@@ -2,14 +2,17 @@
 
 import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import {
   BarVisualizer,
   RoomAudioRenderer,
   StartAudio,
+  useConnectionState,
   useLocalParticipant,
   useVoiceAssistant,
 } from "@livekit/components-react";
 import "@livekit/components-styles";
+import { ConnectionState, type DisconnectReason } from "livekit-client";
 import { Bot, Loader2, Mic, MicOff, PhoneOff, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
@@ -26,8 +29,15 @@ type LiveKitTokenResponse = {
   serverUrl?: string;
   roomName?: string;
   participantName?: string;
+  agentName?: string;
+  agentDispatchStatus?: string;
   error?: string;
 };
+
+function formatDisconnectReason(reason?: DisconnectReason) {
+  if (reason === undefined) return "Voice disconnected before the room was ready.";
+  return `Voice disconnected: ${String(reason).replace(/_/g, " ").toLowerCase()}.`;
+}
 
 export function VoiceAgentClient() {
   const [session, setSession] = useState<{
@@ -35,11 +45,15 @@ export function VoiceAgentClient() {
     serverUrl: string;
     roomName: string;
     participantName: string;
+    agentName: string;
+    agentDispatchStatus: string;
   } | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [connectionProblem, setConnectionProblem] = useState<string | null>(null);
 
   const startSession = async () => {
     setIsConnecting(true);
+    setConnectionProblem(null);
     try {
       const response = await fetch(`/api/livekit/token?room=debo-talk-${Date.now()}`, {
         cache: "no-store",
@@ -55,9 +69,13 @@ export function VoiceAgentClient() {
         serverUrl: data.serverUrl,
         roomName: data.roomName || "debo-talk",
         participantName: data.participantName || "You",
+        agentName: data.agentName || "debo-voice",
+        agentDispatchStatus: data.agentDispatchStatus || "requested",
       });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not start voice chat.");
+      const message = error instanceof Error ? error.message : "Could not start voice chat.";
+      setConnectionProblem(message);
+      toast.error(message);
     } finally {
       setIsConnecting(false);
     }
@@ -70,7 +88,7 @@ export function VoiceAgentClient() {
       <div className="flex min-h-[calc(100vh-5rem)] flex-1 items-center justify-center px-6 py-10">
         <div className="flex w-full max-w-xl flex-col items-center gap-8 text-center">
           <div className="flex size-20 items-center justify-center rounded-3xl border border-border/70 bg-background shadow-sm">
-            <img src="/debo.png" alt="Debo" className="size-12 object-contain" />
+            <Image src="/debo.png" alt="Debo" width={48} height={48} className="size-12 object-contain" />
           </div>
 
           <div className="space-y-3">
@@ -84,6 +102,12 @@ export function VoiceAgentClient() {
               Start a voice session with memory context. Debo can listen, answer, and remember only when you ask.
             </p>
           </div>
+
+          {connectionProblem ? (
+            <div className="w-full rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm leading-6 text-destructive">
+              {connectionProblem}
+            </div>
+          ) : null}
 
           <Button
             size="lg"
@@ -119,19 +143,46 @@ export function VoiceAgentClient() {
       serverUrl={session.serverUrl}
       token={session.token}
       connect
-      audio
+      audio={{
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+      }}
       video={false}
-      onDisconnected={endSession}
+      connectOptions={{
+        autoSubscribe: true,
+        maxRetries: 3,
+        websocketTimeout: 20_000,
+        peerConnectionTimeout: 30_000,
+      }}
+      onDisconnected={(reason) => {
+        const message = formatDisconnectReason(reason);
+        console.warn("[Talk] LiveKit disconnected:", reason);
+        setConnectionProblem(message);
+        endSession();
+      }}
       onError={(error) => {
         console.error("[Talk] LiveKit error:", error);
-        toast.error("Voice session ended. Please start again.");
+        const message = error.message || "Voice session ended. Please start again.";
+        setConnectionProblem(message);
+        toast.error(message);
         endSession();
+      }}
+      onMediaDeviceFailure={(failure, kind) => {
+        const message =
+          kind === "audioinput"
+            ? "Microphone permission failed. Allow mic access and start again."
+            : `Media device failed: ${failure || "unknown"}.`;
+        setConnectionProblem(message);
+        toast.error(message);
       }}
       className="flex min-h-[calc(100vh-5rem)] flex-1 flex-col bg-background"
     >
       <VoiceRoom
         roomName={session.roomName}
         participantName={session.participantName}
+        agentName={session.agentName}
+        agentDispatchStatus={session.agentDispatchStatus}
         onEnd={endSession}
       />
       <RoomAudioRenderer />
@@ -146,19 +197,33 @@ export function VoiceAgentClient() {
 function VoiceRoom({
   roomName,
   participantName,
+  agentName,
+  agentDispatchStatus,
   onEnd,
 }: {
   roomName: string;
   participantName: string;
+  agentName: string;
+  agentDispatchStatus: string;
   onEnd: () => void;
 }) {
   const { state, audioTrack, agentTranscriptions, agent } = useVoiceAssistant();
+  const connectionState = useConnectionState();
   const { localParticipant } = useLocalParticipant();
   const [isMuted, setIsMuted] = useState(false);
+  const [agentWaitExpired, setAgentWaitExpired] = useState(false);
 
   useEffect(() => {
     setIsMuted(!localParticipant.isMicrophoneEnabled);
   }, [localParticipant.isMicrophoneEnabled]);
+
+  useEffect(() => {
+    setAgentWaitExpired(false);
+    if (agent || connectionState !== ConnectionState.Connected) return;
+
+    const timeout = window.setTimeout(() => setAgentWaitExpired(true), 12_000);
+    return () => window.clearTimeout(timeout);
+  }, [agent, connectionState]);
 
   const latestAgentText = useMemo(() => {
     return agentTranscriptions
@@ -170,17 +235,51 @@ function VoiceRoom({
 
   const toggleMute = async () => {
     const nextMuted = !isMuted;
-    await localParticipant.setMicrophoneEnabled(!nextMuted);
-    setIsMuted(nextMuted);
+    try {
+      await localParticipant.setMicrophoneEnabled(!nextMuted);
+      setIsMuted(nextMuted);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not change microphone.");
+    }
   };
 
-  const statusLabel = agent
+  const statusLabel =
+    connectionState === ConnectionState.Connecting
+      ? "Connecting to LiveKit"
+      : connectionState === ConnectionState.Reconnecting ||
+          connectionState === ConnectionState.SignalReconnecting
+        ? "Reconnecting"
+        : !agent && agentWaitExpired
+          ? "Debo voice is offline"
+          : !agent
+            ? "Starting Debo"
+            : state === "speaking"
+              ? "Debo is speaking"
+              : state === "listening"
+                ? "Debo is listening"
+                : "Debo is thinking";
+
+  const helperText = agent
+    ? latestAgentText || "Say something when you are ready."
+    : agentWaitExpired
+      ? `The room is connected, but ${agentName} did not join. Start the voice worker and try again.`
+      : `Agent ${agentDispatchStatus}. Waiting for Debo to join.`;
+
+  const isLive = connectionState === ConnectionState.Connected && Boolean(agent);
+
+  const statusTone = isLive
+    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300"
+    : agentWaitExpired
+      ? "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300"
+      : "border-border/70 bg-background text-muted-foreground";
+
+  const visualState = agent
     ? state === "speaking"
-      ? "Debo is speaking"
+      ? "speaking"
       : state === "listening"
-        ? "Debo is listening"
-        : "Debo is thinking"
-    : "Waiting for Debo";
+        ? "listening"
+        : "thinking"
+    : "waiting";
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-5 md:px-8 md:py-8">
@@ -191,9 +290,9 @@ function VoiceRoom({
             {participantName} in {roomName}
           </p>
         </div>
-        <div className="flex items-center gap-2 rounded-full border border-border/70 bg-background px-3 py-1.5 text-xs text-muted-foreground shadow-sm">
+        <div className={cn("flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs shadow-sm", statusTone)}>
           <Sparkles className="size-3.5 text-primary" />
-          Context on
+          {connectionState}
         </div>
       </header>
 
@@ -202,10 +301,10 @@ function VoiceRoom({
           <div
             className={cn(
               "absolute inset-8 rounded-full bg-primary/10 blur-3xl transition-all duration-700",
-              state === "speaking" ? "scale-125 opacity-100" : "scale-95 opacity-40",
+              visualState === "speaking" ? "scale-125 opacity-100" : "scale-95 opacity-40",
             )}
           />
-          {state === "speaking" && audioTrack ? (
+          {visualState === "speaking" && audioTrack ? (
             <BarVisualizer
               state={state}
               trackRef={audioTrack}
@@ -221,8 +320,8 @@ function VoiceRoom({
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
             Debo
           </p>
-          <p className="mt-3 text-lg leading-8 text-foreground">
-            {latestAgentText || "Say something when you are ready."}
+          <p className="mt-3 text-lg leading-8 text-foreground" aria-live="polite">
+            {helperText}
           </p>
         </div>
       </main>
