@@ -13,7 +13,6 @@ graphify-out/
 # testing
 /coverage
 .claude/
-.projects/
 # next.js
 /.next/
 /out/
