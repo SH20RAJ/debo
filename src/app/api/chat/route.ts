@@ -202,9 +202,8 @@ export async function POST(req: Request) {
       messages: runtimeContext
         ? [
             {
-              id: "debo-runtime-context",
               role: "system",
-              parts: [{ type: "text", text: runtimeContext }],
+              content: runtimeContext,
             },
             ...messages,
           ]

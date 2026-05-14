@@ -11,17 +11,13 @@ async function getHandlerFiles() {
     for (const dir of dirs) {
       const handlerPath = join(serverFunctionsDir, dir, "handler.mjs");
       const indexPath = join(serverFunctionsDir, dir, "index.mjs");
-      
-      // Try handler.mjs first, then index.mjs
-      try {
-        await readFile(handlerPath);
-        handlers.push(handlerPath);
-      } catch {
+
+      for (const path of [handlerPath, indexPath]) {
         try {
-          await readFile(indexPath);
-          handlers.push(indexPath);
+          await readFile(path);
+          handlers.push(path);
         } catch {
-          // No handler found in this function dir
+          // No file at this path.
         }
       }
     }
@@ -33,11 +29,9 @@ async function getHandlerFiles() {
 
 const requireMarker = "var __esm=";
 const requirePatch = "__require.resolve ??= (path) => path;";
-const chdirMarker = 'function setNextjsServerWorkingDirectory(){process.chdir("")}';
 const chdirPatch = "function setNextjsServerWorkingDirectory(){}";
-const cacheHandlerMarker = "cacheHandler:cacheHandlerPath,";
 const instrumentationStart =
-  "async function getInstrumentationModule(projectDir,distDir){";
+  "async function getInstrumentationModule(";
 const instrumentationEnd = "var instrumentationModulePromise=null;";
 const instrumentationPatch = "async function getInstrumentationModule(){return undefined}";
 const manifestLoaderMarker =
@@ -112,6 +106,24 @@ function replaceUntil(source, start, end, replacement) {
   return `${source.slice(0, startIndex)}${replacement}${source.slice(endIndex)}`;
 }
 
+function patchDynamicRequire(source) {
+  return source.replace(
+    /throw Error\('Dynamic require of "'\s*\+\s*([A-Za-z_$][\w$]*)\s*\+\s*'" is not supported'\);?/g,
+    (match, variable, offset, fullSource) => {
+      const prefix = fullSource.slice(Math.max(0, offset - 160), offset);
+      if (
+        prefix.includes(`String(${variable}).endsWith("instrumentation.js")`) ||
+        prefix.includes(`${variable}.endsWith("instrumentation.js")`) ||
+        prefix.includes(`${variable}.endsWith('instrumentation.js')`)
+      ) {
+        return match;
+      }
+
+      return `if(String(${variable}).endsWith("instrumentation.js"))return undefined;${match}`;
+    }
+  );
+}
+
 const files = await getHandlerFiles();
 console.log("Patching files:", files);
 
@@ -122,8 +134,12 @@ for (const file of files) {
     source = source.replace(requireMarker, `${requirePatch}var __esm=`);
   }
 
-  source = source.replace(chdirMarker, chdirPatch);
-  source = source.replace(cacheHandlerMarker, "");
+  source = source.replace(
+    /function setNextjsServerWorkingDirectory\(\)\s*\{\s*process\.chdir\(""\);?\s*\}/g,
+    chdirPatch
+  );
+  source = patchDynamicRequire(source);
+  source = source.replace(/cacheHandler\s*:\s*cacheHandlerPath,\s*/g, "");
   source = replaceUntil(
     source,
     instrumentationStart,
