@@ -3,7 +3,7 @@
 import { db } from "@/db";
 import { journals } from "@/db/schema";
 import { resolveUserId } from "./auth-sync";
-import { eq, desc, asc, and, count, inArray } from "drizzle-orm";
+import { eq, desc, asc, and, count, inArray, ilike, or } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { cache } from "react";
 import { z } from "zod";
@@ -28,7 +28,17 @@ export const getJournals = cache(async (sortOrder: "asc" | "desc" = "desc", limi
             const { searchJournals } = await import("@/lib/vector/search");
             const semanticResults = await searchJournals(query, resolvedUserId, limit);
             
-            if (semanticResults.length === 0) return [];
+            if (semanticResults.length === 0) {
+                return await db.query.journals.findMany({
+                    where: and(
+                        eq(journals.userId, resolvedUserId),
+                        or(ilike(journals.title, `%${query}%`), ilike(journals.content, `%${query}%`)),
+                    ),
+                    orderBy: [sortOrder === "desc" ? desc(journals.createdAt) : asc(journals.createdAt)],
+                    limit,
+                    offset,
+                });
+            }
             
             // Fetch full journals for the semantic matches
             const journalIds = semanticResults.map(r => r.journalId).filter(Boolean) as string[];
@@ -61,7 +71,15 @@ export const getJournalsCount = cache(async (query?: string, providedUserId?: st
              const { searchJournals } = await import("@/lib/vector/search");
              // Semantic search limits are typically around 20, let's estimate
              const semanticResults = await searchJournals(query, userId, 50);
-             return semanticResults.length;
+             if (semanticResults.length > 0) return semanticResults.length;
+
+             const [result] = await db.select({ value: count() })
+                .from(journals)
+                .where(and(
+                    eq(journals.userId, userId),
+                    or(ilike(journals.title, `%${query}%`), ilike(journals.content, `%${query}%`)),
+                ));
+             return result.value;
         }
 
         const [result] = await db.select({ value: count() })

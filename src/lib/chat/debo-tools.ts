@@ -31,6 +31,8 @@ MEMORY SOURCE:
 - Use get_memories when personal context would help.
 - Use add_memory only when the user clearly asks you to remember something, or after they approve your offer to remember it.
 - Never store greetings, test messages, jokes, or throwaway chat as memories.
+- If runtime context provides tone/name settings, follow them.
+- If journal citations such as [J1] are provided, cite any journal-backed claim inline with the matching label.
 
 STRATEGIC TOOL USAGE:
 CRITICAL: When the user asks about their past, preferences, experiences, or anything personal, you MUST first retrieve relevant data using search_journals, get_memories, or get_timeline before answering. Never claim to know something you haven't verified.
@@ -82,7 +84,7 @@ When the user imports from ChatGPT, Claude, Cursor, or other AI exports:
 RESPONSE STYLE:
 - For simple questions: 1-3 sentences, direct answer
 - For personal context questions: Ground your response in actual data
-- For journal/life questions: Reference specific entries or memories
+- For journal/life questions: Reference specific entries or memories, and cite journal data inline when labels are available
 - For pattern analysis: Present insights with supporting evidence
 - For emotional support: Validate then offer reflection
 - For action items: Be specific and follow-up friendly
@@ -480,7 +482,7 @@ export function createDeboRuntimeTools(userId: string, options: CreateToolOption
         const thread = await ensureChatThread(userId, input.threadId, input.title || "MCP chat");
         const result = await generateText({
           model: getChatModel(),
-          system: DEBO_SYSTEM_PROMPT,
+          system: await buildDeboRuntimeSystemPrompt(userId, input.message),
           prompt: input.message,
           tools: createDeboAiTools(userId),
           stopWhen: stepCountIs(input.maxSteps ?? 4),
@@ -571,28 +573,11 @@ export async function streamDeboChat(input: {
   maxSteps?: number;
 }) {
   const messages = normalizeChatMessages(input.messages);
-  
-  let systemPrompt = DEBO_SYSTEM_PROMPT;
-  
-  // Inject context from the same memory store used by /dashboard/memories.
-  try {
-    const lastMessage = messages[messages.length - 1];
-    if (lastMessage && lastMessage.role === "user") {
-        const query = lastMessage.parts.map(p => p.type === 'text' ? p.text : '').join(' ');
-        if (query) {
-            const { getMemories } = await import("@/actions/memories");
-            const memories = await getMemories(query, 10, 0, input.userId);
-            const memoriesList = memories.success ? memories.data ?? [] : [];
-            
-            if (memoriesList.length > 0) {
-                const contextStrs = memoriesList.map((m: any) => `- ${m.content}`);
-                systemPrompt += `\n\n### RELEVANT MEMORIES FOR THIS CONVERSATION:\n${contextStrs.join('\n')}\n(Use these facts about the user to personalize your response.)`;
-            }
-        }
-    }
-  } catch (err) {
-      console.error("Mem0 context retrieval failed:", err);
-  }
+  const lastMessage = messages[messages.length - 1];
+  const query = lastMessage?.role === "user"
+    ? lastMessage.parts.map((part) => part.type === "text" ? part.text : "").join(" ").trim()
+    : "";
+  const systemPrompt = await buildDeboRuntimeSystemPrompt(input.userId, query);
 
   return streamText({
     model: getChatModel(),
@@ -603,6 +588,51 @@ export async function streamDeboChat(input: {
     tools: createDeboAiTools(input.userId),
     stopWhen: stepCountIs(input.maxSteps ?? 4),
   });
+}
+
+async function buildDeboRuntimeSystemPrompt(userId: string, query?: string) {
+  let systemPrompt = DEBO_SYSTEM_PROMPT;
+
+  try {
+    const { getDeboSettings } = await import("@/actions/settings");
+    const settings = await getDeboSettings(userId);
+    systemPrompt += `\n\n### USER AI SETTINGS\n- Assistant name: ${settings.assistantName}\n${settings.userDisplayName ? `- User display name: ${settings.userDisplayName}\n` : ""}- Tone: ${settings.tone}`;
+  } catch (error) {
+    console.error("Debo settings context failed:", error);
+  }
+
+  if (!query) return systemPrompt;
+
+  try {
+    const { getMemories } = await import("@/actions/memories");
+    const memories = await getMemories(query, 10, 0, userId);
+    const memoriesList = memories.success ? memories.data ?? [] : [];
+
+    if (memoriesList.length > 0) {
+      const contextStrs = memoriesList.map((memory: any) => `- ${memory.content}`);
+      systemPrompt += `\n\n### RELEVANT MEMORIES FROM /dashboard/memories\n${contextStrs.join("\n")}`;
+    }
+  } catch (error) {
+    console.error("Memory context retrieval failed:", error);
+  }
+
+  try {
+    const { searchJournals } = await import("@/lib/vector/search");
+    const journals = await searchJournals(query, userId, 4);
+    if (journals.length > 0) {
+      const lines = journals.map((journal, index) => {
+        const date = journal.date
+          ? new Date(journal.date).toLocaleDateString("en", { month: "short", day: "numeric", year: "numeric" })
+          : "unknown date";
+        return `[J${index + 1}] ${journal.title || "Untitled journal"} (${date}) - ${journal.snippet}`;
+      });
+      systemPrompt += `\n\n### JOURNAL CITATIONS\n${lines.join("\n")}\nIf you use these journal facts, cite them inline with [J1], [J2], etc.`;
+    }
+  } catch (error) {
+    console.error("Journal citation retrieval failed:", error);
+  }
+
+  return systemPrompt;
 }
 
 export function normalizeChatMessages(value: unknown): UIMessage[] {

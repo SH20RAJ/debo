@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createDeboRuntimeTools } from "@/lib/chat/debo-tools";
+import { DEBO_MCP_SYSTEM_PROMPT } from "@/lib/mcp/instructions";
 
 const SERVER_INFO = {
   name: "debo-mcp-server",
@@ -35,7 +36,7 @@ export async function POST(req: NextRequest) {
             protocolVersion: "2024-11-05",
             capabilities: { tools: {} },
             serverInfo: SERVER_INFO,
-            instructions: "You are Debo AI - the user's personal context layer. Use get_info to understand the user's life context."
+            instructions: DEBO_MCP_SYSTEM_PROMPT
           }
         });
 

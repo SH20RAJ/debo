@@ -138,7 +138,7 @@ export async function indexJournal(journal: JournalForIndex) {
 
     await Promise.all(
       chunks.map(async (chunk, chunkIndex) => {
-        const vector = await embed(chunk);
+        const vector = await embed(chunk, "passage");
         const pointId = uuidv5(`${journal.id}_${chunkIndex}`, UUID_NAMESPACE);
 
         await upsertVector({
@@ -202,7 +202,7 @@ export async function searchJournals(
   let matches: JournalChunkMatch[];
 
   try {
-    const vector = await embed(query);
+    const vector = await embed(query, "query");
     matches = (await searchQdrantVector(vector, userId, Math.max(limit * 2, 10))) as JournalChunkMatch[];
   } catch (error) {
     if (isQdrantAuthError(error)) {

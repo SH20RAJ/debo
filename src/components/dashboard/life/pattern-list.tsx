@@ -15,10 +15,10 @@ export function PatternList({ patterns }: { patterns: Pattern[] }) {
           </div>
           <div>
             <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground/30">
-              Cognitive Intensity
+              Repeated Signals
             </div>
             <div className="text-sm font-semibold text-foreground tracking-tight">
-              Recurrent signal patterns in your stream
+              People, topics, and feelings that appear often
             </div>
           </div>
         </div>
@@ -45,10 +45,10 @@ export function PatternList({ patterns }: { patterns: Pattern[] }) {
         ) : (
           <div className="p-20 text-center">
             <div className="text-xl font-heading font-semibold text-foreground/40 tracking-tight">
-              Quiet Engine
+              No patterns yet
             </div>
             <p className="mt-3 text-sm text-muted-foreground/20 font-medium italic">
-              Expand your conceptual stream to visualize emerging intelligence patterns.
+              Add more journals and Debo will connect the dots here.
             </p>
           </div>
         )}

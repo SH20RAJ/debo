@@ -37,6 +37,20 @@ function readParticipantUserId(participant: {
 
 async function buildVoiceInstructions(userId: string) {
   let memoryContext = "";
+  let settingsContext = "";
+
+  try {
+    const { getDeboSettings } = await import("../actions/settings");
+    const settings = await getDeboSettings(userId);
+    settingsContext = [
+      "### USER AI SETTINGS",
+      `- Assistant name: ${settings.assistantName}`,
+      settings.userDisplayName ? `- User display name: ${settings.userDisplayName}` : null,
+      `- Tone: ${settings.tone}`,
+    ].filter(Boolean).join("\n");
+  } catch (error) {
+    console.warn("[Debo Voice] Could not load settings:", error);
+  }
 
   try {
     const { getMemories } = await import("../actions/memories");
@@ -53,6 +67,7 @@ async function buildVoiceInstructions(userId: string) {
 
   return [
     DEBO_SYSTEM_PROMPT,
+    settingsContext,
     "### LIVE VOICE MODE",
     "- Keep replies short enough to speak naturally.",
     "- Use simple English.",

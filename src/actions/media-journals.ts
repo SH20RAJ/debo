@@ -10,6 +10,8 @@ import { logDatabaseIssue } from "@/lib/db/errors";
 import fs from "fs";
 import path from "path";
 import os from "os";
+import { generateText } from "ai";
+import { getChatModel } from "@/lib/ai/openai";
 
 // Video Journal Actions
 
@@ -43,6 +45,47 @@ function sanitizeDriveName(value: string) {
         .replace(/\s+/g, " ")
         .trim()
         .slice(0, 120) || "Untitled";
+}
+
+function fallbackCaptureTitle(mediaType: string) {
+    const now = new Date();
+    const weekday = now.toLocaleDateString("en", { weekday: "long" });
+    const date = now.toLocaleDateString("en", { month: "short", day: "numeric" });
+    const label = mediaType === "video" ? "Video" : mediaType === "audio" ? "Audio" : "Capture";
+    return `${weekday} ${label} Journal - ${date}`;
+}
+
+export async function generateCaptureTitle(params: {
+    description?: string;
+    mediaType?: "audio" | "video" | "image";
+    duration?: number;
+}) {
+    const description = params.description?.replace(/\s+/g, " ").trim() || "";
+    const mediaType = params.mediaType || "audio";
+    const fallback = fallbackCaptureTitle(mediaType);
+
+    if (description.length < 8) {
+        return { success: true, title: fallback };
+    }
+
+    try {
+        const result = await generateText({
+            model: getChatModel(),
+            system: "You write short, plain journal titles. Return only the title. No quotes. No punctuation at the end unless needed.",
+            prompt: `Create a clear 3-7 word title for this ${mediaType} journal. Use the user's description and recording metadata.\n\nDescription: ${description}\nDuration: ${params.duration || 0} seconds`,
+        });
+
+        const title = result.text
+            .replace(/["']/g, "")
+            .replace(/\s+/g, " ")
+            .trim()
+            .slice(0, 80);
+
+        return { success: true, title: title || fallback };
+    } catch (error) {
+        console.warn("[CaptureTitle] Falling back to date title:", error);
+        return { success: true, title: fallback };
+    }
 }
 
 async function executeDriveTool(userId: string, toolSlug: string, args: Record<string, unknown>) {

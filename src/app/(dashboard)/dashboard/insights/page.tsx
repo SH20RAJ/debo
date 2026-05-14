@@ -12,7 +12,7 @@ const INSIGHTS_QUERY = "What do I work on most, who do I meet most, and what str
 
 export const metadata: Metadata = {
   title: "Insights",
-  description: "Cognitive analysis of your journal patterns.",
+  description: "Patterns from your journals and memories.",
 };
 
 export default async function InsightsPage() {
@@ -43,14 +43,14 @@ export default async function InsightsPage() {
         <header className="flex flex-col gap-6">
           <div className="inline-flex items-center gap-2 self-start rounded-xl border-2 border-duo-swan bg-duo-snow px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-duo-wolf">
             <BrainCircuit className="h-4 w-4 text-duo-macaw" />
-            Cognitive Analysis
+            Journal signals
           </div>
           <div>
             <h1 className="text-4xl font-black tracking-tight text-duo-eel md:text-6xl">
-              AI Insights
+              Insights
             </h1>
             <p className="mt-4 max-w-2xl text-lg font-bold leading-relaxed text-duo-wolf">
-              Debo looks at your daily notes to show you the people, topics, and feelings that appear most often.
+              Debo reads your journals and memories to show the people, topics, and feelings that keep coming back.
             </p>
           </div>
         </header>

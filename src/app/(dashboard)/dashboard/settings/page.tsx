@@ -1,7 +1,4 @@
-import {
-  getUserPreferences,
-  getAIProviders,
-} from "@/actions/settings";
+import { getDeboSettings } from "@/actions/settings";
 import { SettingsForm } from "@/components/dashboard/settings/settings-form";
 import { stackServerApp } from "@/stack/server";
 import { redirect } from "next/navigation";
@@ -9,42 +6,40 @@ import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Settings",
-  description: "Manage Debo apps, AI, capture, and voice settings.",
+  description: "Tune how Debo talks with you.",
 };
 
 export default async function SettingsPage() {
   const user = await stackServerApp.getUser();
   if (!user) redirect("/join");
 
-  const [preferences, aiProvidersList] = await Promise.all([
-    getUserPreferences(),
-    getAIProviders(),
-  ]);
+  const settings = await getDeboSettings(user.id);
 
   return (
-    <div className="flex-1 bg-duo-polar">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-5 py-8 lg:px-8">
-        <header className="duo-card grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
+    <div className="flex-1 bg-background">
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-5 py-10 lg:px-8">
+        <header className="space-y-3">
           <div>
-            <div className="text-xs font-black uppercase tracking-[0.22em] text-duo-wolf">
-              Control room
+            <div className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+              Control tone
             </div>
-            <h1 className="mt-2 text-4xl font-black tracking-tight text-duo-eel md:text-6xl">
+            <h1 className="mt-2 text-4xl font-semibold tracking-tight text-foreground md:text-5xl">
               Settings
             </h1>
-            <p className="mt-3 max-w-2xl text-base font-bold leading-7 text-duo-wolf">
-              Pick your AI and keep capture ready.
+            <p className="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">
+              Choose the name and tone Debo uses in chat, talk, and MCP answers.
             </p>
           </div>
-          <div className="rounded-2xl border-2 border-duo-feather bg-duo-green/10 px-4 py-3 text-sm font-black text-duo-green">
+          <div className="inline-flex rounded-lg border border-border bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
             {user.primaryEmail || "Signed in"}
           </div>
         </header>
 
         <SettingsForm
-          initialData={preferences}
-          aiProviders={aiProvidersList}
-          userId={user.id}
+          initialData={{
+            ...settings,
+            userDisplayName: settings.userDisplayName || (user as { displayName?: string }).displayName || "",
+          }}
         />
       </div>
     </div>

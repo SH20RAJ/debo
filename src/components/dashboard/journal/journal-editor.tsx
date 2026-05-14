@@ -8,7 +8,13 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2, Cloud } from "lucide-react";
 import dynamic from "next/dynamic";
 
-import { PlateEditor } from "@/components/editor/plate-editor";
+const PlateEditor = dynamic(
+    () => import("@/components/editor/plate-editor").then((mod) => mod.PlateEditor),
+    {
+        ssr: false,
+        loading: () => <div className="min-h-80 rounded-lg border border-border/40 bg-muted/10" />,
+    },
+);
 
 export function JournalEditor({ 
     initialContent = "", 

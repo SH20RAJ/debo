@@ -72,6 +72,10 @@ export async function getComposioTools(userId: string, toolkits: string[] = ["go
     console.log(`[ComposioTools] Loaded ${Object.keys(tools).length} tools for: ${toolkits.join(", ")}`);
     return tools;
   } catch (error) {
+    if (isSchemaRefResolutionError(error)) {
+      console.warn(`[ComposioTools] Skipping dynamic agent tools: ${getComposioErrorSummary(error)}`);
+      return {};
+    }
     console.warn(`[ComposioTools] Batch tool fetch failed, retrying one action at a time: ${getComposioErrorSummary(error)}`);
   }
 
@@ -118,4 +122,9 @@ function getComposioErrorSummary(error: unknown) {
 
   const parts = [err.code, err.meta?.ref, err.message].filter(Boolean);
   return parts.join(" - ");
+}
+
+function isSchemaRefResolutionError(error: unknown) {
+  const text = getComposioErrorSummary(error);
+  return /JSON_SCHEMA_REF_RESOLUTION_ERROR|Cannot resolve \$ref/i.test(text);
 }

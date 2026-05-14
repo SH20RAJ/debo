@@ -351,38 +351,36 @@ export async function queryGraph(question: string, userId: string) {
     })
     .sort((left, right) => right.score - left.score);
 
-  const topPeople = scoredNodes.filter((node) => node.type === "person").slice(0, 5);
-  const topTopics = scoredNodes.filter((node) => node.type === "topic").slice(0, 5);
-  const topEmotions = scoredNodes.filter((node) => node.type === "emotion").slice(0, 5);
+  const topPeople = rankNodesByType(snapshot.nodes, "person", normalizedQuestion, entities).slice(0, 5);
+  const topTopics = rankNodesByType(snapshot.nodes, "topic", normalizedQuestion, entities).slice(0, 5);
+  const topEmotions = rankNodesByType(snapshot.nodes, "emotion", normalizedQuestion, entities).slice(0, 5);
+  const stressSignals = topEmotions.filter((node) =>
+    /stress|anxious|worried|overwhelmed|burned out|tired|drained|blocked|uncertain|frustrated/i.test(node.name)
+  );
 
   const insights: string[] = [];
 
   if (topPeople[0]) {
-    insights.push(`You mention ${topPeople[0].name} most often.`);
+    insights.push(`You mention ${topPeople[0].name} most often in recent journals.`);
   }
 
   if (topEmotions[0]) {
-    insights.push(`The dominant emotional tone is ${topEmotions[0].name}.`);
+    insights.push(`The strongest emotional signal is ${topEmotions[0].name}.`);
+  }
+
+  if (stressSignals[0]) {
+    insights.push(`${stressSignals[0].name} is the clearest stress-related signal.`);
   }
 
   if (topTopics[0]) {
-    insights.push(`Your strongest topic signal is ${topTopics[0].name}.`);
+    insights.push(`Your strongest recurring topic is ${topTopics[0].name}.`);
   }
 
   if (entities.topics[0]) {
     insights.push(`The question is likely about ${entities.topics[0]}.`);
   }
 
-  const patterns = snapshot.nodes
-    .map(node => {
-      const meta = node.metadata ? safeParseJson(node.metadata) : {};
-      return {
-        entity: node.name,
-        count: (meta.mentions as number) || 1
-      };
-    })
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 8);
+  const patterns = buildPatterns(snapshot.nodes).slice(0, 8);
 
   return {
     nodes: scoredNodes.slice(0, 12),
@@ -393,6 +391,52 @@ export async function queryGraph(question: string, userId: string) {
     topEmotions,
     patterns,
   };
+}
+
+function getMentionCount(node: { metadata?: string | null; weight?: number }) {
+  const meta = node.metadata ? safeParseJson(node.metadata) : {};
+  const mentions = Number(meta.mentions || 0);
+  if (Number.isFinite(mentions) && mentions > 0) return mentions;
+  return Math.max(1, Math.round(Number(node.weight || 1)));
+}
+
+function buildPatterns(nodes: Array<{ name: string; type: NodeType; weight: number; metadata?: string | null; lastSeenAt: string }>) {
+  return nodes
+    .filter((node) => node.type !== "event")
+    .map((node) => ({
+      entity: node.name,
+      count: getMentionCount(node),
+      type: node.type,
+      weight: node.weight,
+      lastSeenAt: node.lastSeenAt,
+    }))
+    .sort((left, right) => {
+      const countDelta = right.count - left.count;
+      if (countDelta !== 0) return countDelta;
+      return right.weight - left.weight;
+    });
+}
+
+function rankNodesByType(
+  nodes: Array<{ type: NodeType; name: string; weight: number; lastSeenAt: string; metadata?: string | null }>,
+  type: NodeType,
+  question: string,
+  entities: ReturnType<typeof extractEntities>
+) {
+  return nodes
+    .filter((node) => node.type === type)
+    .map((node) => ({
+      ...node,
+      count: getMentionCount(node),
+      score: scoreGraphNode(node, question, entities),
+    }))
+    .sort((left, right) => {
+      const countDelta = right.count - left.count;
+      if (countDelta !== 0) return countDelta;
+      const scoreDelta = (right.score || 0) - (left.score || 0);
+      if (scoreDelta !== 0) return scoreDelta;
+      return right.weight - left.weight;
+    });
 }
 
 function scoreGraphNode(

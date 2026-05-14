@@ -1,8 +1,13 @@
 import "server-only";
 
-import { embed as embedWithModel } from "ai";
+import { embed as embedWithAiSdk } from "ai";
 
-import { getEmbeddingModel, getEmbeddingModelId } from "./openai";
+import {
+  getEmbeddingModel,
+  getEmbeddingModelId,
+  getNvidiaApiKey,
+  getNvidiaBaseUrl,
+} from "./openai";
 
 const embeddingWarnings = new Set<string>();
 
@@ -20,14 +25,30 @@ type EmbeddingError = {
   };
 };
 
-export async function embed(text: string): Promise<number[]> {
+type EmbeddingInputType = "query" | "passage";
+
+function normalizeEmbeddingModelId(modelId: string) {
+  return modelId.replace(/-(query|passage)$/i, "");
+}
+
+function shouldUseNvidiaDirectEmbeddings(modelId: string) {
+  return /^nvidia\//i.test(modelId);
+}
+
+export async function embed(text: string, inputType: EmbeddingInputType = "passage"): Promise<number[]> {
   const value = text.replace(/\s+/g, " ").trim();
 
   if (!value) {
     throw new Error("Cannot embed empty text.");
   }
 
-  const result = await embedWithModel({
+  const modelId = getEmbeddingModelId();
+
+  if (shouldUseNvidiaDirectEmbeddings(modelId)) {
+    return embedWithNvidia(value, inputType);
+  }
+
+  const result = await embedWithAiSdk({
     model: getEmbeddingModel(),
     value,
   });
@@ -37,6 +58,49 @@ export async function embed(text: string): Promise<number[]> {
   }
 
   return result.embedding;
+}
+
+async function embedWithNvidia(value: string, inputType: EmbeddingInputType) {
+  const apiKey = getNvidiaApiKey();
+
+  if (!apiKey) {
+    throw Object.assign(new Error("Missing NVIDIA_API_KEY for embeddings."), {
+      statusCode: 401,
+    });
+  }
+
+  const response = await fetch(`${getNvidiaBaseUrl()}/embeddings`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: normalizeEmbeddingModelId(getEmbeddingModelId()),
+      input: [value],
+      input_type: inputType,
+      encoding_format: "float",
+    }),
+  });
+
+  if (!response.ok) {
+    const responseBody = await response.text().catch(() => "");
+    throw Object.assign(new Error(responseBody || "NVIDIA embedding request failed."), {
+      statusCode: response.status,
+      responseBody,
+    });
+  }
+
+  const data = (await response.json()) as {
+    data?: Array<{ embedding?: unknown }>;
+  };
+  const embedding = data.data?.[0]?.embedding;
+
+  if (!Array.isArray(embedding) || embedding.length === 0) {
+    throw new Error("Embedding provider returned an empty vector.");
+  }
+
+  return embedding.map((value) => Number(value));
 }
 
 export function isEmbeddingProviderUnavailable(error: unknown) {

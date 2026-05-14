@@ -4,13 +4,11 @@ import type {
 } from '@/components/editor/use-chat';
 import type { NextRequest } from 'next/server';
 
-import { createGateway } from '@ai-sdk/gateway';
 import {
   type LanguageModel,
   type UIMessageStreamWriter,
   createUIMessageStream,
   createUIMessageStreamResponse,
-  generateText,
   Output,
   streamText,
   tool,
@@ -20,20 +18,20 @@ import { type SlateEditor, createSlateEditor, nanoid } from 'platejs';
 import { z } from 'zod';
 
 import { BaseEditorKit } from '@/components/editor/editor-base-kit';
+import { getChatModel } from '@/lib/ai/openai';
 import { markdownJoinerTransform } from '@/lib/markdown-joiner-transform';
 
 import {
   buildEditTableMultiCellPrompt,
-  getChooseToolPrompt,
   getCommentPrompt,
   getEditPrompt,
   getGeneratePrompt,
 } from './prompt';
 
 export async function POST(req: NextRequest) {
-  const { apiKey: key, ctx, messages: messagesRaw, model } = (await req.json()) as any;
+  const { ctx, messages: messagesRaw = [] } = (await req.json()) as any;
 
-  const { children, selection, toolName: toolNameParam } = ctx;
+  const { children = [], selection, toolName: toolNameParam } = ctx || {};
 
   const editor = createSlateEditor({
     plugins: BaseEditorKit,
@@ -41,65 +39,37 @@ export async function POST(req: NextRequest) {
     value: children,
   });
 
-  const apiKey = key || process.env.AI_GATEWAY_API_KEY;
-
-  if (!apiKey) {
-    return NextResponse.json(
-      { error: 'Missing AI Gateway API key.' },
-      { status: 401 }
-    );
-  }
-
   const isSelecting = editor.api.isExpanded();
-
-  const gatewayProvider = createGateway({
-    apiKey,
-  });
+  const chatModel = getChatModel();
 
   try {
     const stream = createUIMessageStream<ChatMessage>({
       execute: async ({ writer }) => {
-        let toolName = toolNameParam;
+        const toolName = choosePlateTool({
+          isSelecting,
+          messages: messagesRaw,
+          toolName: toolNameParam,
+        });
 
-        if (!toolName) {
-          const prompt = getChooseToolPrompt({
-            isSelecting,
-            messages: messagesRaw,
-          });
-
-          const enumOptions = isSelecting
-            ? ['generate', 'edit', 'comment']
-            : ['generate', 'comment'];
-          const modelId = model || 'google/gemini-2.5-flash';
-
-          const { output: AIToolName } = (await generateText({
-            model: gatewayProvider(modelId),
-            output: Output.choice({ options: enumOptions }),
-            prompt,
-          })) as any;
-
-          writer.write({
-            data: AIToolName as ToolName,
-            type: 'data-toolName',
-          });
-
-          toolName = AIToolName;
-        }
+        writer.write({
+          data: toolName,
+          type: 'data-toolName',
+        });
 
         const stream = streamText({
           experimental_transform: markdownJoinerTransform(),
-          model: gatewayProvider(model || 'openai/gpt-4o-mini'),
+          model: chatModel,
           // Not used
           prompt: '',
           tools: {
             comment: getCommentTool(editor, {
               messagesRaw,
-              model: gatewayProvider(model || 'google/gemini-2.5-flash'),
+              model: chatModel,
               writer,
             }),
             table: getTableTool(editor, {
               messagesRaw,
-              model: gatewayProvider(model || 'google/gemini-2.5-flash'),
+              model: chatModel,
               writer,
             }),
           },
@@ -128,11 +98,7 @@ export async function POST(req: NextRequest) {
               return {
                 ...step,
                 activeTools: [],
-                model:
-                  editType === 'selection'
-                    ? //The selection task is more challenging, so we chose to use Gemini 2.5 Flash.
-                      gatewayProvider(model || 'google/gemini-2.5-flash')
-                    : gatewayProvider(model || 'openai/gpt-4o-mini'),
+                model: chatModel,
                 messages: [
                   {
                     content: editPrompt,
@@ -157,7 +123,7 @@ export async function POST(req: NextRequest) {
                     role: 'user',
                   },
                 ],
-                model: gatewayProvider(model || 'openai/gpt-4o-mini'),
+                model: chatModel,
               };
             }
           },
@@ -168,12 +134,57 @@ export async function POST(req: NextRequest) {
     });
 
     return createUIMessageStreamResponse({ stream });
-  } catch {
+  } catch (error) {
+    console.error('[PlateAI] command failed:', error);
     return NextResponse.json(
       { error: 'Failed to process AI request' },
       { status: 500 }
     );
   }
+}
+
+function getLastMessageText(messages: ChatMessage[]) {
+  const last = messages?.at(-1);
+  const parts = Array.isArray(last?.parts) ? last.parts : [];
+
+  return parts
+    .map((part: any) => {
+      if (part?.type === 'text' && typeof part.text === 'string') return part.text;
+      if (typeof part?.text === 'string') return part.text;
+      return '';
+    })
+    .join(' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function choosePlateTool({
+  isSelecting,
+  messages,
+  toolName,
+}: {
+  isSelecting: boolean;
+  messages: ChatMessage[];
+  toolName?: ToolName;
+}): ToolName {
+  if (toolName === 'generate' || toolName === 'edit' || toolName === 'comment') {
+    return toolName;
+  }
+
+  const instruction = getLastMessageText(messages).toLowerCase();
+
+  if (/\b(comment|feedback|review|annotate|notes on this)\b/.test(instruction)) {
+    return 'comment';
+  }
+
+  if (
+    isSelecting &&
+    /\b(rewrite|edit|fix|improve|shorten|make shorter|expand|translate|simplify|grammar|tone|polish)\b/.test(instruction)
+  ) {
+    return 'edit';
+  }
+
+  return 'generate';
 }
 
 const getCommentTool = (

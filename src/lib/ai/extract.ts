@@ -24,6 +24,17 @@ const EMOTIONS = [
   "stressed",
   "tired",
   "worried",
+  "sad",
+  "happy",
+  "angry",
+  "lonely",
+  "proud",
+  "blocked",
+  "drained",
+  "energized",
+  "uncertain",
+  "relieved",
+  "inspired",
 ];
 
 const TOPICS = [
@@ -46,6 +57,24 @@ const TOPICS = [
   "journal",
   "mcp",
   "qdrant",
+  "ai",
+  "chat",
+  "writing",
+  "school",
+  "study",
+  "sleep",
+  "food",
+  "friends",
+  "team",
+  "client",
+  "deadline",
+  "launch",
+  "content",
+  "music",
+  "youtube",
+  "google drive",
+  "memory",
+  "voice",
 ];
 
 const IGNORED_CAPITALIZED_WORDS = new Set([

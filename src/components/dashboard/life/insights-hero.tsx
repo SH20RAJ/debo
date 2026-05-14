@@ -18,23 +18,23 @@ export function InsightsHero({ topPerson, topEmotion, topTopic }: InsightsHeroPr
       icon: Link2,
       color: "text-primary",
       surface: "border-primary/10 bg-primary/5",
-      detail: "Peak connection frequency",
+      detail: "Most mentioned person",
     },
     {
-      label: "Affective State",
+      label: "Mood Signal",
       value: topEmotion?.name || "Equanimity",
       icon: Smile,
       color: "text-primary/80",
       surface: "border-primary/20 bg-primary/10",
-      detail: "Dominant emotional signature",
+      detail: "Most repeated feeling",
     },
     {
-      label: "Core Concept",
+      label: "Main Topic",
       value: topTopic?.name || "General",
       icon: Zap,
       color: "text-primary/60",
       surface: "border-primary/5 bg-primary/5",
-      detail: "Maximum thematic resonance",
+      detail: "Strongest recurring theme",
     },
   ];
 

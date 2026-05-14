@@ -43,6 +43,19 @@ const AST_GREP_STUB = String.raw`
             JSON.stringify({ name: "@ast-grep/napi", main: "index.js" })
         );
     }
+    {
+        const xxhashWorkerdSource = path.join(process.cwd(), "node_modules", "xxhash-wasm", "workerd");
+        const xxhashWorkerdTarget = path.join(outPackagePath, "node_modules", "xxhash-wasm", "workerd");
+        if (fs.existsSync(xxhashWorkerdSource)) {
+            fs.mkdirSync(xxhashWorkerdTarget, { recursive: true });
+            for (const file of fs.readdirSync(xxhashWorkerdSource)) {
+                fs.copyFileSync(
+                    path.join(xxhashWorkerdSource, file),
+                    path.join(xxhashWorkerdTarget, file)
+                );
+            }
+        }
+    }
 `;
 
 export async function load(url, context, nextLoad) {

@@ -41,7 +41,7 @@
 	"observability": {
 		"enabled": true
 	},
-	"upload_source_maps": true,
+	"upload_source_maps": false,
 	"r2_buckets": [
 		{
 			"binding": "MEDIA",

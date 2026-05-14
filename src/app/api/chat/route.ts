@@ -32,23 +32,114 @@ function shouldLoadMemoryContext(text: string) {
   return !/^(hi|hey|hello|yo|sup|thanks|thank you|ok|okay|k|test)[!.?\s]*$/i.test(normalized);
 }
 
-async function buildMemoryContext(userId: string, messages: any[]) {
+function formatDate(value?: string | Date) {
+  if (!value) return "unknown date";
+  return new Date(value).toLocaleDateString("en", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function toneInstruction(tone: string) {
+  switch (tone) {
+    case "calm":
+      return "calm, grounded, and reflective";
+    case "direct":
+      return "direct, plain, and low on filler";
+    case "coach":
+      return "supportive, practical, and gently action-oriented";
+    case "concise":
+      return "brief, simple, and focused";
+    default:
+      return "warm, steady, and human";
+  }
+}
+
+async function buildRuntimeContext(userId: string, messages: any[]) {
   const latestText = extractLatestUserText(messages);
-  if (!shouldLoadMemoryContext(latestText)) return null;
+  const sections: string[] = [];
+
+  try {
+    const { getDeboSettings } = await import("@/actions/settings");
+    const settings = await getDeboSettings(userId);
+    sections.push(
+      [
+        "User AI settings:",
+        `- Assistant name: ${settings.assistantName}`,
+        settings.userDisplayName ? `- User display name: ${settings.userDisplayName}` : null,
+        `- Response tone: ${toneInstruction(settings.tone)}`,
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    );
+  } catch (error) {
+    console.warn("[Chat] Settings context unavailable:", error);
+  }
+
+  if (!shouldLoadMemoryContext(latestText)) return sections.join("\n\n") || null;
 
   try {
     const { getMemories } = await import("@/actions/memories");
     const result = await getMemories(latestText, 8, 0, userId);
-    if (!result.success || !result.data?.length) return null;
 
-    return [
-      "Relevant memories from /dashboard/memories:",
-      ...result.data.map((memory) => `- ${memory.content}`),
-      "Use these only as context. Do not say you checked a tool unless asked.",
-    ].join("\n");
+    if (result.success && result.data?.length) {
+      sections.push(
+        [
+          "Relevant memories from /dashboard/memories:",
+          ...result.data.map((memory) => `- ${memory.content}`),
+        ].join("\n"),
+      );
+    }
   } catch (error) {
     console.warn("[Chat] Memory context unavailable:", error);
-    return null;
+  }
+
+  try {
+    const { searchJournals } = await import("@/lib/vector/search");
+    const journals = await searchJournals(latestText, userId, 4);
+
+    if (journals.length > 0) {
+      sections.push(
+        [
+          "Relevant journal citations:",
+          ...journals.map((journal, index) => {
+            const label = `[J${index + 1}]`;
+            const title = journal.title || "Untitled journal";
+            return `${label} ${title} (${formatDate(journal.date)}) - ${journal.snippet}`;
+          }),
+          "If you use a fact from a journal above, cite it inline with its label, for example [J1]. Do not cite memories.",
+        ].join("\n"),
+      );
+    }
+  } catch (error) {
+    console.warn("[Chat] Journal citation context unavailable:", error);
+  }
+
+  sections.push("Use retrieved context quietly. Do not mention tools unless the user asks.");
+  return sections.join("\n\n") || null;
+}
+
+function shouldRememberChatText(text: string) {
+  const normalized = text.trim();
+  if (!shouldLoadMemoryContext(normalized) || normalized.length < 24) return false;
+  if (/^(can you|could you|please|search|find|summarize|explain|write|create|make|delete|update|fix)\b/i.test(normalized)) {
+    return /^remember\b/i.test(normalized);
+  }
+  if (normalized.endsWith("?") && !/^remember\b/i.test(normalized)) return false;
+
+  return /\b(remember this|remember that|my name is|i am|i'm|i work|i live|i prefer|i like|i love|i hate|i want|i need|i decided|i started|i finished|i feel|i felt|i have|my goal|my project|my preference|my partner|my friend|my family|my job|my company)\b/i.test(normalized);
+}
+
+async function rememberImportantChat(userId: string, messages: any[]) {
+  const latestText = extractLatestUserText(messages);
+  if (!shouldRememberChatText(latestText)) return;
+
+  try {
+    const { addMemory } = await import("@/actions/memories");
+    await addMemory(latestText.replace(/^remember (this|that)[:\s-]*/i, ""), userId);
+  } catch (error) {
+    console.warn("[Chat] Could not save important memory:", error);
   }
 }
 
@@ -72,9 +163,11 @@ export async function POST(req: Request) {
   requestContext.set(MASTRA_RESOURCE_ID_KEY, userId);
   requestContext.set(MASTRA_THREAD_ID_KEY, threadId);
 
-  const memoryContext = await buildMemoryContext(userId, messages);
-  if (memoryContext) {
-    requestContext.set("memoryContext", memoryContext);
+  await rememberImportantChat(userId, messages);
+
+  const runtimeContext = await buildRuntimeContext(userId, messages);
+  if (runtimeContext) {
+    requestContext.set("memoryContext", runtimeContext);
   }
 
   // Dynamically inject Composio tools (with graceful error handling)
@@ -104,12 +197,12 @@ export async function POST(req: Request) {
     agentId: "debo",
     version: "v6",
     params: {
-      messages: memoryContext
+      messages: runtimeContext
         ? [
             {
-              id: "debo-memory-context",
+              id: "debo-runtime-context",
               role: "system",
-              parts: [{ type: "text", text: memoryContext }],
+              parts: [{ type: "text", text: runtimeContext }],
             },
             ...messages,
           ]

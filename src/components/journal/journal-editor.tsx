@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import dynamic from "next/dynamic";
 import { saveJournal } from "@/actions/journals";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -9,7 +10,13 @@ import { RelatedJournals } from "@/components/dashboard/journal/related-journals
 import { ArrowLeft, Loader2, Check, ChevronLeft, ChevronRight, Plus, Video, Mic2, Image as ImageIcon, X } from "lucide-react";
 import { MediaBlock, extractMediaFromContent, mediaSrcFromR2, type MediaKind } from "./media-block";
 import { cn } from "@/lib/utils";
-import { PlateEditor } from "@/components/editor/plate-editor";
+const PlateEditor = dynamic(
+    () => import("@/components/editor/plate-editor").then((mod) => mod.PlateEditor),
+    {
+        ssr: false,
+        loading: () => <div className="min-h-80 rounded-lg border border-border/40 bg-muted/10" />,
+    },
+);
 
 type CaptureMediaItem = {
     id: string;

@@ -7,9 +7,10 @@ import {
 } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
 import { Metadata } from "next";
-import { Search, Plus, Bell } from "lucide-react";
+import Link from "next/link";
+import { Plus, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { DashboardSearch } from "@/components/dashboard/dashboard-search";
 
 
 export default async function DashboardLayout({
@@ -42,19 +43,17 @@ export default async function DashboardLayout({
             </div>
 
             <div className="flex items-center gap-4">
-              <div className="hidden items-center gap-3 rounded-xl border border-border/20 bg-muted/20 px-4 py-2 transition-all focus-within:border-primary/40 focus-within:bg-card md:flex">
-                <Search className="h-4 w-4 text-muted-foreground/40" />
-                <span className="text-xs font-medium text-muted-foreground/40">Search memory...</span>
-                <kbd className="ml-4 rounded-md bg-card px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground/20 border border-border/40">⌘K</kbd>
-              </div>
+              <DashboardSearch />
               
               <Button variant="ghost" size="icon" className="rounded-xl h-10 w-10 border border-border/20 hover:bg-muted/40">
                 <Bell className="h-5 w-5 text-muted-foreground/60" />
               </Button>
               
-              <Button variant="default" className="hidden h-10 gap-2 rounded-xl px-5 text-xs font-semibold tracking-tight sm:flex bg-primary text-primary-foreground hover:bg-primary/90 transition-all">
-                <Plus className="h-4 w-4" />
-                <span>New Entry</span>
+              <Button asChild variant="default" className="hidden h-10 gap-2 rounded-xl px-5 text-xs font-semibold tracking-tight sm:flex bg-primary text-primary-foreground hover:bg-primary/90 transition-all">
+                <Link href="/dashboard/journal/text/new">
+                  <Plus className="h-4 w-4" />
+                  <span>New Entry</span>
+                </Link>
               </Button>
             </div>
           </header>
