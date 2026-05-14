@@ -1,9 +1,35 @@
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile, writeFile, readdir } from "node:fs/promises";
+import { join } from "node:path";
 
-const files = [
-  ".open-next/server-functions/default/handler.mjs",
-  ".open-next/worker.js",
-];
+const serverFunctionsDir = ".open-next/server-functions";
+const workerFile = ".open-next/worker.js";
+
+async function getHandlerFiles() {
+  const handlers = [workerFile];
+  try {
+    const dirs = await readdir(serverFunctionsDir);
+    for (const dir of dirs) {
+      const handlerPath = join(serverFunctionsDir, dir, "handler.mjs");
+      const indexPath = join(serverFunctionsDir, dir, "index.mjs");
+      
+      // Try handler.mjs first, then index.mjs
+      try {
+        await readFile(handlerPath);
+        handlers.push(handlerPath);
+      } catch {
+        try {
+          await readFile(indexPath);
+          handlers.push(indexPath);
+        } catch {
+          // No handler found in this function dir
+        }
+      }
+    }
+  } catch (error) {
+    console.warn("Could not read server-functions directory:", error.message);
+  }
+  return handlers;
+}
 
 const requireMarker = "var __esm=";
 const requirePatch = "__require.resolve ??= (path) => path;";
@@ -19,6 +45,7 @@ const manifestLoaderMarker =
 const manifestFilePatchMarker = "__DEBO_OPENNEXT_MANIFEST_FILE_PATCH__";
 const buildIdMarker = "nextServer=new import_next_server.default.default(";
 const runtimePatchMarker = "__DEBO_OPENNEXT_RUNTIME_PATCH__";
+
 const buildId = JSON.stringify((await readFile(".next/BUILD_ID", "utf8")).trim());
 const nextFontManifest = await readJson(".next/server/next-font-manifest.json");
 const pagesManifest = await readJson(".next/server/pages-manifest.json");
@@ -27,6 +54,7 @@ const middlewareManifest = await readJson(".next/server/middleware-manifest.json
 const prefetchHints = await readJson(".next/server/prefetch-hints.json");
 const prerenderManifest = await readJson(".next/prerender-manifest.json");
 const routesManifest = await readJson(".next/routes-manifest.json");
+
 const manifestTextMap = await readManifestTextMap([
   ".next/prerender-manifest.json",
   ".next/routes-manifest.json",
@@ -37,16 +65,24 @@ const manifestTextMap = await readManifestTextMap([
   ".next/server/pages-manifest.json",
   ".next/server/prefetch-hints.json",
 ]);
+
 const enabledDirectories = JSON.stringify({
   app: Object.keys(appPathsManifest).length > 0,
   pages: Object.keys(pagesManifest).length > 0,
 });
+
 const proto = "import_next_server.default.default.prototype";
+
 const manifestFilePatch = `var __deboInlineManifests=/* ${manifestFilePatchMarker} */${JSON.stringify(manifestTextMap)};function __deboNormalizeManifestPath(path2){let value=String(path2||"").replace(/^file:/,"").replace(/\\\\/g,"/");return value.startsWith("/")?value.slice(1):value}function __deboLoadInlineManifest(path2,skipParse){let key=__deboNormalizeManifestPath(path2),raw=__deboInlineManifests[key];if(raw===undefined){for(let candidate in __deboInlineManifests)if(key.endsWith(candidate)){raw=__deboInlineManifests[candidate];break}}return raw===undefined?undefined:skipParse?raw:JSON.parse(raw)}`;
+
 const runtimePatch = `__deboRuntimePatch=(/* ${runtimePatchMarker} */${proto}.loadInstrumentationModule=async function(){return undefined;},${proto}.loadNodeMiddleware=async function(){return undefined;},${proto}.getBuildId=function(){return ${buildId};},${proto}.getEnabledDirectories=function(){return ${enabledDirectories};},${proto}.getNextFontManifest=function(){return ${JSON.stringify(nextFontManifest)};},${proto}.getPagesManifest=function(){return ${JSON.stringify(pagesManifest)};},${proto}.getAppPathsManifest=function(){return ${JSON.stringify(appPathsManifest)};},${proto}.getMiddlewareManifest=function(){return ${JSON.stringify(middlewareManifest)};},${proto}.getPrefetchHints=function(){return ${JSON.stringify(prefetchHints)};},${proto}.getPrerenderManifest=function(){return ${JSON.stringify(prerenderManifest)};},${proto}.getRoutesManifest=function(){return ${JSON.stringify(routesManifest)};},0),`;
 
 async function readJson(path) {
-  return JSON.parse(await readFile(path, "utf8"));
+  try {
+    return JSON.parse(await readFile(path, "utf8"));
+  } catch {
+    return {};
+  }
 }
 
 async function readManifestTextMap(paths) {
@@ -75,6 +111,9 @@ function replaceUntil(source, start, end, replacement) {
 
   return `${source.slice(0, startIndex)}${replacement}${source.slice(endIndex)}`;
 }
+
+const files = await getHandlerFiles();
+console.log("Patching files:", files);
 
 for (const file of files) {
   let source = await readFile(file, "utf8");

@@ -3,7 +3,7 @@ import { MastraProvider } from "@composio/mastra";
 
 if (!process.env.COMPOSIO_API_KEY) {
   if (process.env.NODE_ENV === "production") {
-    throw new Error("COMPOSIO_API_KEY is not set");
+    console.warn("COMPOSIO_API_KEY is not set. Composio-based tools will be disabled.");
   }
 }
 

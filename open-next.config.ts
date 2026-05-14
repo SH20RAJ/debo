@@ -11,6 +11,7 @@ config.functions = {
     routes: [
       "app/api/ai/command/route",
       "app/api/ai/copilot/route",
+      "app/api/test/route",
       "app/api/capture/media/[...key]/route",
       "app/api/capture/media/route",
       "app/api/chat/history/route",
