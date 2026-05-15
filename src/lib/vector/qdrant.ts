@@ -22,6 +22,8 @@ type UpsertVectorInput = {
   payload: QdrantVectorPayload;
 };
 
+const qdrantFetchTimeoutMs = Number(process.env.QDRANT_FETCH_TIMEOUT_MS || 2500);
+
 export class QdrantRequestError extends Error {
   constructor(
     message: string,
@@ -75,8 +77,10 @@ async function qdrantRequest<T>(
   init: RequestInit = {}
 ): Promise<T> {
   const { url, apiKey } = getQdrantConfig();
+  const signal = init.signal || AbortSignal.timeout(qdrantFetchTimeoutMs);
   const response = await fetch(`${url}${path}`, {
     ...init,
+    signal,
     headers: {
       "content-type": "application/json",
       "api-key": apiKey,

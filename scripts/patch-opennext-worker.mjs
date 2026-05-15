@@ -172,7 +172,9 @@ function patchBundledDynamicRequire(source) {
   if (source.includes(bundledRequirePatchMarker)) return source;
 
   const entries = [];
+  const suffixEntries = [];
   const seenKeys = new Set();
+  const seenSuffixes = new Set();
   const moduleRegex =
     /var\s+([A-Za-z_$][\w$]*)\s*=\s*__commonJS\(\{\s*["']([^"']*\.open-next\/server-functions\/[^"']+?\/\.next\/server\/[^"']+?\.js)["']/g;
   let match;
@@ -182,11 +184,20 @@ function patchBundledDynamicRequire(source) {
     if (seenKeys.has(key)) continue;
     seenKeys.add(key);
     entries.push(`${JSON.stringify(key)}:()=>${variable}()`);
+
+    const nextServerIndex = key.indexOf("/.next/server/");
+    if (nextServerIndex >= 0) {
+      const suffix = key.slice(nextServerIndex);
+      if (!seenSuffixes.has(suffix)) {
+        seenSuffixes.add(suffix);
+        suffixEntries.push(`${JSON.stringify(suffix)}:()=>${variable}()`);
+      }
+    }
   }
 
   if (entries.length === 0) return source;
 
-  const bundledRequirePatch = `var __deboBundledRequireMap=/* ${bundledRequirePatchMarker} */{${entries.join(",")}};globalThis.__deboBundledRequire=function(path2){let key=String(path2||"").replace(/^file:/,"").replace(/\\\\/g,"/"),openNextIndex=key.indexOf(".open-next/server-functions/");if(openNextIndex>=0)key=key.slice(openNextIndex);else{let nextServerIndex=key.indexOf("/.next/server/");if(nextServerIndex>=0)key=".open-next/server-functions/default"+key.slice(nextServerIndex)}let loader=__deboBundledRequireMap[key];return loader?loader():undefined};`;
+  const bundledRequirePatch = `var __deboBundledRequireMap=/* ${bundledRequirePatchMarker} */{${entries.join(",")}};var __deboBundledRequireSuffixMap={${suffixEntries.join(",")}};globalThis.__deboBundledRequire=function(path2){let key=String(path2||"").replace(/^file:/,"").replace(/\\\\/g,"/"),openNextIndex=key.indexOf(".open-next/server-functions/"),nextServerIndex=-1;if(openNextIndex>=0){key=key.slice(openNextIndex);nextServerIndex=key.indexOf("/.next/server/")}else{nextServerIndex=key.indexOf("/.next/server/");if(nextServerIndex>=0)key=".open-next/server-functions/default"+key.slice(nextServerIndex)}let loader=__deboBundledRequireMap[key];if(!loader&&nextServerIndex>=0)loader=__deboBundledRequireSuffixMap[key.slice(key.indexOf("/.next/server/"))];return loader?loader():undefined};`;
 
   return source.replace(/setNodeEnv\(\);/, `${bundledRequirePatch}setNodeEnv();`);
 }
@@ -302,16 +313,57 @@ async function listRouteModuleFiles(functionName) {
   return files.sort();
 }
 
+async function listSplitRouteModules(functionName) {
+  const modules = (await listRouteModuleFiles(functionName)).map((file) => ({
+    functionName,
+    file,
+  }));
+
+  if (functionName !== "dashboard") {
+    return modules;
+  }
+
+  const defaultRouteFiles = await listRouteModuleFiles("default");
+  const dashboardFallbackRoutes = [
+    "/.next/server/app/(auth)/",
+    "/.next/server/app/(marketing)/",
+    "/.next/server/app/handler/",
+    "/.next/server/app/_not-found/",
+  ];
+
+  for (const file of defaultRouteFiles) {
+    if (dashboardFallbackRoutes.some((route) => file.includes(route))) {
+      modules.push({ functionName: "default", file });
+    }
+  }
+
+  return modules;
+}
+
 async function splitWorkerSource(functionName) {
   const handlerPath = `./server-functions/${functionName}/index.mjs`;
-  const routeFiles = await listRouteModuleFiles(functionName);
-  const routeMapEntries = routeFiles
-    .map((file) => {
+  const routeModules = await listSplitRouteModules(functionName);
+  const routeMapEntries = routeModules
+    .map(({ file }) => {
       const importPath = `./${file.slice(".open-next/".length)}`;
       const key = `.open-next/${file.slice(".open-next/".length)}`;
       return `${JSON.stringify(key)}:()=>require(${JSON.stringify(importPath)})`;
     })
     .join(",");
+  const routeSuffixEntries = [];
+  const seenSuffixes = new Set();
+  for (const { file } of routeModules) {
+    const key = `.open-next/${file.slice(".open-next/".length)}`;
+    const nextServerIndex = key.indexOf("/.next/server/");
+    if (nextServerIndex === -1) continue;
+
+    const suffix = key.slice(nextServerIndex);
+    if (seenSuffixes.has(suffix)) continue;
+    seenSuffixes.add(suffix);
+    routeSuffixEntries.push(
+      `${JSON.stringify(suffix)}:${JSON.stringify(key)}`
+    );
+  }
 
   return `//@ts-expect-error: Will be resolved by wrangler build
 import { handleCdnCgiImageRequest, handleImageRequest } from "./cloudflare/images.js";
@@ -325,21 +377,30 @@ import { handler as middlewareHandler } from "./middleware/handler.mjs";
 import { handler as serverHandler } from "${handlerPath}";
 
 const __deboRouteModules = {${routeMapEntries}};
+const __deboRouteModuleSuffixes = {${routeSuffixEntries.join(",")}};
 const __deboPreviousBundledRequire = globalThis.__deboBundledRequire;
 globalThis.__deboBundledRequire = function(path2) {
     let key = String(path2 || "").replace(/^file:/, "").replace(/\\\\/g, "/");
+    let nextServerIndex = -1;
     const openNextIndex = key.indexOf(".open-next/server-functions/");
     if (openNextIndex >= 0) {
         key = key.slice(openNextIndex);
+        nextServerIndex = key.indexOf("/.next/server/");
     } else {
-        const nextServerIndex = key.indexOf("/.next/server/");
+        nextServerIndex = key.indexOf("/.next/server/");
         if (nextServerIndex >= 0) {
             key = ".open-next/server-functions/${functionName}" + key.slice(nextServerIndex);
         }
     }
-    return Object.prototype.hasOwnProperty.call(__deboRouteModules, key)
-        ? __deboRouteModules[key]()
-        : __deboPreviousBundledRequire?.(path2);
+    let loader = Object.prototype.hasOwnProperty.call(__deboRouteModules, key)
+        ? __deboRouteModules[key]
+        : undefined;
+    if (!loader && nextServerIndex >= 0) {
+        const suffix = key.slice(key.indexOf("/.next/server/"));
+        const suffixKey = __deboRouteModuleSuffixes[suffix];
+        loader = suffixKey ? __deboRouteModules[suffixKey] : undefined;
+    }
+    return loader ? loader() : __deboPreviousBundledRequire?.(path2);
 };
 
 export default {

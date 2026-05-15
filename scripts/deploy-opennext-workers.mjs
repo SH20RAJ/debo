@@ -142,7 +142,9 @@ function patchBundledDynamicRequire(source) {
   if (source.includes(bundledRequirePatchMarker)) return source;
 
   const entries = [];
+  const suffixEntries = [];
   const seenKeys = new Set();
+  const seenSuffixes = new Set();
   const moduleRegex =
     /var\s+([A-Za-z_$][\w$]*)\s*=\s*__commonJS\d*\(\{\s*["']([^"']*\.open-next\/server-functions\/[^"']+?\/\.next\/server\/[^"']+?\.js)["']/g;
   let match;
@@ -152,11 +154,20 @@ function patchBundledDynamicRequire(source) {
     if (seenKeys.has(key)) continue;
     seenKeys.add(key);
     entries.push(`${JSON.stringify(key)}:()=>${variable}()`);
+
+    const nextServerIndex = key.indexOf("/.next/server/");
+    if (nextServerIndex >= 0) {
+      const suffix = key.slice(nextServerIndex);
+      if (!seenSuffixes.has(suffix)) {
+        seenSuffixes.add(suffix);
+        suffixEntries.push(`${JSON.stringify(suffix)}:()=>${variable}()`);
+      }
+    }
   }
 
   if (entries.length === 0) return source;
 
-  const patch = `var __deboBundledRequireMap=/* ${bundledRequirePatchMarker} */{${entries.join(",")}};globalThis.__deboBundledRequire=function(path2){let key=String(path2||"").replace(/^file:/,"").replace(/\\\\/g,"/"),openNextIndex=key.indexOf(".open-next/server-functions/");if(openNextIndex>=0)key=key.slice(openNextIndex);else{let nextServerIndex=key.indexOf("/.next/server/");if(nextServerIndex>=0){let fnName=globalThis.fnName||"default";key=".open-next/server-functions/"+fnName+key.slice(nextServerIndex)}}let loader=__deboBundledRequireMap[key];return loader?loader():undefined};`;
+  const patch = `var __deboBundledRequireMap=/* ${bundledRequirePatchMarker} */{${entries.join(",")}};var __deboBundledRequireSuffixMap={${suffixEntries.join(",")}};globalThis.__deboBundledRequire=function(path2){let key=String(path2||"").replace(/^file:/,"").replace(/\\\\/g,"/"),openNextIndex=key.indexOf(".open-next/server-functions/"),nextServerIndex=-1;if(openNextIndex>=0){key=key.slice(openNextIndex);nextServerIndex=key.indexOf("/.next/server/")}else{nextServerIndex=key.indexOf("/.next/server/");if(nextServerIndex>=0){let fnName=globalThis.fnName||"default";key=".open-next/server-functions/"+fnName+key.slice(nextServerIndex)}}let loader=__deboBundledRequireMap[key];if(!loader&&nextServerIndex>=0)loader=__deboBundledRequireSuffixMap[key.slice(key.indexOf("/.next/server/"))];return loader?loader():undefined};`;
 
   return source.replace(/setNodeEnv\(\);/, `${patch}setNodeEnv();`);
 }

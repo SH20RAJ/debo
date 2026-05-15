@@ -3,7 +3,7 @@ import { drizzle } from 'drizzle-orm/neon-http';
 import * as schema from './schema';
 
 const databaseUrl = process.env.DATABASE_URL;
-const defaultTimeout = process.env.NODE_ENV === "development" ? 10000 : 8000;
+const defaultTimeout = process.env.NODE_ENV === "development" ? 3000 : 2500;
 const neonFetchTimeoutMs = Number(process.env.NEON_FETCH_TIMEOUT_MS || defaultTimeout);
 
 neonConfig.fetchFunction = async (input: RequestInfo | URL, init?: RequestInit) => {

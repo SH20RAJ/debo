@@ -6,6 +6,49 @@ import { createUIMessageStreamResponse } from "ai";
 
 export const maxDuration = 30;
 
+const contextTimeoutMs = Number(process.env.CHAT_CONTEXT_TIMEOUT_MS || 2500);
+
+async function withContextTimeout<T>(
+  label: string,
+  task: () => Promise<T>,
+  fallback: T,
+  timeoutMs = contextTimeoutMs
+) {
+  let settled = false;
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+
+  const work = task()
+    .then((value) => {
+      settled = true;
+      return value;
+    })
+    .catch((error) => {
+      if (!settled) {
+        settled = true;
+        throw error;
+      }
+
+      console.warn(`[Chat] ${label} context finished after timeout:`, error);
+      return fallback;
+    });
+
+  const timer = new Promise<T>((resolve) => {
+    timeout = setTimeout(() => {
+      if (!settled) {
+        settled = true;
+        console.warn(`[Chat] ${label} context timed out after ${timeoutMs}ms.`);
+        resolve(fallback);
+      }
+    }, timeoutMs);
+  });
+
+  try {
+    return await Promise.race([work, timer]);
+  } finally {
+    if (timeout) clearTimeout(timeout);
+  }
+}
+
 function extractLatestUserText(messages: any[]) {
   const latestUserMessage = [...messages].reverse().find((message) => message?.role === "user");
   if (!latestUserMessage) return "";
@@ -62,17 +105,19 @@ async function buildRuntimeContext(userId: string, messages: any[]) {
 
   try {
     const { getDeboSettings } = await import("@/actions/settings");
-    const settings = await getDeboSettings(userId);
-    sections.push(
-      [
-        "User AI settings:",
-        `- Assistant name: ${settings.assistantName}`,
-        settings.userDisplayName ? `- User display name: ${settings.userDisplayName}` : null,
-        `- Response tone: ${toneInstruction(settings.tone)}`,
-      ]
-        .filter(Boolean)
-        .join("\n"),
-    );
+    const settings = await withContextTimeout("Settings", () => getDeboSettings(userId), null);
+    if (settings) {
+      sections.push(
+        [
+          "User AI settings:",
+          `- Assistant name: ${settings.assistantName}`,
+          settings.userDisplayName ? `- User display name: ${settings.userDisplayName}` : null,
+          `- Response tone: ${toneInstruction(settings.tone)}`,
+        ]
+          .filter(Boolean)
+          .join("\n"),
+      );
+    }
   } catch (error) {
     console.warn("[Chat] Settings context unavailable:", error);
   }
@@ -81,9 +126,13 @@ async function buildRuntimeContext(userId: string, messages: any[]) {
 
   try {
     const { getMemories } = await import("@/actions/memories");
-    const result = await getMemories(latestText, 8, 0, userId);
+    const result = await withContextTimeout(
+      "Memory",
+      () => getMemories(latestText, 8, 0, userId),
+      null
+    );
 
-    if (result.success && result.data?.length) {
+    if (result?.success && result.data?.length) {
       sections.push(
         [
           "Relevant memories from /dashboard/memories:",
@@ -97,7 +146,11 @@ async function buildRuntimeContext(userId: string, messages: any[]) {
 
   try {
     const { searchJournals } = await import("@/lib/vector/search");
-    const journals = await searchJournals(latestText, userId, 4);
+    const journals = await withContextTimeout(
+      "Journal citation",
+      () => searchJournals(latestText, userId, 4),
+      []
+    );
 
     if (journals.length > 0) {
       sections.push(
@@ -137,7 +190,12 @@ async function rememberImportantChat(userId: string, messages: any[]) {
 
   try {
     const { addMemory } = await import("@/actions/memories");
-    await addMemory(latestText.replace(/^remember (this|that)[:\s-]*/i, ""), userId);
+    await withContextTimeout(
+      "Save memory",
+      () => addMemory(latestText.replace(/^remember (this|that)[:\s-]*/i, ""), userId),
+      null,
+      2000
+    );
   } catch (error) {
     console.warn("[Chat] Could not save important memory:", error);
   }

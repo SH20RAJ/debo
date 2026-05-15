@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint .",
     "deploy": "NODE_OPTIONS=--import=./scripts/register-opennext-ast-patch.mjs opennextjs-cloudflare build && node scripts/patch-opennext-worker.mjs && node scripts/deploy-opennext-workers.mjs",
