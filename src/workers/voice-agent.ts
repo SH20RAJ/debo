@@ -12,7 +12,6 @@ import { config as loadEnv } from "dotenv";
 import { and, desc, eq, like } from "drizzle-orm";
 import { fileURLToPath } from "node:url";
 
-import { db } from "../db";
 import { memoryEntities, memoryFacts } from "../db/schema";
 import { DEBO_SYSTEM_PROMPT } from "../lib/chat/debo-tools";
 
@@ -143,6 +142,7 @@ async function buildVoiceInstructions(userId: string) {
   let settingsContext = "";
 
   const settings = await withOptionalVoiceContext("settings", async () => {
+    const { db } = await import("../db");
     const rows = await db.query.memoryFacts.findMany({
       where: and(
         eq(memoryFacts.userId, userId),
@@ -163,6 +163,7 @@ async function buildVoiceInstructions(userId: string) {
   ].filter(Boolean).join("\n");
 
   const memories = await withOptionalVoiceContext("memories", async () => {
+    const { db } = await import("../db");
     const [facts, entities] = await Promise.all([
       db.query.memoryFacts.findMany({
         where: and(eq(memoryFacts.userId, userId), eq(memoryFacts.type, "fact")),
