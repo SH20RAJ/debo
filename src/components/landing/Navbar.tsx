@@ -17,7 +17,18 @@ export function Navbar({ isSignedIn = false }: NavbarProps) {
             <span className="font-heading font-semibold text-xl tracking-tight text-foreground">debo</span>
           </Link>
         </div>
-        <div className="flex items-center gap-6">
+        <nav className="hidden items-center gap-6 md:flex" aria-label="Primary navigation">
+          <Link href="/#how-it-works" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+            How it works
+          </Link>
+          <Link href="/#use-cases" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+            Use cases
+          </Link>
+          <Link href="/#privacy" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+            Privacy
+          </Link>
+        </nav>
+        <div className="flex items-center gap-4 sm:gap-6">
           <ThemeToggle />
           {isSignedIn ? (
             <Link 
@@ -32,13 +43,13 @@ export function Navbar({ isSignedIn = false }: NavbarProps) {
                 href="/join" 
                 className="hidden md:inline-flex text-sm font-medium text-muted-foreground hover:text-foreground transition-colors tracking-tight"
               >
-                Sign In
+                Sign in
               </Link>
               <Link 
                 href="/join" 
                 className="minimal-btn-primary px-5 py-2 text-sm"
               >
-                Get Started
+                Get started
               </Link>
             </div>
           )}
@@ -47,6 +58,5 @@ export function Navbar({ isSignedIn = false }: NavbarProps) {
     </header>
   );
 }
-
 
 

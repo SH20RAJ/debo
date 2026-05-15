@@ -23,11 +23,10 @@ export function Comparison() {
       <div className="container mx-auto max-w-6xl px-6">
         <div className="text-center mb-24 space-y-6">
           <h2 className="text-4xl md:text-5xl font-heading font-semibold text-foreground tracking-tight leading-[1.1]">
-            The same conversation, <span className="text-primary/60 italic">twice.</span>
+            The difference is <span className="text-primary/60 italic">continuity.</span>
           </h2>
           <p className="max-w-2xl mx-auto text-lg text-muted-foreground font-medium leading-relaxed">
-            Standard AI models forget everything the moment you close the tab. <br className="hidden md:block" />
-            Debo ensures your context lives forever.
+            Generic chat remembers a thread. Debo remembers the people, dates, and evidence across the life you actually captured.
           </p>
         </div>
 
@@ -114,7 +113,7 @@ export function Comparison() {
               <div className={`space-y-4 transition-all duration-700 delay-300 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
                 <div className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground/40">Debo</div>
                 <p className="text-lg font-medium text-foreground">
-                  &ldquo;Saved to <span className="text-primary font-semibold">Anya&apos;s context</span> under Chess Events.&rdquo;
+                  &ldquo;Saved to <span className="text-primary font-semibold">Anya&apos;s profile</span> with the date and source attached.&rdquo;
                 </p>
               </div>
 

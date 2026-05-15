@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Sparkles, Brain, Mic, MessageSquare } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 
 export function CTA() {
   return (
@@ -14,14 +14,14 @@ export function CTA() {
             <div className="space-y-6">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 border border-primary/10 text-primary font-bold uppercase tracking-widest text-[9px]">
                 <Sparkles className="h-3.5 w-3.5" />
-                <span>Zero Context Required</span>
+                <span>Start in seconds</span>
               </div>
               <h2 className="text-4xl md:text-6xl font-heading font-semibold text-foreground tracking-tight leading-[1.1]">
-                Stop forgetting. <br />
-                <span className="text-primary/60 italic">Start remembering.</span>
+                Give your future self <br />
+                <span className="text-primary/60 italic">the missing context.</span>
               </h2>
               <p className="text-lg text-muted-foreground font-medium max-w-xl mx-auto leading-relaxed">
-                Join the early adopters building their private memory engine today. It takes 10 seconds to initialize your first memory.
+                Capture one thought today. Debo will make it searchable, connected, and useful when you need it later.
               </p>
             </div>
 
@@ -30,7 +30,7 @@ export function CTA() {
                 href="/join"
                 className="minimal-btn-primary px-10 py-4 text-base w-full sm:w-auto shadow-xl shadow-primary/20 hover:shadow-primary/30"
               >
-                Record your first memory
+                Build your private memory
               </Link>
               <Link
                 href="https://github.com/SH20RAJ/debo"
@@ -43,10 +43,10 @@ export function CTA() {
             </div>
 
             <div className="pt-10 flex flex-wrap items-center justify-center gap-x-10 gap-y-4 border-t border-border/50">
-               <TrustItem label="Encrypted" />
-               <TrustItem label="Open Source" />
-               <TrustItem label="Private" />
-               <TrustItem label="Free to start" />
+                <TrustItem label="Encrypted" />
+                <TrustItem label="Open Source" />
+                <TrustItem label="Cited Answers" />
+                <TrustItem label="Free to start" />
             </div>
 
             <div className="pt-10 flex flex-wrap justify-center gap-8 items-center border-t border-border/50">

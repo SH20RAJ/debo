@@ -1,12 +1,12 @@
 "use client";
 
-import { Shield, Lock, Trash2, Download, EyeOff, Globe, CheckCircle2, History } from "lucide-react";
+import { Shield, Lock, EyeOff, Globe, CheckCircle2, History } from "lucide-react";
 
 const trustMarkers = [
   {
     icon: Lock,
     title: "Encrypted everywhere",
-    description: "Your memories are encrypted in transit and at rest using industry-standard AES-256. Only you hold the keys to your life story.",
+    description: "Your memories are protected in transit and at rest. Personal context deserves infrastructure-level privacy, not marketing promises.",
   },
   {
     icon: EyeOff,
@@ -15,8 +15,8 @@ const trustMarkers = [
   },
   {
     icon: History,
-    title: "Export or Delete",
-    description: "Download your entire history in open formats (Markdown/JSON) or permanently delete everything with one click. No lock-in.",
+    title: "Export or delete",
+    description: "Keep ownership of your archive. Export your history or remove it when you choose, without hiding controls behind support tickets.",
   },
   {
     icon: Globe,
@@ -31,7 +31,7 @@ const trustMarkers = [
   {
     icon: Shield,
     title: "Cited evidence",
-    description: "Every answer Debo gives is backed by a cited source from your own history. No hallucinations, just recovered memories.",
+    description: "Debo is designed to answer from your own history with source references, so you can inspect where important claims came from.",
   },
 ];
 
@@ -42,11 +42,11 @@ export function Privacy() {
         <div className="flex flex-col lg:flex-row gap-20 items-start">
           <div className="lg:w-1/3 space-y-8 text-center lg:text-left lg:sticky lg:top-32">
             <h2 className="text-4xl md:text-5xl font-heading font-semibold text-foreground tracking-tight leading-[1.1]">
-              Trust is the <br />
-              <span className="text-primary/60 italic">core engine.</span>
+              Private memory needs <br />
+              <span className="text-primary/60 italic">real control.</span>
             </h2>
             <p className="text-lg text-muted-foreground font-medium leading-relaxed">
-              We architected Debo for deeply personal data. No vague claims—just specific, technical commitments to your privacy.
+              Debo is built for deeply personal data. The product needs to be useful because it remembers, and trustworthy because you stay in control.
             </p>
           </div>
           

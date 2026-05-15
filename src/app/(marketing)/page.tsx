@@ -24,13 +24,10 @@ export default async function LandingPage() {
       <UseCases />
       <Differentiation />
       <Privacy />
-      <Differentiation />
-      
       <SocialProof />
       <FAQ />
       <CTA />
     </>
   );
 }
-
 

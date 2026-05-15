@@ -1,27 +1,27 @@
 "use client";
 
-import { Mic, Brain, Sparkles, MessageSquare, ArrowRight, Network, Fingerprint } from "lucide-react";
+import { Mic, Brain, Sparkles, Network, Fingerprint } from "lucide-react";
 import Link from "next/link";
 
 const steps = [
   {
     title: "1. Capture",
-    description: "Record voice notes, upload journals, or connect your calendar. Debo takes in your raw life context as it happens.",
+    description: "Write, talk, chat, or connect context. Debo keeps the input simple so the habit stays lightweight.",
     icon: Mic,
   },
   {
     title: "2. Extract",
-    description: "Debo automatically extracts people, dates, promises, and decisions. It understands the 'who' and 'what' of your life.",
+    description: "People, dates, promises, decisions, and topics are pulled out automatically with source references attached.",
     icon: Fingerprint,
   },
   {
     title: "3. Remember",
-    description: "Every detail is woven into your private memory graph. No data is ever lost or forgotten by the system.",
+    description: "Details are connected in a private memory graph, so related moments stay linked across time and format.",
     icon: Network,
   },
   {
     title: "4. Ask or Act",
-    description: "Ask questions and get answers grounded in your past, with cited sources. Draft emails or events based on what you remember.",
+    description: "Ask grounded questions, recover the evidence, then draft reminders, events, or replies only when you approve.",
     icon: Sparkles,
   },
 ];
@@ -32,10 +32,10 @@ export function Solution() {
       <div className="container mx-auto max-w-6xl px-6">
         <div className="text-center mb-24 space-y-6">
           <h2 className="text-4xl md:text-5xl font-heading font-semibold text-foreground tracking-tight leading-[1.1]">
-            How your <span className="text-primary/80">memory engine</span> works.
+            From raw moments to <span className="text-primary/80">usable memory.</span>
           </h2>
           <p className="max-w-2xl mx-auto text-lg text-muted-foreground font-medium leading-relaxed">
-            A private, automated loop that ensures your experiences become permanent, searchable knowledge.
+            Debo does the work between capture and recall: extracting structure, preserving evidence, and making your context searchable.
           </p>
         </div>
 
@@ -62,20 +62,19 @@ export function Solution() {
               <Brain className="w-4 h-4 text-primary/60" />
               <span className="text-primary/60 font-semibold uppercase tracking-widest text-[9px]">Private Intelligence</span>
             </div>
-            <h4 className="text-2xl font-semibold text-foreground tracking-tight">Ready to record your first memory?</h4>
+            <h4 className="text-2xl font-semibold text-foreground tracking-tight">Start with one note. Ask about it later.</h4>
           </div>
           <Link
             href="/join"
             className="minimal-btn-primary px-10 py-3 text-base"
           >
-            Start Remembering
+            Create your memory graph
           </Link>
         </div>
       </div>
     </section>
   );
 }
-
 
 
 

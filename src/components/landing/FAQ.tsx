@@ -10,7 +10,7 @@ import {
 const faqs = [
   {
     question: "Is Debo a journal?",
-    answer: "It can be, but it is more than a journal. Debo turns voice notes, diary pages, AI chats, and calendar context into memories you can search and ask about.",
+    answer: "It can be used as a journal, but the core product is memory. Debo turns voice notes, diary pages, chats, and connected context into memories you can search and ask about.",
   },
   {
     question: "Can Debo create reminders or calendar events?",
@@ -26,7 +26,7 @@ const faqs = [
   },
   {
     question: "Why not just use ChatGPT or Notion?",
-    answer: "ChatGPT does not automatically remember your life across sources, and Notion stores notes but does not understand patterns or turn raw memories into actions automatically.",
+    answer: "ChatGPT is conversation-first and Notion is document-first. Debo is memory-first: it connects people, dates, promises, and sources across what you capture.",
   },
 ];
 

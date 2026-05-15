@@ -1,36 +1,36 @@
 "use client";
 
-import { MicOff, SearchX, BrainCircuit, CloudOff, Ghost, Clock9 } from "lucide-react";
+import { CloudOff, Ghost, Clock9 } from "lucide-react";
 
 const problems = [
   {
     icon: Ghost,
-    title: "Memories become ghosts",
-    description: "You record a voice note or write a journal entry, but you never look back. Your life context is locked in dead files.",
+    title: "Notes become dead ends",
+    description: "You capture a thought once, then it disappears into an app you rarely search again.",
   },
   {
     icon: Clock9,
-    title: "Promises fall through",
-    description: "You tell someone you'll follow up on a specific date. Without a personal memory engine, that promise is lost in the noise.",
+    title: "Follow-ups slip away",
+    description: "Names, dates, decisions, and promises get buried before they become useful actions.",
   },
   {
     icon: CloudOff,
-    title: "The context tax",
-    description: "Scattered context means you spend hours digging for that one decision from a meeting three months ago.",
+    title: "Context stays scattered",
+    description: "Voice notes, journals, chats, and meetings do not connect, so every search starts from zero.",
   },
 ];
 
 export function Problem() {
   return (
-    <section className="py-32 bg-muted/30 border-y border-border/10">
+    <section className="py-28 bg-muted/30 border-y border-border/10 sm:py-32">
       <div className="container mx-auto max-w-5xl px-6">
         <div className="mb-20 text-center space-y-6">
           <h2 className="text-4xl md:text-5xl font-heading font-semibold text-foreground leading-[1.1]">
-            Your memories are <br />
-            <span className="text-primary/60 italic">disappearing.</span>
+            Capturing is easy. <br />
+            <span className="text-primary/60 italic">Remembering is broken.</span>
           </h2>
           <p className="max-w-2xl mx-auto text-lg text-muted-foreground font-medium leading-relaxed">
-            Scattered thoughts across random apps never connect. You forget what you promised, what you did, and who you were.
+            The problem is not taking more notes. It is turning what you already captured into context you can trust later.
           </p>
         </div>
         
@@ -58,7 +58,6 @@ export function Problem() {
     </section>
   );
 }
-
 
 
 

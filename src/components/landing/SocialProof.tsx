@@ -1,7 +1,6 @@
 "use client";
 
-import { MessageSquare, Code, Globe, Star, Quote } from "lucide-react";
-import Link from "next/link";
+import { MessageSquare, Code, Globe, Star } from "lucide-react";
 
 const testimonials = [
   {
@@ -30,12 +29,12 @@ export function SocialProof() {
              <Star className="w-3 h-3 fill-current opacity-60" />
              <span>Built in Public</span>
            </div>
-           <h2 className="text-4xl md:text-5xl font-heading font-semibold text-foreground tracking-tight leading-[1.1]">
-             Join the <span className="text-primary/60 italic">builders.</span>
-           </h2>
-           <p className="max-w-2xl mx-auto text-lg text-muted-foreground font-medium leading-relaxed">
-             Debo is being built openly with feedback from founders and operators worldwide.
-           </p>
+            <h2 className="text-4xl md:text-5xl font-heading font-semibold text-foreground tracking-tight leading-[1.1]">
+              Built in public for <span className="text-primary/60 italic">power users.</span>
+            </h2>
+            <p className="max-w-2xl mx-auto text-lg text-muted-foreground font-medium leading-relaxed">
+              Debo is evolving with people who already capture their life in notes, chats, calls, and voice memos.
+            </p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">
@@ -68,7 +67,7 @@ export function SocialProof() {
 
            <div className="flex items-center gap-2 font-bold text-foreground uppercase tracking-[0.2em] text-[9px]">
              <Globe className="w-4 h-4" />
-             <span>Global Context</span>
+              <span>Personal Context</span>
            </div>
            <div className="flex items-center gap-2 font-bold text-foreground uppercase tracking-[0.2em] text-[9px]">
              <Star className="w-4 h-4" />

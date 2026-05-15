@@ -12,10 +12,10 @@ import "@livekit/components-styles";
 export const metadata: Metadata = {
 	metadataBase: new URL("https://debo.app"),
 	title: {
-		default: "Debo | Your Life's Memory Engine",
+		default: "Debo | Private AI Memory for Your Life",
 		template: "%s | Debo",
 	},
-	description: "Debo is your personal memory engine. It remembers your life so you can ask anything about it. High-retention journaling and AI intelligence.",
+	description: "Debo turns journals, voice notes, chats, and people into a private searchable memory graph with cited AI answers.",
 	keywords: ["Memory Engine", "Life Querying", "Journaling", "Personal Intelligence", "Privacy"],
 	authors: [{ name: "Debo" }],
 	creator: "Debo",

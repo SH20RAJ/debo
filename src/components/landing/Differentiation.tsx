@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Minus, Brain, Search, Shield, Zap, Sparkles } from "lucide-react";
+import { Check, Minus, Brain, Shield, Zap, Sparkles, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const features = [
@@ -61,11 +61,11 @@ export function Differentiation() {
       <div className="container mx-auto max-w-6xl px-6">
         <div className="text-center mb-32 space-y-8">
           <h2 className="text-5xl md:text-6xl font-heading font-semibold text-foreground tracking-tighter leading-[0.95]">
-            Architectural <br />
-            <span className="text-primary/20 italic">Differentiation.</span>
+            Why Debo is <br />
+            <span className="text-primary/40 italic">memory-first.</span>
           </h2>
           <p className="max-w-2xl mx-auto text-xl text-muted-foreground/60 font-medium leading-relaxed tracking-tight">
-            Personal memory retrieval requires a distinct architecture. Debo is optimized for long-term semantic persistence.
+            Notes store content. Chatbots answer prompts. Debo is designed for long-term personal recall across people, sources, and time.
           </p>
         </div>
 
@@ -82,7 +82,7 @@ export function Differentiation() {
 
             {/* Rows */}
             <div className="space-y-4">
-              {features.map((feature, i) => (
+              {features.map((feature) => (
                 <div 
                   key={feature.name} 
                   className="grid grid-cols-[1fr_repeat(4,160px)] gap-4 items-center p-6 rounded-2xl border border-border/20 bg-card/10 transition-all hover:bg-card/20 hover:border-border/40 group"
@@ -106,7 +106,7 @@ export function Differentiation() {
                <Sparkles className="w-5 h-5 text-primary/40" />
              </div>
              <p className="text-[11px] font-medium text-muted-foreground/40 leading-relaxed italic tracking-wide">
-               "Conventional systems store data. LLMs store the world. <span className="text-foreground/60 font-bold not-italic">Debo stores your context.</span>"
+                &ldquo;Conventional systems store data. LLMs store the world. <span className="text-foreground/60 font-bold not-italic">Debo stores your context.</span>&rdquo;
              </p>
            </div>
         </div>
@@ -115,7 +115,7 @@ export function Differentiation() {
   );
 }
 
-function ColumnHeader({ label, icon: Icon, isHighlight = false }: { label: string, icon: any, isHighlight?: boolean }) {
+function ColumnHeader({ label, icon: Icon, isHighlight = false }: { label: string; icon: LucideIcon; isHighlight?: boolean }) {
   return (
     <div className={cn(
       "flex flex-col items-center gap-4 pb-4 px-2 transition-all duration-300",
