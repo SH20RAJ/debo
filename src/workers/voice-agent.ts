@@ -7,9 +7,14 @@ import {
   voice,
 } from "@livekit/agents";
 import * as openai from "@livekit/agents-plugin-openai";
+import { config as loadEnv } from "dotenv";
 import { fileURLToPath } from "node:url";
 
 import { DEBO_SYSTEM_PROMPT, createDeboRuntimeTools } from "../lib/chat/debo-tools";
+
+loadEnv({ path: ".env.local" });
+loadEnv({ path: ".env" });
+loadEnv({ path: ".dev.vars", override: false });
 
 const AGENT_NAME = "debo-voice";
 
@@ -112,7 +117,7 @@ export default defineAgent({
     class DeboVoiceAgent extends voice.Agent {
       async onEnter() {
         const greeting = this.session.generateReply({
-          instructions: "Greet the user in one short sentence and ask what they want to talk through.",
+          instructions: "Say exactly one warm opening line in this style: Hey, sir. I'm here. What are we taking on?",
         });
         await greeting.waitForPlayout();
       }
@@ -121,6 +126,15 @@ export default defineAgent({
     const realtimeModel = new openai.realtime.RealtimeModel({
       model: process.env.LIVEKIT_REALTIME_MODEL || "gpt-realtime",
       voice: process.env.LIVEKIT_VOICE || "coral",
+      inputAudioTranscription: {
+        model: process.env.LIVEKIT_TRANSCRIPTION_MODEL || "whisper-1",
+      },
+      turnDetection: {
+        type: "server_vad",
+        threshold: 0.5,
+        prefix_padding_ms: 300,
+        silence_duration_ms: 500,
+      },
     });
 
     const agent = new DeboVoiceAgent({

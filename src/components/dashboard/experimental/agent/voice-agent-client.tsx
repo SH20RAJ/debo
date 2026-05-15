@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
-import Image from "next/image";
 import {
   BarVisualizer,
   RoomAudioRenderer,
@@ -13,7 +12,7 @@ import {
 } from "@livekit/components-react";
 import "@livekit/components-styles";
 import { ConnectionState, type DisconnectReason } from "livekit-client";
-import { Bot, Loader2, Mic, MicOff, PhoneOff, Sparkles } from "lucide-react";
+import { Bot, Loader2, Mic, MicOff, PhoneOff } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -86,20 +85,17 @@ export function VoiceAgentClient() {
   if (!session) {
     return (
       <div className="flex min-h-[calc(100vh-5rem)] flex-1 items-center justify-center px-6 py-10">
-        <div className="flex w-full max-w-xl flex-col items-center gap-8 text-center">
-          <div className="flex size-20 items-center justify-center rounded-3xl border border-border/70 bg-background shadow-sm">
-            <Image src="/debo.png" alt="Debo" width={48} height={48} className="size-12 object-contain" />
+        <div className="flex w-full max-w-md flex-col items-center gap-7 text-center">
+          <div className="flex size-20 items-center justify-center rounded-full border border-border/70 bg-muted/20 shadow-sm">
+            <Bot className="size-9 text-primary" />
           </div>
 
-          <div className="space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">
-              Live voice
-            </p>
+          <div className="space-y-2">
             <h1 className="text-4xl font-semibold tracking-tight text-foreground md:text-5xl">
-              Talk to Debo
+              Hey, sir.
             </h1>
-            <p className="mx-auto max-w-md text-base leading-7 text-muted-foreground">
-              Start a voice session with memory context. Debo can listen, answer, and remember only when you ask.
+            <p className="text-base leading-7 text-muted-foreground">
+              I'm here. What are we taking on?
             </p>
           </div>
 
@@ -113,26 +109,20 @@ export function VoiceAgentClient() {
             size="lg"
             onClick={startSession}
             disabled={isConnecting}
-            className="h-14 rounded-2xl px-8 text-base font-semibold"
+            className="h-14 rounded-full px-9 text-base font-semibold"
           >
             {isConnecting ? (
               <>
                 <Loader2 className="mr-2 size-5 animate-spin" />
-                Connecting
+                Bringing Debo in
               </>
             ) : (
               <>
                 <Mic className="mr-2 size-5" />
-                Start Talking
+                Talk
               </>
             )}
           </Button>
-
-          <div className="flex flex-wrap justify-center gap-2 text-xs text-muted-foreground">
-            <span className="rounded-full border border-border/70 px-3 py-1.5">LiveKit room</span>
-            <span className="rounded-full border border-border/70 px-3 py-1.5">Dashboard memories</span>
-            <span className="rounded-full border border-border/70 px-3 py-1.5">Low-latency voice</span>
-          </div>
         </div>
       </div>
     );
@@ -243,27 +233,13 @@ function VoiceRoom({
     }
   };
 
-  const statusLabel =
-    connectionState === ConnectionState.Connecting
-      ? "Connecting to LiveKit"
-      : connectionState === ConnectionState.Reconnecting ||
-          connectionState === ConnectionState.SignalReconnecting
-        ? "Reconnecting"
-        : !agent && agentWaitExpired
-          ? "Debo voice is offline"
-          : !agent
-            ? "Starting Debo"
-            : state === "speaking"
-              ? "Debo is speaking"
-              : state === "listening"
-                ? "Debo is listening"
-                : "Debo is thinking";
-
   const helperText = agent
-    ? latestAgentText || "Say something when you are ready."
+    ? latestAgentText || "I'm listening."
     : agentWaitExpired
-      ? `The room is connected, but ${agentName} did not join. Start the voice worker and try again.`
-      : `Agent ${agentDispatchStatus}. Waiting for Debo to join.`;
+      ? `Debo voice is offline. Run bun run voice.`
+      : agentDispatchStatus === "requested"
+        ? "Bringing Debo in."
+        : "Starting voice.";
 
   const isLive = connectionState === ConnectionState.Connected && Boolean(agent);
 
@@ -283,15 +259,12 @@ function VoiceRoom({
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-5 md:px-8 md:py-8">
-      <header className="flex items-center justify-between gap-4">
+      <header className="flex items-center justify-between gap-4" aria-label={`${participantName} in ${roomName}`}>
         <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-foreground">{statusLabel}</p>
-          <p className="truncate text-xs text-muted-foreground">
-            {participantName} in {roomName}
-          </p>
+          <p className="truncate text-sm font-semibold text-foreground">Talk</p>
         </div>
         <div className={cn("flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs shadow-sm", statusTone)}>
-          <Sparkles className="size-3.5 text-primary" />
+          <span className="size-2 rounded-full bg-current" />
           {connectionState}
         </div>
       </header>
@@ -316,11 +289,8 @@ function VoiceRoom({
           )}
         </div>
 
-        <div className="min-h-24 w-full max-w-2xl rounded-2xl border border-border/70 bg-muted/20 px-6 py-5 text-left">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
-            Debo
-          </p>
-          <p className="mt-3 text-lg leading-8 text-foreground" aria-live="polite">
+        <div className="min-h-20 w-full max-w-2xl rounded-2xl border border-border/70 bg-muted/20 px-6 py-5 text-center">
+          <p className="text-lg leading-8 text-foreground" aria-live="polite">
             {helperText}
           </p>
         </div>
