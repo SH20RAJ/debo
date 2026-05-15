@@ -78,40 +78,40 @@
 }
 
 .dark {
-	--background: #09090b;
-	--foreground: #fafafa;
+	--background: #0a1020;
+	--foreground: #f7f9ff;
 	
-	--card: #09090b;
-	--card-foreground: #fafafa;
+	--card: #101827;
+	--card-foreground: #f7f9ff;
 	
-	--popover: #09090b;
-	--popover-foreground: #fafafa;
+	--popover: #111a2b;
+	--popover-foreground: #f7f9ff;
 	
-	--primary: #3b82f6;
-	--primary-foreground: #ffffff;
+	--primary: #60a5fa;
+	--primary-foreground: #061225;
 	
-	--secondary: #18181b;
-	--secondary-foreground: #fafafa;
+	--secondary: #172033;
+	--secondary-foreground: #eef4ff;
 	
-	--muted: #18181b;
-	--muted-foreground: #a1a1aa;
+	--muted: #151e31;
+	--muted-foreground: #aebbd1;
 	
-	--accent: #18181b;
-	--accent-foreground: #fafafa;
+	--accent: #1d2b45;
+	--accent-foreground: #eef4ff;
 	
-	--destructive: #ef4444;
-	--destructive-foreground: #ffffff;
+	--destructive: #fb7185;
+	--destructive-foreground: #fff7f8;
 	
-	--border: #27272a;
-	--input: #27272a;
-	--ring: #3b82f6;
+	--border: #27344d;
+	--input: #2b3953;
+	--ring: #93c5fd;
 
 	/* Sidebar */
-	--sidebar-background: #09090b;
-	--sidebar-foreground: #fafafa;
-	--sidebar-border: #27272a;
-	--sidebar-accent: #18181b;
-	--sidebar-accent-foreground: #fafafa;
+	--sidebar-background: #0d1424;
+	--sidebar-foreground: #f7f9ff;
+	--sidebar-border: #27344d;
+	--sidebar-accent: #172033;
+	--sidebar-accent-foreground: #eef4ff;
 }
 
 @layer base {
@@ -124,6 +124,13 @@
 		font-family: var(--font-body);
 	}
 
+	.dark body {
+		background:
+			radial-gradient(circle at 18% 0%, rgba(96, 165, 250, 0.08), transparent 28rem),
+			radial-gradient(circle at 82% 8%, rgba(14, 165, 233, 0.06), transparent 24rem),
+			var(--background);
+	}
+
 	h1, h2, h3, h4, h5, h6 {
 		@apply font-heading font-semibold tracking-tight;
 	}
@@ -131,7 +138,7 @@
 
 @utility minimal-card {
 	@apply rounded-xl border border-border/50 bg-card/50 p-6 transition-all duration-300;
-	@apply hover:border-primary/20 hover:bg-card/80 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)];
+	@apply hover:border-primary/20 hover:bg-card/80 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:bg-card/70 dark:shadow-[0_16px_50px_rgba(0,0,0,0.22)] dark:hover:bg-card dark:hover:shadow-[0_18px_60px_rgba(37,99,235,0.12)];
 }
 
 @utility minimal-btn {
@@ -139,11 +146,11 @@
 }
 
 @utility minimal-btn-primary {
-	@apply minimal-btn bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm;
+	@apply minimal-btn bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm dark:shadow-primary/20;
 }
 
 @utility minimal-btn-outline {
-	@apply minimal-btn border border-border bg-transparent hover:bg-muted hover:text-foreground;
+	@apply minimal-btn border border-border bg-transparent hover:bg-muted hover:text-foreground dark:bg-card/40 dark:hover:bg-accent;
 }
 
 @utility hover-pop {
