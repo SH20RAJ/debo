@@ -17,18 +17,21 @@ async function withContextTimeout<T>(
   let settled = false;
   let timeout: ReturnType<typeof setTimeout> | undefined;
 
-  const work = task()
+  const work = Promise.resolve()
+    .then(task)
     .then((value) => {
       settled = true;
       return value;
     })
     .catch((error) => {
-      if (!settled) {
-        settled = true;
-        throw error;
+      if (settled) {
+        return fallback;
       }
 
-      console.warn(`[Chat] ${label} context finished after timeout:`, error);
+      settled = true;
+      if (process.env.CHAT_CONTEXT_DEBUG === "1") {
+        console.warn(`[Chat] ${label} context unavailable:`, error);
+      }
       return fallback;
     });
 
@@ -36,7 +39,9 @@ async function withContextTimeout<T>(
     timeout = setTimeout(() => {
       if (!settled) {
         settled = true;
-        console.warn(`[Chat] ${label} context timed out after ${timeoutMs}ms.`);
+        if (process.env.CHAT_CONTEXT_DEBUG === "1") {
+          console.warn(`[Chat] ${label} context timed out after ${timeoutMs}ms.`);
+        }
         resolve(fallback);
       }
     }, timeoutMs);
@@ -125,18 +130,18 @@ async function buildRuntimeContext(userId: string, messages: any[]) {
   if (!shouldLoadMemoryContext(latestText)) return sections.join("\n\n") || null;
 
   try {
-    const { getMemories } = await import("@/actions/memories");
+    const { getRelevantMemories } = await import("@/lib/memory/query");
     const result = await withContextTimeout(
       "Memory",
-      () => getMemories(latestText, 8, 0, userId),
+      () => getRelevantMemories(userId, latestText, 8, 0),
       null
     );
 
-    if (result?.success && result.data?.length) {
+    if (result?.items?.length) {
       sections.push(
         [
           "Relevant memories from /dashboard/memories:",
-          ...result.data.map((memory) => `- ${memory.content}`),
+          ...result.items.map((memory) => `- ${memory.content}`),
         ].join("\n"),
       );
     }

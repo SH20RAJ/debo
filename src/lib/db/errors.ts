@@ -40,6 +40,10 @@ export function isDatabaseUnavailable(error: unknown) {
   );
 
   return (
+    code === "ENOTFOUND" ||
+    code === "EAI_AGAIN" ||
+    code === "ECONNRESET" ||
+    code === "ECONNREFUSED" ||
     code === "UND_ERR_CONNECT_TIMEOUT" ||
     code === "20" ||
     code === "AbortError" ||

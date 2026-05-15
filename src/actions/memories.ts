@@ -9,6 +9,7 @@ import { memoryEntities, memoryFacts } from "@/db/schema";
 import { extractMemory } from "@/lib/memory/extract";
 import { getRelevantMemories, type RelevantMemory } from "@/lib/memory/query";
 import { storeMemory } from "@/lib/memory/store";
+import { logDatabaseIssue } from "@/lib/db/errors";
 import { eq } from "drizzle-orm";
 
 const LOCAL_FACT_PREFIX = "local:fact:";
@@ -114,8 +115,8 @@ export const getMemories = cache(async (query: string = "", limit: number = 20, 
         }
 
         mem0Items = items.map(formatMem0Memory).filter(Boolean) as DashboardMemory[];
-      } catch (error) {
-        console.warn("Mem0 fetch failed, using local memories:", error);
+      } catch {
+        console.warn("Mem0 fetch failed, using local memories.");
       }
     }
 
@@ -130,7 +131,7 @@ export const getMemories = cache(async (query: string = "", limit: number = 20, 
       insights: local.insights,
     };
   } catch (error) {
-    console.error("Fetch memories error:", error);
+    logDatabaseIssue("memories read", error);
     return { success: false, error: "Failed to fetch memories" };
   }
 });
