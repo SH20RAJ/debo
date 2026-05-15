@@ -36,6 +36,14 @@
 			// see https://opennext.js.org/cloudflare/caching
 			"binding": "WORKER_SELF_REFERENCE",
 			"service": "debo"
+		},
+		{
+			"binding": "DASHBOARD_WORKER",
+			"service": "debo-dashboard"
+		},
+		{
+			"binding": "API_WORKER",
+			"service": "debo-api"
 		}
 	],
 	"observability": {

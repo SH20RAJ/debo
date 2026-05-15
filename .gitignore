@@ -16,7 +16,7 @@ graphify-out/
 # next.js
 /.next/
 /out/
-
+.wrangler-*
 # production
 /build
 
