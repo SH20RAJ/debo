@@ -6,6 +6,8 @@ import {
   llm,
   voice,
 } from "@livekit/agents";
+import * as cartesia from "@livekit/agents-plugin-cartesia";
+import * as deepgram from "@livekit/agents-plugin-deepgram";
 import * as openai from "@livekit/agents-plugin-openai";
 import { config as loadEnv } from "dotenv";
 import { fileURLToPath } from "node:url";
@@ -123,29 +125,38 @@ export default defineAgent({
       }
     }
 
-    const realtimeModel = new openai.realtime.RealtimeModel({
-      model: process.env.LIVEKIT_REALTIME_MODEL || "gpt-realtime",
-      voice: process.env.LIVEKIT_VOICE || "coral",
-      inputAudioTranscription: {
-        model: process.env.LIVEKIT_TRANSCRIPTION_MODEL || "whisper-1",
-      },
-      turnDetection: {
-        type: "server_vad",
-        threshold: 0.5,
-        prefix_padding_ms: 300,
-        silence_duration_ms: 500,
-      },
+    const stt = new deepgram.STT({
+      apiKey: process.env.DEEPGRAM_API_KEY,
+      model: (process.env.LIVEKIT_STT_MODEL || "nova-3") as any,
+      language: process.env.LIVEKIT_STT_LANGUAGE || "en-US",
+      smartFormat: true,
+      interimResults: true,
+      punctuate: true,
+    });
+    const llmModel = new openai.LLM({
+      apiKey: process.env.OPENAI_API_KEY,
+      baseURL: process.env.OPENAI_BASE_URL,
+      model: process.env.LIVEKIT_LLM_MODEL || process.env.OPENAI_MODEL || "gpt-4.1-mini",
+      temperature: 0.7,
+    });
+    const tts = new cartesia.TTS({
+      apiKey: process.env.CARTESIA_API_KEY,
+      model: process.env.LIVEKIT_TTS_MODEL || "sonic-3",
+      voice: process.env.LIVEKIT_VOICE || "f786b574-daa5-4673-aa0c-cbe3e8534c02",
+      language: "en",
+      speed: "normal",
     });
 
     const agent = new DeboVoiceAgent({
       id: AGENT_NAME,
       instructions,
-      llm: realtimeModel,
       tools,
     });
 
     const session = new voice.AgentSession({
-      llm: realtimeModel,
+      stt,
+      llm: llmModel,
+      tts,
       maxToolSteps: 4,
       userAwayTimeout: 30,
     });
@@ -185,4 +196,5 @@ export default defineAgent({
 cli.runApp(new ServerOptions({
   agent: fileURLToPath(import.meta.url),
   agentName: AGENT_NAME,
+  port: Number(process.env.LIVEKIT_AGENT_PORT || 8081),
 }));
