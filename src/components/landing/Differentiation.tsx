@@ -26,6 +26,13 @@ const features = [
     debo: true,
   },
   {
+    name: "Editable character profiles with source references",
+    notes: false,
+    chatbots: false,
+    workspaces: false,
+    debo: true,
+  },
+  {
     name: "Answers with cited sources",
     notes: false,
     chatbots: false,
@@ -148,4 +155,3 @@ function StatusIcon({ status, isHighlight = false }: { status: boolean | string,
   
   return <div className="w-1 h-1 rounded-full bg-border/20" />;
 }
-

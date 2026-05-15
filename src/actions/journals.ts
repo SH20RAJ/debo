@@ -227,14 +227,22 @@ async function runJournalPostProcessing(userId: string, journalId: string) {
 
         if (!savedJournal) return;
 
-        const [{ indexJournal }, { upsertMemoryGraphForJournal }] = await Promise.all([
+        const [{ indexJournal }, { upsertMemoryGraphForJournal }, { captureCharacterMentionsFromText }] = await Promise.all([
             import("@/lib/vector/search"),
             import("@/lib/life/graph"),
+            import("@/features/characters/actions"),
         ]);
 
         const results = await Promise.allSettled([
             indexJournal(savedJournal),
             upsertMemoryGraphForJournal(userId, savedJournal),
+            captureCharacterMentionsFromText({
+                userId,
+                text: savedJournal.content,
+                title: savedJournal.title || "Text journal",
+                sourceType: "text",
+                sourceId: savedJournal.id,
+            }),
         ]);
 
         for (const result of results) {

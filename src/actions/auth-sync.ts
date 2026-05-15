@@ -10,7 +10,9 @@ import {
     memoryEdges, 
     memoryEntities, 
     memoryFacts, 
-    memoryNodes 
+    memoryNodes,
+    characterProfiles,
+    characterReferences
 } from "@/db/schema";
 import { stackServerApp } from "@/stack/server";
 import { eq } from "drizzle-orm";
@@ -83,6 +85,8 @@ export async function resolveUserId(providedUserId?: string, skipSync = false): 
                     await tx.update(memoryEntities).set({ userId: newId }).where(eq(memoryEntities.userId, oldId));
                     await tx.update(memoryFacts).set({ userId: newId }).where(eq(memoryFacts.userId, oldId));
                     await tx.update(memoryNodes).set({ userId: newId }).where(eq(memoryNodes.userId, oldId));
+                    await tx.update(characterProfiles).set({ userId: newId }).where(eq(characterProfiles.userId, oldId));
+                    await tx.update(characterReferences).set({ userId: newId }).where(eq(characterReferences.userId, oldId));
 
                     // Delete old record
                     await tx.delete(userTable).where(eq(userTable.id, oldId));

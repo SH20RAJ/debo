@@ -52,7 +52,19 @@ Debo represents personal knowledge as nodes and edges. People, topics, emotions,
 
 The graph exposes structure. It makes it easier to ask richer questions like who is connected to a stressful period or which topics keep appearing together.
 
-## 6. Proactive AI Insights
+## 6. Character Graph
+
+### How it works
+
+Debo scans chat turns, text journals, audio transcripts, video transcripts, and memory entities for people. It creates editable character profiles with name, custom ID, avatar URL, aliases, relationship, summary, and private context. Each profile keeps references to the exact chat or journal where the person was mentioned.
+
+The sync process deduplicates characters by normalized names and aliases, then merges references into the strongest profile.
+
+### Why it matters
+
+People are the most important context in a personal memory system. The Character Graph helps Debo understand who someone is, how the user relates to them, and which sources prove that context.
+
+## 7. Proactive AI Insights
 
 ### How it works
 
@@ -62,7 +74,7 @@ After enough history exists, Debo can summarize recurring behavior and point out
 
 The best assistant does not only answer questions. It helps the user notice what they would otherwise miss.
 
-## 7. Citations
+## 8. Citations
 
 ### How it works
 
@@ -72,7 +84,7 @@ Every answer includes citations from journals or memories. Those citations are p
 
 Citations build trust. They let the user verify whether an answer is grounded or overconfident.
 
-## 8. Clean Journal Editing
+## 9. Clean Journal Editing
 
 ### How it works
 
@@ -82,7 +94,7 @@ Debo keeps the writing surface simple. The editor is designed to let the user wr
 
 Good AI only works if the input habit is strong. A clean writing experience makes the rest of the system useful.
 
-## 9. Integrations and Connectors
+## 10. Integrations and Connectors
 
 ### How it works
 
@@ -92,7 +104,7 @@ Debo is built to connect with external apps through structured integrations and 
 
 Life does not happen in one app. Context from calendars, messages, or other systems makes the assistant far more accurate.
 
-## 10. Configuration and Model Choice
+## 11. Configuration and Model Choice
 
 ### How it works
 
@@ -102,7 +114,7 @@ Debo supports a default AI provider path and user-configurable overrides through
 
 Users and teams should not be locked into one model provider. Configurability makes the system more durable over time.
 
-## 11. Multimodal Journaling
+## 12. Multimodal Journaling
 
 ### How it works
 
@@ -112,7 +124,7 @@ Debo should accept text, audio, video, and image-based journal inputs. Audio and
 
 Typing is not always the fastest way to journal. A user can record a private vlog, upload a meeting reflection, or photograph handwritten pages and still build useful AI context without manually rewriting everything.
 
-## 12. Live Capture to Memory
+## 13. Live Capture to Memory
 
 ### How it works
 
@@ -122,7 +134,7 @@ LiveKit voice sessions should create structured capture events. When the user sp
 
 This makes journaling ambient. The user can capture context in the moment instead of waiting for a quiet writing session.
 
-## 13. Connector Actions
+## 14. Connector Actions
 
 ### How it works
 
@@ -132,7 +144,7 @@ When users connect accounts during onboarding or settings, Debo can expose appro
 
 A full assistant needs context and the ability to act. If a user says in a recording, "remind me that I have to attend X meeting today," Debo should be able to turn that into a calendar draft instead of leaving it as plain text.
 
-## 14. Orchestration and Speed
+## 15. Orchestration and Speed
 
 ### How it works
 
@@ -142,7 +154,7 @@ Debo uses Mastra agents, tools, workflows, memory, and retrieval pipelines as th
 
 The product should feel instant even when the intelligence layer is doing real work. Good orchestration keeps capture fast, retrieval grounded, and connector actions reliable.
 
-## 15. AI Context Import
+## 16. AI Context Import
 
 ### How it works
 
@@ -152,7 +164,7 @@ The `/chat` interface accepts exported context from ChatGPT, Claude, Cursor, Cod
 
 Users already have useful context trapped in other AI tools. Importing it gives Debo a faster starting point without forcing the user to manually rewrite their history.
 
-## 16. Debo MCP Chat
+## 17. Debo MCP Chat
 
 ### How it works
 

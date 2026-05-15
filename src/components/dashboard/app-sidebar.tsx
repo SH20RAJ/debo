@@ -14,6 +14,7 @@ import {
   Plug,
   Terminal,
   Radio,
+  UsersRound,
 } from "lucide-react"
 
 import {
@@ -48,6 +49,7 @@ const mainItems: NavItem[] = [
   { title: "Chat", href: "/dashboard/chat", icon: MessageSquareText },
   { title: "Journals", href: "/dashboard/journals", icon: Library },
   { title: "Memories", href: "/dashboard/memories", icon: Database },
+  { title: "Characters", href: "/dashboard/characters", icon: UsersRound },
 ];
 
 const toolItems: NavItem[] = [

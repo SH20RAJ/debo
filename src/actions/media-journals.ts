@@ -360,6 +360,13 @@ export async function saveVideoJournal(params: {
             });
         }
 
+        void captureMediaCharacterMentions(resolvedUserId, {
+            id: journalId,
+            type: "video",
+            title: params.title,
+            text: params.transcript || params.title,
+        });
+
         revalidatePath("/dashboard/journals");
         return { success: true, data: journalId };
     } catch (error) {
@@ -463,6 +470,13 @@ export async function saveAudioJournal(params: {
             });
         }
 
+        void captureMediaCharacterMentions(resolvedUserId, {
+            id: journalId,
+            type: "audio",
+            title: params.title,
+            text: params.transcript || params.title,
+        });
+
         revalidatePath("/dashboard/journals");
         return { success: true, data: journalId };
     } catch (error) {
@@ -486,6 +500,24 @@ export async function deleteAudioJournal(id: string, userId?: string) {
     } catch (error) {
         logDatabaseIssue("audio journal delete", error);
         return { success: false, error: "Failed to delete audio journal" };
+    }
+}
+
+async function captureMediaCharacterMentions(
+    userId: string,
+    source: { id: string; type: "audio" | "video"; title: string; text: string }
+) {
+    try {
+        const { captureCharacterMentionsFromText } = await import("@/features/characters/actions");
+        await captureCharacterMentionsFromText({
+            userId,
+            text: source.text,
+            title: source.title,
+            sourceType: source.type,
+            sourceId: source.id,
+        });
+    } catch (error) {
+        console.warn("[Characters] Media mention capture failed:", error);
     }
 }
 

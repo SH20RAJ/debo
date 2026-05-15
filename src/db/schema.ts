@@ -169,6 +169,50 @@ export const memoryEntities = pgTable("memory_entity", {
     uniqueEntityIdx: uniqueIndex("memory_entity_unique_idx").on(table.userId, table.type, table.normalizedName),
 }));
 
+export const characterProfiles = pgTable("character_profile", {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull().references(() => user.id),
+    displayName: text("display_name").notNull(),
+    normalizedName: text("normalized_name").notNull(),
+    customId: text("custom_id"),
+    avatarUrl: text("avatar_url"),
+    aliases: text("aliases").array().default(sql`'{}'::text[]`),
+    relationship: text("relationship"),
+    summary: text("summary"),
+    context: text("context"),
+    source: text("source").default("manual").notNull(),
+    confidence: integer("confidence").default(1).notNull(),
+    mentionCount: integer("mention_count").default(0).notNull(),
+    firstSeenAt: timestamp("first_seen_at"),
+    lastSeenAt: timestamp("last_seen_at"),
+    metadata: text("metadata"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+    userIdIdx: index("character_profile_user_id_idx").on(table.userId),
+    normalizedNameIdx: index("character_profile_normalized_name_idx").on(table.normalizedName),
+    uniqueCharacterIdx: uniqueIndex("character_profile_unique_idx").on(table.userId, table.normalizedName),
+    uniqueCustomIdIdx: uniqueIndex("character_profile_custom_id_idx").on(table.userId, table.customId),
+}));
+
+export const characterReferences = pgTable("character_reference", {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull().references(() => user.id),
+    characterId: text("character_id").notNull().references(() => characterProfiles.id),
+    sourceType: text("source_type").notNull(),
+    sourceId: text("source_id").notNull(),
+    sourceTitle: text("source_title"),
+    sourceHref: text("source_href"),
+    excerpt: text("excerpt").notNull(),
+    occurredAt: timestamp("occurred_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+    userIdIdx: index("character_reference_user_id_idx").on(table.userId),
+    characterIdIdx: index("character_reference_character_id_idx").on(table.characterId),
+    sourceIdx: index("character_reference_source_idx").on(table.sourceType, table.sourceId),
+    uniqueReferenceIdx: uniqueIndex("character_reference_unique_idx").on(table.userId, table.characterId, table.sourceType, table.sourceId),
+}));
+
 // Connectors - apps/services that connect to Debo MCP
 export const connectors = pgTable("connector", {
     id: text("id").primaryKey(),
@@ -258,4 +302,3 @@ export const audioJournals = pgTable("audio_journal", {
     userIdIdx: index("audio_journal_user_id_idx").on(table.userId),
     createdAtIdx: index("audio_journal_created_at_idx").on(table.createdAt),
 }));
-

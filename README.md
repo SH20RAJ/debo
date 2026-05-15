@@ -20,6 +20,7 @@ Debo is a **Life Intelligence System** that learns from your writing, retrieves 
 - **Ask Your Life** — Ask natural questions like "When was I happiest this year?" with clickable citations
 - **Pattern Detection** — Surface behavioral loops, recurring stressors, and emotional trends
 - **Memory Graph** — Visualize connections between people, topics, and emotions
+- **Character Graph** — Turn people mentioned in chat, text journals, audio journals, and video journals into editable profiles with relationships, summaries, avatars, aliases, and source references
 - **Voice Capture (Jarvis)** — Real-time ambient voice interface with sub-second response
 
 ## Tech Stack
@@ -61,6 +62,7 @@ src/
 ├── actions/       # Server Actions (auth, chat, journals, memories)
 ├── components/    # UI components (dashboard, landing, chat)
 ├── db/            # Drizzle ORM schemas
+├── features/      # Scalable product modules such as Characters
 ├── lib/           # Core logic (AI, vector search, memory)
 └── mastra/        # Mastra AI agents
 ```
@@ -105,8 +107,9 @@ graph TD
 1. **Journal Entry** → Saved to Neon Postgres
 2. **Embedding** → Chunked and stored in Qdrant for semantic search
 3. **Memory Extraction** → Facts, preferences, people stored in memory table
-4. **Query** → Retrieved from both Qdrant (semantic) + Postgres (structured)
-5. **Answer** → Grounded response with citations sent back to user
+4. **Character Sync** → People are deduplicated into editable character profiles with references
+5. **Query** → Retrieved from both Qdrant (semantic) + Postgres (structured)
+6. **Answer** → Grounded response with citations sent back to user
 
 ## License
 

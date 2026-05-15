@@ -206,6 +206,31 @@ async function rememberImportantChat(userId: string, messages: any[]) {
   }
 }
 
+async function captureCharacterContext(userId: string, threadId: string, messages: any[]) {
+  const latestText = extractLatestUserText(messages);
+  if (!shouldLoadMemoryContext(latestText) || latestText.length < 12) return;
+
+  try {
+    const { captureCharacterMentionsFromText } = await import("@/features/characters/actions");
+    await withContextTimeout(
+      "Character capture",
+      () => captureCharacterMentionsFromText({
+        userId,
+        text: latestText,
+        title: "Debo chat",
+        sourceType: "chat",
+        sourceId: threadId,
+      }),
+      null,
+      1800
+    );
+  } catch (error) {
+    if (process.env.CHAT_CONTEXT_DEBUG === "1") {
+      console.warn("[Chat] Could not capture character context:", error);
+    }
+  }
+}
+
 export async function POST(req: Request) {
   const { messages, threadId: requestedThreadId } = (await req.json()) as {
     messages: any[];
@@ -227,6 +252,7 @@ export async function POST(req: Request) {
   requestContext.set(MASTRA_THREAD_ID_KEY, threadId);
 
   await rememberImportantChat(userId, messages);
+  void captureCharacterContext(userId, threadId, messages);
 
   const runtimeContext = await buildRuntimeContext(userId, messages);
   if (runtimeContext) {
