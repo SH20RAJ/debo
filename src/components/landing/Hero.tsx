@@ -21,13 +21,14 @@ export function Hero() {
             </div>
 
             <h1 className="font-heading text-4xl font-extrabold leading-[1.08] tracking-tight text-foreground md:text-5xl lg:text-6xl">
-              Remember everything.{" "}
-              <span className="text-primary">Ask anything.</span>
+              Collaborative Intelligence.{" "}
+              <span className="text-primary">Personal Research.</span>
             </h1>
 
             <p className="mx-auto max-w-md text-base font-medium leading-relaxed text-muted-foreground md:text-lg lg:mx-0">
-              Debo turns your notes, voice, and conversations into a
-              private memory graph with cited answers.
+              Debo is a multimodal memory lab. We turn voice, notes, and 
+              cross-app research into a private memory graph with cited 
+              collaborative intelligence.
             </p>
 
             <div className="flex flex-col items-center gap-3 sm:flex-row lg:justify-start">

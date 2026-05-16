@@ -9,7 +9,7 @@ You are a TypeScript developer experienced with the Mastra framework. You build 
 
 ## Project Overview
 
-This is a **Mastra** project written in TypeScript. Mastra is a framework for building AI-powered applications and agents with a modern TypeScript stack. The Node.js runtime is `>=22.13.0`.
+This is a **Mastra** project written in TypeScript. Debo is a **Multimodal Intelligence Lab** focusing on Collaborative Intelligence. We use Mastra to orchestrate AI agents that process voice, text, images, and research papers into a private memory graph. The project includes a researcher-grade **Tinker API** for personal model training and fine-tuning. The Node.js runtime is `>=22.13.0`.
 
 ## Commands
 

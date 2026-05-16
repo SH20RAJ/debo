@@ -34,18 +34,18 @@ function HowItWorks() {
   const steps = [
     {
       num: "01",
-      title: "Capture",
-      text: "Drop voice notes, journal entries, meeting notes, or chat screenshots. Debo extracts the important details automatically.",
+      title: "Ingest",
+      text: "Feed Debo anything — voice notes, research papers, chat logs, or complex data. Our multimodal engine extracts latent meaning automatically.",
     },
     {
       num: "02",
-      title: "Connect",
-      text: "People, dates, promises, and decisions get linked into your personal memory graph. Context builds over time.",
+      title: "Tinker",
+      text: "Train your personal memory graph. Use researcher-grade controls to fine-tune how context is weighted and connected across domains.",
     },
     {
       num: "03",
-      title: "Recall",
-      text: "Ask Debo anything. Get cited answers sourced from your own memories, not a generic model.",
+      title: "Think",
+      text: "Collaborate with your intelligence. Get cited answers and deep insights sourced from your own private knowledge base.",
     },
   ];
 
@@ -57,7 +57,7 @@ function HowItWorks() {
             How it works
           </div>
           <h2 className="font-heading text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">
-            Three steps to a memory that lasts.
+            Collaborative Intelligence. <span className="text-primary">Personal Research.</span>
           </h2>
         </div>
 

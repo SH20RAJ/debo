@@ -12,17 +12,16 @@
 
 ## What is Debo?
 
-Debo is a **Life Intelligence System** that learns from your writing, retrieves your history with citations, detects patterns across time, and turns memory into useful guidance.
+Debo is a **Multimodal Intelligence Lab** that turns your writing, research, and data into a private memory graph. We blend **Personal Research** with **Collaborative Intelligence**, allowing you to not just store data, but to train your own personal AI on your life.
 
 ### Core Features
 
-- **AI Memory Engine** — Extracts facts, preferences, people, and goals from your entries into durable, long-term memory
-- **Ask Your Life** — Ask natural questions like "When was I happiest this year?" with clickable citations
-- **Pattern Detection** — Surface behavioral loops, recurring stressors, and emotional trends
-- **Memory Graph** — Visualize connections between people, topics, and emotions
-- **Character Graph** — Turn people mentioned in chat, text journals, audio journals, and video journals into editable profiles with relationships, summaries, avatars, aliases, and source references
-- **Voice Capture (Jarvis)** — Real-time ambient voice interface with sub-second response
-
+- **Multimodal Foundation** — Processes text, voice, images, and research papers (PDFs) into a unified knowledge base.
+- **Tinker API** — Researcher-grade control over your personal model training and fine-tuning (LoRA).
+- **Collaborative Intelligence** — A partner that thinks with you, citing your own history and data for every insight.
+- **Connectionism Engine** — Discover latent manifolds and hidden relationships across your memory graph.
+- **Character Graph** — Turn people mentioned in chat, journals, and voice into editable profiles with relationships and source references.
+- **Voice Capture (Jarvis)** — Real-time ambient voice interface with sub-second response powered by NVIDIA.
 ## Tech Stack
 
 - **Framework**: Next.js 16 (App Router), React 19

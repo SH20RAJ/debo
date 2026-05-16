@@ -119,6 +119,48 @@ const FEATURES = [
     ],
   },
   {
+    id: "multimodal",
+    icon: Zap,
+    tag: "Research",
+    title: "Multimodal research foundation",
+    description:
+      "Beyond text and voice. Debo processes images, research papers, and complex data structures. Build a cross-domain knowledge base that understands context across formats.",
+    details: [
+      { icon: Zap, label: "Vision", desc: "Understand diagrams and charts" },
+      { icon: BookOpen, label: "Papers", desc: "PDF research extraction" },
+      { icon: Brain, label: "Context", desc: "Cross-format synthesis" },
+      { icon: Search, label: "Analysis", desc: "Deep technical insights" },
+    ],
+  },
+  {
+    id: "tinker",
+    icon: Terminal,
+    tag: "Training",
+    title: "Personal Training API (Tinker)",
+    description:
+      "Full control over how your memory model is trained. Use our Tinker-inspired API to adjust model weights, fine-tune on specific domains, and control inference parameters.",
+    details: [
+      { icon: Terminal, label: "API", desc: "Researcher-grade training" },
+      { icon: Zap, label: "LoRA", desc: "Efficient personal fine-tuning" },
+      { icon: Shield, label: "Private", desc: "On-device or private cloud" },
+      { icon: Radio, label: "Control", desc: "Adjust inference temperature" },
+    ],
+  },
+  {
+    id: "connectionism",
+    icon: Brain,
+    tag: "Insights",
+    title: "Connectionism & Neural Insights",
+    description:
+      "Explore the hidden connections in your memory graph. Our Connectionism engine identifies modular manifolds and latent relationships you might have missed.",
+    details: [
+      { icon: Brain, label: "Latent", desc: "Hidden relationship discovery" },
+      { icon: Zap, label: "Manifolds", desc: "Knowledge cluster mapping" },
+      { icon: Search, label: "Discovery", desc: "Uncover lost insights" },
+      { icon: Radio, label: "Trends", desc: "Neural pattern recognition" },
+    ],
+  },
+  {
     id: "tasks",
     icon: CheckSquare,
     tag: "Productivity",
