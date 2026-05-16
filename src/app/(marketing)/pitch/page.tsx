@@ -8,6 +8,7 @@ import {
   Shield,
   Bot,
   Lock,
+  Terminal,
   type LucideIcon
 } from "lucide-react";
 import { Metadata } from "next";
@@ -32,18 +33,18 @@ export default function PitchPage() {
                 Project Intelligence
               </div>
               <h1 className="text-5xl md:text-7xl font-heading font-extrabold tracking-tight leading-[1.05] text-foreground">
-                Your second <br />
-                <span className="text-primary">brain.</span>
+                Collaborative <br />
+                <span className="text-primary">Intelligence.</span>
               </h1>
               <p className="max-w-xl text-base md:text-lg font-semibold leading-relaxed text-muted-foreground mx-auto lg:mx-0">
-                Debo is a calm, personal memory engine. It remembers what you say, connects the patterns, and helps you reflect in real-time.
+                Debo is a multimodal intelligence lab. We build systems that don&apos;t just store data, but think with you — turning raw research into a private, connected memory graph.
               </p>
               <div className="flex flex-col gap-4 sm:flex-row justify-center lg:justify-start">
                 <Link href="/#waitlist" className="minimal-btn-primary px-8 py-3 text-sm">
-                  Join Waitlist
+                  Join the Lab
                 </Link>
                 <Link href="#vision" className="minimal-btn-outline px-8 py-3 text-sm">
-                  The Protocol
+                  Research Vision
                 </Link>
               </div>
             </div>
@@ -117,34 +118,34 @@ export default function PitchPage() {
 
            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               <FeatureCard
-                icon={Mic}
-                title="Ambient Voice"
-                desc="Record thoughts as they happen. Sub-100ms processing."
+                icon={Zap}
+                title="Multimodal Engine"
+                desc="Process research papers, images, and voice into a unified context."
               />
               <FeatureCard
-                icon={Database}
-                title="Atomic Memory"
-                desc="Facts extracted into a clean, searchable database."
+                icon={Terminal}
+                title="Tinker API"
+                desc="Researcher-grade controls for personal model fine-tuning (LoRA)."
               />
               <FeatureCard
                 icon={Brain}
-                title="Pattern Engine"
-                desc="Identify recurring themes and growth areas automatically."
+                title="Connectionism"
+                desc="Identify hidden relationship manifolds across your knowledge base."
               />
               <FeatureCard
-                icon={Lock}
+                icon={Shield}
                 title="Private Core"
-                desc="Your data is encrypted and grounded only in your evidence."
-              />
-              <FeatureCard
-                icon={Zap}
-                title="High Density"
-                desc="Minimalist UI designed for power users and speed."
+                desc="End-to-end private intelligence. No ads. No public training."
               />
               <FeatureCard
                 icon={Bot}
-                title="MCP Integrated"
-                desc="Connect your memory to any AI tool seamlessly."
+                title="Jarvis Voice"
+                desc="Real-time multimodal voice interactions with NVIDIA performance."
+              />
+              <FeatureCard
+                icon={Database}
+                title="Memory Graph"
+                desc="Connect people, facts, and emotions into a permanent graph."
               />
            </div>
         </div>

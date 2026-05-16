@@ -9,6 +9,18 @@ export function Footer() {
         </p>
         <div className="flex items-center gap-5">
           <Link
+            href="/about"
+            className="text-xs font-bold text-muted-foreground/50 transition-colors hover:text-foreground"
+          >
+            About
+          </Link>
+          <Link
+            href="/pitch"
+            className="text-xs font-bold text-muted-foreground/50 transition-colors hover:text-foreground"
+          >
+            Pitch
+          </Link>
+          <Link
             href="/privacy"
             className="text-xs font-bold text-muted-foreground/50 transition-colors hover:text-foreground"
           >

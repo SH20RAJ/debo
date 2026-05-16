@@ -18,10 +18,16 @@ export function Navbar() {
 
         <nav className="flex items-center gap-5">
           <Link
-            href="/privacy"
+            href="/about"
             className="text-xs font-bold uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground"
           >
-            Privacy
+            About
+          </Link>
+          <Link
+            href="/pitch"
+            className="text-xs font-bold uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Pitch
           </Link>
           <a
             href="https://github.com/sh20raj/debo"
