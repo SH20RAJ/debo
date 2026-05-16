@@ -319,6 +319,12 @@ export async function uploadMediaToDrive(formData: FormData) : Promise<DriveUplo
             return { success: false, error: "Upload succeeded but no file ID returned" };
         }
 
+        try {
+            await makeDrivePublic(driveConnectionId, driveData.id);
+        } catch (e) {
+            console.warn(`[DriveUpload] Could not set public permission on file:`, e);
+        }
+
         return {
             success: true,
             driveFileId: driveData.id,
