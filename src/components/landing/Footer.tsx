@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { waitlistUrl } from "@/lib/launch";
 
 export function Footer() {
   return (
@@ -12,6 +13,7 @@ export function Footer() {
         </div>
         
         <div className="flex items-center gap-8 text-[11px] font-semibold text-muted-foreground/60 tracking-tight">
+          <Link href={waitlistUrl} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors uppercase tracking-wider">Waitlist</Link>
           <Link href="/foundation" className="hover:text-foreground transition-colors uppercase tracking-wider">Foundation</Link>
           <Link href="/privacy" className="hover:text-foreground transition-colors uppercase tracking-wider">Privacy</Link>
           <Link href="/terms" className="hover:text-foreground transition-colors uppercase tracking-wider">Terms</Link>
@@ -22,4 +24,3 @@ export function Footer() {
     </footer>
   );
 }
-

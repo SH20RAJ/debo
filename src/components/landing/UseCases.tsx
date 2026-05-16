@@ -87,13 +87,12 @@ export function UseCases() {
         </div>
 
         <div className="mt-24 text-center">
-           <Link href="/join" className="minimal-btn-primary px-12 py-4 text-base">
-              Start with your first question
+           <Link href="/#waitlist" className="minimal-btn-primary px-12 py-4 text-base">
+              Join the waitlist
            </Link>
         </div>
       </div>
     </section>
   );
 }
-
 

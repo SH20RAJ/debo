@@ -1,43 +1,55 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, CalendarDays, Sparkles } from "lucide-react";
+
+import { LaunchCountdown } from "@/components/landing/LaunchCountdown";
+import { WaitlistPanel } from "@/components/landing/WaitlistPanel";
+import { launchDateLabel, waitlistUrl } from "@/lib/launch";
 
 export function CTA() {
   return (
-    <section className="py-40 bg-background relative overflow-hidden">
+    <section id="waitlist" className="py-32 bg-background relative overflow-hidden">
       <div className="container mx-auto max-w-5xl px-6 relative z-10">
-        <div className="bg-card rounded-3xl p-12 md:p-24 text-center relative overflow-hidden border border-border shadow-2xl shadow-primary/5">
+        <div className="bg-card rounded-3xl p-6 md:p-12 text-center relative overflow-hidden border border-border shadow-2xl shadow-primary/5">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-40" />
           
-          <div className="max-w-3xl mx-auto space-y-12 relative z-10">
+          <div className="max-w-4xl mx-auto space-y-12 relative z-10">
             <div className="space-y-6">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 border border-primary/10 text-primary font-bold uppercase tracking-widest text-[9px]">
                 <Sparkles className="h-3.5 w-3.5" />
-                <span>Start in seconds</span>
+                <span>Waitlist now open</span>
               </div>
               <h2 className="text-4xl md:text-6xl font-heading font-semibold text-foreground tracking-tight leading-[1.1]">
-                Give your future self <br />
-                <span className="text-primary/60 italic">the missing context.</span>
+                Debo public preview opens <br />
+                <span className="text-primary/60 italic">{launchDateLabel}.</span>
               </h2>
               <p className="text-lg text-muted-foreground font-medium max-w-xl mx-auto leading-relaxed">
-                Capture one thought today. Debo will make it searchable, connected, and useful when you need it later.
+                Join the waitlist to get early access to the private memory dashboard, voice capture, characters, insights, and cited chat.
               </p>
             </div>
 
+            <WaitlistPanel />
+
+            <div id="launch" className="rounded-3xl border border-border/60 bg-background/70 p-6 text-left dark:bg-background/40">
+              <div className="mb-5 flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-primary/20 bg-primary/5 text-primary">
+                  <CalendarDays className="h-5 w-5" />
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-primary/70">Launch countdown</div>
+                  <h3 className="text-xl font-semibold tracking-tight text-foreground">Public preview timer</h3>
+                </div>
+              </div>
+              <LaunchCountdown />
+            </div>
+
             <div className="flex flex-col sm:flex-row items-center gap-6 justify-center">
-              <Link
-                href="/join"
-                className="minimal-btn-primary px-10 py-4 text-base w-full sm:w-auto shadow-xl shadow-primary/20 hover:shadow-primary/30"
-              >
-                Build your private memory
+              <Link href={waitlistUrl} target="_blank" rel="noopener noreferrer" className="minimal-btn-primary px-10 py-4 text-base w-full sm:w-auto shadow-xl shadow-primary/20 hover:shadow-primary/30">
+                Join waitlist
               </Link>
-              <Link
-                href="https://github.com/SH20RAJ/debo"
-                target="_blank"
-                className="flex items-center gap-2 text-muted-foreground/40 hover:text-foreground font-bold uppercase tracking-widest text-[10px] transition-colors group"
-              >
-                Open Source Protocol
+              <Link href="#launch" className="flex items-center gap-2 text-muted-foreground/40 hover:text-foreground font-bold uppercase tracking-widest text-[10px] transition-colors group">
+                Launch timer
                 <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
               </Link>
             </div>

@@ -126,6 +126,7 @@ async function proxyGoogleDrive<T>(
         parameters: params.parameters?.map((parameter) => ({
             name: parameter.name,
             in: parameter.in,
+            type: parameter.in,
             value: parameter.value,
         })),
     });
@@ -221,7 +222,25 @@ async function ensureDriveFolder(connectedAccountId: string, name: string, paren
         throw new Error(`Could not create Google Drive folder "${cleanName}"`);
     }
 
+    try {
+        await makeDrivePublic(connectedAccountId, folderId);
+    } catch (e) {
+        console.warn(`[DriveFolder] Could not set public permission on folder "${cleanName}":`, e);
+    }
+
     return folderId as string;
+}
+
+async function makeDrivePublic(connectedAccountId: string, fileId: string) {
+    return proxyGoogleDrive(connectedAccountId, {
+        endpoint: `https://www.googleapis.com/drive/v3/files/${fileId}/permissions`,
+        method: "POST",
+        body: {
+            role: "reader",
+            type: "anyone",
+        },
+        parameters: [{ name: "fields", in: "query", value: "id" }],
+    });
 }
 
 async function uploadDriveFile(

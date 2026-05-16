@@ -1,21 +1,12 @@
-"use client";
+import { LaunchPreview } from "@/components/landing/LaunchPreview";
+import { EditorPageClient } from "@/components/editor/editor-page-client";
 
-import dynamic from "next/dynamic";
-import { Toaster } from "sonner";
-
-const PlateEditor = dynamic(
-  () => import("@/components/editor/plate-editor").then((mod) => mod.PlateEditor),
-  {
-    ssr: false,
-    loading: () => <div className="h-screen w-full bg-background" />,
-  },
-);
+const isPublicPreviewDeploy = process.env.NODE_ENV === "production";
 
 export default function Page() {
-  return (
-    <div className="h-screen w-full">
-      <PlateEditor />
-      <Toaster />
-    </div>
-  );
+  if (isPublicPreviewDeploy) {
+    return <LaunchPreview label="Debo Editor" />;
+  }
+
+  return <EditorPageClient />;
 }

@@ -5,16 +5,12 @@ import {
   Mic, 
   Database, 
   Zap, 
-  Heart, 
   Shield,
   Bot,
-  ArrowRight,
-  User,
-  CheckCircle2,
-  Lock
+  Lock,
+  type LucideIcon
 } from "lucide-react";
 import { Metadata } from "next";
-import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Debo — The Vision",
@@ -43,8 +39,8 @@ export default function PitchPage() {
                 Debo is a calm, personal memory engine. It remembers what you say, connects the patterns, and helps you reflect in real-time.
               </p>
               <div className="flex flex-col gap-6 sm:flex-row justify-center lg:justify-start">
-                <Link href="/join" className="minimal-btn-primary h-14 px-10 text-xs font-bold uppercase tracking-[0.2em] shadow-2xl shadow-primary/20">
-                  Initialize Memory
+                <Link href="/#waitlist" className="minimal-btn-primary h-14 px-10 text-xs font-bold uppercase tracking-[0.2em] shadow-2xl shadow-primary/20">
+                  Join Waitlist
                 </Link>
                 <Link href="#vision" className="minimal-btn-outline h-14 px-10 text-xs font-bold uppercase tracking-[0.2em] border border-border/40 bg-card/40 backdrop-blur-sm">
                   The Protocol
@@ -64,7 +60,7 @@ export default function PitchPage() {
                   </div>
                   <div className="p-6 bg-muted/10 rounded-2xl border border-border/20">
                     <p className="text-sm font-medium text-foreground/40 italic leading-relaxed">
-                      "Remember to follow up on the memory engine proposal."
+                      &ldquo;Remember to follow up on the memory engine proposal.&rdquo;
                     </p>
                   </div>
                 </div>
@@ -177,11 +173,11 @@ export default function PitchPage() {
                      </div>
                      <h4 className="text-3xl font-semibold text-foreground/80 tracking-tight leading-tight">Your data is yours.</h4>
                      <p className="text-lg font-medium text-muted-foreground/40 leading-relaxed">
-                        We don't sell insights. We don't train on your life. Debo is a private instance, grounded only in what you tell it.
+                        We don&apos;t sell insights. We don&apos;t train on your life. Debo is a private instance, grounded only in what you tell it.
                      </p>
                   </div>
-                  <Link href="/join" className="minimal-btn-primary h-14 w-full text-xs font-bold uppercase tracking-widest shadow-xl shadow-primary/20">
-                     Start Now
+                  <Link href="/#waitlist" className="minimal-btn-primary h-14 w-full text-xs font-bold uppercase tracking-widest shadow-xl shadow-primary/20">
+                     Join Waitlist
                   </Link>
                </div>
             </div>
@@ -210,7 +206,7 @@ export default function PitchPage() {
   );
 }
 
-function FeatureCard({ icon: Icon, title, desc }: { icon: any, title: string, desc: string }) {
+function FeatureCard({ icon: Icon, title, desc }: { icon: LucideIcon, title: string, desc: string }) {
   return (
     <div className="group rounded-2xl border border-border/20 bg-card/10 p-10 transition-all hover:border-primary/20">
        <div className="mb-8 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/5 border border-primary/10 text-primary/40 group-hover:text-primary transition-colors">

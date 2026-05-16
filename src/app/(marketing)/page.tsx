@@ -1,4 +1,3 @@
-import { stackServerApp } from "@/stack/server";
 import { Hero } from "@/components/landing/Hero";
 import { Comparison } from "@/components/landing/Comparison";
 import { Problem } from "@/components/landing/Problem";
@@ -11,12 +10,10 @@ import { SocialProof } from "@/components/landing/SocialProof";
 import { FAQ } from "@/components/landing/FAQ";
 import { CTA } from "@/components/landing/CTA";
 
-export default async function LandingPage() {
-  const user = await stackServerApp.getUser();
-
+export default function LandingPage() {
   return (
     <>
-      <Hero isSignedIn={Boolean(user)} />
+      <Hero />
       <Comparison />
       <Problem />
       <Solution />
@@ -30,4 +27,3 @@ export default async function LandingPage() {
     </>
   );
 }
-

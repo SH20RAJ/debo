@@ -1,11 +1,8 @@
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { waitlistUrl } from "@/lib/launch";
 
-type NavbarProps = {
-  isSignedIn?: boolean;
-};
-
-export function Navbar({ isSignedIn = false }: NavbarProps) {
+export function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/10 bg-background/80 backdrop-blur-md">
       <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
@@ -30,33 +27,24 @@ export function Navbar({ isSignedIn = false }: NavbarProps) {
         </nav>
         <div className="flex items-center gap-4 sm:gap-6">
           <ThemeToggle />
-          {isSignedIn ? (
-            <Link 
-              href="/dashboard" 
+          <div className="flex items-center gap-6">
+            <Link
+              href="/#launch"
+              className="hidden md:inline-flex text-sm font-medium text-muted-foreground hover:text-foreground transition-colors tracking-tight"
+            >
+              Public preview
+            </Link>
+            <Link
+              href={waitlistUrl}
+              target="_blank"
+              rel="noopener noreferrer"
               className="minimal-btn-primary px-5 py-2 text-sm"
             >
-              Dashboard
+              Join waitlist
             </Link>
-          ) : (
-            <div className="flex items-center gap-6">
-              <Link 
-                href="/join" 
-                className="hidden md:inline-flex text-sm font-medium text-muted-foreground hover:text-foreground transition-colors tracking-tight"
-              >
-                Sign in
-              </Link>
-              <Link 
-                href="/join" 
-                className="minimal-btn-primary px-5 py-2 text-sm"
-              >
-                Get started
-              </Link>
-            </div>
-          )}
+          </div>
         </div>
       </div>
     </header>
   );
 }
-
-

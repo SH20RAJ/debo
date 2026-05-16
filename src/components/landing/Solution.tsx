@@ -65,17 +65,16 @@ export function Solution() {
             <h4 className="text-2xl font-semibold text-foreground tracking-tight">Start with one note. Ask about it later.</h4>
           </div>
           <Link
-            href="/join"
+            href="/#waitlist"
             className="minimal-btn-primary px-10 py-3 text-base"
           >
-            Create your memory graph
+            Join the waitlist
           </Link>
         </div>
       </div>
     </section>
   );
 }
-
 
 
 

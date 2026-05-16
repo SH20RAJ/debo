@@ -3,6 +3,7 @@
 import Link from "next/link";
 import {
   ArrowRight,
+  CalendarDays,
   Shield,
   CheckCircle2,
   User,
@@ -13,11 +14,9 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-type HeroProps = {
-  isSignedIn?: boolean;
-};
+import { launchDateLabel, waitlistUrl } from "@/lib/launch";
 
-export function Hero({ isSignedIn = false }: HeroProps) {
+export function Hero() {
   return (
     <section className="relative overflow-hidden bg-background px-6 pb-28 pt-16 sm:pt-20 lg:pb-36">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[620px] bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.14),transparent_34%),radial-gradient(circle_at_top_right,rgba(37,99,235,0.08),transparent_30%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(96,165,250,0.24),transparent_34%),radial-gradient(circle_at_top_right,rgba(14,165,233,0.14),transparent_32%)]" />
@@ -28,8 +27,8 @@ export function Hero({ isSignedIn = false }: HeroProps) {
           <div className="flex-1 space-y-8 text-center lg:text-left">
             <div className="space-y-5">
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold tracking-tight text-primary shadow-sm shadow-primary/5 dark:border-primary/25 dark:bg-primary/10">
-                <Brain className="h-3.5 w-3.5" />
-                <span>Private AI memory for your real life</span>
+                <CalendarDays className="h-3.5 w-3.5" />
+                <span>Public preview opens {launchDateLabel}</span>
               </div>
               <h1 className="font-heading text-5xl font-semibold leading-[0.98] tracking-[-0.045em] text-foreground md:text-7xl lg:text-8xl">
                 Remember every detail that <span className="text-primary/80 dark:text-primary">matters.</span>
@@ -40,12 +39,12 @@ export function Hero({ isSignedIn = false }: HeroProps) {
             </div>
 
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
-              <Link href={isSignedIn ? "/dashboard" : "/join"} className="minimal-btn-primary px-8 py-3 text-base">
-                Build your memory
+              <Link href={waitlistUrl} target="_blank" rel="noopener noreferrer" className="minimal-btn-primary px-8 py-3 text-base">
+                Join the waitlist
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
-              <Link href="#how-it-works" className="minimal-btn-outline px-8 py-3 text-base">
-                See how it works
+              <Link href="#launch" className="minimal-btn-outline px-8 py-3 text-base">
+                See launch timer
               </Link>
             </div>
 
