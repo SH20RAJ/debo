@@ -16,27 +16,7 @@ export function WaitlistPanel({ className = "" }: { className?: string }) {
           Public preview {launchDateLabel}
         </div>
       </div>
-
-      <iframe
-        src="https://tally.so/embed/Gxq11k?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1"
-        width="100%"
-        height="520"
-        title="Debo waitlist"
-        className="rounded-2xl bg-background"
-      />
-
-      <div className="mt-4 flex flex-col gap-3 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-        <span>Having trouble with the embed?</span>
-        <Link
-          href={waitlistUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 font-semibold text-primary hover:text-primary/80"
-        >
-          Open waitlist
-          <ArrowUpRight className="h-3.5 w-3.5" />
-        </Link>
-      </div>
+ 
     </div>
   );
 }

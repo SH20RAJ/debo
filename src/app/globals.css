@@ -35,83 +35,83 @@
 }
 
 :root {
-	--font-body: "Inter", "Segoe UI", "Helvetica Neue", sans-serif;
-	--font-display: "Outfit", "Segoe UI", sans-serif;
+	--font-body: "Nunito Sans", "Nunito", "Segoe UI", sans-serif;
+	--font-display: "Nunito", "Segoe UI", sans-serif;
 
-	/* Core Minimal Palette */
-	--background: #ffffff;
-	--foreground: #09090b;
-	
-	--card: #ffffff;
-	--card-foreground: #09090b;
-	
-	--popover: #ffffff;
-	--popover-foreground: #09090b;
-	
-	--primary: #2563eb;
-	--primary-foreground: #ffffff;
-	
-	--secondary: #f4f4f5;
-	--secondary-foreground: #18181b;
-	
-	--muted: #f4f4f5;
-	--muted-foreground: #71717a;
-	
-	--accent: #f4f4f5;
-	--accent-foreground: #18181b;
-	
-	--destructive: #ef4444;
-	--destructive-foreground: #ffffff;
-	
-	--border: #e4e4e7;
-	--input: #e4e4e7;
-	--ring: #2563eb;
-	
-	--radius: 0.75rem;
+	/* Duolingo-inspired Palette */
+	--background: #FFFFFF;
+	--foreground: #4B4B4B;
+
+	--card: #FFFFFF;
+	--card-foreground: #4B4B4B;
+
+	--popover: #FFFFFF;
+	--popover-foreground: #4B4B4B;
+
+	--primary: #58CC02;
+	--primary-foreground: #FFFFFF;
+
+	--secondary: #F7F7F7;
+	--secondary-foreground: #4B4B4B;
+
+	--muted: #F7F7F7;
+	--muted-foreground: #777777;
+
+	--accent: #F7F7F7;
+	--accent-foreground: #4B4B4B;
+
+	--destructive: #FF4B4B;
+	--destructive-foreground: #FFFFFF;
+
+	--border: #E5E5E5;
+	--input: #E5E5E5;
+	--ring: #58CC02;
+
+	--radius: 1rem;
 
 	/* Sidebar */
-	--sidebar-background: #ffffff;
-	--sidebar-foreground: #09090b;
-	--sidebar-border: #e4e4e7;
-	--sidebar-accent: #f4f4f5;
-	--sidebar-accent-foreground: #18181b;
+	--sidebar-background: #FFFFFF;
+	--sidebar-foreground: #4B4B4B;
+	--sidebar-border: #E5E5E5;
+	--sidebar-accent: #F7F7F7;
+	--sidebar-accent-foreground: #4B4B4B;
 }
 
 .dark {
-	--background: #0a1020;
-	--foreground: #f7f9ff;
-	
-	--card: #101827;
-	--card-foreground: #f7f9ff;
-	
-	--popover: #111a2b;
-	--popover-foreground: #f7f9ff;
-	
-	--primary: #60a5fa;
-	--primary-foreground: #061225;
-	
-	--secondary: #172033;
-	--secondary-foreground: #eef4ff;
-	
-	--muted: #151e31;
-	--muted-foreground: #aebbd1;
-	
-	--accent: #1d2b45;
-	--accent-foreground: #eef4ff;
-	
-	--destructive: #fb7185;
-	--destructive-foreground: #fff7f8;
-	
-	--border: #27344d;
-	--input: #2b3953;
-	--ring: #93c5fd;
+	--background: #0d1117;
+	--foreground: #e6edf3;
+
+	--card: #161b22;
+	--card-foreground: #e6edf3;
+
+	--popover: #161b22;
+	--popover-foreground: #e6edf3;
+
+	--primary: #58CC02;
+	--primary-foreground: #FFFFFF;
+
+	--secondary: #21262d;
+	--secondary-foreground: #e6edf3;
+
+	--muted: #21262d;
+	--muted-foreground: #8b949e;
+
+	--accent: #21262d;
+	--accent-foreground: #e6edf3;
+
+	--destructive: #FF4B4B;
+	--destructive-foreground: #FFFFFF;
+
+	--border: #30363d;
+	--input: #30363d;
+	--ring: #58CC02;
 
 	/* Sidebar */
-	--sidebar-background: #0d1424;
-	--sidebar-foreground: #f7f9ff;
-	--sidebar-border: #27344d;
-	--sidebar-accent: #172033;
-	--sidebar-accent-foreground: #eef4ff;
+	--sidebar-background: #0d1117;
+	--sidebar-foreground: #e6edf3;
+	--sidebar-border: #30363d;
+	--sidebar-accent: #21262d;
+	--sidebar-accent-foreground: #e6edf3;
 }
 
 @layer base {
@@ -126,50 +126,65 @@
 
 	.dark body {
 		background:
-			radial-gradient(circle at 18% 0%, rgba(96, 165, 250, 0.08), transparent 28rem),
-			radial-gradient(circle at 82% 8%, rgba(14, 165, 233, 0.06), transparent 24rem),
+			radial-gradient(circle at 18% 0%, rgba(88, 204, 2, 0.06), transparent 28rem),
+			radial-gradient(circle at 82% 8%, rgba(88, 204, 2, 0.04), transparent 24rem),
 			var(--background);
 	}
 
 	h1, h2, h3, h4, h5, h6 {
-		@apply font-heading font-semibold tracking-tight;
+		@apply font-heading font-bold tracking-tight;
 	}
 }
 
 @utility minimal-card {
-	@apply rounded-xl border border-border/50 bg-card/50 p-6 transition-all duration-300;
-	@apply hover:border-primary/20 hover:bg-card/80 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:bg-card/70 dark:shadow-[0_16px_50px_rgba(0,0,0,0.22)] dark:hover:bg-card dark:hover:shadow-[0_18px_60px_rgba(37,99,235,0.12)];
+	@apply rounded-2xl border-2 border-border bg-card p-6 transition-all duration-200;
+	@apply hover:border-primary/30 hover:shadow-[0_2px_0_var(--border)];
 }
 
 @utility minimal-btn {
-	@apply inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 active:scale-95 disabled:opacity-50;
+	@apply inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-extrabold uppercase tracking-wide transition-all duration-100;
+	@apply active:translate-y-[2px] disabled:opacity-50 disabled:cursor-not-allowed;
 }
 
 @utility minimal-btn-primary {
-	@apply minimal-btn bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm dark:shadow-primary/20;
+	@apply minimal-btn bg-primary text-primary-foreground;
+	box-shadow: 0 4px 0 #46A302;
+	@apply hover:brightness-105 active:shadow-none;
 }
 
 @utility minimal-btn-outline {
-	@apply minimal-btn border border-border bg-transparent hover:bg-muted hover:text-foreground dark:bg-card/40 dark:hover:bg-accent;
+	@apply minimal-btn bg-transparent text-foreground border-2 border-border;
+	box-shadow: 0 4px 0 var(--border);
+	@apply hover:bg-muted active:shadow-none;
 }
 
 @utility hover-pop {
-	@apply transition-all duration-300 ease-out;
-	@apply hover:-translate-y-1 hover:shadow-lg active:translate-y-0 active:shadow-none;
+	@apply transition-all duration-200 ease-out;
+	@apply hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-none;
 }
 
-@utility grad-blue {
-	background: linear-gradient(135deg, var(--primary) 0%, #1e40af 100%);
+@utility grad-green {
+	background: linear-gradient(135deg, #58CC02 0%, #89E219 100%);
 }
 
 @utility glass {
-	@apply bg-background/40 backdrop-blur-2xl border border-border/20 shadow-2xl;
+	@apply bg-background/60 backdrop-blur-xl border-2 border-border/30;
 }
 
 @utility glass-card {
-	@apply bg-card/60 backdrop-blur-3xl border border-border/10 shadow-[0_8px_32px_rgba(0,0,0,0.12)];
+	@apply bg-card/80 backdrop-blur-xl border-2 border-border/20;
 }
 
+@utility duo-card {
+	@apply rounded-2xl border-2 border-border bg-card p-4;
+	box-shadow: 0 2px 0 var(--border);
+}
+
+@utility duo-input {
+	@apply rounded-xl border-2 border-border bg-card px-4 py-3 text-sm font-medium text-foreground placeholder:text-muted-foreground/60;
+	@apply focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none;
+	@apply transition-all duration-200;
+}
 
 @layer components {
 	.animate-float {
