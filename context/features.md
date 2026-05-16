@@ -1,233 +1,95 @@
-# Features Spec
+# Features Spec - Multimodal Intelligence Lab
 
-## 1. Journals
+## 1. Collaborative Intelligence Workflow
 
-### Text Journals
-- Rich text editor using Plate.js (primary) and Tiptap (alternative)
-- AI-powered commands: generate, edit, comment, choose tool, edit table
-- Tags for categorization
-- Auto-save to Postgres
-- Semantic indexing to Qdrant after save
-- Memory and character extraction after save
+Debo operates on a three-stage research protocol:
 
-### Audio Journals
-- Browser-based audio recording via MediaRecorder API
-- Upload to Google Drive (organized: `Debo/Audio Journals/YYYY-MM/`)
-- Auto-generated title from description or date fallback
-- Transcript storage
-- Duration tracking
-- Public sharing via Drive permissions
-
-### Video Journals
-- Browser-based video recording
-- Upload to Google Drive (organized: `Debo/Video Journals/YYYY-MM/`)
-- Thumbnail generation
-- Same metadata as audio journals
-
-### Journal Pages
-- `/dashboard/journals` - Grid view of all journals
-- `/dashboard/journal/[id]` - Journal detail (dispatches by type)
-- `/dashboard/journal/text/[id]` - Text journal view
-- `/dashboard/journal/audio/[id]` - Audio journal player
-- `/dashboard/journal/video/[id]` - Video journal player
+- **Ingest**: Multimodal data synchronization (Voice, Text, Images, Papers, App Streams).
+- **Think**: Latent Connectionism Engine builds the semantic memory graph.
+- **Synthesis**: Collaborative synthesis providing proactive, source-backed insights.
 
 ---
 
-## 2. Memory Engine
+## 2. Multimodal Research Foundation
 
-### Extraction
-- Runs after journal save and during chat
-- Extracts: facts, entities, emotions, topics
-- Uses LLM with structured prompts (`src/lib/memory/extract.ts`)
-
-### Storage
-- **Local**: memory_node, memory_edge, memory_fact, memory_entity tables
-- **Remote**: Mem0 API for additional memory persistence
-
-### Retrieval
-- Query by semantic similarity
-- Used in chat context injection
-- Editable via `/dashboard/memories`
-
-### Management
-- `/dashboard/memories` - Memory manager UI
-- View, edit, delete memories
-- Grouped by type (fact, entity, emotion, topic)
+### Capabilities
+- **Vision Ingestion**: Understand diagrams, charts, and visual research.
+- **Paper Parsing**: PDF research extraction and summarization.
+- **Unified Context**: Cross-format synthesis (link a voice note to a chart).
+- **Deep Analysis**: Technical insights across multimodal datasets.
 
 ---
 
-## 3. Character Graph
+## 3. Personal Tinker API
 
-### Extraction
-- Automatically finds people mentioned in journals and chat
-- Creates profiles with name, aliases, relationship, summary
-- Deduplicates by normalized name
-- Tracks mention count and confidence
-
-### Storage
-- `characterProfile` table for person data
-- `characterReference` table for source links
-- Each reference stores excerpt, source type, source ID
-
-### Management
-- `/dashboard/characters` - CharactersManager component
-- View all characters with search/filter
-- Edit profile details (name, relationship, summary, avatar)
-- View source references
-
-### Source Types
-- `chat` - Mentioned in chat
-- `text_journal` - Mentioned in text journal
-- `audio_journal` - Mentioned in audio transcript
-- `video_journal` - Mentioned in video transcript
-- `manual` - Manually created
+### Control Plane
+- **Researcher-Grade API**: Full control over personal model fine-tuning.
+- **LoRA Optimization**: Efficiently update model weights based on personal history.
+- **Inference Control**: Adjust temperature, top-p, and system prompts.
+- **Private Deployment**: On-device or private cloud inference options.
 
 ---
 
-## 4. Chat
+## 4. Latent Connectionism Engine
 
-### Interface
-- `/dashboard/chat` - Main chat page
-- Uses assistant-ui/react for chat UI
-- Supports markdown rendering
-
-### Features
-- Memory retrieval before response
-- Citation of journal sources
-- Auto-saves important user facts to memory
-- Extracts character mentions on important turns
-- Thread management (create, list, switch)
-
-### API
-- `POST /api/chat` - Send message, get streamed response
-- `GET /api/chat/history` - Get chat history
-- `GET /api/chat/threads` - List chat threads
-- `POST /api/chat/import` - Import chat data
+### Discovery
+- **Manifold Mapping**: Identify hidden relationship manifolds in your knowledge base.
+- **Semantic Graphs**: Fact, entity, and emotion extraction with directional edges.
+- **Pattern Recognition**: Discover latent trends across years of journals.
+- **Proactive Recall**: Injects relevant history before you ask for it.
 
 ---
 
-## 5. Talk (Voice Mode)
+## 5. Journals & Capture
+
+### Multimodal Journals
+- **Text**: Rich editor (Plate.js) with AI-powered research commands.
+- **Audio**: Real-time transcription with emotional sentiment tagging.
+- **Video**: Encrypted storage in Google Drive with visual pattern indexing.
+- **Capture Studio**: Distraction-free surface for raw ingestion.
+
+---
+
+## 6. Talk (Real-time Research)
 
 ### Architecture
-- LiveKit for WebRTC room transport
-- Deepgram for STT (speech-to-text)
-- Cartesia for TTS (text-to-speech)
-- NVIDIA-compatible LLM for responses
-
-### Flow
-1. User clicks Talk → LiveKit room created
-2. Audio streamed to Deepgram for transcription
-3. Text sent to LLM with memory context
-4. Response streamed to Cartesia for audio
-5. Audio played back to user
-
-### Files
-- `src/workers/voice-agent.ts` - LiveKit agent worker
-- `src/app/(chat)/talk/page.tsx` - Talk UI
-- `src/app/api/livekit/token/route.ts` - Token generation
-- `src/components/dashboard/experimental/agent/voice-agent-client.tsx` - Client
+- **Transport**: LiveKit WebRTC.
+- **STT**: Deepgram sub-second transcription.
+- **Intelligence**: Adaptive memory LLM with full life context.
+- **TTS**: Cartesia natural voice synthesis.
 
 ---
 
-## 6. Capture
+## 7. Connectors (Composio MCP)
 
-### Interface
-- `/dashboard/capture` - Distraction-free recording surface
-- Audio and video mode toggle
-- Description field for auto-title generation
-
-### Flow
-1. User selects audio/video mode
-2. Records via browser MediaRecorder
-3. Saves to Google Drive (organized folder structure)
-4. Generates title from description or date
-5. Saves journal entry to database
-
-### Components
-- `src/components/dashboard/capture/capture-studio.tsx` - Main capture UI
+### Ingestion Streams
+- **Social**: Slack, Discord, Telegram.
+- **Work**: Linear, Notion, GitHub.
+- **Communication**: Gmail, Outlook, Calendar.
+- **Custom**: Connect any API via the Tinker interface.
 
 ---
 
-## 7. Search
+## 8. Memory Management
 
-### Implementation
-- Semantic search via Qdrant vector embeddings
-- Postgres text search as fallback
-- Searches across all journal types
-
-### Files
-- `src/lib/vector/search.ts` - Vector search logic
-- `src/lib/vector/qdrant.ts` - Qdrant client
-- `src/actions/search.ts` - Search server action
+### Surfaces
+- **Memory Manager**: View and edit facts, entities, and emotions.
+- **Character Graph**: Automatically track relationship history and mentions.
+- **Citations**: Every AI response includes direct links to journal sources.
 
 ---
 
-## 8. Connectors
+## 9. MCP (Model Context Protocol)
 
-### Supported
-- Slack, Discord, Notion, Linear, Gmail, Calendar, Custom
-
-### Features
-- OAuth/API key connection via Composio
-- Event ingestion (messages, mentions, files)
-- Auto-journal creation from events
-- Sync status tracking
-
-### Pages
-- `/dashboard/connectors` - Connector management UI
-
-### API
-- `GET/POST /api/connectors` - List/create connectors
-- `GET/DELETE /api/connectors/[id]` - Get/delete connector
-- `POST /api/connectors/[id]/sync` - Trigger sync
+### Extensibility
+- **Server**: Expose your private memory graph to external research agents.
+- **Client**: Connect and orchestrate multiple external MCP servers.
+- **Privacy**: Granular control over what context is shared.
 
 ---
 
-## 9. Editor
+## 10. Security & Ethics
 
-### Rich Text Editor
-- Plate.js 53 (primary editor framework)
-- Tiptap 3 (alternative/legacy)
-- Extensions: code blocks, tables, lists, images, links, mentions, math, emoji, etc.
-
-### AI Commands
-- Generate content
-- Edit/rewrite selection
-- Add comments
-- Edit tables
-- Choose appropriate tool
-
-### Page
-- `/editor` - Standalone editor page
-
----
-
-## 10. Settings
-
-### AI Provider Configuration
-- Add/manage multiple AI providers
-- Set active provider
-- API keys stored encrypted
-- Supports OpenAI, Anthropic, Ollama, custom endpoints
-
-### Page
-- `/dashboard/settings` - Settings form with provider cards
-
----
-
-## 11. MCP (Model Context Protocol)
-
-### Server
-- Debo exposes its own MCP server
-- Tools available to external agents
-
-### Client
-- Connect external MCP servers
-- Manage MCP connections
-
-### Pages
-- `/dashboard/mcp` - MCP manager UI
-
-### API
-- `GET/POST /api/mcp` - MCP endpoint
-- `POST /api/mcp/messages` - MCP messages
+- **Private Core**: End-to-end encrypted storage.
+- **No Public Training**: Your life is not a dataset for others.
+- **Property of Mind**: Debo is a private instance for individual growth.

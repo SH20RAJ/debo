@@ -1,31 +1,29 @@
 # Debo - Project Overview
 
-**Debo** is a private AI memory system for your life. It captures personal context from journals, voice notes, chats, and people, converts it into structured memory, and lets the user ask, talk, search, and act with that context.
+**Debo** is a Multimodal Intelligence Lab building the collaborative layer between human and artificial minds. We focus on personal research, life documentary, and private memory systems that transform raw experience into a connected graph of meaning.
 
-## What Debo Does
+## Core Pillars
 
-- **Journaling**: Text, audio, and video journals with rich editing (Plate.js / Tiptap)
-- **Memory Engine**: Extracts facts, entities, emotions, and topics from all context sources
-- **Character Graph**: Automatically discovers and tracks people mentioned across journals and chat
-- **Chat**: Conversational AI interface with memory retrieval and citation
-- **Talk**: Realtime voice mode via LiveKit (Deepgram STT + NVIDIA LLM + Cartesia TTS)
-- **Capture**: Distraction-free audio/video recording with Google Drive upload
-- **Search**: Semantic vector search over journals with Postgres fallback
-- **Connectors**: Integrates with external services (Slack, Discord, etc.) via Composio MCP
-- **Editor**: Rich text editor for journaling with AI commands
+- **Multimodal Ingestion**: Synchronizing voice, text, images, and research papers into a unified private log.
+- **Connectionism Engine**: Using Mastra agents to extract facts, entities, emotions, and latent relationship manifolds.
+- **Personal Tinker**: Providing researcher-grade control over personal model fine-tuning (LoRA) and inference.
+- **Collaborative Synthesis**: A personal intelligence layer that thinks alongside the user, providing source-backed insights.
 
 ## Tagline
 
-"Private AI Memory for Your Life"
+"Collaborative Intelligence. Personal Research."
 
-## URL
+## Key Philosophy: Editorial Calm
 
-- Production: `https://debo.app`
-- Local dev: `http://localhost:3000`
+- **Generous Whitespace**: Focus on content, not clutter.
+- **Source-Backed**: Every insight cited directly from the user's life documentary.
+- **Private by Design**: Property of the mind, not a product.
+- **Sub-second Response**: Real-time multimodal interaction.
 
-## Key Principles
+## Tech Stack
 
-- Keep main surfaces calm and focused
-- Make memory visible and editable
-- Prefer source-backed context over mysterious AI guesses
-- Add momentum through useful review loops, not manipulative engagement tricks
+- **Frontend**: Next.js 15+, Tailwind CSS, Lucide Icons.
+- **Intelligence**: Mastra Framework, OpenAI/Anthropic/Ollama.
+- **Real-time**: LiveKit, Deepgram, Cartesia.
+- **Storage**: Postgres (Drizzle), Vector Search.
+- **Integrations**: Composio MCP.

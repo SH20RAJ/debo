@@ -176,6 +176,10 @@ export default function PitchPage() {
                      <p className="text-base font-semibold text-muted-foreground leading-relaxed">
                         We don&apos;t sell insights. We don&apos;t train on your life. Debo is a private instance, grounded only in what you tell it.
                      </p>
+                     <div className="pt-4">
+                       <div className="text-[10px] font-extrabold uppercase tracking-widest text-primary mb-1">Strategic Contact</div>
+                       <a href="mailto:founder@debo.life" className="text-sm font-bold text-foreground hover:text-primary transition-colors">founder@debo.life</a>
+                     </div>
                   </div>
                   <Link href="/#waitlist" className="minimal-btn-primary w-full py-3 text-sm">
                      Join Waitlist
