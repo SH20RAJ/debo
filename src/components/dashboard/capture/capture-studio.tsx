@@ -19,7 +19,30 @@ const modes: Array<{ id: CaptureMode; label: string; icon: LucideIcon }> = [
   { id: "video", label: "Video", icon: Video },
 ];
 
+const maxCaptureUploadBytes = 50 * 1024 * 1024;
 const audioBars = [36, 62, 46, 82, 54, 74, 42, 68, 50, 88, 58, 40];
+
+function getRecorderOptions(mode: CaptureMode): MediaRecorderOptions {
+  const mimeTypes =
+    mode === "video"
+      ? [
+          "video/webm;codecs=vp9,opus",
+          "video/webm;codecs=vp8,opus",
+          "video/webm",
+        ]
+      : [
+          "audio/webm;codecs=opus",
+          "audio/webm",
+          "audio/mp4",
+        ];
+  const mimeType = mimeTypes.find((type) => MediaRecorder.isTypeSupported(type));
+
+  return {
+    ...(mimeType ? { mimeType } : {}),
+    audioBitsPerSecond: 96_000,
+    ...(mode === "video" ? { videoBitsPerSecond: 1_500_000 } : {}),
+  };
+}
 
 function getMediaExtension(blob: Blob | null, mode: CaptureMode) {
   const mimeType = blob?.type.split(";")[0].toLowerCase();
@@ -51,6 +74,11 @@ function formatTime(seconds: number) {
   const minutes = Math.floor(seconds / 60);
   const secs = seconds % 60;
   return `${minutes}:${secs.toString().padStart(2, "0")}`;
+}
+
+function formatBytes(bytes: number) {
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 export function CaptureStudio() {
@@ -177,7 +205,7 @@ export function CaptureStudio() {
         await liveVideoRef.current.play();
       }
 
-      const recorder = new MediaRecorder(stream);
+      const recorder = new MediaRecorder(stream, getRecorderOptions(mode));
       recorderRef.current = recorder;
       chunksRef.current = [];
 
@@ -193,7 +221,7 @@ export function CaptureStudio() {
         setStatus("ready");
       };
 
-      recorder.start();
+      recorder.start(1000);
       setStatus("recording");
     } catch (error) {
       console.error("Capture start failed:", error);
@@ -207,6 +235,10 @@ export function CaptureStudio() {
 
   const handleSave = async () => {
     if (!mediaBlob || status !== "ready") return;
+    if (mediaBlob.size > maxCaptureUploadBytes) {
+      toast.error(`This recording is ${formatBytes(mediaBlob.size)}. Keep captures under ${formatBytes(maxCaptureUploadBytes)} for now.`);
+      return;
+    }
 
     setIsSaving(true);
     try {
@@ -255,7 +287,8 @@ export function CaptureStudio() {
   };
 
   const activeMode = modes.find((item) => item.id === mode)!;
-  const canSave = status === "ready" && Boolean(mediaBlob) && isDriveConnected;
+  const uploadTooLarge = Boolean(mediaBlob && mediaBlob.size > maxCaptureUploadBytes);
+  const canSave = status === "ready" && Boolean(mediaBlob) && isDriveConnected && !uploadTooLarge;
 
   return (
     <div className="min-h-full bg-background">
@@ -380,10 +413,18 @@ export function CaptureStudio() {
               />
             </div>
 
-            <Button onClick={handleSave} disabled={!canSave || isSaving} className="mt-auto h-12 rounded-lg">
-              {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
-              Save and sync
-            </Button>
+            <div className="mt-auto space-y-2">
+              {mediaBlob ? (
+                <div className={cn("text-xs font-medium", uploadTooLarge ? "text-destructive" : "text-muted-foreground")}>
+                  Recording size: {formatBytes(mediaBlob.size)}
+                  {uploadTooLarge ? ` · Limit: ${formatBytes(maxCaptureUploadBytes)}` : ""}
+                </div>
+              ) : null}
+              <Button onClick={handleSave} disabled={!canSave || isSaving} className="h-12 w-full rounded-lg">
+                {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
+                Save and sync
+              </Button>
+            </div>
           </aside>
         </section>
       </div>
