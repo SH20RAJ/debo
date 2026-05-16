@@ -249,9 +249,14 @@ export default defineAgent({
           required: ["fact"],
         },
         execute: async ({ fact }: { fact: string }) => {
-          const { addMemory } = await import("../actions/memories");
-          const result = await addMemory(fact, userId);
-          return JSON.stringify(result);
+          try {
+            const { addMemory } = await import("../actions/memories");
+            const result = await addMemory(fact, userId);
+            return JSON.stringify(result);
+          } catch (error) {
+            console.error("add_memory tool error:", error);
+            return JSON.stringify({ error: "Failed to store memory, but I'll keep it in mind for this chat." });
+          }
         },
       }),
       create_journal: llm.tool({
@@ -265,9 +270,14 @@ export default defineAgent({
           required: ["content"],
         },
         execute: async ({ content, title }: { content: string; title?: string }) => {
-          const { saveJournal } = await import("../actions/journals");
-          const result = await saveJournal(content, undefined, title, userId);
-          return JSON.stringify(result);
+          try {
+            const { saveJournal } = await import("../actions/journals");
+            const result = await saveJournal(content, undefined, title, userId);
+            return JSON.stringify(result);
+          } catch (error) {
+            console.error("create_journal tool error:", error);
+            return JSON.stringify({ error: "Journal entry could not be saved to the database." });
+          }
         },
       }),
       get_info: llm.tool({
@@ -279,10 +289,18 @@ export default defineAgent({
           },
         },
         execute: async ({ focus }: { focus?: string }) => {
-          const { createDeboRuntimeTools } = await import("../lib/chat/debo-tools");
-          const tools = createDeboRuntimeTools(userId);
-          const result = await tools.getInfoTool.execute({ focus: focus as any, depth: "brief" });
-          return JSON.stringify(result);
+          try {
+            const { createDeboRuntimeTools } = await import("../lib/chat/debo-tools");
+            const tools = createDeboRuntimeTools(userId);
+            const result = await tools.getInfoTool.execute({ focus: focus as any, depth: "brief" });
+            return JSON.stringify(result);
+          } catch (error) {
+            console.error("get_info tool error:", error);
+            return JSON.stringify({ 
+              documentary: "Your personal life data is temporarily unavailable due to a module error, but I can still chat with you.",
+              error: "Context retrieval failed."
+            });
+          }
         },
       }),
       get_memories: llm.tool({
@@ -294,10 +312,15 @@ export default defineAgent({
           },
         },
         execute: async ({ query }: { query?: string }) => {
-          const { createDeboRuntimeTools } = await import("../lib/chat/debo-tools");
-          const tools = createDeboRuntimeTools(userId);
-          const result = await tools.getMemoriesTool.execute({ query, limit: 5 });
-          return JSON.stringify(result);
+          try {
+            const { createDeboRuntimeTools } = await import("../lib/chat/debo-tools");
+            const tools = createDeboRuntimeTools(userId);
+            const result = await tools.getMemoriesTool.execute({ query, limit: 5 });
+            return JSON.stringify(result);
+          } catch (error) {
+            console.error("get_memories tool error:", error);
+            return JSON.stringify([]);
+          }
         },
       }),
       search_journals: llm.tool({
@@ -310,10 +333,15 @@ export default defineAgent({
           required: ["query"],
         },
         execute: async ({ query }: { query: string }) => {
-          const { createDeboRuntimeTools } = await import("../lib/chat/debo-tools");
-          const tools = createDeboRuntimeTools(userId);
-          const result = await tools.searchJournalsTool.execute({ query });
-          return JSON.stringify(result);
+          try {
+            const { createDeboRuntimeTools } = await import("../lib/chat/debo-tools");
+            const tools = createDeboRuntimeTools(userId);
+            const result = await tools.searchJournalsTool.execute({ query });
+            return JSON.stringify(result);
+          } catch (error) {
+            console.error("search_journals tool error:", error);
+            return JSON.stringify({ error: "Search is currently offline." });
+          }
         },
       }),
     };
