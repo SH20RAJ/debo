@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Hero } from "@/components/landing/Hero";
 import { ComparisonDemo } from "@/components/landing/ComparisonDemo";
+import { FeaturesShowcase } from "@/components/landing/FeaturesShowcase";
 import { WaitlistForm } from "@/components/landing/WaitlistForm";
 import { ProductPromises } from "@/components/landing/ProductPromises";
 
@@ -20,6 +21,7 @@ export default function LandingPage() {
       <main className="flex-1">
         <Hero />
         <ComparisonDemo />
+        <FeaturesShowcase />
         <WaitlistForm />
         <ProductPromises />
         <HowItWorks />
