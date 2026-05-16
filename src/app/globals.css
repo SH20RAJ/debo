@@ -32,6 +32,25 @@
 	--color-accent-foreground: var(--accent-foreground);
 	--color-destructive: var(--destructive);
 	--color-destructive-foreground: var(--destructive-foreground);
+
+	/* Duo accent colors for Tailwind */
+	--color-duo-eel: var(--duo-eel);
+	--color-duo-wolf: var(--duo-wolf);
+	--color-duo-swan: var(--duo-swan);
+	--color-duo-polar: var(--duo-polar);
+	--color-duo-snow: var(--duo-snow);
+	--color-duo-feather: var(--duo-feather);
+	--color-duo-green: var(--duo-green);
+	--color-duo-macaw: var(--duo-macaw);
+	--color-duo-blue: var(--duo-blue);
+	--color-duo-fox: var(--duo-fox);
+	--color-duo-orange: var(--duo-orange);
+	--color-duo-cardinal: var(--duo-cardinal);
+	--color-duo-red: var(--duo-red);
+	--color-duo-beetle: var(--duo-beetle);
+	--color-duo-purple: var(--duo-purple);
+	--color-duo-yellow: var(--duo-yellow);
+	--color-duo-canary: var(--duo-canary);
 }
 
 :root {
@@ -69,6 +88,25 @@
 
 	--radius: 1rem;
 
+	/* Duo accent colors */
+	--duo-eel: #4B4B4B;
+	--duo-wolf: #777777;
+	--duo-swan: #E5E5E5;
+	--duo-polar: #F7F7F7;
+	--duo-snow: #FFFFFF;
+	--duo-feather: #58CC02;
+	--duo-green: #58CC02;
+	--duo-macaw: #1CB0F6;
+	--duo-blue: #1CB0F6;
+	--duo-fox: #FF9600;
+	--duo-orange: #FF9600;
+	--duo-cardinal: #FF4B4B;
+	--duo-red: #FF4B4B;
+	--duo-beetle: #CE82FF;
+	--duo-purple: #CE82FF;
+	--duo-yellow: #FFC800;
+	--duo-canary: #FFC800;
+
 	/* Sidebar */
 	--sidebar-background: #FFFFFF;
 	--sidebar-foreground: #4B4B4B;
@@ -105,6 +143,25 @@
 	--border: #30363d;
 	--input: #30363d;
 	--ring: #58CC02;
+
+	/* Duo accent colors (dark) */
+	--duo-eel: #e6edf3;
+	--duo-wolf: #8b949e;
+	--duo-swan: #30363d;
+	--duo-polar: #21262d;
+	--duo-snow: #0d1117;
+	--duo-feather: #58CC02;
+	--duo-green: #58CC02;
+	--duo-macaw: #1CB0F6;
+	--duo-blue: #1CB0F6;
+	--duo-fox: #FF9600;
+	--duo-orange: #FF9600;
+	--duo-cardinal: #FF4B4B;
+	--duo-red: #FF4B4B;
+	--duo-beetle: #CE82FF;
+	--duo-purple: #CE82FF;
+	--duo-yellow: #FFC800;
+	--duo-canary: #FFC800;
 
 	/* Sidebar */
 	--sidebar-background: #0d1117;

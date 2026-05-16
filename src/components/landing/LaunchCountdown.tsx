@@ -37,7 +37,7 @@ export function LaunchCountdown({ compact = false }: { compact?: boolean }) {
 
   if (isLaunched) {
     return (
-      <div className="rounded-2xl border border-primary/20 bg-primary/10 px-5 py-4 text-sm font-semibold text-primary">
+      <div className="rounded-2xl border-2 border-primary/20 bg-primary/10 px-5 py-4 text-sm font-bold text-primary">
         Public preview is opening now.
       </div>
     );
@@ -48,12 +48,12 @@ export function LaunchCountdown({ compact = false }: { compact?: boolean }) {
       {units.map((unit) => (
         <div
           key={unit.label}
-          className="rounded-2xl border border-border/60 bg-background/70 p-4 text-center shadow-sm dark:bg-card/60"
+          className="duo-card p-4 text-center"
         >
-          <div className={compact ? "text-2xl font-semibold text-foreground" : "text-3xl font-semibold text-foreground md:text-4xl"}>
+          <div className={compact ? "text-2xl font-bold text-foreground" : "text-3xl font-bold text-foreground md:text-4xl"}>
             {unit.value}
           </div>
-          <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground/60">
+          <div className="mt-1 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground/60">
             {unit.label}
           </div>
         </div>
