@@ -270,6 +270,52 @@ export default defineAgent({
           return JSON.stringify(result);
         },
       }),
+      get_info: llm.tool({
+        description: "Get comprehensive life documentary of the user - all impactful events, patterns, and key information. Use this FIRST to understand the user's context.",
+        parameters: {
+          type: "object",
+          properties: {
+            focus: { type: "string", enum: ["memories", "journals", "patterns", "all"] },
+          },
+        },
+        execute: async ({ focus }: { focus?: string }) => {
+          const { createDeboRuntimeTools } = await import("../lib/chat/debo-tools");
+          const tools = createDeboRuntimeTools(userId);
+          const result = await tools.getInfoTool.execute({ focus: focus as any, depth: "brief" });
+          return JSON.stringify(result);
+        },
+      }),
+      get_memories: llm.tool({
+        description: "Query persistent memories and facts about the user.",
+        parameters: {
+          type: "object",
+          properties: {
+            query: { type: "string" },
+          },
+        },
+        execute: async ({ query }: { query?: string }) => {
+          const { createDeboRuntimeTools } = await import("../lib/chat/debo-tools");
+          const tools = createDeboRuntimeTools(userId);
+          const result = await tools.getMemoriesTool.execute({ query, limit: 5 });
+          return JSON.stringify(result);
+        },
+      }),
+      search_journals: llm.tool({
+        description: "Search journal entries for specific events, people, or feelings.",
+        parameters: {
+          type: "object",
+          properties: {
+            query: { type: "string" },
+          },
+          required: ["query"],
+        },
+        execute: async ({ query }: { query: string }) => {
+          const { createDeboRuntimeTools } = await import("../lib/chat/debo-tools");
+          const tools = createDeboRuntimeTools(userId);
+          const result = await tools.searchJournalsTool.execute({ query });
+          return JSON.stringify(result);
+        },
+      }),
     };
 
     const agent = new DeboVoiceAgent({
