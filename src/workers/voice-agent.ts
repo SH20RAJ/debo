@@ -109,7 +109,7 @@ async function withOptionalVoiceContext<T>(scope: string, task: () => Promise<T>
         logVoiceIssue(scope, "timed out");
         resolve(fallback);
       }
-    }, Number(process.env.LIVEKIT_CONTEXT_TIMEOUT_MS || 1200));
+    }, Number(process.env.LIVEKIT_CONTEXT_TIMEOUT_MS || 5000));
   });
 
   return Promise.race([work, timer]);
@@ -213,10 +213,7 @@ export default defineAgent({
 
     class DeboVoiceAgent extends voice.Agent {
       async onEnter() {
-        const greeting = this.session.generateReply({
-          instructions: "Say exactly one warm opening line in this style: Hey, sir. I'm here. What are we taking on?",
-        });
-        await greeting.waitForPlayout();
+        await this.session.say("Hey, sir. I'm here. What are we taking on?");
       }
     }
 
@@ -236,10 +233,8 @@ export default defineAgent({
     });
     const tts = new cartesia.TTS({
       apiKey: process.env.CARTESIA_API_KEY,
-      model: process.env.LIVEKIT_TTS_MODEL || "sonic-3",
-      voice: process.env.LIVEKIT_VOICE || "f786b574-daa5-4673-aa0c-cbe3e8534c02",
-      language: "en",
-      speed: "normal",
+      model: process.env.LIVEKIT_TTS_MODEL || "sonic-english",
+      voice: process.env.LIVEKIT_VOICE || "694f9389-aac1-45b6-b726-9d9369183238",
     });
 
     const agent = new DeboVoiceAgent({
