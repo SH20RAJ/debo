@@ -140,7 +140,7 @@ export default function PitchPage() {
               <FeatureCard
                 icon={Bot}
                 title="Jarvis Voice"
-                desc="Real-time multimodal voice interactions with NVIDIA performance."
+                desc="Real-time multimodal voice interactions with sub-second response."
               />
               <FeatureCard
                 icon={Database}

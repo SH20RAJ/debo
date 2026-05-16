@@ -99,7 +99,7 @@ const FEATURES = [
       "Real-time voice conversations powered by LiveKit. Speak naturally, Debo listens, remembers, and responds with full context from your memory graph.",
     details: [
       { icon: Mic2, label: "Listen", desc: "Deepgram speech-to-text" },
-      { icon: Brain, label: "Think", desc: "NVIDIA LLM with memory" },
+      { icon: Brain, label: "Think", desc: "Adaptive memory LLM" },
       { icon: Radio, label: "Speak", desc: "Cartesia natural voice" },
       { icon: Zap, label: "Realtime", desc: "Sub-second response" },
     ],

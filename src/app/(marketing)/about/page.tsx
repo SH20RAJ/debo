@@ -29,12 +29,13 @@ export default function AboutPage() {
               The Intelligence Lab
             </div>
             <h1 className="text-5xl md:text-7xl font-heading font-extrabold tracking-tight leading-[1.05] text-foreground">
-              Human-AI <br />
-              <span className="text-primary">Collaboration.</span>
+              Documenting <br />
+              <span className="text-primary">Human Growth.</span>
             </h1>
             <p className="mx-auto max-w-2xl text-lg md:text-xl font-semibold leading-relaxed text-muted-foreground">
-              Debo is a research-led laboratory building multimodal systems 
-              that don&apos;t just process data, but think alongside you.
+              Debo is a multimodal intelligence lab dedicated to the personal 
+              experience. We build systems that help you retain, connect, 
+              and synthesize your life documentary.
             </p>
           </div>
         </div>
@@ -46,21 +47,21 @@ export default function AboutPage() {
           <div className="grid gap-16 md:grid-cols-2 items-start">
             <div className="space-y-6">
               <h2 className="text-3xl font-heading font-extrabold tracking-tight text-foreground">
-                Our Mission
+                Collaborative Intelligence
               </h2>
               <p className="text-base font-medium leading-relaxed text-muted-foreground">
-                We believe intelligence should be a collaborator, not an observer. 
-                Our mission is to build private, multimodal memory systems that 
-                empower individuals to retain, connect, and synthesize their 
-                life documentary with unprecedented clarity.
+                We believe your digital memory should be more than a graveyard 
+                of files. Debo uses multimodal research protocols to turn your 
+                voice, journals, and cross-app data into a living, private 
+                memory graph that grows with you.
               </p>
               <div className="flex items-center gap-4 pt-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-primary/20 bg-primary/5 text-primary">
                   <Shield className="h-6 w-6" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-foreground">Privacy by Design</h4>
-                  <p className="text-xs font-medium text-muted-foreground">Property of the mind, not a feature.</p>
+                  <h4 className="text-sm font-bold text-foreground">Grounded in Evidence</h4>
+                  <p className="text-xs font-medium text-muted-foreground">Answers cited directly from your own life.</p>
                 </div>
               </div>
             </div>
@@ -69,18 +70,18 @@ export default function AboutPage() {
               <ul className="space-y-4">
                 <ProtocolItem 
                   icon={Zap} 
-                  title="Multimodal" 
-                  desc="Processing text, voice, images, and papers in one graph." 
+                  title="Multimodal Ingestion" 
+                  desc="Processing voice, papers, and complex data into a unified graph." 
                 />
                 <ProtocolItem 
                   icon={Terminal} 
-                  title="Tinker" 
-                  desc="Researcher-grade personal model fine-tuning." 
+                  title="Personal Tinker" 
+                  desc="Researcher-grade control over your personal model fine-tuning." 
                 />
                 <ProtocolItem 
                   icon={Brain} 
-                  title="Memory" 
-                  desc="A permanent, searchable database of meaning." 
+                  title="Latent Connectionism" 
+                  desc="Discovering hidden relationship manifolds across your history." 
                 />
               </ul>
             </div>
@@ -88,47 +89,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Strategy & Partnerships */}
-      <section className="px-6 py-24">
-        <div className="mx-auto max-w-4xl space-y-16">
-          <div className="text-center space-y-4">
-            <h2 className="text-4xl font-heading font-extrabold tracking-tight text-foreground">
-              Strategic Foundation
-            </h2>
-            <p className="mx-auto max-w-xl text-base font-medium text-muted-foreground leading-relaxed">
-              We operate at the intersection of deep research and high-performance 
-              infrastructure.
-            </p>
-          </div>
 
-          <div className="grid gap-8 md:grid-cols-2">
-            <div className="minimal-card p-8 space-y-6 border-2 border-primary/10">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-primary/20 bg-primary/5 text-primary">
-                <Cpu className="h-6 w-6" />
-              </div>
-              <h3 className="text-2xl font-bold text-foreground tracking-tight">NVIDIA Strategic Partnership</h3>
-              <p className="text-sm font-medium leading-relaxed text-muted-foreground">
-                In 2026, we entered a Gigawatt-scale strategic partnership with NVIDIA 
-                 to accelerate the development of multimodal personal memory models. 
-                 This gives our lab access to state-of-the-art compute for training 
-                 safe, aligned personal AI.
-              </p>
-            </div>
-
-            <div className="minimal-card p-8 space-y-6">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-border bg-muted/50 text-muted-foreground">
-                <Globe className="h-6 w-6" />
-              </div>
-              <h3 className="text-2xl font-bold text-foreground tracking-tight">Open Science</h3>
-              <p className="text-sm font-medium leading-relaxed text-muted-foreground">
-                We contribute to the global research community through our blog, 
-                Connectionism, sharing insights on modular manifolds, LoRA 
-                optimization, and AI safety protocols.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Join Section */}
       <section className="px-6 py-24 bg-primary/5 border-t-2 border-primary/10">
@@ -137,8 +98,8 @@ export default function AboutPage() {
             Join the Intelligence Lab.
           </h2>
           <p className="text-base font-medium leading-relaxed text-muted-foreground">
-            Be part of the private preview and help us define the future of 
-            collaborative intelligence.
+            Help us define the next decade of collaborative human-AI 
+            intelligence.
           </p>
           <div className="flex justify-center">
             <Link href="/#waitlist" className="minimal-btn-primary px-10 py-4 text-sm inline-flex items-center gap-2">
