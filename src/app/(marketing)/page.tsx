@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Navbar } from "@/components/landing/Navbar";
 import { Hero } from "@/components/landing/Hero";
 import { ComparisonDemo } from "@/components/landing/ComparisonDemo";
-// import { WaitlistForm } from "@/components/landing/WaitlistForm";
+import { WaitlistForm } from "@/components/landing/WaitlistForm";
 import { ProductPromises } from "@/components/landing/ProductPromises";
 import { Footer } from "@/components/landing/Footer";
 
@@ -24,7 +24,7 @@ export default function LandingPage() {
       <main className="flex-1">
         <Hero />
         <ComparisonDemo />
-        {/* <WaitlistForm /> */}
+        <WaitlistForm />
         <ProductPromises />
         <HowItWorks />
         <FinalCTA />

@@ -21,7 +21,7 @@ export function Footer() {
             Terms
           </Link>
           <a
-            href="https://github.com"
+            href="https://github.com/sh20raj/debo"
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs font-bold text-muted-foreground/50 transition-colors hover:text-foreground"

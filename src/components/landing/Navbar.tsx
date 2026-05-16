@@ -24,7 +24,7 @@ export function Navbar() {
             Privacy
           </Link>
           <a
-            href="https://github.com"
+            href="https://github.com/sh20raj/debo"
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs font-bold uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground"

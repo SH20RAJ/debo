@@ -68,7 +68,7 @@ export function CTA() {
               <Link href="/terms" className="text-[10px] font-extrabold text-muted-foreground/40 hover:text-primary transition-colors uppercase tracking-widest">
                 Terms of Service
               </Link>
-              <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-[10px] font-extrabold text-muted-foreground/40 hover:text-primary transition-colors uppercase tracking-widest">
+              <a href="https://github.com/sh20raj/debo" target="_blank" rel="noopener noreferrer" className="text-[10px] font-extrabold text-muted-foreground/40 hover:text-primary transition-colors uppercase tracking-widest">
                 GitHub
               </a>
             </div>
