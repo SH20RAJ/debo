@@ -7,21 +7,23 @@ import { Metadata } from "next";
 export default async function JournalsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; sort?: "asc" | "desc"; page?: string; type?: "all" | "text" | "video" | "audio" }>;
+  searchParams: Promise<{ q?: string; sort?: "asc" | "desc"; sortBy?: "createdAt" | "updatedAt" | "title"; page?: string; type?: "all" | "text" | "video" | "audio" }>;
 }) {
   const user = await stackServerApp.getUser();
   if (!user) redirect("/join");
 
   const params = await searchParams;
   const query = params.q || "";
-  const sort = params.sort || "desc";
+  const sort = params.sort === "asc" ? "asc" : "desc";
+  const sortBy = params.sortBy && ["createdAt", "updatedAt", "title"].includes(params.sortBy)
+    ? params.sortBy
+    : "createdAt";
   const page = parseInt(params.page || "1", 10);
   const filter = params.type || "all";
   const pageSize = 12;
 
-  // Fetch all types of journals (text, video, audio)
-  const journals = await getAllJournals(sort, pageSize, (page - 1) * pageSize, filter, user.id);
-  const totalCount = await getAllJournalsCount(filter, user.id);
+  const journals = await getAllJournals(sort, pageSize, (page - 1) * pageSize, filter, user.id, query, sortBy);
+  const totalCount = await getAllJournalsCount(filter, user.id, query);
 
   return (
     <div className="flex-1 bg-background min-h-screen">
@@ -41,6 +43,7 @@ export default async function JournalsPage({
           journals={journals}
           initialQuery={query}
           initialSort={sort}
+          initialSortBy={sortBy}
           totalCount={totalCount}
           initialFilter={filter}
         />

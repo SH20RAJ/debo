@@ -1,16 +1,39 @@
 "use client";
 
-import { useState, useTransition, useCallback } from "react";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { Search, SortDesc, SortAsc, Trash2, Plus, Loader2, Sparkles, ChevronLeft, ChevronRight, Video, AudioLines, FileText } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
+import { FormEvent, useCallback, useState, useTransition } from "react";
+import Image from "next/image";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { format, formatDistanceToNow } from "date-fns";
-import { deleteJournal } from "@/actions/journals";
+import {
+  AudioLines,
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
+  Clock3,
+  ExternalLink,
+  FileText,
+  HardDrive,
+  Loader2,
+  Pencil,
+  Plus,
+  Search,
+  SortAsc,
+  SortDesc,
+  Sparkles,
+  Trash2,
+  Video,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
+
+import {
+  deleteJournalEntry,
+  renameJournalEntry,
+  type JournalEntry,
+  type JournalFilter,
+  type JournalSortBy,
+} from "@/actions/media-journals";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,30 +45,86 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 
-interface JournalProps {
-  id: string;
-  type: "text" | "video" | "audio";
-  title?: string | null;
-  content?: string;
-  transcript?: string | null;
-  createdAt: string | Date;
-  updatedAt: string | Date;
-  tags?: string[] | null;
-  thumbnailUrl?: string | null;
-  duration?: number | null;
-  driveWebUrl?: string | null;
-}
+type SortOrder = "asc" | "desc";
 
 interface JournalsGridProps {
-  journals: JournalProps[];
+  journals: JournalEntry[];
   initialQuery: string;
-  initialSort: "asc" | "desc";
+  initialSort: SortOrder;
+  initialSortBy?: JournalSortBy;
   totalCount: number;
-  initialFilter?: "all" | "text" | "video" | "audio";
+  initialFilter?: JournalFilter;
 }
 
-export function JournalsGrid({ journals, initialQuery, initialSort, totalCount, initialFilter = "all" }: JournalsGridProps) {
+const pageSize = 12;
+
+const typeCopy: Record<JournalEntry["type"], { label: string; icon: typeof FileText; tone: string }> = {
+  text: {
+    label: "Text",
+    icon: FileText,
+    tone: "border-amber-500/20 bg-amber-500/10 text-amber-300",
+  },
+  audio: {
+    label: "Audio",
+    icon: AudioLines,
+    tone: "border-sky-500/20 bg-sky-500/10 text-sky-300",
+  },
+  video: {
+    label: "Video",
+    icon: Video,
+    tone: "border-violet-500/20 bg-violet-500/10 text-violet-300",
+  },
+};
+
+function journalHref(journal: JournalEntry) {
+  return `/dashboard/journal/${journal.type}/${journal.id}`;
+}
+
+function cleanPreview(value?: string | null) {
+  return (value || "")
+    .replace(/[#*_`>\[\]()]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function formatDuration(seconds?: number | null) {
+  if (!seconds) return null;
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs.toString().padStart(2, "0")}`;
+}
+
+export function JournalsGrid({
+  journals,
+  initialQuery,
+  initialSort,
+  initialSortBy = "createdAt",
+  totalCount,
+  initialFilter = "all",
+}: JournalsGridProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -53,282 +132,459 @@ export function JournalsGrid({ journals, initialQuery, initialSort, totalCount, 
 
   const [query, setQuery] = useState(initialQuery);
   const [sort, setSort] = useState(initialSort);
-  const [filter, setFilter] = useState(initialFilter);
-  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<JournalSortBy>(initialSortBy);
+  const [filter, setFilter] = useState<JournalFilter>(initialFilter);
+  const [busyEntry, setBusyEntry] = useState<string | null>(null);
 
-  const currentPage = parseInt(searchParams.get("page") || "1", 10);
-  const pageSize = 12;
-  const totalPages = Math.ceil(totalCount / pageSize);
+  const currentPage = Math.max(parseInt(searchParams.get("page") || "1", 10), 1);
+  const totalPages = Math.max(Math.ceil(totalCount / pageSize), 1);
+  const hasFilters = !!query || filter !== "all";
 
-  const updateUrl = useCallback((newQuery: string, newSort: "asc" | "desc", newFilter: "all" | "text" | "video" | "audio", newPage: number = 1) => {
-    setSort(newSort);
-    setFilter(newFilter);
-    startTransition(() => {
-      const params = new URLSearchParams(searchParams.toString());
-      if (newQuery) params.set("q", newQuery); else params.delete("q");
-      params.set("sort", newSort);
-      params.set("type", newFilter);
-      if (newPage > 1) params.set("page", newPage.toString()); else params.delete("page");
-      router.push(`${pathname}?${params.toString()}`, { scroll: false });
-    });
-  }, [pathname, router, searchParams]);
+  const updateUrl = useCallback(
+    (next: {
+      query?: string;
+      sort?: SortOrder;
+      sortBy?: JournalSortBy;
+      filter?: JournalFilter;
+      page?: number;
+    }) => {
+      const nextQuery = next.query ?? query;
+      const nextSort = next.sort ?? sort;
+      const nextSortBy = next.sortBy ?? sortBy;
+      const nextFilter = next.filter ?? filter;
+      const nextPage = next.page ?? 1;
 
-  const handleDelete = async (id: string, type: "text" | "video" | "audio") => {
-    setIsDeleting(id);
+      setQuery(nextQuery);
+      setSort(nextSort);
+      setSortBy(nextSortBy);
+      setFilter(nextFilter);
+
+      startTransition(() => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (nextQuery) params.set("q", nextQuery);
+        else params.delete("q");
+
+        params.set("sort", nextSort);
+        params.set("sortBy", nextSortBy);
+        params.set("type", nextFilter);
+
+        if (nextPage > 1) params.set("page", nextPage.toString());
+        else params.delete("page");
+
+        router.push(`${pathname}?${params.toString()}`, { scroll: false });
+      });
+    },
+    [filter, pathname, query, router, searchParams, sort, sortBy],
+  );
+
+  const handleSearch = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    updateUrl({ query: query.trim(), page: 1 });
+  };
+
+  const handleDelete = async (journal: JournalEntry) => {
+    setBusyEntry(journal.id);
     try {
-      let result;
-      if (type === "text") {
-        result = await deleteJournal(id);
-      } else if (type === "video") {
-        const { deleteVideoJournal } = await import("@/actions/media-journals");
-        result = await deleteVideoJournal(id);
-      } else {
-        const { deleteAudioJournal } = await import("@/actions/media-journals");
-        result = await deleteAudioJournal(id);
-      }
-
+      const result = await deleteJournalEntry({ id: journal.id, type: journal.type });
       if (result.success) {
-        toast.success("Entry deleted");
+        toast.success("Journal deleted");
         router.refresh();
       } else {
-        toast.error(result.error || "Failed to delete");
+        toast.error(result.error || "Could not delete journal");
       }
     } catch {
-      toast.error("Failed to delete");
+      toast.error("Could not delete journal");
     } finally {
-      setIsDeleting(null);
+      setBusyEntry(null);
+    }
+  };
+
+  const handleRename = async (journal: JournalEntry, title: string) => {
+    setBusyEntry(journal.id);
+    try {
+      const result = await renameJournalEntry({ id: journal.id, type: journal.type, title });
+      if (result.success) {
+        toast.success("Title updated");
+        router.refresh();
+        return true;
+      }
+
+      toast.error(result.error || "Could not update title");
+      return false;
+    } catch {
+      toast.error("Could not update title");
+      return false;
+    } finally {
+      setBusyEntry(null);
     }
   };
 
   return (
-    <div className="space-y-10 pb-20">
-      {/* Minimal Header */}
-      <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center justify-between">
-        <div className="relative w-full sm:w-96 group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40 transition-colors group-focus-within:text-primary/60" />
-          <Input
-            placeholder="Search memories..."
-            className="pl-11 h-11 rounded-xl bg-card/50 border-border/40 focus-visible:ring-0 focus-visible:border-primary/40 transition-all font-medium text-foreground"
-            value={query}
-            onChange={(e) => {
-                setQuery(e.target.value);
-                updateUrl(e.target.value, sort, filter, 1);
-            }}
-          />
-        </div>
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => updateUrl(query, sort === "desc" ? "asc" : "desc", filter, 1)}
-            className="h-11 w-11 p-0 rounded-xl border border-border/40 hover:bg-muted/40"
-          >
-            {sort === "desc" ? <SortDesc className="h-4.5 w-4.5" /> : <SortAsc className="h-4.5 w-4.5" />}
-          </Button>
-          <Link href="/dashboard/journal/text/new">
-            <Button className="h-11 rounded-xl gap-2 px-6 bg-primary text-primary-foreground hover:bg-primary/90">
-              <Plus className="h-4 w-4" />
-              <span className="font-semibold text-xs tracking-tight">New Journal</span>
-            </Button>
-          </Link>
-        </div>
-      </div>
-
-      {/* Filter Tabs */}
-      <Tabs value={filter} onValueChange={(v) => updateUrl(query, sort, v as "all" | "text" | "video" | "audio", 1)}>
-        <TabsList className="flex w-full sm:w-fit gap-1 rounded-xl bg-muted/20 p-1 border border-border/10">
-          <TabsTrigger value="all" className="flex-1 sm:flex-none h-9 rounded-lg px-6 text-xs font-semibold tracking-tight transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">
-            All
-          </TabsTrigger>
-          <TabsTrigger value="text" className="flex-1 sm:flex-none h-9 rounded-lg px-6 text-xs font-semibold tracking-tight transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">
-            <FileText className="h-3.5 w-3.5 mr-2 text-muted-foreground/60" />
-            Text
-          </TabsTrigger>
-          <TabsTrigger value="video" className="flex-1 sm:flex-none h-9 rounded-lg px-6 text-xs font-semibold tracking-tight transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">
-            <Video className="h-3.5 w-3.5 mr-2 text-muted-foreground/60" />
-            Video
-          </TabsTrigger>
-          <TabsTrigger value="audio" className="flex-1 sm:flex-none h-9 rounded-lg px-6 text-xs font-semibold tracking-tight transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">
-            <AudioLines className="h-3.5 w-3.5 mr-2 text-muted-foreground/60" />
-            Audio
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
-
-      {/* Stats Bar */}
-      <div className="flex items-center gap-4 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/40">
-        <span className="flex items-center gap-2 rounded-md border border-border/40 px-3 py-1 bg-muted/10">
-          <div className="h-1 w-1 rounded-full bg-primary/40" />
-          {totalCount} {totalCount === 1 ? "entry" : "entries"}
-        </span>
-        {query && (
-          <span className="flex items-center gap-2 rounded-md border border-primary/20 px-3 py-1 bg-primary/5 text-primary/60">
-            <Sparkles className="h-3 w-3" />
-            AI Search
-          </span>
-        )}
-      </div>
-
-      {/* Grid */}
-      <div className={`grid gap-6 sm:grid-cols-2 lg:grid-cols-3 transition-opacity duration-300 ${isPending ? "opacity-50" : ""}`}>
-        {journals.length === 0 ? (
-          <EmptyState hasQuery={!!query} />
-        ) : (
-          journals.map((journal) => (
-            <JournalCard
-              key={journal.id}
-              journal={journal}
-              isDeleting={isDeleting === journal.id}
-              onDelete={(id) => handleDelete(id, journal.type)}
+    <div className="space-y-6 pb-20">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <form onSubmit={handleSearch} className="flex w-full min-w-0 gap-2 lg:max-w-xl">
+          <div className="relative min-w-0 flex-1">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/60" />
+            <Input
+              placeholder="Search journals..."
+              className="h-11 rounded-xl border-border/50 bg-card/50 pl-10 pr-10 text-sm font-medium"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
             />
-          ))
+            {query && (
+              <button
+                type="button"
+                onClick={() => updateUrl({ query: "", page: 1 })}
+                className="absolute right-3 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+              >
+                <X className="h-3.5 w-3.5" />
+                <span className="sr-only">Clear search</span>
+              </button>
+            )}
+          </div>
+          <Button type="submit" className="h-11 rounded-xl px-4" disabled={isPending}>
+            {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Search"}
+          </Button>
+        </form>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <Select value={sortBy} onValueChange={(value) => updateUrl({ sortBy: value as JournalSortBy, page: 1 })}>
+            <SelectTrigger className="h-11 rounded-xl border-border/50 bg-card/50 px-3">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="createdAt">Created date</SelectItem>
+              <SelectItem value="updatedAt">Last edited</SelectItem>
+              <SelectItem value="title">Title</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Button
+            variant="outline"
+            onClick={() => updateUrl({ sort: sort === "desc" ? "asc" : "desc", page: 1 })}
+            className="h-11 rounded-xl border-border/50 bg-card/50 px-3"
+          >
+            {sort === "desc" ? <SortDesc className="h-4 w-4" /> : <SortAsc className="h-4 w-4" />}
+            <span className="sr-only">{sort === "desc" ? "Newest first" : "Oldest first"}</span>
+          </Button>
+
+          <Button asChild className="h-11 rounded-xl px-4">
+            <Link href="/dashboard/journal/text/new">
+              <Plus className="h-4 w-4" />
+              New Journal
+            </Link>
+          </Button>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <Tabs value={filter} onValueChange={(value) => updateUrl({ filter: value as JournalFilter, page: 1 })}>
+          <TabsList className="grid h-11 w-full grid-cols-4 rounded-xl border border-border/40 bg-muted/20 p-1 sm:w-fit">
+            <TabsTrigger value="all" className="rounded-lg px-4 text-xs font-semibold">
+              All
+            </TabsTrigger>
+            <TabsTrigger value="text" className="rounded-lg px-4 text-xs font-semibold">
+              <FileText className="mr-1.5 h-3.5 w-3.5" />
+              Text
+            </TabsTrigger>
+            <TabsTrigger value="audio" className="rounded-lg px-4 text-xs font-semibold">
+              <AudioLines className="mr-1.5 h-3.5 w-3.5" />
+              Audio
+            </TabsTrigger>
+            <TabsTrigger value="video" className="rounded-lg px-4 text-xs font-semibold">
+              <Video className="mr-1.5 h-3.5 w-3.5" />
+              Video
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground">
+          <Badge variant="outline" className="h-7 rounded-lg border-border/50 bg-card/40 px-3">
+            {totalCount} {totalCount === 1 ? "journal" : "journals"}
+          </Badge>
+          {hasFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => updateUrl({ query: "", filter: "all", page: 1 })}
+              className="h-7 rounded-lg px-2 text-xs"
+            >
+              Clear filters
+            </Button>
+          )}
+        </div>
+      </div>
+
+      <div className={cn("transition-opacity duration-200", isPending && "opacity-60")}>
+        {journals.length === 0 ? (
+          <EmptyState hasFilters={hasFilters} />
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {journals.map((journal) => (
+              <JournalCard
+                key={`${journal.type}-${journal.id}`}
+                journal={journal}
+                isBusy={busyEntry === journal.id}
+                onDelete={() => handleDelete(journal)}
+                onRename={(title) => handleRename(journal, title)}
+              />
+            ))}
+          </div>
         )}
       </div>
 
-      {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-6 pt-12">
-            <Button
-                variant="ghost"
-                size="sm"
-                disabled={currentPage <= 1 || isPending}
-                onClick={() => updateUrl(query, sort, filter, currentPage - 1)}
-                className="rounded-xl h-10 px-4 border border-border/40 hover:bg-muted/40"
-            >
-                <ChevronLeft className="h-4 w-4 mr-2" />
-                <span className="font-semibold text-xs tracking-tight">Previous</span>
-            </Button>
+        <div className="flex items-center justify-center gap-3 pt-6">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={currentPage <= 1 || isPending}
+            onClick={() => updateUrl({ page: currentPage - 1 })}
+            className="h-10 rounded-xl"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Previous
+          </Button>
 
-            <div className="flex items-center gap-2 px-4 h-10 rounded-xl bg-muted/10 border border-border/10">
-                <span className="text-sm font-semibold text-foreground">{currentPage}</span>
-                <span className="text-sm font-medium text-muted-foreground/40">/</span>
-                <span className="text-sm font-medium text-muted-foreground/40">{totalPages}</span>
-            </div>
+          <div className="flex h-10 items-center rounded-xl border border-border/50 bg-card/40 px-4 text-sm font-semibold">
+            {currentPage} / {totalPages}
+          </div>
 
-            <Button
-                variant="ghost"
-                size="sm"
-                disabled={currentPage >= totalPages || isPending}
-                onClick={() => updateUrl(query, sort, filter, currentPage + 1)}
-                className="rounded-xl h-10 px-4 border border-border/40 hover:bg-muted/40"
-            >
-                <span className="font-semibold text-xs tracking-tight">Next</span>
-                <ChevronRight className="h-4 w-4 ml-2" />
-            </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={currentPage >= totalPages || isPending}
+            onClick={() => updateUrl({ page: currentPage + 1 })}
+            className="h-10 rounded-xl"
+          >
+            Next
+            <ChevronRight className="h-4 w-4" />
+          </Button>
         </div>
       )}
     </div>
   );
 }
 
-function JournalCard({ journal, isDeleting, onDelete }: { journal: JournalProps; isDeleting: boolean; onDelete: (id: string) => void }) {
-  const content = journal.content || journal.transcript || "";
-  const preview = content.slice(0, 180).replace(/[#*`]/g, "");
+function JournalCard({
+  journal,
+  isBusy,
+  onDelete,
+  onRename,
+}: {
+  journal: JournalEntry;
+  isBusy: boolean;
+  onDelete: () => void;
+  onRename: (title: string) => Promise<boolean>;
+}) {
+  const type = typeCopy[journal.type];
+  const Icon = type.icon;
+  const title = journal.title || `Untitled ${type.label} Journal`;
+  const preview = cleanPreview(journal.content || journal.transcript);
+  const duration = formatDuration(journal.duration);
+  const href = journalHref(journal);
 
-  const formatDuration = (seconds?: number | null) => {
-    if (!seconds) return "";
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  return (
+    <article className="group flex min-h-72 flex-col rounded-xl border border-border/50 bg-card/50 p-4 shadow-sm transition-colors hover:border-primary/30 hover:bg-card">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border", type.tone)}>
+            <Icon className="h-4 w-4" />
+          </div>
+          <div className="min-w-0">
+            <Badge variant="outline" className="h-6 rounded-md border-border/40 bg-background/30 px-2 text-[11px]">
+              {type.label}
+            </Badge>
+            <p className="mt-1 truncate text-xs font-medium text-muted-foreground">
+              {formatDistanceToNow(new Date(journal.createdAt), { addSuffix: true })}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex shrink-0 items-center gap-1">
+          <RenameJournalDialog title={title} isBusy={isBusy} onRename={onRename} />
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive">
+                {isBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                <span className="sr-only">Delete journal</span>
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="rounded-xl">
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete this journal?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will remove the journal from Debo. This cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel className="rounded-lg">Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={onDelete} className="rounded-lg bg-destructive hover:bg-destructive/90">
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      </div>
+
+      <Link href={href} className="mt-5 block flex-1 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        <h3 className="line-clamp-2 text-lg font-semibold leading-snug tracking-tight text-foreground transition-colors group-hover:text-primary">
+          {title}
+        </h3>
+
+        {journal.type === "video" && journal.thumbnailUrl && (
+          <div className="relative mt-4 aspect-video overflow-hidden rounded-lg border border-border/40 bg-muted/20">
+            <Image
+              src={journal.thumbnailUrl}
+              alt={title}
+              fill
+              sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
+              className="object-cover opacity-85 transition-opacity group-hover:opacity-100"
+              unoptimized
+            />
+          </div>
+        )}
+
+        <p className="mt-4 line-clamp-4 text-sm leading-6 text-muted-foreground">
+          {preview || (journal.type === "text" ? "No body text yet." : "Transcript is not ready yet.")}
+        </p>
+      </Link>
+
+      <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-border/40 pt-4 text-xs font-medium text-muted-foreground">
+        <span className="inline-flex items-center gap-1.5">
+          <CalendarDays className="h-3.5 w-3.5" />
+          {format(new Date(journal.createdAt), "MMM d, yyyy")}
+        </span>
+        {sortDateChanged(journal) && (
+          <span className="inline-flex items-center gap-1.5">
+            <Clock3 className="h-3.5 w-3.5" />
+            Edited {format(new Date(journal.updatedAt), "MMM d")}
+          </span>
+        )}
+        {duration && (
+          <span className="inline-flex items-center gap-1.5">
+            <Clock3 className="h-3.5 w-3.5" />
+            {duration}
+          </span>
+        )}
+        {journal.driveWebUrl && (
+          <a
+            href={journal.driveWebUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-md px-1 text-primary hover:bg-primary/10"
+          >
+            <HardDrive className="h-3.5 w-3.5" />
+            Drive
+          </a>
+        )}
+      </div>
+
+      <div className="mt-4 flex items-center gap-2">
+        <Button asChild variant="outline" size="sm" className="h-9 flex-1 rounded-lg">
+          <Link href={href}>
+            {journal.type === "text" ? <Pencil className="h-4 w-4" /> : <ExternalLink className="h-4 w-4" />}
+            {journal.type === "text" ? "Open and edit" : "Open"}
+          </Link>
+        </Button>
+      </div>
+    </article>
+  );
+}
+
+function RenameJournalDialog({
+  title,
+  isBusy,
+  onRename,
+}: {
+  title: string;
+  isBusy: boolean;
+  onRename: (title: string) => Promise<boolean>;
+}) {
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState(title);
+
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const ok = await onRename(draft);
+    if (ok) setOpen(false);
   };
 
   return (
-    <div className="group relative flex flex-col rounded-2xl border border-border/10 bg-card/40 p-6 transition-all duration-300 hover:bg-card hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5">
-      <div className="flex items-start justify-between mb-4 relative z-10">
-        <div className="flex items-center gap-3">
-          <div className={cn(
-            "flex items-center justify-center size-8 rounded-lg border border-border/40 transition-colors group-hover:border-primary/20",
-            journal.type === "video" ? "bg-purple-500/5 text-purple-500/60" : 
-            journal.type === "audio" ? "bg-blue-500/5 text-blue-500/60" : 
-            "bg-orange-500/5 text-orange-500/60"
-          )}>
-            {journal.type === "video" ? <Video className="h-4 w-4" /> : 
-             journal.type === "audio" ? <AudioLines className="h-4 w-4" /> : 
-             <FileText className="h-4 w-4" />}
-          </div>
-          <div className="flex flex-col gap-0.5">
-            <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">{format(new Date(journal.createdAt), "MMM d, yyyy")}</span>
-            <div className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground/30">
-              {journal.duration ? (
-                <span className="text-primary/60">{formatDuration(journal.duration)} duration</span>
-              ) : (
-                <span>{formatDistanceToNow(new Date(journal.createdAt), { addSuffix: true })}</span>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 rounded-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/10 hover:text-destructive"
-            >
-              {isDeleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg">
+          <Pencil className="h-4 w-4" />
+          <span className="sr-only">Edit title</span>
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="rounded-xl">
+        <form onSubmit={submit} className="space-y-4">
+          <DialogHeader>
+            <DialogTitle>Edit title</DialogTitle>
+            <DialogDescription>Give this journal a clearer name.</DialogDescription>
+          </DialogHeader>
+          <Input
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            maxLength={180}
+            className="h-11 rounded-xl"
+            autoFocus
+          />
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="outline" className="rounded-lg">
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button type="submit" className="rounded-lg" disabled={isBusy}>
+              {isBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
             </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent className="rounded-xl">
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete memory?</AlertDialogTitle>
-              <AlertDialogDescription>This action will permanently remove this journal entry.</AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel className="rounded-lg">Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={() => onDelete(journal.id)} className="bg-destructive hover:bg-destructive/90 rounded-lg">Delete</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </div>
-
-      <Link href={`/dashboard/journal/${journal.id}?type=${journal.type}`} className="flex-1 relative z-10">
-        <div className="space-y-3">
-          {journal.title && (
-            <h3 className="text-lg font-semibold tracking-tight text-foreground line-clamp-1 group-hover:text-primary transition-colors">
-              {journal.title}
-            </h3>
-          )}
-          
-          {journal.type === "video" && journal.thumbnailUrl && (
-            <div className="aspect-video w-full rounded-xl bg-muted/30 overflow-hidden mb-2 border border-border/10 group-hover:border-primary/10">
-              <img src={journal.thumbnailUrl} alt={journal.title || "Video thumbnail"} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-            </div>
-          )}
-
-          <p className="text-sm text-muted-foreground/60 line-clamp-3 leading-relaxed font-medium">
-            {preview || (journal.type === "video" ? "Processing video memory..." : journal.type === "audio" ? "Processing audio memory..." : "No content yet")}{preview ? "..." : ""}
-          </p>
-        </div>
-      </Link>
-
-      {journal.tags && journal.tags.length > 0 && (
-        <div className="flex flex-wrap gap-2 mt-6 pt-4 border-t border-border/10 relative z-10">
-          {journal.tags.slice(0, 3).map((tag) => (
-            <span key={tag} className="text-[10px] font-medium text-muted-foreground/40 bg-muted/10 border border-border/20 px-2 py-0.5 rounded-md">
-              #{tag}
-            </span>
-          ))}
-        </div>
-      )}
-    </div>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
 
-function EmptyState({ hasQuery }: { hasQuery: boolean }) {
+function sortDateChanged(journal: JournalEntry) {
+  return Math.abs(new Date(journal.updatedAt).getTime() - new Date(journal.createdAt).getTime()) > 1000;
+}
+
+function EmptyState({ hasFilters }: { hasFilters: boolean }) {
   return (
-    <div className="col-span-full py-24 flex flex-col items-center justify-center text-center">
-      <div className="h-14 w-14 rounded-2xl bg-muted/20 flex items-center justify-center mb-6 border border-border/10">
-        <Sparkles className="h-6 w-6 text-muted-foreground/20" />
+    <div className="flex min-h-80 flex-col items-center justify-center rounded-xl border border-dashed border-border/60 bg-card/30 px-6 py-16 text-center">
+      <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-xl border border-border/40 bg-background/60">
+        <Sparkles className="h-6 w-6 text-muted-foreground/50" />
       </div>
-      <h3 className="text-lg font-semibold text-foreground mb-1 tracking-tight">{hasQuery ? "No memories found" : "Your memory palace is empty"}</h3>
-      <p className="text-sm font-medium text-muted-foreground/40 mb-6 max-w-xs">
-        {hasQuery ? "Try refining your search terms" : "Capture your first thought or media moment to get started"}
+      <h3 className="text-lg font-semibold tracking-tight text-foreground">
+        {hasFilters ? "No matching journals" : "No journals yet"}
+      </h3>
+      <p className="mt-2 max-w-sm text-sm leading-6 text-muted-foreground">
+        {hasFilters
+          ? "Try a different search or clear the filters."
+          : "Create a text journal, record audio, or capture a video to start your timeline."}
       </p>
-      {!hasQuery && (
-        <Link href="/dashboard/journal/text/new">
-          <Button size="sm" className="rounded-xl px-6 h-10">Create First Entry</Button>
-        </Link>
-      )}
+      <div className="mt-6 flex flex-wrap justify-center gap-2">
+        {hasFilters ? (
+          <Button asChild variant="outline" className="rounded-xl">
+            <Link href="/dashboard/journals">Reset view</Link>
+          </Button>
+        ) : (
+          <>
+            <Button asChild className="rounded-xl">
+              <Link href="/dashboard/journal/text/new">
+                <Plus className="h-4 w-4" />
+                New text journal
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="rounded-xl">
+              <Link href="/dashboard/capture">Capture media</Link>
+            </Button>
+          </>
+        )}
+      </div>
     </div>
   );
 }

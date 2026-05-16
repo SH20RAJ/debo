@@ -3,7 +3,7 @@
 import { db } from "@/db";
 import { videoJournals, audioJournals, journals } from "@/db/schema";
 import { resolveUserId } from "./auth-sync";
-import { eq, desc, asc, and, count } from "drizzle-orm";
+import { eq, desc, asc, and, count, ilike, or } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { cache } from "react";
 import { logDatabaseIssue } from "@/lib/db/errors";
@@ -21,19 +21,53 @@ type DriveUploadResult = {
     error?: string;
 };
 
-function extractDriveItems(result: unknown): any[] {
-    const data = (result as any)?.data ?? result;
-    if (Array.isArray(data)) return data;
-    if (Array.isArray(data?.files)) return data.files;
-    if (Array.isArray(data?.items)) return data.items;
-    if (Array.isArray(data?.folders)) return data.folders;
-    if (data?.id) return [data];
+type DriveRecord = Record<string, unknown> & {
+    data?: unknown;
+    files?: DriveRecord[];
+    folders?: DriveRecord[];
+    id?: string;
+    items?: DriveRecord[];
+    name?: string;
+    webContentLink?: string;
+    webViewLink?: string;
+};
+
+type ComposioProxyClient = {
+    tools?: {
+        proxy?: (params: {
+            binary_body?: { base64: string; content_type: string };
+            body?: unknown;
+            connected_account_id: string;
+            endpoint: string;
+            method: "GET" | "POST" | "PATCH" | "DELETE";
+            parameters?: Array<{ name: string; in: "query" | "header"; value: string }>;
+        }) => Promise<{ data: unknown; status: number }>;
+    };
+};
+
+function isDriveRecord(value: unknown): value is DriveRecord {
+    return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function unwrapDriveData(result: unknown) {
+    return isDriveRecord(result) && "data" in result ? result.data : result;
+}
+
+function extractDriveItems(result: unknown): DriveRecord[] {
+    const data = unwrapDriveData(result);
+    if (Array.isArray(data)) return data.filter(isDriveRecord);
+    if (!isDriveRecord(data)) return [];
+    if (Array.isArray(data.files)) return data.files;
+    if (Array.isArray(data.items)) return data.items;
+    if (Array.isArray(data.folders)) return data.folders;
+    if (data.id) return [data];
     return [];
 }
 
 function extractDriveFile(result: unknown) {
-    const data = (result as any)?.data ?? result;
-    return Array.isArray(data) ? data[0] : data;
+    const data = unwrapDriveData(result);
+    if (Array.isArray(data)) return data.find(isDriveRecord) || null;
+    return isDriveRecord(data) ? data : null;
 }
 
 function sanitizeDriveName(value: string) {
@@ -77,7 +111,7 @@ async function proxyGoogleDrive<T>(
     }
 ) {
     const { composio } = await import("@/lib/composio");
-    const client = (composio as any).client;
+    const client = (composio as unknown as { client?: ComposioProxyClient }).client;
 
     if (!client?.tools?.proxy) {
         throw new Error("Composio proxy is not available.");
@@ -262,7 +296,7 @@ export async function uploadMediaToDrive(formData: FormData) : Promise<DriveUplo
 
         const driveData = extractDriveFile(await uploadDriveFile(driveConnectionId, file, fileName, folderId));
 
-        if (!driveData.id) {
+        if (!driveData?.id) {
             return { success: false, error: "Upload succeeded but no file ID returned" };
         }
 
@@ -367,7 +401,7 @@ export async function saveVideoJournal(params: {
             text: params.transcript || params.title,
         });
 
-        revalidatePath("/dashboard/journals");
+        revalidateJournalSurfaces("video", journalId);
         return { success: true, data: journalId };
     } catch (error) {
         logDatabaseIssue("video journal save", error);
@@ -385,7 +419,7 @@ export async function deleteVideoJournal(id: string, userId?: string) {
 
         await db.delete(videoJournals).where(eq(videoJournals.id, id));
 
-        revalidatePath("/dashboard/journals");
+        revalidateJournalSurfaces("video", id);
         return { success: true };
     } catch (error) {
         logDatabaseIssue("video journal delete", error);
@@ -477,7 +511,7 @@ export async function saveAudioJournal(params: {
             text: params.transcript || params.title,
         });
 
-        revalidatePath("/dashboard/journals");
+        revalidateJournalSurfaces("audio", journalId);
         return { success: true, data: journalId };
     } catch (error) {
         logDatabaseIssue("audio journal save", error);
@@ -495,7 +529,7 @@ export async function deleteAudioJournal(id: string, userId?: string) {
 
         await db.delete(audioJournals).where(eq(audioJournals.id, id));
 
-        revalidatePath("/dashboard/journals");
+        revalidateJournalSurfaces("audio", id);
         return { success: true };
     } catch (error) {
         logDatabaseIssue("audio journal delete", error);
@@ -528,6 +562,7 @@ export type JournalEntry = {
     title: string | null;
     content?: string;
     transcript?: string | null;
+    tags?: string[] | null;
     createdAt: Date;
     updatedAt: Date;
     // Video/Audio specific
@@ -535,6 +570,43 @@ export type JournalEntry = {
     thumbnailUrl?: string | null;
     duration?: number | null;
 };
+
+export type JournalFilter = "all" | "text" | "video" | "audio";
+export type JournalSortBy = "createdAt" | "updatedAt" | "title";
+
+function normalizeJournalQuery(query?: string) {
+    return query?.replace(/\s+/g, " ").trim() || "";
+}
+
+function journalText(entry: JournalEntry) {
+    return `${entry.title || ""} ${entry.content || ""} ${entry.transcript || ""}`.toLowerCase();
+}
+
+function compareJournals(sortOrder: "asc" | "desc", sortBy: JournalSortBy) {
+    return (a: JournalEntry, b: JournalEntry) => {
+        let comparison = 0;
+
+        if (sortBy === "title") {
+            comparison = (a.title || "Untitled").localeCompare(b.title || "Untitled", undefined, {
+                sensitivity: "base",
+            });
+        } else {
+            const aValue = sortBy === "updatedAt" ? a.updatedAt : a.createdAt;
+            const bValue = sortBy === "updatedAt" ? b.updatedAt : b.createdAt;
+            comparison = aValue.getTime() - bValue.getTime();
+        }
+
+        return sortOrder === "desc" ? -comparison : comparison;
+    };
+}
+
+function revalidateJournalSurfaces(type?: JournalEntry["type"], id?: string) {
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/journals");
+    if (type && id) {
+        revalidatePath(`/dashboard/journal/${type}/${id}`);
+    }
+}
 
 export const getJournalEntry = cache(async <T extends "text" | "video" | "audio">(id: string, type: T = "text" as T, userId?: string) => {
     const resolvedUserId = await resolveUserId(userId, true);
@@ -567,21 +639,49 @@ export const getAllJournals = cache(async (
     sortOrder: "asc" | "desc" = "desc",
     limit: number = 20,
     offset: number = 0,
-    filter: "all" | "text" | "video" | "audio" = "all",
-    userId?: string
+    filter: JournalFilter = "all",
+    userId?: string,
+    query?: string,
+    sortBy: JournalSortBy = "createdAt"
 ) => {
     const resolvedUserId = await resolveUserId(userId, true);
     if (!resolvedUserId) return [];
 
     try {
         const results: JournalEntry[] = [];
+        const normalizedQuery = normalizeJournalQuery(query);
+        const pattern = `%${normalizedQuery}%`;
+        const fetchLimit = Math.max(limit + offset, limit);
+        const textOrder =
+            sortBy === "title"
+                ? sortOrder === "desc" ? desc(journals.title) : asc(journals.title)
+                : sortBy === "updatedAt"
+                    ? sortOrder === "desc" ? desc(journals.updatedAt) : asc(journals.updatedAt)
+                    : sortOrder === "desc" ? desc(journals.createdAt) : asc(journals.createdAt);
+        const videoOrder =
+            sortBy === "title"
+                ? sortOrder === "desc" ? desc(videoJournals.title) : asc(videoJournals.title)
+                : sortBy === "updatedAt"
+                    ? sortOrder === "desc" ? desc(videoJournals.updatedAt) : asc(videoJournals.updatedAt)
+                    : sortOrder === "desc" ? desc(videoJournals.createdAt) : asc(videoJournals.createdAt);
+        const audioOrder =
+            sortBy === "title"
+                ? sortOrder === "desc" ? desc(audioJournals.title) : asc(audioJournals.title)
+                : sortBy === "updatedAt"
+                    ? sortOrder === "desc" ? desc(audioJournals.updatedAt) : asc(audioJournals.updatedAt)
+                    : sortOrder === "desc" ? desc(audioJournals.createdAt) : asc(audioJournals.createdAt);
 
         if (filter === "all" || filter === "text") {
             const textJournals = await db.query.journals.findMany({
-                where: eq(journals.userId, resolvedUserId),
-                orderBy: [sortOrder === "desc" ? desc(journals.createdAt) : asc(journals.createdAt)],
-                limit,
-                offset
+                where: normalizedQuery
+                    ? and(
+                        eq(journals.userId, resolvedUserId),
+                        or(ilike(journals.title, pattern), ilike(journals.content, pattern)),
+                    )
+                    : eq(journals.userId, resolvedUserId),
+                orderBy: [textOrder],
+                limit: fetchLimit,
+                offset: 0
             });
 
             results.push(...textJournals.map(j => ({
@@ -589,6 +689,7 @@ export const getAllJournals = cache(async (
                 type: "text" as const,
                 title: j.title,
                 content: j.content,
+                tags: j.tags,
                 createdAt: j.createdAt,
                 updatedAt: j.updatedAt,
             })));
@@ -596,10 +697,15 @@ export const getAllJournals = cache(async (
 
         if (filter === "all" || filter === "video") {
             const videoJournalsData = await db.query.videoJournals.findMany({
-                where: eq(videoJournals.userId, resolvedUserId),
-                orderBy: [sortOrder === "desc" ? desc(videoJournals.createdAt) : asc(videoJournals.createdAt)],
-                limit,
-                offset
+                where: normalizedQuery
+                    ? and(
+                        eq(videoJournals.userId, resolvedUserId),
+                        or(ilike(videoJournals.title, pattern), ilike(videoJournals.transcript, pattern)),
+                    )
+                    : eq(videoJournals.userId, resolvedUserId),
+                orderBy: [videoOrder],
+                limit: fetchLimit,
+                offset: 0
             });
 
             results.push(...videoJournalsData.map(j => ({
@@ -617,10 +723,15 @@ export const getAllJournals = cache(async (
 
         if (filter === "all" || filter === "audio") {
             const audioJournalsData = await db.query.audioJournals.findMany({
-                where: eq(audioJournals.userId, resolvedUserId),
-                orderBy: [sortOrder === "desc" ? desc(audioJournals.createdAt) : asc(audioJournals.createdAt)],
-                limit,
-                offset
+                where: normalizedQuery
+                    ? and(
+                        eq(audioJournals.userId, resolvedUserId),
+                        or(ilike(audioJournals.title, pattern), ilike(audioJournals.transcript, pattern)),
+                    )
+                    : eq(audioJournals.userId, resolvedUserId),
+                orderBy: [audioOrder],
+                limit: fetchLimit,
+                offset: 0
             });
 
             results.push(...audioJournalsData.map(j => ({
@@ -635,13 +746,13 @@ export const getAllJournals = cache(async (
             })));
         }
 
-        // Sort combined results
-        results.sort((a, b) => {
-            const comparison = a.createdAt.getTime() - b.createdAt.getTime();
-            return sortOrder === "desc" ? -comparison : comparison;
-        });
+        const finalResults = normalizedQuery
+            ? results.filter((entry) => journalText(entry).includes(normalizedQuery.toLowerCase()))
+            : results;
 
-        return results.slice(0, limit);
+        finalResults.sort(compareJournals(sortOrder, sortBy));
+
+        return finalResults.slice(offset, offset + limit);
     } catch (error) {
         logDatabaseIssue("all journals list", error);
         return [];
@@ -649,33 +760,51 @@ export const getAllJournals = cache(async (
 });
 
 export const getAllJournalsCount = cache(async (
-    filter: "all" | "text" | "video" | "audio" = "all",
-    userId?: string
+    filter: JournalFilter = "all",
+    userId?: string,
+    query?: string
 ) => {
     const resolvedUserId = await resolveUserId(userId, true);
     if (!resolvedUserId) return 0;
 
     try {
         let total = 0;
+        const normalizedQuery = normalizeJournalQuery(query);
+        const pattern = `%${normalizedQuery}%`;
 
         if (filter === "all" || filter === "text") {
             const [textResult] = await db.select({ value: count() })
                 .from(journals)
-                .where(eq(journals.userId, resolvedUserId));
+                .where(normalizedQuery
+                    ? and(
+                        eq(journals.userId, resolvedUserId),
+                        or(ilike(journals.title, pattern), ilike(journals.content, pattern)),
+                    )
+                    : eq(journals.userId, resolvedUserId));
             total += textResult.value;
         }
 
         if (filter === "all" || filter === "video") {
             const [videoResult] = await db.select({ value: count() })
                 .from(videoJournals)
-                .where(eq(videoJournals.userId, resolvedUserId));
+                .where(normalizedQuery
+                    ? and(
+                        eq(videoJournals.userId, resolvedUserId),
+                        or(ilike(videoJournals.title, pattern), ilike(videoJournals.transcript, pattern)),
+                    )
+                    : eq(videoJournals.userId, resolvedUserId));
             total += videoResult.value;
         }
 
         if (filter === "all" || filter === "audio") {
             const [audioResult] = await db.select({ value: count() })
                 .from(audioJournals)
-                .where(eq(audioJournals.userId, resolvedUserId));
+                .where(normalizedQuery
+                    ? and(
+                        eq(audioJournals.userId, resolvedUserId),
+                        or(ilike(audioJournals.title, pattern), ilike(audioJournals.transcript, pattern)),
+                    )
+                    : eq(audioJournals.userId, resolvedUserId));
             total += audioResult.value;
         }
 
@@ -685,6 +814,64 @@ export const getAllJournalsCount = cache(async (
         return 0;
     }
 });
+
+export async function renameJournalEntry(params: {
+    id: string;
+    type: JournalEntry["type"];
+    title: string;
+    userId?: string;
+}) {
+    try {
+        const resolvedUserId = await resolveUserId(params.userId, true);
+        if (!resolvedUserId) return { success: false, error: "Unauthorized" };
+
+        const title = params.title.replace(/\s+/g, " ").trim().slice(0, 180);
+        if (!title) return { success: false, error: "Title is required" };
+
+        const existing = await getJournalEntry(params.id, params.type, resolvedUserId);
+        if (!existing) return { success: false, error: "Journal not found" };
+
+        if (params.type === "text") {
+            await db.update(journals).set({
+                title,
+                updatedAt: new Date(),
+            }).where(and(eq(journals.id, params.id), eq(journals.userId, resolvedUserId)));
+        } else if (params.type === "video") {
+            await db.update(videoJournals).set({
+                title,
+                updatedAt: new Date(),
+            }).where(and(eq(videoJournals.id, params.id), eq(videoJournals.userId, resolvedUserId)));
+        } else {
+            await db.update(audioJournals).set({
+                title,
+                updatedAt: new Date(),
+            }).where(and(eq(audioJournals.id, params.id), eq(audioJournals.userId, resolvedUserId)));
+        }
+
+        revalidateJournalSurfaces(params.type, params.id);
+        return { success: true };
+    } catch (error) {
+        logDatabaseIssue("journal rename", error);
+        return { success: false, error: "Failed to rename journal" };
+    }
+}
+
+export async function deleteJournalEntry(params: {
+    id: string;
+    type: JournalEntry["type"];
+    userId?: string;
+}) {
+    if (params.type === "text") {
+        const { deleteJournal } = await import("./journals");
+        return deleteJournal(params.id, params.userId);
+    }
+
+    if (params.type === "video") {
+        return deleteVideoJournal(params.id, params.userId);
+    }
+
+    return deleteAudioJournal(params.id, params.userId);
+}
 
 // Google Drive Connection
 export async function connectGoogleDrive(userId: string, connectionId: string) {
@@ -698,12 +885,14 @@ export async function connectGoogleDrive(userId: string, connectionId: string) {
     };
 }
 
-export async function getDriveConnectionStatus(userId: string) {
+export async function getDriveConnectionStatus(_userId: string) {
+    void _userId;
     // Nango is removed. Connection status should now be checked via Composio.
     return { connected: false, connectionId: null };
 }
 
-export async function syncGoogleDriveJournals(userId: string) {
+export async function syncGoogleDriveJournals(_userId: string) {
+    void _userId;
     // Nango is removed. Syncing logic will be moved to Composio-based tools.
     return { success: false, error: "Legacy sync disabled. Use Agent Tools." };
 }

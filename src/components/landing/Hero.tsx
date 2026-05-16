@@ -25,8 +25,8 @@ export function Hero({ isSignedIn = false }: HeroProps) {
 
       <div className="container relative z-10 mx-auto max-w-7xl">
         <div className="flex flex-col items-center gap-16 lg:flex-row lg:gap-24">
-          <div className="flex-1 space-y-9 text-center lg:text-left">
-            <div className="space-y-6">
+          <div className="flex-1 space-y-8 text-center lg:text-left">
+            <div className="space-y-5">
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold tracking-tight text-primary shadow-sm shadow-primary/5 dark:border-primary/25 dark:bg-primary/10">
                 <Brain className="h-3.5 w-3.5" />
                 <span>Private AI memory for your real life</span>
@@ -34,7 +34,7 @@ export function Hero({ isSignedIn = false }: HeroProps) {
               <h1 className="font-heading text-5xl font-semibold leading-[0.98] tracking-[-0.045em] text-foreground md:text-7xl lg:text-8xl">
                 Remember every detail that <span className="text-primary/80 dark:text-primary">matters.</span>
               </h1>
-              <p className="mx-auto max-w-2xl text-lg font-medium leading-relaxed text-muted-foreground md:text-xl lg:mx-0">
+              <p className="mx-auto max-w-xl text-lg font-medium leading-relaxed text-muted-foreground md:text-xl lg:mx-0">
                 Debo turns journals, voice notes, chats, and people into a searchable memory graph. Ask what happened, recover decisions, and follow through with answers backed by your own sources.
               </p>
             </div>
@@ -49,7 +49,7 @@ export function Hero({ isSignedIn = false }: HeroProps) {
               </Link>
             </div>
 
-            <div className="grid max-w-xl grid-cols-1 gap-3 pt-2 sm:grid-cols-3 lg:max-w-2xl">
+            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 lg:justify-start">
               <TrustPill icon={Shield} label="Private by design" />
               <TrustPill icon={Search} label="Cited answers" />
               <TrustPill icon={Network} label="Graph memory" />
@@ -128,9 +128,9 @@ export function Hero({ isSignedIn = false }: HeroProps) {
 
 function TrustPill({ icon: Icon, label }: { icon: LucideIcon; label: string }) {
   return (
-    <div className="flex items-center justify-center gap-2 rounded-xl border border-border/60 bg-card/60 px-4 py-3 text-muted-foreground shadow-sm backdrop-blur-sm dark:bg-card/70 lg:justify-start">
-      <Icon className="h-4 w-4 text-primary/70 dark:text-primary" />
-      <span className="text-xs font-semibold tracking-tight">{label}</span>
+    <div className="flex items-center gap-1.5 text-muted-foreground">
+      <Icon className="h-3.5 w-3.5 text-primary/70 dark:text-primary" />
+      <span className="text-xs font-medium">{label}</span>
     </div>
   );
 }

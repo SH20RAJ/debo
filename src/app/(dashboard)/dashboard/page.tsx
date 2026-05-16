@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 };
 
 export default async function DashboardPage(props: {
-  searchParams: Promise<{ q?: string; sort?: string; page?: string }>;
+  searchParams: Promise<{ q?: string; sort?: string; sortBy?: string; page?: string; type?: string }>;
 }) {
   const searchParams = await props.searchParams;
   const userId = await resolveUserId(undefined, true);
@@ -24,13 +24,19 @@ export default async function DashboardPage(props: {
   if (!user) redirect("/join");
 
   const query = searchParams.q || "";
-  const sort = (searchParams.sort as "asc" | "desc") || "desc";
+  const sort = searchParams.sort === "asc" ? "asc" : "desc";
+  const filter = ["all", "text", "video", "audio"].includes(searchParams.type || "")
+    ? (searchParams.type as "all" | "text" | "video" | "audio")
+    : "all";
+  const sortBy = ["createdAt", "updatedAt", "title"].includes(searchParams.sortBy || "")
+    ? (searchParams.sortBy as "createdAt" | "updatedAt" | "title")
+    : "createdAt";
   const page = parseInt(searchParams.page || "1", 10);
   const pageSize = 12;
   const offset = (page - 1) * pageSize;
 
-  const journals = await getAllJournals(sort, pageSize, offset, "all", userId);
-  const totalCount = await getAllJournalsCount("all", userId);
+  const journals = await getAllJournals(sort, pageSize, offset, filter, userId, query, sortBy);
+  const totalCount = await getAllJournalsCount(filter, userId, query);
 
   const firstName = (user.displayName ?? "there").split(" ")[0];
 
@@ -93,7 +99,9 @@ export default async function DashboardPage(props: {
             journals={journals}
             initialQuery={query}
             initialSort={sort}
+            initialSortBy={sortBy}
             totalCount={totalCount}
+            initialFilter={filter}
           />
         </section>
       </div>
