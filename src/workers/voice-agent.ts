@@ -3,6 +3,7 @@ import {
   ServerOptions,
   cli,
   defineAgent,
+  llm,
   voice,
 } from "@livekit/agents";
 import * as cartesia from "@livekit/agents-plugin-cartesia";
@@ -234,12 +235,47 @@ export default defineAgent({
     const tts = new cartesia.TTS({
       apiKey: process.env.CARTESIA_API_KEY,
       model: process.env.LIVEKIT_TTS_MODEL || "sonic-english",
-      voice: process.env.LIVEKIT_VOICE || "694f9389-aac1-45b6-b726-9d9369183238",
+      voice: process.env.LIVEKIT_VOICE || "f786b574-daa5-4673-aa0c-cbe3e8534c02",
     });
+
+    const tools = {
+      add_memory: llm.tool({
+        description: "Add a durable memory fact or preference to the user's profile.",
+        parameters: {
+          type: "object",
+          properties: {
+            fact: { type: "string", description: "The memory fact to store." },
+          },
+          required: ["fact"],
+        },
+        execute: async ({ fact }: { fact: string }) => {
+          const { addMemory } = await import("../actions/memories");
+          const result = await addMemory(fact, userId);
+          return JSON.stringify(result);
+        },
+      }),
+      create_journal: llm.tool({
+        description: "Create a new journal entry based on the conversation.",
+        parameters: {
+          type: "object",
+          properties: {
+            content: { type: "string", description: "The content of the journal entry." },
+            title: { type: "string", description: "Optional title." },
+          },
+          required: ["content"],
+        },
+        execute: async ({ content, title }: { content: string; title?: string }) => {
+          const { saveJournal } = await import("../actions/journals");
+          const result = await saveJournal(content, undefined, title, userId);
+          return JSON.stringify(result);
+        },
+      }),
+    };
 
     const agent = new DeboVoiceAgent({
       id: AGENT_NAME,
       instructions,
+      tools,
     });
 
     const session = new voice.AgentSession({
