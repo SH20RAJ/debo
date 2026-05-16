@@ -200,6 +200,11 @@ function VoiceRoom({
   const { state, audioTrack, agentTranscriptions, agent } = useVoiceAssistant();
   const connectionState = useConnectionState();
   const { localParticipant } = useLocalParticipant();
+  const localAudioTrack = useMemo(() => {
+    return Array.from(localParticipant.trackPublications.values())
+      .filter((p) => p.kind === "audio" && p.track)
+      .map((p) => p.track)[0];
+  }, [localParticipant.trackPublications]);
   const [isMuted, setIsMuted] = useState(false);
   const [agentWaitExpired, setAgentWaitExpired] = useState(false);
 
@@ -273,20 +278,38 @@ function VoiceRoom({
         <div className="relative flex size-56 items-center justify-center rounded-[2rem] border border-border/70 bg-background shadow-[0_24px_80px_rgba(0,0,0,0.08)] dark:shadow-[0_24px_90px_rgba(0,0,0,0.35)]">
           <div
             className={cn(
-              "absolute inset-8 rounded-full bg-primary/10 blur-3xl transition-all duration-700",
-              visualState === "speaking" ? "scale-125 opacity-100" : "scale-95 opacity-40",
+              "absolute inset-8 rounded-full blur-3xl transition-all duration-700",
+              visualState === "speaking" ? "scale-125 opacity-100 bg-primary/20" : 
+              visualState === "listening" ? "scale-110 opacity-70 bg-emerald-500/20" :
+              visualState === "thinking" ? "scale-105 opacity-60 bg-amber-500/20 animate-pulse" :
+              "scale-95 opacity-40 bg-primary/10",
             )}
           />
-          {visualState === "speaking" && audioTrack ? (
-            <BarVisualizer
-              state={state}
-              trackRef={audioTrack}
-              barCount={9}
-              className="relative z-10 h-20 w-36 text-primary"
-            />
-          ) : (
-            <Bot className="relative z-10 size-20 text-muted-foreground/50" />
-          )}
+          
+          <div className="relative z-10 flex items-center justify-center">
+            {visualState === "speaking" && audioTrack ? (
+              <BarVisualizer
+                state={state}
+                trackRef={audioTrack}
+                barCount={9}
+                className="h-20 w-36 text-primary"
+              />
+            ) : visualState === "listening" ? (
+              <BarVisualizer
+                state="speaking"
+                trackRef={localAudioTrack}
+                barCount={7}
+                className="h-16 w-28 text-emerald-500/60"
+              />
+            ) : visualState === "thinking" ? (
+              <div className="relative flex items-center justify-center">
+                <Loader2 className="absolute size-24 animate-[spin_3s_linear_infinite] text-amber-500/30" />
+                <Bot className="size-16 text-amber-500/60 animate-pulse" />
+              </div>
+            ) : (
+              <Bot className="size-20 text-muted-foreground/30" />
+            )}
+          </div>
         </div>
 
         <div className="min-h-20 w-full max-w-2xl rounded-2xl border border-border/70 bg-muted/20 px-6 py-5 text-center">
