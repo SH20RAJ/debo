@@ -32,9 +32,9 @@ export default async function JournalsPage({
         <header className="mb-10">
           <h1 className="text-3xl font-bold tracking-tight text-foreground">
             Journal
-            <span className="text-duo-macaw">.</span>
+            <span className="text-primary">.</span>
           </h1>
-          <p className="mt-2 text-sm text-muted-foreground/70">
+          <p className="mt-2 text-sm text-muted-foreground">
             Your thoughts, captured over time.
           </p>
         </header>

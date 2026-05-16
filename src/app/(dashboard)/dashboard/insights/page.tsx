@@ -38,18 +38,18 @@ export default async function InsightsPage() {
   const topTopic = graph.topTopics[0] || null;
 
   return (
-    <div className="flex-1 bg-duo-polar">
+    <div className="flex-1 bg-background">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-5 py-12 lg:px-8">
         <header className="flex flex-col gap-6">
-          <div className="inline-flex items-center gap-2 self-start rounded-xl border-2 border-duo-swan bg-duo-snow px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-duo-wolf">
-            <BrainCircuit className="h-4 w-4 text-duo-macaw" />
+          <div className="inline-flex items-center gap-2 self-start rounded-xl border-2 border-border bg-muted px-4 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.2em] text-muted-foreground">
+            <BrainCircuit className="h-4 w-4 text-primary" />
             Journal signals
           </div>
           <div>
-            <h1 className="text-4xl font-black tracking-tight text-duo-eel md:text-6xl">
+            <h1 className="text-4xl font-extrabold tracking-tight text-foreground md:text-6xl">
               Insights
             </h1>
-            <p className="mt-4 max-w-2xl text-lg font-bold leading-relaxed text-duo-wolf">
+            <p className="mt-4 max-w-2xl text-lg font-bold leading-relaxed text-muted-foreground">
               Debo reads your journals and memories to show the people, topics, and feelings that keep coming back.
             </p>
           </div>
@@ -62,7 +62,7 @@ export default async function InsightsPage() {
         />
 
         <div className="space-y-6">
-          <div className="text-xs font-black uppercase tracking-[0.2em] text-duo-wolf">
+          <div className="text-xs font-extrabold uppercase tracking-[0.2em] text-muted-foreground">
             Life Patterns
           </div>
           <PatternList patterns={graph.patterns} />

@@ -34,30 +34,30 @@ export default async function DashboardLayout({
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset className="relative flex h-svh flex-col overflow-hidden bg-background ">
-        <header className="sticky top-0 z-30 flex h-20 w-full items-center justify-between border-b border-border/10 bg-background/60 px-8 backdrop-blur-2xl lg:px-12">
+      <SidebarInset className="relative flex h-svh flex-col overflow-hidden bg-background">
+        <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b-2 border-border bg-background/80 px-6 backdrop-blur-xl lg:px-10">
           <div className="flex items-center gap-6">
             <SidebarTrigger className="flex md:hidden text-muted-foreground hover:text-foreground transition-colors" />
             <div className="flex flex-col gap-0">
-              <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/30">
+              <div className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-muted-foreground/40">
                 Debo Studio
               </div>
-              <h2 className="font-heading text-xl font-semibold tracking-tight text-foreground">
+              <h2 className="font-heading text-lg font-extrabold tracking-tight text-foreground">
                 Overview
               </h2>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <DashboardSearch />
 
-            <Button variant="ghost" size="icon" className="rounded-xl h-10 w-10 border border-border/20 hover:bg-muted/40">
-              <Bell className="h-5 w-5 text-muted-foreground/60" />
+            <Button variant="ghost" size="icon" className="rounded-xl h-9 w-9 border-2 border-border hover:bg-muted transition-colors">
+              <Bell className="h-4 w-4 text-muted-foreground" />
             </Button>
 
-            <Button asChild variant="default" className="hidden h-10 gap-2 rounded-xl px-5 text-xs font-semibold tracking-tight sm:flex bg-primary text-primary-foreground hover:bg-primary/90 transition-all">
+            <Button asChild className="hidden h-9 gap-1.5 rounded-xl px-4 text-xs font-extrabold uppercase tracking-wide sm:inline-flex minimal-btn-primary">
               <Link href="/dashboard/journal/text/new">
-                <Plus className="h-4 w-4" />
+                <Plus className="h-3.5 w-3.5" />
                 <span>New Entry</span>
               </Link>
             </Button>

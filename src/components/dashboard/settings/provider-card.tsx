@@ -63,10 +63,10 @@ export function ProviderCard({ config, savedConfig, isActive }: ProviderCardProp
     };
 
     return (
-        <div className={`group relative flex min-h-48 flex-col p-6 rounded-2xl border transition-all duration-300 ${isActive ? 'border-primary/50 bg-primary/5 shadow-[0_0_20px_rgba(37,99,235,0.05)]' : 'border-border/50 bg-card hover:border-primary/20 hover:shadow-sm'}`}>
+        <div className={`group relative flex min-h-48 flex-col p-6 rounded-2xl border-2 transition-all duration-200 ${isActive ? 'border-primary bg-primary/5 shadow-[0_2px_0_var(--border)]' : 'border-border bg-card hover:border-primary/30 hover:shadow-[0_2px_0_var(--border)]'}`}>
             <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-4">
-                    <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-border/50 bg-muted/30 p-2.5 transition-transform group-hover:scale-105">
+                    <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl border-2 border-border bg-muted p-2.5 transition-transform group-hover:scale-105">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={config.icon} alt={config.name} className="h-full w-full object-contain grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all" />
                     </div>
@@ -75,7 +75,7 @@ export function ProviderCard({ config, savedConfig, isActive }: ProviderCardProp
                             {config.name}
                             {isActive && <CheckCircle2 className="h-4 w-4 text-primary" />}
                         </h3>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+                        <p className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
                             {isActive ? "Active Connection" : "Available"}
                         </p>
                     </div>
@@ -87,7 +87,7 @@ export function ProviderCard({ config, savedConfig, isActive }: ProviderCardProp
                                 <Settings2 className="h-4 w-4" />
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="rounded-2xl border border-border sm:max-w-[420px]">
+                        <DialogContent className="rounded-2xl border-2 border-border sm:max-w-[420px]">
                             <DialogHeader>
                                 <DialogTitle className="text-xl font-semibold tracking-tight">Configure {config.name}</DialogTitle>
                                 <DialogDescription className="text-sm text-muted-foreground font-medium">
@@ -97,26 +97,26 @@ export function ProviderCard({ config, savedConfig, isActive }: ProviderCardProp
                             <div className="grid gap-4 py-4">
                                 {config.id !== "cloudflare" && (
                                     <div className="grid gap-2">
-                                        <Label htmlFor="apiKey" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80">API Key</Label>
+                                        <Label htmlFor="apiKey" className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">API Key</Label>
                                         <Input
                                             id="apiKey"
                                             type="password"
                                             placeholder={savedConfig?.apiKey ? "••••••••••••••••" : "Enter API key"}
                                             value={apiKey.includes("....config") ? "" : apiKey}
                                             onChange={(e) => setApiKey(e.target.value)}
-                                            className="h-10 rounded-xl border-border bg-muted/10 font-medium"
+                                            className="h-10 rounded-xl border-2 border-border bg-muted/10 font-medium"
                                         />
                                     </div>
                                 )}
                                 {(config.isCustom || config.id === "ollama") && (
                                     <div className="grid gap-2">
-                                        <Label htmlFor="baseUrl" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80">Base URL</Label>
+                                        <Label htmlFor="baseUrl" className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">Base URL</Label>
                                         <Input
                                             id="baseUrl"
                                             placeholder="https://api.example.com/v1"
                                             value={baseUrl}
                                             onChange={(e) => setBaseUrl(e.target.value)}
-                                            className="h-10 rounded-xl border-border bg-muted/10 font-medium"
+                                            className="h-10 rounded-xl border-2 border-border bg-muted/10 font-medium"
                                         />
                                     </div>
                                 )}
@@ -125,14 +125,14 @@ export function ProviderCard({ config, savedConfig, isActive }: ProviderCardProp
                                         href={config.docsUrl} 
                                         target="_blank" 
                                         rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-primary hover:underline"
+                                        className="inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-widest text-primary hover:underline"
                                     >
                                         Documentation <ExternalLink className="h-3 w-3" />
                                     </a>
                                 )}
                             </div>
                             <DialogFooter>
-                                <Button onClick={handleSave} disabled={loading} className="w-full rounded-xl">
+                                <Button onClick={handleSave} disabled={loading} className="w-full rounded-xl minimal-btn-primary">
                                     {loading ? "Saving..." : "Save Configuration"}
                                 </Button>
                             </DialogFooter>

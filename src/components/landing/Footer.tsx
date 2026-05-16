@@ -1,25 +1,34 @@
 import Link from "next/link";
-import { waitlistUrl } from "@/lib/launch";
 
 export function Footer() {
   return (
-    <footer className="py-12 border-t border-border/10 bg-background">
-      <div className="container mx-auto max-w-7xl px-6 flex flex-col md:flex-row items-center justify-between gap-8">
-        <div className="flex items-center gap-3">
-          <div className="size-6 rounded-sm bg-primary/10 flex items-center justify-center font-heading font-bold text-primary text-xs">d</div>
-          <p className="text-xs font-semibold text-muted-foreground tracking-tight">
-            © {new Date().getFullYear()} Debo.
-          </p>
+    <footer className="border-t-2 border-border/20 bg-background py-8 px-6">
+      <div className="container mx-auto flex max-w-5xl flex-col items-center justify-between gap-4 sm:flex-row">
+        <p className="text-xs font-bold text-muted-foreground/50">
+          &copy; 2026 Debo
+        </p>
+        <div className="flex items-center gap-5">
+          <Link
+            href="/privacy"
+            className="text-xs font-bold text-muted-foreground/50 transition-colors hover:text-foreground"
+          >
+            Privacy Policy
+          </Link>
+          <Link
+            href="/terms"
+            className="text-xs font-bold text-muted-foreground/50 transition-colors hover:text-foreground"
+          >
+            Terms
+          </Link>
+          <a
+            href="https://github.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs font-bold text-muted-foreground/50 transition-colors hover:text-foreground"
+          >
+            GitHub
+          </a>
         </div>
-        
-        <div className="flex items-center gap-8 text-[11px] font-semibold text-muted-foreground/60 tracking-tight">
-          <Link href={waitlistUrl} target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors uppercase tracking-wider">Waitlist</Link>
-          <Link href="/foundation" className="hover:text-foreground transition-colors uppercase tracking-wider">Foundation</Link>
-          <Link href="/privacy" className="hover:text-foreground transition-colors uppercase tracking-wider">Privacy</Link>
-          <Link href="/terms" className="hover:text-foreground transition-colors uppercase tracking-wider">Terms</Link>
-        </div>
-
-        <p className="text-[10px] font-medium tracking-widest uppercase text-muted-foreground/20">Memory Engine</p>
       </div>
     </footer>
   );

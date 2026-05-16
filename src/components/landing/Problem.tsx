@@ -22,31 +22,31 @@ const problems = [
 
 export function Problem() {
   return (
-    <section className="py-28 bg-muted/30 border-y border-border/10 sm:py-32">
+    <section className="py-24 bg-muted/30 border-y-2 border-border/10">
       <div className="container mx-auto max-w-5xl px-6">
-        <div className="mb-20 text-center space-y-6">
-          <h2 className="text-4xl md:text-5xl font-heading font-semibold text-foreground leading-[1.1]">
+        <div className="mb-16 text-center space-y-5">
+          <h2 className="text-4xl md:text-5xl font-heading font-extrabold text-foreground leading-[1.1]">
             Capturing is easy. <br />
-            <span className="text-primary/60 italic">Remembering is broken.</span>
+            <span className="text-primary">Remembering is broken.</span>
           </h2>
-          <p className="max-w-2xl mx-auto text-lg text-muted-foreground font-medium leading-relaxed">
+          <p className="max-w-2xl mx-auto text-base text-muted-foreground font-semibold leading-relaxed">
             The problem is not taking more notes. It is turning what you already captured into context you can trust later.
           </p>
         </div>
-        
-        <div className="grid md:grid-cols-3 gap-8">
+
+        <div className="grid md:grid-cols-3 gap-6">
           {problems.map((problem) => {
             const Icon = problem.icon;
             return (
-              <div 
+              <div
                 key={problem.title}
                 className="minimal-card flex flex-col items-center text-center"
               >
-                <div className="w-12 h-12 rounded-xl bg-background border border-border text-primary/60 flex items-center justify-center mb-6">
+                <div className="w-12 h-12 rounded-2xl border-2 border-border bg-muted/30 text-primary flex items-center justify-center mb-5">
                   <Icon className="w-6 h-6" />
                 </div>
-                
-                <h3 className="text-lg font-semibold mb-3 text-foreground tracking-tight">{problem.title}</h3>
+
+                <h3 className="text-lg font-bold mb-3 text-foreground tracking-tight">{problem.title}</h3>
                 <p className="text-muted-foreground font-medium leading-relaxed text-sm">
                   {problem.description}
                 </p>
@@ -58,7 +58,3 @@ export function Problem() {
     </section>
   );
 }
-
-
-
-

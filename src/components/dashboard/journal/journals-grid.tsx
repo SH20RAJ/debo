@@ -85,17 +85,17 @@ const typeCopy: Record<JournalEntry["type"], { label: string; icon: typeof FileT
   text: {
     label: "Text",
     icon: FileText,
-    tone: "border-amber-500/20 bg-amber-500/10 text-amber-300",
+    tone: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
   },
   audio: {
     label: "Audio",
     icon: AudioLines,
-    tone: "border-sky-500/20 bg-sky-500/10 text-sky-300",
+    tone: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
   },
   video: {
     label: "Video",
     icon: Video,
-    tone: "border-violet-500/20 bg-violet-500/10 text-violet-300",
+    tone: "bg-violet-500/10 text-violet-600 dark:text-violet-400",
   },
 };
 
@@ -224,10 +224,10 @@ export function JournalsGrid({
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <form onSubmit={handleSearch} className="flex w-full min-w-0 gap-2 lg:max-w-xl">
           <div className="relative min-w-0 flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/60" />
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/60" />
             <Input
               placeholder="Search journals..."
-              className="h-11 rounded-xl border-border/50 bg-card/50 pl-10 pr-10 text-sm font-medium"
+              className="h-11 rounded-xl border-2 border-border bg-card pl-10 pr-10 text-sm font-medium focus:border-primary focus:ring-2 focus:ring-primary/20"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
             />
@@ -242,17 +242,17 @@ export function JournalsGrid({
               </button>
             )}
           </div>
-          <Button type="submit" className="h-11 rounded-xl px-4" disabled={isPending}>
+          <Button type="submit" className="minimal-btn-primary h-11 px-5" disabled={isPending}>
             {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Search"}
           </Button>
         </form>
 
         <div className="flex flex-wrap items-center gap-2">
           <Select value={sortBy} onValueChange={(value) => updateUrl({ sortBy: value as JournalSortBy, page: 1 })}>
-            <SelectTrigger className="h-11 rounded-xl border-border/50 bg-card/50 px-3">
+            <SelectTrigger className="h-11 rounded-xl border-2 border-border bg-card px-3">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="rounded-xl">
               <SelectItem value="createdAt">Created date</SelectItem>
               <SelectItem value="updatedAt">Last edited</SelectItem>
               <SelectItem value="title">Title</SelectItem>
@@ -262,13 +262,13 @@ export function JournalsGrid({
           <Button
             variant="outline"
             onClick={() => updateUrl({ sort: sort === "desc" ? "asc" : "desc", page: 1 })}
-            className="h-11 rounded-xl border-border/50 bg-card/50 px-3"
+            className="h-11 rounded-xl border-2 border-border bg-card px-3"
           >
             {sort === "desc" ? <SortDesc className="h-4 w-4" /> : <SortAsc className="h-4 w-4" />}
             <span className="sr-only">{sort === "desc" ? "Newest first" : "Oldest first"}</span>
           </Button>
 
-          <Button asChild className="h-11 rounded-xl px-4">
+          <Button asChild className="minimal-btn-primary h-11 px-4">
             <Link href="/dashboard/journal/text/new">
               <Plus className="h-4 w-4" />
               New Journal
@@ -279,19 +279,19 @@ export function JournalsGrid({
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Tabs value={filter} onValueChange={(value) => updateUrl({ filter: value as JournalFilter, page: 1 })}>
-          <TabsList className="grid h-11 w-full grid-cols-4 rounded-xl border border-border/40 bg-muted/20 p-1 sm:w-fit">
-            <TabsTrigger value="all" className="rounded-lg px-4 text-xs font-semibold">
+          <TabsList className="grid h-11 w-full grid-cols-4 rounded-xl border-2 border-border bg-muted/30 p-1 sm:w-fit">
+            <TabsTrigger value="all" className="rounded-lg px-4 text-xs font-bold uppercase tracking-wide">
               All
             </TabsTrigger>
-            <TabsTrigger value="text" className="rounded-lg px-4 text-xs font-semibold">
+            <TabsTrigger value="text" className="rounded-lg px-4 text-xs font-bold uppercase tracking-wide">
               <FileText className="mr-1.5 h-3.5 w-3.5" />
               Text
             </TabsTrigger>
-            <TabsTrigger value="audio" className="rounded-lg px-4 text-xs font-semibold">
+            <TabsTrigger value="audio" className="rounded-lg px-4 text-xs font-bold uppercase tracking-wide">
               <AudioLines className="mr-1.5 h-3.5 w-3.5" />
               Audio
             </TabsTrigger>
-            <TabsTrigger value="video" className="rounded-lg px-4 text-xs font-semibold">
+            <TabsTrigger value="video" className="rounded-lg px-4 text-xs font-bold uppercase tracking-wide">
               <Video className="mr-1.5 h-3.5 w-3.5" />
               Video
             </TabsTrigger>
@@ -299,7 +299,7 @@ export function JournalsGrid({
         </Tabs>
 
         <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground">
-          <Badge variant="outline" className="h-7 rounded-lg border-border/50 bg-card/40 px-3">
+          <Badge variant="outline" className="h-7 rounded-lg border-2 border-border bg-card px-3 font-bold uppercase tracking-wide text-[11px]">
             {totalCount} {totalCount === 1 ? "journal" : "journals"}
           </Badge>
           {hasFilters && (
@@ -307,7 +307,7 @@ export function JournalsGrid({
               variant="ghost"
               size="sm"
               onClick={() => updateUrl({ query: "", filter: "all", page: 1 })}
-              className="h-7 rounded-lg px-2 text-xs"
+              className="h-7 rounded-lg px-2 text-xs font-semibold"
             >
               Clear filters
             </Button>
@@ -319,7 +319,7 @@ export function JournalsGrid({
         {journals.length === 0 ? (
           <EmptyState hasFilters={hasFilters} />
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
             {journals.map((journal) => (
               <JournalCard
                 key={`${journal.type}-${journal.id}`}
@@ -340,13 +340,13 @@ export function JournalsGrid({
             size="sm"
             disabled={currentPage <= 1 || isPending}
             onClick={() => updateUrl({ page: currentPage - 1 })}
-            className="h-10 rounded-xl"
+            className="minimal-btn-outline h-10 px-4"
           >
             <ChevronLeft className="h-4 w-4" />
             Previous
           </Button>
 
-          <div className="flex h-10 items-center rounded-xl border border-border/50 bg-card/40 px-4 text-sm font-semibold">
+          <div className="flex h-10 items-center rounded-xl border-2 border-border bg-card px-4 text-sm font-bold">
             {currentPage} / {totalPages}
           </div>
 
@@ -355,7 +355,7 @@ export function JournalsGrid({
             size="sm"
             disabled={currentPage >= totalPages || isPending}
             onClick={() => updateUrl({ page: currentPage + 1 })}
-            className="h-10 rounded-xl"
+            className="minimal-btn-outline h-10 px-4"
           >
             Next
             <ChevronRight className="h-4 w-4" />
@@ -385,16 +385,16 @@ function JournalCard({
   const href = journalHref(journal);
 
   return (
-    <article className="group flex min-h-72 flex-col rounded-xl border border-border/50 bg-card/50 p-4 shadow-sm transition-colors hover:border-primary/30 hover:bg-card">
+    <article className="group flex min-h-72 flex-col rounded-2xl border-2 border-border bg-card p-5 shadow-[0_2px_0_var(--border)] transition-all hover:border-primary/30 hover:shadow-[0_2px_0_var(--primary)]">
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
-          <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border", type.tone)}>
+          <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-xl", type.tone)}>
             <Icon className="h-4 w-4" />
           </div>
           <div className="min-w-0">
-            <Badge variant="outline" className="h-6 rounded-md border-border/40 bg-background/30 px-2 text-[11px]">
+            <span className="inline-flex items-center rounded-lg bg-muted px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
               {type.label}
-            </Badge>
+            </span>
             <p className="mt-1 truncate text-xs font-medium text-muted-foreground">
               {formatDistanceToNow(new Date(journal.createdAt), { addSuffix: true })}
             </p>
@@ -410,7 +410,7 @@ function JournalCard({
                 <span className="sr-only">Delete journal</span>
               </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent className="rounded-xl">
+            <AlertDialogContent className="rounded-2xl">
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete this journal?</AlertDialogTitle>
                 <AlertDialogDescription>
@@ -418,8 +418,8 @@ function JournalCard({
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel className="rounded-lg">Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={onDelete} className="rounded-lg bg-destructive hover:bg-destructive/90">
+                <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={onDelete} className="rounded-xl bg-destructive hover:bg-destructive/90">
                   Delete
                 </AlertDialogAction>
               </AlertDialogFooter>
@@ -429,12 +429,12 @@ function JournalCard({
       </div>
 
       <Link href={href} className="mt-5 block flex-1 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring">
-        <h3 className="line-clamp-2 text-lg font-semibold leading-snug tracking-tight text-foreground transition-colors group-hover:text-primary">
+        <h3 className="line-clamp-2 text-lg font-bold leading-snug tracking-tight text-foreground transition-colors group-hover:text-primary">
           {title}
         </h3>
 
         {journal.type === "video" && journal.thumbnailUrl && (
-          <div className="relative mt-4 aspect-video overflow-hidden rounded-lg border border-border/40 bg-muted/20">
+          <div className="relative mt-4 aspect-video overflow-hidden rounded-xl border-2 border-border bg-muted/20">
             <Image
               src={journal.thumbnailUrl}
               alt={title}
@@ -451,7 +451,7 @@ function JournalCard({
         </p>
       </Link>
 
-      <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-border/40 pt-4 text-xs font-medium text-muted-foreground">
+      <div className="mt-5 flex flex-wrap items-center gap-2 border-t-2 border-border/40 pt-4 text-xs font-medium text-muted-foreground">
         <span className="inline-flex items-center gap-1.5">
           <CalendarDays className="h-3.5 w-3.5" />
           {format(new Date(journal.createdAt), "MMM d, yyyy")}
@@ -482,7 +482,7 @@ function JournalCard({
       </div>
 
       <div className="mt-4 flex items-center gap-2">
-        <Button asChild variant="outline" size="sm" className="h-9 flex-1 rounded-lg">
+        <Button asChild variant="outline" size="sm" className="minimal-btn-outline h-9 flex-1 text-xs">
           <Link href={href}>
             {journal.type === "text" ? <Pencil className="h-4 w-4" /> : <ExternalLink className="h-4 w-4" />}
             {journal.type === "text" ? "Open and edit" : "Open"}
@@ -519,7 +519,7 @@ function RenameJournalDialog({
           <span className="sr-only">Edit title</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="rounded-xl">
+      <DialogContent className="rounded-2xl">
         <form onSubmit={submit} className="space-y-4">
           <DialogHeader>
             <DialogTitle>Edit title</DialogTitle>
@@ -529,16 +529,16 @@ function RenameJournalDialog({
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
             maxLength={180}
-            className="h-11 rounded-xl"
+            className="h-11 rounded-xl border-2 border-border"
             autoFocus
           />
           <DialogFooter>
             <DialogClose asChild>
-              <Button type="button" variant="outline" className="rounded-lg">
+              <Button type="button" variant="outline" className="minimal-btn-outline text-xs">
                 Cancel
               </Button>
             </DialogClose>
-            <Button type="submit" className="rounded-lg" disabled={isBusy}>
+            <Button type="submit" className="minimal-btn-primary text-xs" disabled={isBusy}>
               {isBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
             </Button>
           </DialogFooter>
@@ -554,11 +554,11 @@ function sortDateChanged(journal: JournalEntry) {
 
 function EmptyState({ hasFilters }: { hasFilters: boolean }) {
   return (
-    <div className="flex min-h-80 flex-col items-center justify-center rounded-xl border border-dashed border-border/60 bg-card/30 px-6 py-16 text-center">
-      <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-xl border border-border/40 bg-background/60">
+    <div className="flex min-h-80 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border bg-card/30 px-6 py-16 text-center">
+      <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
         <Sparkles className="h-6 w-6 text-muted-foreground/50" />
       </div>
-      <h3 className="text-lg font-semibold tracking-tight text-foreground">
+      <h3 className="text-lg font-bold tracking-tight text-foreground">
         {hasFilters ? "No matching journals" : "No journals yet"}
       </h3>
       <p className="mt-2 max-w-sm text-sm leading-6 text-muted-foreground">
@@ -568,18 +568,18 @@ function EmptyState({ hasFilters }: { hasFilters: boolean }) {
       </p>
       <div className="mt-6 flex flex-wrap justify-center gap-2">
         {hasFilters ? (
-          <Button asChild variant="outline" className="rounded-xl">
+          <Button asChild variant="outline" className="minimal-btn-outline">
             <Link href="/dashboard/journals">Reset view</Link>
           </Button>
         ) : (
           <>
-            <Button asChild className="rounded-xl">
+            <Button asChild className="minimal-btn-primary">
               <Link href="/dashboard/journal/text/new">
                 <Plus className="h-4 w-4" />
                 New text journal
               </Link>
             </Button>
-            <Button asChild variant="outline" className="rounded-xl">
+            <Button asChild variant="outline" className="minimal-btn-outline">
               <Link href="/dashboard/capture">Capture media</Link>
             </Button>
           </>

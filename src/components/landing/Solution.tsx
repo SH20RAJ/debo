@@ -28,26 +28,26 @@ const steps = [
 
 export function Solution() {
   return (
-    <section id="how-it-works" className="py-32 bg-background border-t border-border/10">
-      <div className="container mx-auto max-w-6xl px-6">
-        <div className="text-center mb-24 space-y-6">
-          <h2 className="text-4xl md:text-5xl font-heading font-semibold text-foreground tracking-tight leading-[1.1]">
-            From raw moments to <span className="text-primary/80">usable memory.</span>
+    <section id="how-it-works" className="py-24 bg-background border-t-2 border-border/10">
+      <div className="container mx-auto max-w-5xl px-6">
+        <div className="text-center mb-20 space-y-5">
+          <h2 className="text-4xl md:text-5xl font-heading font-extrabold text-foreground tracking-tight leading-[1.1]">
+            From raw moments to <span className="text-primary">usable memory.</span>
           </h2>
-          <p className="max-w-2xl mx-auto text-lg text-muted-foreground font-medium leading-relaxed">
+          <p className="max-w-2xl mx-auto text-base text-muted-foreground font-semibold leading-relaxed">
             Debo does the work between capture and recall: extracting structure, preserving evidence, and making your context searchable.
           </p>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-12">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {steps.map((step, i) => (
             <div key={i} className="relative group">
-              <div className="space-y-6 text-center lg:text-left flex flex-col items-center lg:items-start">
-                <div className="w-14 h-14 rounded-xl bg-background border border-border text-primary/60 flex items-center justify-center transition-all duration-300 group-hover:border-primary/40 group-hover:shadow-sm">
+              <div className="space-y-5 text-center lg:text-left flex flex-col items-center lg:items-start">
+                <div className="w-14 h-14 rounded-2xl border-2 border-border bg-muted/30 text-primary flex items-center justify-center transition-all duration-200 group-hover:border-primary/40 group-hover:bg-primary/5">
                   <step.icon className="w-6 h-6" />
                 </div>
 
-                <h3 className="text-lg font-semibold text-foreground tracking-tight">{step.title}</h3>
+                <h3 className="text-lg font-bold text-foreground tracking-tight">{step.title}</h3>
                 <p className="text-sm text-muted-foreground font-medium leading-relaxed">
                   {step.description}
                 </p>
@@ -56,17 +56,17 @@ export function Solution() {
           ))}
         </div>
 
-        <div className="mt-32 p-10 rounded-2xl bg-muted/30 border border-border flex flex-col md:flex-row items-center justify-between gap-8 backdrop-blur-sm">
+        <div className="mt-24 p-8 rounded-2xl border-2 border-border bg-muted/30 flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="space-y-3 text-center md:text-left">
             <div className="flex items-center gap-2 justify-center md:justify-start">
-              <Brain className="w-4 h-4 text-primary/60" />
-              <span className="text-primary/60 font-semibold uppercase tracking-widest text-[9px]">Private Intelligence</span>
+              <Brain className="w-4 h-4 text-primary" />
+              <span className="text-primary font-extrabold uppercase tracking-widest text-[10px]">Private Intelligence</span>
             </div>
-            <h4 className="text-2xl font-semibold text-foreground tracking-tight">Start with one note. Ask about it later.</h4>
+            <h4 className="text-2xl font-bold text-foreground tracking-tight">Start with one note. Ask about it later.</h4>
           </div>
           <Link
             href="/#waitlist"
-            className="minimal-btn-primary px-10 py-3 text-base"
+            className="minimal-btn-primary px-8 py-3 text-sm"
           >
             Join the waitlist
           </Link>
@@ -75,6 +75,3 @@ export function Solution() {
     </section>
   );
 }
-
-
-

@@ -43,16 +43,16 @@ interface JournalProps {
   updatedAt: string | Date;
 }
 
-export function JournalListManager({ 
-  journals, 
-  initialQuery, 
+export function JournalListManager({
+  journals,
+  initialQuery,
   initialSort,
   totalCount = 0,
   currentPage = 1,
   pageSize = 9
-}: { 
-  journals: JournalProps[], 
-  initialQuery: string, 
+}: {
+  journals: JournalProps[],
+  initialQuery: string,
   initialSort: string,
   totalCount?: number,
   currentPage?: number,
@@ -108,19 +108,19 @@ export function JournalListManager({
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       {/* Search and Sort Header */}
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between sticky top-0 bg-background/80 backdrop-blur-md z-10 py-4 border-b px-2">
+      <div className="flex flex-col md:flex-row gap-4 items-center justify-between sticky top-0 bg-background/80 backdrop-blur-md z-10 py-4 border-b-2 border-border/40 px-2">
         <div className="relative w-full md:max-w-md flex items-center gap-3">
           <div className="relative w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search journals..." 
-              className="pl-9 pr-4 h-11 rounded-2xl bg-muted/50 border-none focus-visible:ring-1 focus-visible:ring-primary/20"
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search journals..."
+              className="pl-10 pr-4 h-11 rounded-xl border-2 border-border bg-card focus:border-primary focus:ring-2 focus:ring-primary/20"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
           </div>
           {query && (
-            <Badge variant="secondary" className="absolute right-2 flex-shrink-0 animate-in fade-in zoom-in-95 bg-primary/10 text-primary border-none">
+            <Badge variant="secondary" className="absolute right-2 flex-shrink-0 animate-in fade-in zoom-in-95 bg-primary/10 text-primary border-none font-bold">
               <Sparkles className="h-3 w-3 mr-1" />
               AI
             </Badge>
@@ -131,20 +131,20 @@ export function JournalListManager({
             setSort(val);
             updateUrl(query, val, 1);
           }}>
-            <SelectTrigger className="h-11 rounded-2xl bg-muted/50 border-none w-full md:w-[160px]">
+            <SelectTrigger className="h-11 rounded-xl border-2 border-border bg-card w-full md:w-[160px]">
               <div className="flex items-center gap-2">
                 {sort === "desc" ? <SortDesc className="h-4 w-4" /> : <SortAsc className="h-4 w-4" />}
                 <SelectValue placeholder="Sort" />
               </div>
             </SelectTrigger>
-            <SelectContent className="rounded-2xl">
+            <SelectContent className="rounded-xl">
               <SelectItem value="desc">Newest First</SelectItem>
               <SelectItem value="asc">Oldest First</SelectItem>
             </SelectContent>
           </Select>
-          
+
           <Link href="/dashboard/journal/new" className="hidden sm:block">
-            <Button className="h-11 rounded-2xl px-6 gap-2 shadow-lg shadow-primary/20">
+            <Button className="minimal-btn-primary h-11 px-6 gap-2">
               <Plus className="h-4 w-4" />
               New Entry
             </Button>
@@ -157,22 +157,22 @@ export function JournalListManager({
         {journals.length === 0 ? (
           <EmptyState query={query} />
         ) : (
-          <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
             {journals.map((journal) => (
-              <JournalCard 
-                key={journal.id} 
-                journal={journal} 
-                isDeleting={isDeleting === journal.id} 
-                onDelete={handleDelete} 
+              <JournalCard
+                key={journal.id}
+                journal={journal}
+                isDeleting={isDeleting === journal.id}
+                onDelete={handleDelete}
               />
             ))}
           </div>
         )}
       </div>
-      
+
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="pt-8 pb-12 border-t border-border/40">
+        <div className="pt-8 pb-12 border-t-2 border-border/40">
           <Pagination>
             <PaginationContent>
               {currentPage > 1 && (
@@ -209,7 +209,7 @@ export function JournalListManager({
       {/* Mobile Floating Action Button */}
       <div className="fixed bottom-8 right-8 sm:hidden z-20">
         <Link href="/dashboard/journal/new">
-          <Button size="icon" className="h-14 w-14 rounded-full shadow-2xl shadow-primary/40">
+          <Button size="icon" className="minimal-btn-primary h-14 w-14 rounded-full">
             <Plus className="h-6 w-6" />
           </Button>
         </Link>
@@ -220,34 +220,34 @@ export function JournalListManager({
 
 function JournalCard({ journal, isDeleting, onDelete }: { journal: JournalProps & { tags?: string[] }, isDeleting: boolean, onDelete: (id: string) => void }) {
     return (
-        <Card className="group border-none bg-muted/30 hover:bg-muted/50 transition-all duration-300 relative overflow-hidden rounded-3xl shadow-sm">
+        <Card className="group rounded-2xl border-2 border-border bg-card shadow-[0_2px_0_var(--border)] transition-all hover:border-primary/30 hover:shadow-[0_2px_0_var(--primary)] relative overflow-hidden">
             <CardContent className="p-0">
                 <div className="p-6 pb-20">
                 <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground/50 uppercase tracking-widest">
+                    <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-wide">
                         <CalendarIcon className="h-3.5 w-3.5" />
                         {format(new Date(journal.createdAt), "MMM d, yyyy")}
                     </div>
-                    
+
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
-                            <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/10 hover:text-destructive"
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/10 hover:text-destructive"
                                 onClick={(e) => e.stopPropagation()}
                             >
                                 {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                             </Button>
                         </AlertDialogTrigger>
-                        <AlertDialogContent className="rounded-3xl">
+                        <AlertDialogContent className="rounded-2xl">
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Delete journal entry?</AlertDialogTitle>
                                 <AlertDialogDescription>This cannot be undone. It will be gone forever.</AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                                <AlertDialogCancel className="rounded-2xl">Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => onDelete(journal.id)} className="bg-destructive hover:bg-destructive/90 rounded-2xl">Delete</AlertDialogAction>
+                                <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => onDelete(journal.id)} className="bg-destructive hover:bg-destructive/90 rounded-xl">Delete</AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
                     </AlertDialog>
@@ -262,7 +262,7 @@ function JournalCard({ journal, isDeleting, onDelete }: { journal: JournalProps 
                         {journal.tags && journal.tags.length > 0 && (
                             <div className="flex flex-wrap gap-2 pt-2">
                                 {journal.tags.map(tag => (
-                                    <Badge key={tag} variant="outline" className="bg-primary/5 text-primary border-primary/20 text-[10px] tracking-wider">
+                                    <Badge key={tag} variant="outline" className="rounded-lg border-2 border-primary/20 bg-primary/5 text-primary text-[10px] font-bold uppercase tracking-wide">
                                         #{tag}
                                     </Badge>
                                 ))}
@@ -272,8 +272,8 @@ function JournalCard({ journal, isDeleting, onDelete }: { journal: JournalProps 
                 </Link>
                 </div>
                 <Link href={`/dashboard/journal/${journal.id}`}>
-                    <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-muted/40 to-transparent pointer-events-none" />
-                    <div className="absolute bottom-4 right-6 text-[10px] font-bold uppercase tracking-widest text-primary opacity-0 group-hover:opacity-100 transition-all translate-y-1 group-hover:translate-y-0">Open Entry →</div>
+                    <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-card to-transparent pointer-events-none" />
+                    <div className="absolute bottom-4 right-6 text-[10px] font-bold uppercase tracking-wide text-primary opacity-0 group-hover:opacity-100 transition-all translate-y-1 group-hover:translate-y-0">Open Entry</div>
                 </Link>
             </CardContent>
         </Card>
@@ -282,15 +282,15 @@ function JournalCard({ journal, isDeleting, onDelete }: { journal: JournalProps 
 
 function EmptyState({ query }: { query: string }) {
     return (
-        <div className="border border-dashed rounded-3xl p-16 flex flex-col items-center justify-center text-center space-y-6 mt-12 bg-muted/10">
-            <div className="h-20 w-20 bg-muted rounded-full flex items-center justify-center shadow-inner">
+        <div className="border-2 border-dashed rounded-2xl p-16 flex flex-col items-center justify-center text-center space-y-6 mt-12 bg-card/30">
+            <div className="h-20 w-20 bg-muted rounded-2xl flex items-center justify-center">
                 <FileText className="h-10 w-10 text-muted-foreground" />
             </div>
             <div className="space-y-2">
                 <h3 className="text-2xl font-bold tracking-tight text-foreground">No entries found</h3>
                 <p className="text-muted-foreground max-w-sm">{query ? "Try searching for something else." : "Start capturing your thoughts by creating your first entry."}</p>
             </div>
-            {!query && <Link href="/dashboard/journal/new"><Button size="lg" className="rounded-2xl px-8">Create New Entry</Button></Link>}
+            {!query && <Link href="/dashboard/journal/new"><Button className="minimal-btn-primary px-8">Create New Entry</Button></Link>}
         </div>
     );
 }
