@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Navbar } from "@/components/landing/Navbar";
 import { Hero } from "@/components/landing/Hero";
-import { WaitlistForm } from "@/components/landing/WaitlistForm";
+import { ComparisonDemo } from "@/components/landing/ComparisonDemo";
+// import { WaitlistForm } from "@/components/landing/WaitlistForm";
 import { ProductPromises } from "@/components/landing/ProductPromises";
 import { Footer } from "@/components/landing/Footer";
 
@@ -22,12 +23,65 @@ export default function LandingPage() {
       <Navbar />
       <main className="flex-1">
         <Hero />
-        <WaitlistForm />
+        <ComparisonDemo />
+        {/* <WaitlistForm /> */}
         <ProductPromises />
+        <HowItWorks />
         <FinalCTA />
       </main>
       <Footer />
     </div>
+  );
+}
+
+function HowItWorks() {
+  const steps = [
+    {
+      num: "01",
+      title: "Capture",
+      text: "Drop voice notes, journal entries, meeting notes, or chat screenshots. Debo extracts the important details automatically.",
+    },
+    {
+      num: "02",
+      title: "Connect",
+      text: "People, dates, promises, and decisions get linked into your personal memory graph. Context builds over time.",
+    },
+    {
+      num: "03",
+      title: "Recall",
+      text: "Ask Debo anything. Get cited answers sourced from your own memories, not a generic model.",
+    },
+  ];
+
+  return (
+    <section className="py-24 px-6">
+      <div className="mx-auto max-w-4xl space-y-12">
+        <div className="text-center space-y-3">
+          <div className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-primary/70">
+            How it works
+          </div>
+          <h2 className="font-heading text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">
+            Three steps to a memory that lasts.
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+          {steps.map((s) => (
+            <div key={s.num} className="duo-card p-6 space-y-3">
+              <div className="text-3xl font-heading font-extrabold text-primary/20">
+                {s.num}
+              </div>
+              <h3 className="font-heading text-lg font-extrabold tracking-tight text-foreground">
+                {s.title}
+              </h3>
+              <p className="text-sm font-medium leading-relaxed text-muted-foreground">
+                {s.text}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
