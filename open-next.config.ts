@@ -3,17 +3,18 @@ import { defineCloudflareConfig } from "@opennextjs/cloudflare";
 const config = defineCloudflareConfig({
 });
 
-config.default.minify = true;
+config.default.minify = false;
 
 const cloudflareNodeFunction = {
   override: config.default.override,
   routePreloadingBehavior: config.default.routePreloadingBehavior,
 };
 
+/*
 config.functions = {
   api: {
     ...cloudflareNodeFunction,
-    minify: true,
+    minify: false,
     patterns: ["/api/*"],
     routes: [
       "app/api/ai/command/route",
@@ -37,7 +38,7 @@ config.functions = {
   },
   dashboard: {
     ...cloudflareNodeFunction,
-    minify: true,
+    minify: false,
     patterns: ["/dashboard", "/dashboard/*"],
     routes: [
       "app/(dashboard)/dashboard/ask/page",
@@ -58,5 +59,6 @@ config.functions = {
     ],
   },
 };
+*/
 
 export default config;

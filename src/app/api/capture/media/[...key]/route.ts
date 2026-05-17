@@ -1,4 +1,4 @@
-import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { getCloudflareContext } from "@/lib/cloudflare";
 import { NextRequest, NextResponse } from "next/server";
 import { resolveUserId } from "@/actions/auth-sync";
 
@@ -10,7 +10,7 @@ type RouteContext = {
 
 async function getMediaBucket() {
   try {
-    const { env } = await getCloudflareContext({ async: true });
+    const { env } = getCloudflareContext();
     return env.MEDIA;
   } catch (error) {
     console.warn("[Media] Cloudflare context is not available for R2 reads.", error);

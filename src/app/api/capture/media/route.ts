@@ -1,4 +1,4 @@
-import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { getCloudflareContext } from "@/lib/cloudflare";
 import { NextResponse } from "next/server";
 import { resolveUserId } from "@/actions/auth-sync";
 
@@ -33,7 +33,7 @@ function getAuthenticatedMediaUrl(key: string) {
 
 async function getMediaBucket() {
   try {
-    const { env } = await getCloudflareContext({ async: true });
+    const { env } = getCloudflareContext();
     return env.MEDIA;
   } catch (error) {
     console.warn("[Media] Cloudflare context is not available for R2 uploads.", error);
@@ -87,7 +87,7 @@ export async function POST(request: Request) {
       kind,
       originalName: file.name,
     },
-  }).catch((error) => {
+  }).catch((error: any) => {
     console.error("[Media] R2 upload failed:", error);
     return null;
   });
