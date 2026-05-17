@@ -3,24 +3,24 @@ import { waitlistUrl } from "@/lib/launch";
 
 export function Navbar() {
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/10 bg-background/80 backdrop-blur-md">
-      <div className="container mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
+    <header className="sticky top-0 z-50 w-full border-b border-landing-border bg-landing-surface/80 backdrop-blur-md">
+      <div className="container mx-auto flex h-16 max-w-[1120px] items-center justify-between px-6">
         <Link href="/" className="flex items-center gap-2 group">
-          <span className="font-heading font-bold text-xl tracking-tight text-foreground">
+          <span className="font-heading font-semibold text-lg tracking-tight text-landing-text-primary">
             debo
           </span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-6">
+        <nav className="hidden md:flex items-center gap-8">
           <Link
             href="/"
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            className="text-[14px] font-medium text-landing-text-secondary transition-colors hover:text-landing-text-primary"
           >
             Product
           </Link>
           <Link
             href="/privacy"
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            className="text-[14px] font-medium text-landing-text-secondary transition-colors hover:text-landing-text-primary"
           >
             Privacy
           </Link>
@@ -28,7 +28,7 @@ export function Navbar() {
             href="https://github.com/sh20raj/debo"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            className="text-[14px] font-medium text-landing-text-secondary transition-colors hover:text-landing-text-primary"
           >
             GitHub
           </a>
@@ -36,7 +36,7 @@ export function Navbar() {
             href={waitlistUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            className="text-[14px] font-medium text-landing-text-secondary transition-colors hover:text-landing-text-primary"
           >
             Waitlist
           </Link>
@@ -47,7 +47,7 @@ export function Navbar() {
             href={waitlistUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex h-8 items-center justify-center rounded-md bg-foreground px-4 text-xs font-medium text-background transition-colors hover:bg-foreground/90"
+            className="inline-flex h-9 items-center justify-center rounded-lg bg-landing-text-primary px-4 text-[13px] font-medium text-landing-surface transition-all hover:bg-black hover:-translate-y-[1px] shadow-sm"
           >
             Join waitlist
           </Link>

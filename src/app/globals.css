@@ -51,6 +51,18 @@
 	--color-duo-purple: var(--duo-purple);
 	--color-duo-yellow: var(--duo-yellow);
 	--color-duo-canary: var(--duo-canary);
+
+	/* Landing Page Variables */
+	--color-landing-bg: var(--landing-bg);
+	--color-landing-surface: var(--landing-surface);
+	--color-landing-surface-subtle: var(--landing-surface-subtle);
+	--color-landing-border: var(--landing-border);
+	--color-landing-border-light: var(--landing-border-light);
+	--color-landing-text-primary: var(--landing-text-primary);
+	--color-landing-text-secondary: var(--landing-text-secondary);
+	--color-landing-text-tertiary: var(--landing-text-tertiary);
+	--color-landing-accent: var(--landing-accent);
+	--color-landing-accent-hover: var(--landing-accent-hover);
 }
 
 :root {
@@ -107,12 +119,23 @@
 	--duo-yellow: #FFC800;
 	--duo-canary: #FFC800;
 
-	/* Sidebar */
 	--sidebar-background: #FFFFFF;
 	--sidebar-foreground: #4B4B4B;
 	--sidebar-border: #E5E5E5;
 	--sidebar-accent: #F7F7F7;
 	--sidebar-accent-foreground: #4B4B4B;
+
+	/* Landing Page Palette */
+	--landing-bg: #FBFCFA;
+	--landing-surface: #FFFFFF;
+	--landing-surface-subtle: #FAFAF7;
+	--landing-border: #EAEAEA;
+	--landing-border-light: #F0F0F0;
+	--landing-text-primary: #222222;
+	--landing-text-secondary: #555555;
+	--landing-text-tertiary: #888888;
+	--landing-accent: #58CC02;
+	--landing-accent-hover: #4ea603;
 }
 
 .dark {

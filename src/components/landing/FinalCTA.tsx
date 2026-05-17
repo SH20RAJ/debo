@@ -3,24 +3,24 @@ import { waitlistUrl } from "@/lib/launch";
 
 export function FinalCTA() {
   return (
-    <section className="py-32 px-6 bg-background border-t border-border/10">
-      <div className="mx-auto max-w-2xl text-center space-y-8">
-        <h2 className="font-heading text-4xl font-extrabold tracking-tight text-foreground">
+    <section className="py-32 md:py-40 px-6 bg-landing-surface border-t border-landing-border-light">
+      <div className="mx-auto max-w-2xl text-center space-y-10">
+        <h2 className="font-heading text-4xl md:text-5xl font-semibold tracking-tight text-landing-text-primary">
           Join the private memory preview.
         </h2>
-        <p className="text-lg font-medium text-muted-foreground leading-relaxed">
+        <p className="text-lg md:text-[20px] font-medium text-landing-text-secondary leading-relaxed">
           Get early access when Debo opens private beta. I&apos;ll send product updates, build notes, and access invites.
         </p>
-        <div>
+        <div className="pt-2">
           <Link
             href={waitlistUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex h-12 items-center justify-center rounded-lg bg-foreground px-8 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 shadow-sm"
+            className="inline-flex h-12 items-center justify-center rounded-xl bg-landing-accent px-8 text-[15px] font-semibold text-white transition-all hover:bg-landing-accent-hover hover:-translate-y-0.5 shadow-sm hover:shadow-md"
           >
             Join waitlist
           </Link>
-          <p className="mt-4 text-xs font-medium text-muted-foreground/60">
+          <p className="mt-5 text-[13px] font-medium text-landing-text-tertiary">
             No spam. No selling your data. Just Debo updates.
           </p>
         </div>

@@ -23,19 +23,19 @@ export function HowItWorks() {
   ];
 
   return (
-    <section className="py-24 px-6 bg-background">
-      <div className="mx-auto max-w-4xl space-y-16">
-        <h2 className="text-center font-heading text-3xl md:text-4xl font-extrabold tracking-tight text-foreground">
+    <section className="py-24 md:py-32 px-6 bg-landing-bg">
+      <div className="mx-auto max-w-[1120px] space-y-20">
+        <h2 className="text-center font-heading text-3xl md:text-4xl lg:text-[40px] font-semibold tracking-tight text-landing-text-primary">
           How Debo works
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
           {steps.map((s, i) => (
             <div key={i} className="space-y-4">
-              <div className="text-xs font-bold tracking-widest text-muted-foreground/60">
+              <div className="text-[13px] font-bold tracking-widest text-landing-text-tertiary">
                 {s.num}
               </div>
-              <h3 className="text-base font-bold text-foreground">{s.title}</h3>
-              <p className="text-sm font-medium text-muted-foreground leading-relaxed">
+              <h3 className="text-[18px] font-semibold text-landing-text-primary">{s.title}</h3>
+              <p className="text-[15px] font-medium text-landing-text-secondary leading-relaxed">
                 {s.text}
               </p>
             </div>

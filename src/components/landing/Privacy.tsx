@@ -10,22 +10,24 @@ export function Privacy() {
   ];
 
   return (
-    <section className="py-24 px-6 border-t border-border/10 bg-background">
-      <div className="mx-auto max-w-4xl flex flex-col md:flex-row gap-12 md:gap-24 items-start">
-        <div className="flex-1 space-y-4">
-          <h2 className="font-heading text-3xl font-extrabold tracking-tight text-foreground">
+    <section className="py-24 md:py-32 px-6 border-t border-landing-border-light bg-landing-surface">
+      <div className="mx-auto max-w-[1120px] flex flex-col md:flex-row gap-12 md:gap-24 items-start">
+        <div className="flex-1 space-y-6">
+          <h2 className="font-heading text-3xl md:text-4xl lg:text-[40px] font-semibold tracking-tight text-landing-text-primary">
             Memory is personal. Debo treats it that way.
           </h2>
-          <p className="text-base font-medium leading-relaxed text-muted-foreground">
+          <p className="text-[16px] md:text-[18px] font-medium leading-relaxed text-landing-text-secondary">
             Debo is designed around user control, not data lock-in. You decide what gets saved, what gets connected, and what gets deleted.
           </p>
         </div>
-        <div className="flex-1">
-          <ul className="space-y-4 w-full">
+        <div className="flex-1 w-full bg-landing-bg p-8 rounded-[20px] border border-landing-border">
+          <ul className="space-y-5">
             {points.map((p, i) => (
-              <li key={i} className="flex items-start gap-3">
-                <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                <span className="text-sm font-medium text-foreground/90">{p}</span>
+              <li key={i} className="flex items-start gap-4">
+                <div className="w-6 h-6 rounded-full bg-landing-accent/10 flex items-center justify-center shrink-0 mt-0.5">
+                  <Check className="w-3.5 h-3.5 text-landing-accent" />
+                </div>
+                <span className="text-[15px] font-medium text-landing-text-primary">{p}</span>
               </li>
             ))}
           </ul>

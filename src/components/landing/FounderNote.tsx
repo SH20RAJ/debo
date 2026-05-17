@@ -15,27 +15,27 @@ const TwitterIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 export function FounderNote() {
   return (
-    <section className="py-24 px-6 bg-muted/5 border-t border-border/10">
+    <section className="py-24 md:py-32 px-6 bg-landing-bg border-t border-landing-border-light">
       <div className="mx-auto max-w-3xl">
-        <h2 className="font-heading text-2xl font-extrabold tracking-tight text-foreground mb-6">
+        <h2 className="font-heading text-2xl md:text-3xl font-semibold tracking-tight text-landing-text-primary mb-8">
           Why I&apos;m building Debo
         </h2>
         <div className="space-y-6">
-          <p className="text-base font-medium leading-relaxed text-muted-foreground">
+          <p className="text-[16px] md:text-[18px] font-medium leading-relaxed text-landing-text-secondary">
             I kept losing useful context — voice notes, project ideas, saved links, meeting promises, and thoughts from different apps. AI chats were helpful, but every conversation started from zero. 
           </p>
-          <p className="text-base font-medium leading-relaxed text-muted-foreground">
+          <p className="text-[16px] md:text-[18px] font-medium leading-relaxed text-landing-text-secondary">
             Debo is my attempt to build a private memory system that actually remembers the things I choose to save.
           </p>
           
-          <div className="pt-6">
-            <p className="font-semibold text-foreground text-sm">Shaswat Raj</p>
-            <p className="text-sm text-muted-foreground mb-6">Building Debo in public</p>
+          <div className="pt-8">
+            <p className="font-semibold text-landing-text-primary text-[15px]">Shaswat Raj</p>
+            <p className="text-[14px] text-landing-text-tertiary mb-8">Building Debo in public</p>
             
-            <div className="flex gap-6 items-center text-sm font-medium text-muted-foreground">
-              <a href="https://github.com/sh20raj/debo" className="hover:text-foreground transition-colors flex items-center gap-1.5"><GithubIcon className="w-4 h-4"/> GitHub</a>
-              <a href="https://x.com/sh20raj" className="hover:text-foreground transition-colors flex items-center gap-1.5"><TwitterIcon className="w-4 h-4"/> X/Twitter</a>
-              <Link href={waitlistUrl} className="hover:text-foreground transition-colors">Waitlist</Link>
+            <div className="flex gap-6 items-center text-[14px] font-medium text-landing-text-secondary">
+              <a href="https://github.com/sh20raj/debo" className="hover:text-landing-text-primary transition-colors flex items-center gap-1.5"><GithubIcon className="w-[18px] h-[18px]"/> GitHub</a>
+              <a href="https://x.com/sh20raj" className="hover:text-landing-text-primary transition-colors flex items-center gap-1.5"><TwitterIcon className="w-[18px] h-[18px]"/> X/Twitter</a>
+              <Link href={waitlistUrl} className="hover:text-landing-text-primary transition-colors">Waitlist</Link>
             </div>
           </div>
         </div>

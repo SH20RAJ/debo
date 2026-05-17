@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Brain, Search, Shield, Zap, User, Clock, FileText, Mic, Users, CheckSquare, Database } from "lucide-react";
+import { ArrowRight, FileText, Mic, Users, CheckSquare, Database } from "lucide-react";
 import { waitlistUrl } from "@/lib/launch";
 import Link from "next/link";
 
@@ -12,24 +12,24 @@ const GithubIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden px-6 pt-20 pb-24 md:pt-32 md:pb-32 bg-background">
-      <div className="container relative z-10 mx-auto max-w-6xl">
-        <div className="flex flex-col items-center text-center space-y-8">
+    <section className="relative overflow-hidden px-6 pt-24 pb-32 md:pt-40 md:pb-40 bg-landing-bg">
+      <div className="container relative z-10 mx-auto max-w-[1120px]">
+        <div className="flex flex-col items-center text-center space-y-10">
           
-          <h1 className="font-heading text-5xl font-extrabold tracking-tight text-foreground md:text-6xl lg:text-7xl max-w-4xl leading-[1.1]">
+          <h1 className="font-heading text-5xl font-semibold tracking-tight text-landing-text-primary md:text-6xl lg:text-7xl max-w-4xl leading-[1.05]">
             Your private memory layer for everything you forget.
           </h1>
 
-          <p className="mx-auto max-w-2xl text-lg md:text-xl font-medium leading-relaxed text-muted-foreground">
+          <p className="mx-auto max-w-2xl text-lg md:text-[20px] font-medium leading-relaxed text-landing-text-secondary">
             Debo captures voice notes, journals, links, tasks, and conversations — then lets you ask your past with source-backed answers.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center gap-4 pt-4">
+          <div className="flex flex-col sm:flex-row items-center gap-4 pt-6">
             <Link
               href={waitlistUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex h-12 items-center justify-center rounded-lg bg-foreground px-8 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 gap-2 shadow-sm"
+              className="inline-flex h-12 items-center justify-center rounded-xl bg-landing-accent px-8 text-[15px] font-semibold text-white transition-all hover:bg-landing-accent-hover hover:-translate-y-0.5 shadow-sm hover:shadow-md gap-2"
             >
               Join private beta
               <ArrowRight className="h-4 w-4" />
@@ -38,74 +38,74 @@ export function Hero() {
               href="https://github.com/sh20raj/debo"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex h-12 items-center justify-center rounded-lg border border-border bg-background px-8 text-sm font-semibold text-foreground transition-colors hover:bg-muted gap-2 shadow-sm"
+              className="inline-flex h-12 items-center justify-center rounded-xl border border-landing-border bg-landing-surface px-8 text-[15px] font-semibold text-landing-text-primary transition-all hover:bg-landing-surface-subtle hover:-translate-y-0.5 gap-2 shadow-sm"
             >
-              <GithubIcon className="h-4 w-4" />
+              <GithubIcon className="h-[18px] w-[18px]" />
               View GitHub
             </a>
           </div>
 
-          <p className="text-sm font-medium text-muted-foreground/60">
+          <p className="text-[13px] font-medium text-landing-text-tertiary pt-2">
             Private beta opens July 28, 2026. Public launch planned for September 17, 2026.
           </p>
 
         </div>
 
         {/* Hero Visual Mockup */}
-        <div className="mt-20 mx-auto max-w-5xl">
-          <div className="rounded-xl border border-border/60 bg-background shadow-2xl overflow-hidden flex flex-col md:flex-row min-h-[480px]">
+        <div className="mt-24 mx-auto max-w-[1024px]">
+          <div className="rounded-[24px] border border-landing-border bg-landing-surface shadow-xl shadow-black/[0.04] overflow-hidden flex flex-col md:flex-row min-h-[500px]">
             {/* Sidebar */}
-            <div className="hidden md:flex flex-col w-64 border-r border-border/40 bg-muted/20 p-4 space-y-6">
-              <div className="flex items-center gap-2 px-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-red-400"></div>
-                <div className="w-2.5 h-2.5 rounded-full bg-yellow-400"></div>
-                <div className="w-2.5 h-2.5 rounded-full bg-green-400"></div>
+            <div className="hidden md:flex flex-col w-[260px] border-r border-landing-border-light bg-landing-surface-subtle p-5 space-y-8">
+              <div className="flex items-center gap-2 px-1">
+                <div className="w-[11px] h-[11px] rounded-full bg-landing-border"></div>
+                <div className="w-[11px] h-[11px] rounded-full bg-landing-border"></div>
+                <div className="w-[11px] h-[11px] rounded-full bg-landing-border"></div>
               </div>
               <nav className="space-y-1">
-                <div className="text-xs font-semibold text-muted-foreground px-2 mb-3 mt-4">LIBRARY</div>
-                <SidebarItem icon={<FileText className="w-4 h-4" />} label="Journal" />
-                <SidebarItem icon={<Mic className="w-4 h-4" />} label="Voice" />
-                <SidebarItem icon={<Users className="w-4 h-4" />} label="People" />
-                <SidebarItem icon={<CheckSquare className="w-4 h-4" />} label="Tasks" />
-                <SidebarItem icon={<Database className="w-4 h-4" />} label="Sources" />
+                <div className="text-[11px] font-bold text-landing-text-tertiary px-2 mb-4 tracking-wider">LIBRARY</div>
+                <SidebarItem icon={<FileText className="w-[15px] h-[15px]" />} label="Journal" />
+                <SidebarItem icon={<Mic className="w-[15px] h-[15px]" />} label="Voice" />
+                <SidebarItem icon={<Users className="w-[15px] h-[15px]" />} label="People" />
+                <SidebarItem icon={<CheckSquare className="w-[15px] h-[15px]" />} label="Tasks" />
+                <SidebarItem icon={<Database className="w-[15px] h-[15px]" />} label="Sources" />
               </nav>
             </div>
             
             {/* Main Panel */}
-            <div className="flex-1 bg-background flex flex-col">
-              <div className="h-14 border-b border-border/40 flex items-center px-6">
-                <span className="text-sm font-semibold text-foreground/80">Memory Search</span>
+            <div className="flex-1 bg-landing-surface flex flex-col">
+              <div className="h-16 border-b border-landing-border-light flex items-center px-8">
+                <span className="text-[14px] font-medium text-landing-text-secondary">Memory Search</span>
               </div>
-              <div className="flex-1 p-6 space-y-6">
+              <div className="flex-1 p-8 md:p-10 space-y-8">
                 
                 {/* User Query */}
                 <div className="flex justify-end">
-                  <div className="bg-muted px-4 py-3 rounded-2xl rounded-tr-sm max-w-md">
-                    <p className="text-sm font-medium text-foreground">What did I promise Raj about the Q4 budget?</p>
+                  <div className="bg-[#F4F5F4] px-5 py-3.5 rounded-[18px] rounded-tr-sm max-w-[85%] md:max-w-md border border-[#EEEEEE]">
+                    <p className="text-[15px] font-medium text-landing-text-primary">What did I promise Raj about the Q4 budget?</p>
                   </div>
                 </div>
 
                 {/* Debo Answer */}
                 <div className="flex justify-start">
-                  <div className="bg-primary/5 border border-primary/10 px-5 py-4 rounded-2xl rounded-tl-sm max-w-2xl space-y-4">
-                    <div className="flex items-center gap-2 mb-1">
-                      <div className="w-5 h-5 rounded bg-primary flex items-center justify-center">
-                        <span className="text-[10px] font-bold text-primary-foreground">d</span>
+                  <div className="border border-landing-border-light bg-landing-surface shadow-sm px-6 py-5 rounded-[20px] rounded-tl-sm max-w-[95%] md:max-w-2xl space-y-5">
+                    <div className="flex items-center gap-2.5 mb-2">
+                      <div className="w-6 h-6 rounded bg-landing-accent/10 flex items-center justify-center border border-landing-accent/20">
+                        <span className="text-xs font-bold text-landing-accent">d</span>
                       </div>
-                      <span className="text-xs font-semibold text-primary">Debo</span>
+                      <span className="text-[13px] font-semibold text-landing-text-secondary">Debo</span>
                     </div>
-                    <p className="text-sm leading-relaxed text-foreground/90">
+                    <p className="text-[15px] leading-relaxed text-landing-text-primary">
                       During your marketing sync on Tuesday, you promised Raj that you would submit the finalized Q4 budget allocation by this Friday before the board meeting. You also noted that you need to prioritize ad spend for the new product launch.
                     </p>
-                    <div className="pt-3 border-t border-primary/10 flex flex-wrap gap-2">
-                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-background border border-border text-[10px] font-semibold text-muted-foreground">
-                        <Mic className="w-3 h-3" /> Voice note (Tuesday)
+                    <div className="pt-4 border-t border-landing-border-light flex flex-wrap gap-2">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-landing-surface-subtle border border-landing-border text-[11px] font-medium text-landing-text-secondary transition-colors hover:bg-landing-border-light">
+                        <Mic className="w-3.5 h-3.5 text-landing-text-tertiary" /> Voice note (Tuesday)
                       </span>
-                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-background border border-border text-[10px] font-semibold text-muted-foreground">
-                        <Users className="w-3 h-3" /> Meeting: Marketing Sync
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-landing-surface-subtle border border-landing-border text-[11px] font-medium text-landing-text-secondary transition-colors hover:bg-landing-border-light">
+                        <Users className="w-3.5 h-3.5 text-landing-text-tertiary" /> Meeting: Marketing Sync
                       </span>
-                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-background border border-border text-[10px] font-semibold text-muted-foreground">
-                        <CheckSquare className="w-3 h-3" /> Task
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-landing-surface-subtle border border-landing-border text-[11px] font-medium text-landing-text-secondary transition-colors hover:bg-landing-border-light">
+                        <CheckSquare className="w-3.5 h-3.5 text-landing-text-tertiary" /> Task
                       </span>
                     </div>
                   </div>
@@ -113,11 +113,12 @@ export function Hero() {
 
                 {/* Timeline memory card */}
                 <div className="flex justify-start pt-2">
-                   <div className="ml-8 border-l-2 border-border/50 pl-4 py-1">
-                     <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Related Memory</div>
-                     <div className="bg-background border border-border/40 p-3 rounded-lg shadow-sm w-64">
-                       <p className="text-xs font-medium text-foreground/80 mb-1">Q4 Allocation Draft.pdf</p>
-                       <p className="text-[10px] text-muted-foreground">Uploaded 2 days ago</p>
+                   <div className="ml-[18px] border-l border-landing-border pl-6 py-2 relative">
+                     <div className="absolute w-[7px] h-[7px] rounded-full bg-landing-border -left-[4px] top-[22px]"></div>
+                     <div className="text-[10px] font-bold text-landing-text-tertiary uppercase tracking-widest mb-3 pl-1">Related Memory</div>
+                     <div className="bg-landing-surface border border-landing-border-light p-4 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 cursor-pointer w-64 md:w-72">
+                       <p className="text-[13px] font-medium text-landing-text-primary mb-1">Q4 Allocation Draft.pdf</p>
+                       <p className="text-[12px] text-landing-text-tertiary">Uploaded 2 days ago</p>
                      </div>
                    </div>
                 </div>
@@ -133,7 +134,7 @@ export function Hero() {
 
 function SidebarItem({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
-    <div className="flex items-center gap-3 px-2 py-2 rounded-md hover:bg-muted/50 cursor-pointer text-sm font-medium text-foreground/80 transition-colors">
+    <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-landing-border-light cursor-pointer text-[13px] font-medium text-landing-text-secondary transition-colors">
       {icon}
       <span>{label}</span>
     </div>
