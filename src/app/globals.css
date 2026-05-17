@@ -73,8 +73,35 @@
 	--font-size-landing-3xl: 1.875rem;
 	--font-size-landing-4xl: 2.25rem;
 	--font-size-landing-hero: 4.5rem;
-	// text-landing-3xl
-	
+
+}
+
+@utility text-landing-xs {
+	font-size: 0.75rem;
+}
+@utility text-landing-sm {
+	font-size: 0.875rem;
+}
+@utility text-landing-base {
+	font-size: 1.01rem;
+}
+@utility text-landing-lg {
+	font-size: 1.125rem;
+}
+@utility text-landing-xl {
+	font-size: 1.25rem;
+}
+@utility text-landing-2xl {
+	font-size: 1.5rem;
+}
+@utility text-landing-3xl {
+	font-size: 1.875rem;
+}
+@utility text-landing-4xl {
+	font-size: 2.25rem;
+}
+@utility text-landing-hero {
+	font-size: 4.5rem;
 }
 
 :root {

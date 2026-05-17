@@ -5,7 +5,7 @@ export function FinalCTA() {
   return (
     <section className="py-32 md:py-40 px-6 bg-landing-surface border-t border-landing-border-light">
       <div className="mx-auto max-w-2xl text-center space-y-10">
-        <h2 className="font-heading text-landing-3xl md:text-landing-4xl font-semibold tracking-tight text-landing-text-primary">
+        <h2 className="font-heading font-size-landing-3xl md:text-landing-4xl font-semibold tracking-tight text-landing-text-primary">
           Join the private memory preview.
         </h2>
         <p className="text-landing-lg md:text-landing-xl font-medium text-landing-text-secondary leading-relaxed">

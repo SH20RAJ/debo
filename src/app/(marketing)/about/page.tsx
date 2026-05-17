@@ -24,13 +24,13 @@ export default function AboutPage() {
               <span className="size-1.5 rounded-full bg-landing-accent animate-pulse" />
               The Intelligence Lab
             </div>
-            <h1 className="text-landing-3xl md:text-landing-4xl lg:text-landing-hero font-heading font-semibold tracking-tight leading-[1.05] text-landing-text-primary">
+            <h1 className="font-size-landing-3xl md:text-landing-4xl lg:text-landing-hero font-heading font-semibold tracking-tight leading-[1.05] text-landing-text-primary">
               Documenting <br />
               <span className="text-landing-accent">Human Growth.</span>
             </h1>
             <p className="mx-auto max-w-2xl text-landing-lg font-medium leading-relaxed text-landing-text-secondary">
-              Debo is a multimodal intelligence lab dedicated to the personal 
-              experience. We build systems that help you retain, connect, 
+              Debo is a multimodal intelligence lab dedicated to the personal
+              experience. We build systems that help you retain, connect,
               and synthesize your life documentary.
             </p>
           </div>
@@ -46,9 +46,9 @@ export default function AboutPage() {
                 Collaborative Intelligence
               </h2>
               <p className="text-landing-base font-medium leading-relaxed text-landing-text-secondary">
-                We believe your digital memory should be more than a graveyard 
-                of files. Debo uses multimodal research protocols to turn your 
-                voice, journals, and cross-app data into a living, private 
+                We believe your digital memory should be more than a graveyard
+                of files. Debo uses multimodal research protocols to turn your
+                voice, journals, and cross-app data into a living, private
                 memory graph that grows with you.
               </p>
               <div className="flex items-center gap-4 pt-4">
@@ -64,17 +64,17 @@ export default function AboutPage() {
             <div className="p-8 border border-landing-border bg-landing-bg rounded-[20px] space-y-6 shadow-sm">
               <h3 className="text-landing-lg font-bold text-landing-text-primary tracking-tight">The Lab Protocol</h3>
               <ul className="space-y-4">
-                <ProtocolItem 
-                  title="Multimodal Ingestion" 
-                  desc="Processing voice, papers, and complex data into a unified graph." 
+                <ProtocolItem
+                  title="Multimodal Ingestion"
+                  desc="Processing voice, papers, and complex data into a unified graph."
                 />
-                <ProtocolItem 
-                  title="Personal Tinker" 
-                  desc="Researcher-grade control over your personal model fine-tuning." 
+                <ProtocolItem
+                  title="Personal Tinker"
+                  desc="Researcher-grade control over your personal model fine-tuning."
                 />
-                <ProtocolItem 
-                  title="Latent Connectionism" 
-                  desc="Discovering hidden relationship manifolds across your history." 
+                <ProtocolItem
+                  title="Latent Connectionism"
+                  desc="Discovering hidden relationship manifolds across your history."
                 />
               </ul>
             </div>
@@ -89,9 +89,9 @@ export default function AboutPage() {
             <div className="p-10 bg-landing-surface border border-landing-border rounded-[24px] space-y-6 order-2 lg:order-1 shadow-sm">
               <h3 className="text-landing-xl font-heading font-semibold tracking-tight text-landing-text-primary">Editorial Calm.</h3>
               <p className="text-landing-sm font-medium leading-relaxed text-landing-text-secondary">
-                Our design system is built on the principle of Editorial Calm. 
-                Inspired by high-end magazines and industrial design, we use 
-                generous whitespace, bold typography, and subtle micro-interactions 
+                Our design system is built on the principle of Editorial Calm.
+                Inspired by high-end magazines and industrial design, we use
+                generous whitespace, bold typography, and subtle micro-interactions
                 to create an environment that encourages deep focus and reflection.
               </p>
               <div className="flex flex-wrap gap-2">
@@ -101,10 +101,10 @@ export default function AboutPage() {
             </div>
             <div className="space-y-6 order-1 lg:order-2">
               <div className="text-landing-xs font-bold uppercase tracking-widest text-landing-accent">Philosophy</div>
-              <h2 className="text-landing-3xl font-heading font-semibold tracking-tight text-landing-text-primary">Aesthetics for <br /><span className="text-landing-accent">Cognition.</span></h2>
+              <h2 className="font-size-landing-3xl font-heading font-semibold tracking-tight text-landing-text-primary">Aesthetics for <br /><span className="text-landing-accent">Cognition.</span></h2>
               <p className="text-landing-base font-medium leading-relaxed text-landing-text-secondary">
-                We believe that the beauty of a system directly impacts the 
-                clarity of the thoughts processed within it. Debo is not just 
+                We believe that the beauty of a system directly impacts the
+                clarity of the thoughts processed within it. Debo is not just
                 a tool; it is a space for the mind.
               </p>
             </div>
@@ -116,28 +116,28 @@ export default function AboutPage() {
       <section className="px-6 py-24 bg-landing-surface border-t border-landing-border-light">
         <div className="mx-auto max-w-[800px] space-y-12">
           <div className="text-center space-y-4">
-             <h2 className="text-landing-3xl font-heading font-semibold tracking-tight text-landing-text-primary">The Data Documentary.</h2>
-             <p className="mx-auto max-w-xl text-landing-base font-medium text-landing-text-secondary leading-relaxed">
-               How your life data transforms into collaborative intelligence.
-             </p>
+            <h2 className="font-size-landing-3xl font-heading font-semibold tracking-tight text-landing-text-primary">The Data Documentary.</h2>
+            <p className="mx-auto max-w-xl text-landing-base font-medium text-landing-text-secondary leading-relaxed">
+              How your life data transforms into collaborative intelligence.
+            </p>
           </div>
 
           <div className="grid gap-5 md:grid-cols-3">
-             <FlowCard 
-               step="01" 
-               title="Ingestion" 
-               desc="Voice, text, images, and cross-app streams are synchronized into a private raw log." 
-             />
-             <FlowCard 
-               step="02" 
-               title="Connectionism" 
-               desc="Mastra agents extract entities, emotions, and facts, building a semantic memory graph." 
-             />
-             <FlowCard 
-               step="03" 
-               title="Synthesis" 
-               desc="A personal intelligence layer trained on your evidence provides cited, proactive insights." 
-             />
+            <FlowCard
+              step="01"
+              title="Ingestion"
+              desc="Voice, text, images, and cross-app streams are synchronized into a private raw log."
+            />
+            <FlowCard
+              step="02"
+              title="Connectionism"
+              desc="Mastra agents extract entities, emotions, and facts, building a semantic memory graph."
+            />
+            <FlowCard
+              step="03"
+              title="Synthesis"
+              desc="A personal intelligence layer trained on your evidence provides cited, proactive insights."
+            />
           </div>
         </div>
       </section>
@@ -145,7 +145,7 @@ export default function AboutPage() {
       {/* Reach Out */}
       <section className="px-6 py-24 bg-landing-bg border-t border-landing-border-light">
         <div className="mx-auto max-w-[800px] text-center space-y-12">
-          <h2 className="text-landing-3xl font-heading font-semibold tracking-tight text-landing-text-primary">Reach out.</h2>
+          <h2 className="font-size-landing-3xl font-heading font-semibold tracking-tight text-landing-text-primary">Reach out.</h2>
           <div className="grid gap-8 md:grid-cols-2">
             <div className="p-10 border border-landing-border bg-landing-surface rounded-[24px] space-y-4 shadow-sm hover:shadow-md transition-shadow">
               <div className="text-landing-xs font-bold uppercase tracking-widest text-landing-accent">Lab Operations</div>
@@ -164,11 +164,11 @@ export default function AboutPage() {
       {/* Join Section */}
       <section className="px-6 py-24 bg-landing-surface border-t border-landing-border-light">
         <div className="mx-auto max-w-2xl text-center space-y-8">
-          <h2 className="text-landing-3xl font-heading font-semibold tracking-tight text-landing-text-primary">
+          <h2 className="font-size-landing-3xl font-heading font-semibold tracking-tight text-landing-text-primary">
             Join the Intelligence Lab.
           </h2>
           <p className="text-landing-base font-medium leading-relaxed text-landing-text-secondary">
-            Help us define the next decade of collaborative human-AI 
+            Help us define the next decade of collaborative human-AI
             intelligence.
           </p>
           <div className="flex justify-center">
@@ -186,7 +186,7 @@ export default function AboutPage() {
 function FlowCard({ step, title, desc }: { step: string, title: string, desc: string }) {
   return (
     <div className="p-8 border border-landing-border bg-landing-surface rounded-[20px] space-y-4 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5">
-      <div className="text-landing-3xl font-heading font-bold text-landing-accent/20">{step}</div>
+      <div className="font-size-landing-3xl font-heading font-bold text-landing-accent/20">{step}</div>
       <h4 className="text-landing-lg font-bold text-landing-text-primary tracking-tight">{title}</h4>
       <p className="text-landing-xs font-medium text-landing-text-secondary leading-relaxed">{desc}</p>
     </div>

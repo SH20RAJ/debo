@@ -25,7 +25,7 @@ export function HowItWorks() {
   return (
     <section className="py-24 md:py-32 px-6 bg-landing-bg">
       <div className="mx-auto max-w-[1120px] space-y-20">
-        <h2 className="text-center font-heading text-landing-3xl md:text-landing-4xl font-semibold tracking-tight text-landing-text-primary">
+        <h2 className="text-center font-heading font-size-landing-3xl md:text-landing-4xl font-semibold tracking-tight text-landing-text-primary">
           How Debo works
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">

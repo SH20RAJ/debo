@@ -27,7 +27,7 @@ export function Product() {
   return (
     <section className="py-24 md:py-32 px-6 border-t border-landing-border-light bg-landing-bg">
       <div className="mx-auto max-w-[1120px] space-y-16">
-        <h2 className="text-center font-heading text-landing-3xl md:text-landing-4xl font-semibold tracking-tight text-landing-text-primary">
+        <h2 className="text-center font-heading font-size-landing-3xl md:text-landing-4xl font-semibold tracking-tight text-landing-text-primary">
           Capture once. Recall anytime.
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">

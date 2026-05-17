@@ -17,7 +17,7 @@ export function UseCases() {
   return (
     <section className="py-24 md:py-32 px-6 bg-landing-surface border-t border-landing-border-light">
       <div className="mx-auto max-w-[1120px] space-y-20">
-        <h2 className="text-center font-heading text-landing-3xl md:text-landing-4xl font-semibold tracking-tight text-landing-text-primary max-w-3xl mx-auto">
+        <h2 className="text-center font-heading font-size-landing-3xl md:text-landing-4xl font-semibold tracking-tight text-landing-text-primary max-w-3xl mx-auto">
           Built for people who think across too many places.
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

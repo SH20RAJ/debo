@@ -18,7 +18,7 @@ export function Problem() {
     <section className="py-24 md:py-32 px-6 bg-landing-surface">
       <div className="mx-auto max-w-[1120px] space-y-20">
         <div className="text-center space-y-6">
-          <h2 className="font-heading text-landing-3xl md:text-landing-4xl font-semibold tracking-tight text-landing-text-primary">
+          <h2 className="font-heading font-size-landing-3xl md:text-landing-4xl font-semibold tracking-tight text-landing-text-primary">
             Your context is scattered everywhere.
           </h2>
           <p className="mx-auto max-w-2xl text-landing-base md:text-landing-lg font-medium text-landing-text-secondary leading-relaxed">
