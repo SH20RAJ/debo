@@ -1,129 +1,127 @@
 "use client";
 
-import { ArrowRight, Brain, Search, Shield, Zap, User, Clock } from "lucide-react";
+import { ArrowRight, Brain, Search, Shield, Zap, User, Clock, FileText, Mic, Users, CheckSquare, Database } from "lucide-react";
 import { waitlistUrl } from "@/lib/launch";
+import Link from "next/link";
+
+const GithubIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.02c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A4.8 4.8 0 0 0 8 18v4"></path>
+  </svg>
+);
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden px-6 pt-16 pb-20 md:pt-24 md:pb-28">
-      {/* Background gradients */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-[radial-gradient(ellipse_at_center,rgba(88,204,2,0.08),transparent_70%)] dark:bg-[radial-gradient(ellipse_at_center,rgba(88,204,2,0.12),transparent_70%)]" />
-      </div>
-
+    <section className="relative overflow-hidden px-6 pt-20 pb-24 md:pt-32 md:pb-32 bg-background">
       <div className="container relative z-10 mx-auto max-w-6xl">
-        <div className="flex flex-col items-center gap-12 lg:flex-row lg:gap-20">
-          {/* Left — Minimal copy */}
-          <div className="flex-1 space-y-6 text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 rounded-full border-2 border-primary/20 bg-primary/5 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-widest text-primary">
-              <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-              Private preview
-            </div>
+        <div className="flex flex-col items-center text-center space-y-8">
+          
+          <h1 className="font-heading text-5xl font-extrabold tracking-tight text-foreground md:text-6xl lg:text-7xl max-w-4xl leading-[1.1]">
+            Your private memory layer for everything you forget.
+          </h1>
 
-            <h1 className="font-heading text-4xl font-extrabold leading-[1.08] tracking-tight text-foreground md:text-5xl lg:text-6xl">
-              Collaborative Intelligence.{" "}
-              <span className="text-primary">Personal Research.</span>
-            </h1>
+          <p className="mx-auto max-w-2xl text-lg md:text-xl font-medium leading-relaxed text-muted-foreground">
+            Debo captures voice notes, journals, links, tasks, and conversations — then lets you ask your past with source-backed answers.
+          </p>
 
-            <p className="mx-auto max-w-md text-base font-medium leading-relaxed text-muted-foreground md:text-lg lg:mx-0">
-              Debo is a multimodal memory lab. We turn voice, notes, and 
-              cross-app research into a private memory graph with cited 
-              collaborative intelligence.
-            </p>
-
-            <div className="flex flex-col items-center gap-3 sm:flex-row lg:justify-start">
-              <a
-                href={waitlistUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="minimal-btn-primary px-7 py-2.5 text-sm inline-flex items-center gap-2"
-              >
-                Join the waitlist
-                <ArrowRight className="h-4 w-4" />
-              </a>
-            </div>
-
-            <p className="text-xs font-semibold text-muted-foreground/50">
-              Free to join. Early access starts soon.
-            </p>
-
-            {/* Trust indicators */}
-            <div className="flex flex-wrap items-center justify-center gap-5 pt-2 lg:justify-start">
-              <TrustBadge icon={Shield} label="End-to-end private" />
-              <TrustBadge icon={Brain} label="Your data stays yours" />
-              <TrustBadge icon={Search} label="Source-cited answers" />
-            </div>
+          <div className="flex flex-col sm:flex-row items-center gap-4 pt-4">
+            <Link
+              href={waitlistUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-12 items-center justify-center rounded-lg bg-foreground px-8 text-sm font-semibold text-background transition-colors hover:bg-foreground/90 gap-2 shadow-sm"
+            >
+              Join private beta
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+            <a
+              href="https://github.com/sh20raj/debo"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-12 items-center justify-center rounded-lg border border-border bg-background px-8 text-sm font-semibold text-foreground transition-colors hover:bg-muted gap-2 shadow-sm"
+            >
+              <GithubIcon className="h-4 w-4" />
+              View GitHub
+            </a>
           </div>
 
-          {/* Right — Chat messages appearing */}
-          <div className="relative w-full max-w-lg flex-1">
-            <div className="absolute -inset-8 rounded-3xl bg-gradient-to-br from-primary/8 via-transparent to-transparent blur-2xl dark:from-primary/15" />
+          <p className="text-sm font-medium text-muted-foreground/60">
+            Private beta opens July 28, 2026. Public launch planned for September 17, 2026.
+          </p>
 
-            <div className="relative space-y-3">
-              {/* User message 1 */}
-              <ChatMessage
-                sender="You"
-                delay="0s"
-                text="Met Sarah after standup. She can review the hiring plan by Friday. Ask Raj for the Q4 budget before Tuesday."
-              />
+        </div>
 
-              {/* Debo processing */}
-              <div
-                className="flex items-center gap-2 px-1 opacity-0 animate-[fadeInUp_0.4s_ease_forwards]"
-                style={{ animationDelay: "0.6s" }}
-              >
-                <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-primary">
-                  <Brain className="h-3 w-3 text-primary-foreground" />
-                </div>
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-primary/70">
-                  Extracting memories...
-                </span>
+        {/* Hero Visual Mockup */}
+        <div className="mt-20 mx-auto max-w-5xl">
+          <div className="rounded-xl border border-border/60 bg-background shadow-2xl overflow-hidden flex flex-col md:flex-row min-h-[480px]">
+            {/* Sidebar */}
+            <div className="hidden md:flex flex-col w-64 border-r border-border/40 bg-muted/20 p-4 space-y-6">
+              <div className="flex items-center gap-2 px-2">
+                <div className="w-2.5 h-2.5 rounded-full bg-red-400"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-yellow-400"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-green-400"></div>
               </div>
-
-              {/* Extracted chips */}
-              <div
-                className="flex flex-wrap gap-2 opacity-0 animate-[fadeInUp_0.4s_ease_forwards]"
-                style={{ animationDelay: "1s" }}
-              >
-                <EntityChip icon={<User className="h-3 w-3" />} label="Sarah Chen" />
-                <EntityChip icon={<Zap className="h-3 w-3" />} label="Review by Friday" />
-                <EntityChip icon={<User className="h-3 w-3" />} label="Raj" />
-                <EntityChip icon={<Clock className="h-3 w-3" />} label="Before Tuesday" />
+              <nav className="space-y-1">
+                <div className="text-xs font-semibold text-muted-foreground px-2 mb-3 mt-4">LIBRARY</div>
+                <SidebarItem icon={<FileText className="w-4 h-4" />} label="Journal" />
+                <SidebarItem icon={<Mic className="w-4 h-4" />} label="Voice" />
+                <SidebarItem icon={<Users className="w-4 h-4" />} label="People" />
+                <SidebarItem icon={<CheckSquare className="w-4 h-4" />} label="Tasks" />
+                <SidebarItem icon={<Database className="w-4 h-4" />} label="Sources" />
+              </nav>
+            </div>
+            
+            {/* Main Panel */}
+            <div className="flex-1 bg-background flex flex-col">
+              <div className="h-14 border-b border-border/40 flex items-center px-6">
+                <span className="text-sm font-semibold text-foreground/80">Memory Search</span>
               </div>
-
-              {/* User asks later */}
-              <ChatMessage
-                sender="You"
-                delay="1.5s"
-                text="What do I owe Sarah?"
-              />
-
-              {/* Debo answer */}
-              <div
-                className="duo-card border-primary/20 bg-primary/5 p-4 dark:bg-primary/10 opacity-0 animate-[fadeInUp_0.5s_ease_forwards]"
-                style={{ animationDelay: "2s" }}
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="flex h-5 w-5 items-center justify-center rounded-md bg-primary">
-                    <Search className="h-2.5 w-2.5 text-primary-foreground" />
+              <div className="flex-1 p-6 space-y-6">
+                
+                {/* User Query */}
+                <div className="flex justify-end">
+                  <div className="bg-muted px-4 py-3 rounded-2xl rounded-tr-sm max-w-md">
+                    <p className="text-sm font-medium text-foreground">What did I promise Raj about the Q4 budget?</p>
                   </div>
-                  <span className="text-[9px] font-extrabold uppercase tracking-widest text-primary/80">
-                    Debo answer
-                  </span>
-                  <span className="ml-auto text-[9px] font-extrabold tabular-nums text-primary/50">
-                    12ms
-                  </span>
                 </div>
-                <p className="text-sm font-semibold leading-relaxed text-foreground">
-                  Sarah is reviewing the hiring plan. You asked her to complete
-                  it by Friday. You also need Raj&apos;s Q4 budget before
-                  Tuesday.
-                </p>
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  <SourceChip label="Voice note" />
-                  <SourceChip label="Standup" />
-                  <SourceChip label="Q4 hiring" />
+
+                {/* Debo Answer */}
+                <div className="flex justify-start">
+                  <div className="bg-primary/5 border border-primary/10 px-5 py-4 rounded-2xl rounded-tl-sm max-w-2xl space-y-4">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="w-5 h-5 rounded bg-primary flex items-center justify-center">
+                        <span className="text-[10px] font-bold text-primary-foreground">d</span>
+                      </div>
+                      <span className="text-xs font-semibold text-primary">Debo</span>
+                    </div>
+                    <p className="text-sm leading-relaxed text-foreground/90">
+                      During your marketing sync on Tuesday, you promised Raj that you would submit the finalized Q4 budget allocation by this Friday before the board meeting. You also noted that you need to prioritize ad spend for the new product launch.
+                    </p>
+                    <div className="pt-3 border-t border-primary/10 flex flex-wrap gap-2">
+                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-background border border-border text-[10px] font-semibold text-muted-foreground">
+                        <Mic className="w-3 h-3" /> Voice note (Tuesday)
+                      </span>
+                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-background border border-border text-[10px] font-semibold text-muted-foreground">
+                        <Users className="w-3 h-3" /> Meeting: Marketing Sync
+                      </span>
+                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-background border border-border text-[10px] font-semibold text-muted-foreground">
+                        <CheckSquare className="w-3 h-3" /> Task
+                      </span>
+                    </div>
+                  </div>
                 </div>
+
+                {/* Timeline memory card */}
+                <div className="flex justify-start pt-2">
+                   <div className="ml-8 border-l-2 border-border/50 pl-4 py-1">
+                     <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Related Memory</div>
+                     <div className="bg-background border border-border/40 p-3 rounded-lg shadow-sm w-64">
+                       <p className="text-xs font-medium text-foreground/80 mb-1">Q4 Allocation Draft.pdf</p>
+                       <p className="text-[10px] text-muted-foreground">Uploaded 2 days ago</p>
+                     </div>
+                   </div>
+                </div>
+
               </div>
             </div>
           </div>
@@ -133,64 +131,11 @@ export function Hero() {
   );
 }
 
-function ChatMessage({
-  sender,
-  text,
-  delay,
-}: {
-  sender: string;
-  text: string;
-  delay: string;
-}) {
+function SidebarItem({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
-    <div
-      className="duo-card p-4 opacity-0 animate-[fadeInUp_0.4s_ease_forwards]"
-      style={{ animationDelay: delay }}
-    >
-      <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground/50 mb-1.5 block">
-        {sender}
-      </span>
-      <p className="text-sm font-medium leading-relaxed text-foreground/85">
-        {text}
-      </p>
-    </div>
-  );
-}
-
-function EntityChip({
-  icon,
-  label,
-}: {
-  icon: React.ReactNode;
-  label: string;
-}) {
-  return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border-2 border-primary/15 bg-primary/5 px-2.5 py-1 text-[10px] font-bold text-primary/80">
+    <div className="flex items-center gap-3 px-2 py-2 rounded-md hover:bg-muted/50 cursor-pointer text-sm font-medium text-foreground/80 transition-colors">
       {icon}
-      {label}
-    </span>
-  );
-}
-
-function SourceChip({ label }: { label: string }) {
-  return (
-    <span className="inline-flex items-center gap-1 rounded-full border-2 border-primary/15 bg-background/80 px-2 py-0.5 text-[8px] font-extrabold uppercase tracking-widest text-primary/60 dark:border-primary/25 dark:bg-background/60">
-      {label}
-    </span>
-  );
-}
-
-function TrustBadge({
-  icon: Icon,
-  label,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-}) {
-  return (
-    <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">
-      <Icon className="h-3 w-3" />
-      {label}
+      <span>{label}</span>
     </div>
   );
 }
