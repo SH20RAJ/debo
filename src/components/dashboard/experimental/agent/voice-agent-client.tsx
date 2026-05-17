@@ -201,10 +201,11 @@ function VoiceRoom({
   const connectionState = useConnectionState();
   const { localParticipant } = useLocalParticipant();
   const localAudioTrack = useMemo(() => {
-    return Array.from(localParticipant.trackPublications.values())
-      .filter((p) => p.kind === "audio" && p.track)
-      .map((p) => p.track)[0];
-  }, [localParticipant.trackPublications]);
+    const pub = Array.from(localParticipant.trackPublications.values())
+      .find((p) => p.kind === "audio" && p.track);
+    if (!pub?.track) return undefined;
+    return { participant: localParticipant, publication: pub, source: pub.source };
+  }, [localParticipant.trackPublications, localParticipant]);
   const [isMuted, setIsMuted] = useState(false);
   const [agentWaitExpired, setAgentWaitExpired] = useState(false);
 
