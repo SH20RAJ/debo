@@ -2,14 +2,12 @@ import Link from "next/link";
 import {
   Sparkles,
   Brain,
-  Mic,
-  Database,
   Zap,
   Shield,
   Bot,
-  Lock,
+  Database,
   Terminal,
-  type LucideIcon
+  FileDown,
 } from "lucide-react";
 import { Metadata } from "next";
 
@@ -20,56 +18,55 @@ export const metadata: Metadata = {
 
 export default function PitchPage() {
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/20">
+    <div className="min-h-screen bg-landing-bg text-landing-text-primary font-sans selection:bg-landing-accent/20">
       {/* Vision Hero */}
       <section className="relative px-6 pt-24 pb-32 overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[600px] bg-gradient-to-b from-primary/[0.04] to-transparent pointer-events-none" />
-
-        <div className="mx-auto max-w-5xl relative z-10 text-center lg:text-left">
+        <div className="mx-auto max-w-[1120px] relative z-10 text-center lg:text-left">
           <div className="grid gap-16 lg:grid-cols-2 lg:items-center">
             <div className="space-y-8">
-              <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border-2 border-primary/20 bg-primary/5 text-primary font-extrabold tracking-widest text-[10px] uppercase mx-auto lg:mx-0">
+              <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-landing-border bg-landing-surface text-landing-accent font-semibold tracking-wider text-landing-xs uppercase mx-auto lg:mx-0 shadow-sm">
                 <Sparkles className="h-3.5 w-3.5" />
                 Project Intelligence
               </div>
-              <h1 className="text-5xl md:text-7xl font-heading font-extrabold tracking-tight leading-[1.05] text-foreground">
+              <h1 className="text-5xl md:text-7xl font-heading font-semibold tracking-tight leading-[1.05] text-landing-text-primary">
                 Collaborative <br />
-                <span className="text-primary">Intelligence.</span>
+                <span className="text-landing-accent">Intelligence.</span>
               </h1>
-              <p className="max-w-xl text-base md:text-lg font-semibold leading-relaxed text-muted-foreground mx-auto lg:mx-0">
+              <p className="max-w-xl text-landing-base md:text-landing-lg font-medium leading-relaxed text-landing-text-secondary mx-auto lg:mx-0">
                 Debo is a multimodal intelligence lab. We build systems that don&apos;t just store data, but think with you — turning raw research into a private, connected memory graph.
               </p>
               <div className="flex flex-col gap-4 sm:flex-row justify-center lg:justify-start">
-                <Link href="/#waitlist" className="minimal-btn-primary px-8 py-3 text-sm">
+                <Link href="/#waitlist" className="inline-flex h-12 items-center justify-center rounded-xl bg-landing-accent px-8 text-landing-sm font-semibold text-white transition-all hover:bg-landing-accent-hover hover:-translate-y-0.5 shadow-sm hover:shadow-md">
                   Join the Lab
                 </Link>
-                <Link href="#vision" className="minimal-btn-outline px-8 py-3 text-sm">
-                  Research Vision
-                </Link>
+                <a href="/pitch.pdf" download className="inline-flex h-12 items-center justify-center rounded-xl border border-landing-border bg-landing-surface px-8 text-landing-sm font-semibold text-landing-text-primary transition-all hover:bg-landing-surface-subtle hover:-translate-y-0.5 shadow-sm gap-2">
+                  <FileDown className="h-4 w-4 text-landing-accent" />
+                  Download Deck
+                </a>
               </div>
             </div>
 
             <div className="relative hidden lg:block">
-              <div className="duo-card p-10 space-y-8">
+              <div className="p-10 border border-landing-border bg-landing-surface rounded-[24px] space-y-8 shadow-sm">
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground/40">
+                  <div className="flex items-center justify-between text-landing-xs font-bold uppercase tracking-widest text-landing-text-tertiary">
                     <span>Active Stream</span>
                     <div className="flex items-center gap-1.5">
-                      <div className="size-1.5 rounded-full bg-primary animate-pulse" />
+                      <div className="size-1.5 rounded-full bg-landing-accent animate-pulse" />
                       Live
                     </div>
                   </div>
-                  <div className="p-5 bg-muted/30 rounded-2xl border-2 border-border/50">
-                    <p className="text-sm font-semibold text-foreground/60 italic leading-relaxed">
+                  <div className="p-5 bg-landing-bg rounded-2xl border border-landing-border">
+                    <p className="text-landing-sm font-medium text-landing-text-secondary italic leading-relaxed">
                       &ldquo;Remember to follow up on the memory engine proposal.&rdquo;
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="px-4 py-2.5 rounded-xl border-2 border-primary/20 bg-primary/5 text-[10px] font-extrabold text-primary uppercase tracking-widest">
+                  <div className="px-4 py-2.5 rounded-xl border border-landing-border bg-landing-bg text-landing-xs font-semibold text-landing-text-primary uppercase tracking-wider">
                     Fact Extracted
                   </div>
-                  <div className="px-4 py-2.5 rounded-xl border-2 border-primary/20 bg-primary/5 text-[10px] font-extrabold text-primary uppercase tracking-widest">
+                  <div className="px-4 py-2.5 rounded-xl border border-landing-border bg-landing-bg text-landing-xs font-semibold text-landing-text-primary uppercase tracking-wider">
                     Pattern Logged
                   </div>
                 </div>
@@ -80,13 +77,13 @@ export default function PitchPage() {
       </section>
 
       {/* The Cognitive Crisis */}
-      <section id="vision" className="bg-muted/30 border-y-2 border-border/10 px-6 py-24">
-        <div className="mx-auto max-w-5xl text-center space-y-12">
+      <section id="vision" className="bg-landing-surface border-t border-landing-border-light px-6 py-24">
+        <div className="mx-auto max-w-[1120px] text-center space-y-12">
           <div className="space-y-4">
-            <h2 className="text-4xl md:text-5xl font-heading font-extrabold text-foreground tracking-tight">
-              Information <span className="text-primary">without meaning.</span>
+            <h2 className="text-4xl md:text-5xl font-heading font-semibold text-landing-text-primary tracking-tight">
+              Information <span className="text-landing-accent">without meaning.</span>
             </h2>
-            <p className="text-base md:text-lg font-semibold text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            <p className="text-landing-base md:text-landing-lg font-medium text-landing-text-secondary max-w-2xl mx-auto leading-relaxed">
               We capture everything but remember nothing. Our journals are graveyards of thoughts, and our memories are fading silos.
             </p>
           </div>
@@ -96,10 +93,10 @@ export default function PitchPage() {
                { label: "Fragmented Data", desc: "Scattered across apps." },
                { label: "Lost Insights", desc: "No way to find patterns." }
              ].map((item, i) => (
-               <div key={i} className="duo-card p-8 text-center space-y-4">
-                  <div className="text-[10px] font-extrabold uppercase tracking-widest text-primary mb-2">Issue {i + 1}</div>
-                  <div className="font-bold text-base text-foreground">{item.label}</div>
-                  <div className="text-xs font-medium text-muted-foreground leading-relaxed">{item.desc}</div>
+               <div key={i} className="p-8 border border-landing-border bg-landing-bg rounded-[20px] text-center space-y-4 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5">
+                  <div className="text-landing-xs font-bold uppercase tracking-widest text-landing-accent mb-2">Issue {i + 1}</div>
+                  <div className="font-bold text-landing-base text-landing-text-primary">{item.label}</div>
+                  <div className="text-landing-xs font-medium text-landing-text-secondary leading-relaxed">{item.desc}</div>
                </div>
              ))}
           </div>
@@ -107,12 +104,12 @@ export default function PitchPage() {
       </section>
 
       {/* The Core Capabilities */}
-      <section className="px-6 py-24">
-        <div className="mx-auto max-w-5xl">
+      <section className="px-6 py-24 border-t border-landing-border-light bg-landing-bg">
+        <div className="mx-auto max-w-[1120px]">
            <div className="text-center lg:text-left mb-20 space-y-4">
-              <div className="text-[10px] font-extrabold uppercase tracking-widest text-primary">Capabilities</div>
-              <h2 className="text-4xl md:text-5xl font-heading font-extrabold text-foreground tracking-tight">
-                Built for <span className="text-primary">permanence.</span>
+              <div className="text-landing-xs font-bold uppercase tracking-widest text-landing-accent">Capabilities</div>
+              <h2 className="text-4xl md:text-5xl font-heading font-semibold text-landing-text-primary tracking-tight">
+                Built for <span className="text-landing-accent">permanence.</span>
               </h2>
            </div>
 
@@ -152,13 +149,13 @@ export default function PitchPage() {
       </section>
 
       {/* The Ethics */}
-      <section className="px-6 py-24 bg-muted/30 border-t-2 border-border/10">
-         <div className="mx-auto max-w-5xl">
+      <section className="px-6 py-24 bg-landing-surface border-t border-landing-border-light">
+         <div className="mx-auto max-w-[1120px]">
             <div className="grid gap-16 lg:grid-cols-2 items-center">
                <div className="space-y-10">
                   <div className="space-y-4">
-                    <div className="text-[10px] font-extrabold uppercase tracking-widest text-primary">Philosophy</div>
-                    <h3 className="text-4xl md:text-5xl font-heading font-extrabold text-foreground tracking-tight">The property of mind.</h3>
+                    <div className="text-landing-xs font-bold uppercase tracking-widest text-landing-accent">Philosophy</div>
+                    <h3 className="text-4xl md:text-5xl font-heading font-semibold text-landing-text-primary tracking-tight">The property of mind.</h3>
                   </div>
                   <div className="space-y-8">
                      <Pillar title="Expressive" text="Simple, direct, and active language." />
@@ -167,58 +164,39 @@ export default function PitchPage() {
                      <Pillar title="Private" text="No tracking. No ads. No training." />
                   </div>
                </div>
-               <div className="duo-card p-10 flex flex-col justify-between space-y-10">
+               <div className="p-10 border border-landing-border bg-landing-bg rounded-[24px] flex flex-col justify-between space-y-10 shadow-sm">
                   <div className="space-y-5">
-                     <div className="flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-primary/20 bg-primary/5 text-primary">
+                     <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-landing-border bg-landing-surface text-landing-accent shadow-sm">
                         <Shield className="h-6 w-6" />
                      </div>
-                     <h4 className="text-2xl font-bold text-foreground tracking-tight leading-tight">Your data is yours.</h4>
-                     <p className="text-base font-semibold text-muted-foreground leading-relaxed">
+                     <h4 className="text-landing-2xl font-bold text-landing-text-primary tracking-tight leading-tight">Your data is yours.</h4>
+                     <p className="text-landing-base font-semibold text-landing-text-secondary leading-relaxed">
                         We don&apos;t sell insights. We don&apos;t train on your life. Debo is a private instance, grounded only in what you tell it.
                      </p>
                      <div className="pt-4">
-                       <div className="text-[10px] font-extrabold uppercase tracking-widest text-primary mb-1">Strategic Contact</div>
-                       <a href="mailto:founder@debo.life" className="text-sm font-bold text-foreground hover:text-primary transition-colors">founder@debo.life</a>
+                       <div className="text-landing-xs font-bold uppercase tracking-widest text-landing-accent mb-1">Strategic Contact</div>
+                       <a href="mailto:founder@debo.life" className="text-landing-sm font-bold text-landing-text-primary hover:text-landing-accent transition-colors">founder@debo.life</a>
                      </div>
                   </div>
-                  <Link href="/#waitlist" className="minimal-btn-primary w-full py-3 text-sm">
+                  <Link href="/#waitlist" className="inline-flex h-12 items-center justify-center rounded-xl bg-landing-accent px-8 text-landing-sm font-semibold text-white transition-all hover:bg-landing-accent-hover hover:-translate-y-0.5 shadow-sm hover:shadow-md">
                      Join Waitlist
                   </Link>
                </div>
             </div>
          </div>
       </section>
-
-      {/* Footer */}
-      <footer className="border-t-2 border-border/10 bg-background px-6 py-16">
-        <div className="mx-auto max-w-5xl flex flex-col md:flex-row justify-between items-center gap-8">
-           <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <span className="font-heading font-extrabold text-sm leading-none">d</span>
-              </div>
-              <span className="text-lg font-heading font-extrabold tracking-tight text-foreground">
-                debo
-              </span>
-           </div>
-           <div className="flex gap-8 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground/40">
-              <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
-              <Link href="/terms" className="hover:text-primary transition-colors">Terms</Link>
-              <Link href="/pitch" className="text-primary">Vision</Link>
-           </div>
-        </div>
-      </footer>
     </div>
   );
 }
 
-function FeatureCard({ icon: Icon, title, desc }: { icon: LucideIcon, title: string, desc: string }) {
+function FeatureCard({ icon: Icon, title, desc }: { icon: any, title: string, desc: string }) {
   return (
-    <div className="minimal-card p-6 group">
-       <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-2xl border-2 border-primary/20 bg-primary/5 text-primary group-hover:bg-primary/10 transition-colors">
+    <div className="p-6 border border-landing-border bg-landing-surface rounded-[20px] shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 group">
+       <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-2xl border border-landing-border bg-landing-bg text-landing-accent shadow-sm transition-colors">
           <Icon className="h-5 w-5" />
        </div>
-       <h3 className="mb-2 text-base font-bold text-foreground tracking-tight">{title}</h3>
-       <p className="text-xs font-medium text-muted-foreground leading-relaxed">
+       <h3 className="mb-2 text-landing-base font-bold text-landing-text-primary tracking-tight">{title}</h3>
+       <p className="text-landing-xs font-medium text-landing-text-secondary leading-relaxed">
           {desc}
        </p>
     </div>
@@ -228,12 +206,12 @@ function FeatureCard({ icon: Icon, title, desc }: { icon: LucideIcon, title: str
 function Pillar({ title, text }: { title: string, text: string }) {
   return (
     <div className="flex gap-5 group">
-       <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 border-primary/20 mt-1 transition-colors group-hover:border-primary">
-          <div className="size-1 bg-primary/30 group-hover:bg-primary transition-colors rounded-full" />
+       <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-landing-border mt-1 transition-colors bg-landing-bg">
+          <div className="size-1 bg-landing-accent transition-colors rounded-full animate-pulse" />
        </div>
        <div className="space-y-1">
-          <h4 className="text-base font-bold text-foreground tracking-tight">{title}</h4>
-          <p className="text-sm font-medium text-muted-foreground leading-relaxed">{text}</p>
+          <h4 className="text-landing-base font-bold text-landing-text-primary tracking-tight">{title}</h4>
+          <p className="text-landing-sm font-medium text-landing-text-secondary leading-relaxed">{text}</p>
        </div>
     </div>
   );

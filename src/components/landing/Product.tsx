@@ -27,7 +27,7 @@ export function Product() {
   return (
     <section className="py-24 md:py-32 px-6 border-t border-landing-border-light bg-landing-bg">
       <div className="mx-auto max-w-[1120px] space-y-16">
-        <h2 className="text-center font-heading text-3xl md:text-4xl lg:text-[40px] font-semibold tracking-tight text-landing-text-primary">
+        <h2 className="text-center font-heading text-landing-3xl md:text-landing-4xl font-semibold tracking-tight text-landing-text-primary">
           Capture once. Recall anytime.
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
@@ -37,8 +37,8 @@ export function Product() {
                 {f.icon}
               </div>
               <div className="space-y-2.5">
-                <h3 className="text-[18px] font-semibold text-landing-text-primary">{f.title}</h3>
-                <p className="text-[15px] font-medium text-landing-text-secondary leading-relaxed">
+                <h3 className="text-landing-xl font-semibold text-landing-text-primary">{f.title}</h3>
+                <p className="text-landing-base font-medium text-landing-text-secondary leading-relaxed">
                   {f.text}
                 </p>
               </div>
