@@ -241,7 +241,7 @@ export function createDeboRuntimeTools(userId: string, options: CreateToolOption
         query: z.string().min(1).describe("The journal search query."),
       }),
       execute: async (input: { query: string }) => {
-        const { getRecentJournalCitations, searchJournals } = await import("@/lib/vector/search");
+        const { getRecentJournalCitations, searchJournals } = await import("@debo/memory/vector/search");
         try {
           return await searchJournals(input.query, userId);
         } catch {
@@ -272,8 +272,8 @@ export function createDeboRuntimeTools(userId: string, options: CreateToolOption
       execute: async (input: { focus?: string; depth?: "brief" | "detailed" | "full" }) => {
         const { getMemories } = await import("@/actions/memories");
         const { getJournals } = await import("@/actions/journals");
-        const { queryGraph } = await import("@/lib/life/graph");
-        const { getLifeTimeline } = await import("@/lib/life/timeline");
+        const { queryGraph } = await import("@debo/memory/life/graph");
+        const { getLifeTimeline } = await import("@debo/memory/life/timeline");
 
         const depth = input.depth || "detailed";
         const limit = depth === "brief" ? 10 : depth === "full" ? 100 : 30;
@@ -331,7 +331,7 @@ export function createDeboRuntimeTools(userId: string, options: CreateToolOption
         grouping: z.enum(["daily", "weekly", "monthly"]).optional().default("daily"),
       }),
       execute: async (input: { grouping?: "daily" | "weekly" | "monthly" }) => {
-        const { getLifeTimeline } = await import("@/lib/life/timeline");
+        const { getLifeTimeline } = await import("@debo/memory/life/timeline");
         return getLifeTimeline(userId, input.grouping ?? "daily");
       },
     },
@@ -347,7 +347,7 @@ export function createDeboRuntimeTools(userId: string, options: CreateToolOption
         suggestedAction: z.string().optional(),
       }),
       execute: async (input: { question: string }) => {
-        const { queryGraph } = await import("@/lib/life/graph");
+        const { queryGraph } = await import("@debo/memory/life/graph");
         const result = await queryGraph(input.question, userId);
         const sentiment = result.topEmotions?.[0]?.name;
         const normalizedSentiment: GraphSentiment =
@@ -485,7 +485,7 @@ export function createDeboRuntimeTools(userId: string, options: CreateToolOption
         saveToChat?: boolean;
       }) => {
         const { ensureChatThread, persistPlainChatExchange } = await import("@/lib/chat/server");
-        const { getChatModel } = await import("@/lib/ai/openai");
+        const { getChatModel } = await import("@debo/ai/openai");
         const thread = await ensureChatThread(userId, input.threadId, input.title || "MCP chat");
         const result = await generateText({
           model: getChatModel(),
@@ -585,7 +585,7 @@ export async function streamDeboChat(input: {
     ? lastMessage.parts.map((part) => part.type === "text" ? part.text : "").join(" ").trim()
     : "";
   const systemPrompt = await buildDeboRuntimeSystemPrompt(input.userId, query);
-  const { getChatModel } = await import("@/lib/ai/openai");
+  const { getChatModel } = await import("@debo/ai/openai");
 
   return streamText({
     model: getChatModel(),
@@ -633,7 +633,7 @@ async function buildDeboRuntimeSystemPrompt(userId: string, query?: string) {
   }
 
   try {
-    const { searchJournals } = await import("@/lib/vector/search");
+    const { searchJournals } = await import("@debo/memory/vector/search");
     const journals = await searchJournals(query, userId, 4);
     if (journals.length > 0) {
       const lines = journals.map((journal, index) => {

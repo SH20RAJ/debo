@@ -1,7 +1,7 @@
 import "server-only";
 
-import { db } from "@/db";
-import { chats, messages } from "@/db/schema";
+import { db } from "@debo/db";
+import { chats, messages } from "@debo/db/schema";
 import { and, asc, desc, eq } from "drizzle-orm";
 
 export const ACTIVE_THREAD_COOKIE = "debo_active_chat_thread";

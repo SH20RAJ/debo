@@ -1,7 +1,7 @@
 import { Agent } from '@mastra/core/agent';
 import { Memory } from '@mastra/memory';
 import { weatherTool } from '../tools/weather-tool';
-import { getChatModel } from '@/lib/ai/openai';
+import { getChatModel } from '@debo/ai/openai';
 
 export const weatherAgent = new Agent({
   id: 'weather-agent',

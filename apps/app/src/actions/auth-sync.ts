@@ -1,4 +1,4 @@
-import { db } from "@/db";
+import { db } from "@debo/db";
 import { 
     user as userTable, 
     journals, 
@@ -13,10 +13,10 @@ import {
     memoryNodes,
     characterProfiles,
     characterReferences
-} from "@/db/schema";
+} from "@debo/db/schema";
 import { stackServerApp } from "@/stack/server";
 import { eq } from "drizzle-orm";
-import { logDatabaseIssue } from "@/lib/db/errors";
+import { logDatabaseIssue } from "@debo/db/errors";
 
 /**
  * Lightweight helper to get the current authenticated user ID from Stack Auth.

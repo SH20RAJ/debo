@@ -2,7 +2,7 @@ import { stackServerApp } from "@/stack/server";
 import { redirect } from "next/navigation";
 import { Metadata } from "next";
 
-import { queryGraph, refreshMemoryGraph } from "@/lib/life/graph";
+import { queryGraph, refreshMemoryGraph } from "@debo/memory/life/graph";
 import { getJournalsCount } from "@/actions/journals";
 import { InsightsHero } from "@/components/dashboard/life/insights-hero";
 import { PatternList } from "@/components/dashboard/life/pattern-list";

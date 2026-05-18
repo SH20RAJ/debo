@@ -1,6 +1,6 @@
 import { Agent } from '@mastra/core/agent';
 import { getJournalsTool, searchJournalsTool, getMemoriesTool } from '../tools/debo-tools';
-import { getChatModel } from '@/lib/ai/openai';
+import { getChatModel } from '@debo/ai/openai';
 
 export const deboLibrarian = new Agent({
   id: 'debo-librarian',

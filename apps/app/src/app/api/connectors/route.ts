@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/db";
-import { connectors } from "@/db/schema";
+import { db } from "@debo/db";
+import { connectors } from "@debo/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { resolveUserId } from "@/actions/auth-sync";
 import { listConnectors, createConnector, getConnectorHealth } from "@/actions/connectors";

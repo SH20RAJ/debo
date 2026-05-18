@@ -6,7 +6,7 @@
     "dev": "echo 'API extraction pending - routes currently in apps/app'",
     "build": "echo 'API extraction pending'",
     "deploy": "echo 'API extraction pending - skipping deploy'",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "echo 'API extraction pending - no source to typecheck'"
   },
   "dependencies": {
     "@debo/config": "workspace:*",

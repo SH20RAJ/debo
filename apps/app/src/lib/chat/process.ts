@@ -2,8 +2,8 @@ import "server-only";
 
 import type { UIMessage } from "ai";
 
-import { extractMemory } from "@/lib/memory/extract";
-import { storeMemory } from "@/lib/memory/store";
+import { extractMemory } from "@debo/memory/extract";
+import { storeMemory } from "@debo/memory/store";
 
 type ProcessConversationMemoryInput = {
   userId: string;

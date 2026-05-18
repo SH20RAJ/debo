@@ -132,7 +132,7 @@ export const searchJournalsTool = createTool({
     query: z.string().describe('The semantic search query.'),
   }),
   execute: async (input, context) => {
-    const { searchJournals, getRecentJournalCitations } = await import('@/lib/vector/search');
+    const { searchJournals, getRecentJournalCitations } = await import('@debo/memory/vector/search');
     const userId = requireUserId(context);
     try {
       return await searchJournals(input.query, userId);
@@ -190,7 +190,7 @@ export const getTimelineTool = createTool({
     grouping: z.enum(['daily', 'weekly', 'monthly']).optional().default('daily').describe('Grouping mode.'),
   }),
   execute: async (input, context) => {
-    const { getLifeTimeline } = await import('@/lib/life/timeline');
+    const { getLifeTimeline } = await import('@debo/memory/life/timeline');
     const userId = requireUserId(context);
     return await getLifeTimeline(userId, input.grouping);
   },
@@ -209,7 +209,7 @@ export const queryGraphTool = createTool({
     suggestedAction: z.string().optional().describe('A suggested reflection or action for the user.'),
   }),
   execute: async (input, context) => {
-    const { queryGraph } = await import('@/lib/life/graph');
+    const { queryGraph } = await import('@debo/memory/life/graph');
     const userId = requireUserId(context);
     const result = await queryGraph(input.question, userId);
     const sentiment = result.topEmotions?.[0]?.name;

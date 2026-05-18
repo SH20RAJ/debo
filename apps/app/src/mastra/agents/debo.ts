@@ -1,6 +1,6 @@
 import { Agent } from '@mastra/core/agent';
 import { Memory } from '@mastra/memory';
-import { getChatModel } from '@/lib/ai/openai';
+import { getChatModel } from '@debo/ai/openai';
 import { agentDeboTools } from '../tools/debo-tools';
 import { addMem0MemoryTool, searchMem0MemoryTool } from '../tools/mem0-tools';
 

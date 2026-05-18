@@ -1,6 +1,6 @@
 import "server-only";
 
-import { extractEntities } from "@/lib/ai/extract";
+import { extractEntities } from "@debo/ai/extract";
 
 import { displayCharacterName, isLikelyPersonName, normalizeCharacterName } from "./normalize";
 

@@ -1,9 +1,9 @@
 "use server";
 
 import { resolveUserId } from "./auth-sync";
-import { db } from "@/db";
-import { journals } from "@/db/schema";
-import { createSnippet, searchJournals as searchJournalCitations } from "@/lib/vector/search";
+import { db } from "@debo/db";
+import { journals } from "@debo/db/schema";
+import { createSnippet, searchJournals as searchJournalCitations } from "@debo/memory/vector/search";
 import { and, desc, eq, ilike, or } from "drizzle-orm";
 
 export async function searchJournals(query: string = "", limit: number = 5) {

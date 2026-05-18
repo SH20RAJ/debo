@@ -6,7 +6,7 @@ import { cache } from "react";
 import { z } from "zod";
 
 import { resolveUserId } from "@/actions/auth-sync";
-import { db } from "@/db";
+import { db } from "@debo/db";
 import {
   audioJournals,
   characterProfiles,
@@ -16,8 +16,8 @@ import {
   memoryEntities,
   messages,
   videoJournals,
-} from "@/db/schema";
-import { logDatabaseIssue } from "@/lib/db/errors";
+} from "@debo/db/schema";
+import { logDatabaseIssue } from "@debo/db/errors";
 
 import { composeCharacterSummary, extractCharacterMentions } from "./extract";
 import {

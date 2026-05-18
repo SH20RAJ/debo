@@ -4,12 +4,12 @@ import { resolveUserId } from "./auth-sync";
 import { cache } from "react";
 import { revalidatePath } from "next/cache";
 import MemoryClient from "mem0ai";
-import { db } from "@/db";
-import { memoryEntities, memoryFacts } from "@/db/schema";
-import { extractMemory } from "@/lib/memory/extract";
-import { getRelevantMemories, type RelevantMemory } from "@/lib/memory/query";
-import { storeMemory } from "@/lib/memory/store";
-import { logDatabaseIssue } from "@/lib/db/errors";
+import { db } from "@debo/db";
+import { memoryEntities, memoryFacts } from "@debo/db/schema";
+import { extractMemory } from "@debo/memory/extract";
+import { getRelevantMemories, type RelevantMemory } from "@debo/memory/query";
+import { storeMemory } from "@debo/memory/store";
+import { logDatabaseIssue } from "@debo/db/errors";
 import { eq } from "drizzle-orm";
 
 const LOCAL_FACT_PREFIX = "local:fact:";

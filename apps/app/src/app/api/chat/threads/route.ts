@@ -8,7 +8,7 @@ import {
   normalizeThreadId,
   renameChatThread,
 } from "@/lib/chat/server";
-import { isDatabaseUnavailable, logDatabaseIssue } from "@/lib/db/errors";
+import { isDatabaseUnavailable, logDatabaseIssue } from "@debo/db/errors";
 
 function transientThread(id?: string | null, title?: string | null) {
   const threadId = normalizeThreadId(id) ?? crypto.randomUUID();

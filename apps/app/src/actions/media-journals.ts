@@ -1,14 +1,14 @@
 "use server"
 
-import { db } from "@/db";
-import { videoJournals, audioJournals, journals } from "@/db/schema";
+import { db } from "@debo/db";
+import { videoJournals, audioJournals, journals } from "@debo/db/schema";
 import { resolveUserId } from "./auth-sync";
 import { eq, desc, asc, and, count, ilike, or } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { cache } from "react";
-import { logDatabaseIssue } from "@/lib/db/errors";
+import { logDatabaseIssue } from "@debo/db/errors";
 import { generateText } from "ai";
-import { getChatModel } from "@/lib/ai/openai";
+import { getChatModel } from "@debo/ai/openai";
 
 // Video Journal Actions
 

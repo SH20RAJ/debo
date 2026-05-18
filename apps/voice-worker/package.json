@@ -6,7 +6,7 @@
     "dev": "echo 'Voice worker extraction pending'",
     "build": "echo 'Voice worker extraction pending'",
     "deploy": "echo 'Voice worker extraction pending - skipping deploy'",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "echo 'Voice worker extraction pending - no source to typecheck'"
   },
   "dependencies": {
     "@livekit/agents": "^1.4.0",

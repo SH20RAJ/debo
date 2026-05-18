@@ -2,7 +2,7 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { CalendarClock, ChevronRight, Sparkles } from "lucide-react";
 
-import type { LifeTimelineEntry } from "@/lib/life/timeline";
+import type { LifeTimelineEntry } from "@debo/memory/life/timeline";
 
 export function LifeTimeline({
   entries,

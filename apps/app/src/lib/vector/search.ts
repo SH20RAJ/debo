@@ -1,9 +1,9 @@
 import "server-only";
 
-import { db } from "@/db";
-import { journals } from "@/db/schema";
-import { extractEntities } from "@/lib/ai/extract";
-import { embed, warnEmbeddingProvider } from "@/lib/ai/embeddings";
+import { db } from "@debo/db";
+import { journals } from "@debo/db/schema";
+import { extractEntities } from "@debo/ai/extract";
+import { embed, warnEmbeddingProvider } from "@debo/ai/embeddings";
 import {
   deleteVectorsByFilter,
   getQdrantErrorMessage,
@@ -11,7 +11,7 @@ import {
   searchVector as searchQdrantVector,
   upsertVector,
   type QdrantMatch,
-} from "@/lib/vector/qdrant";
+} from "@debo/memory/vector/qdrant";
 import { and, desc, eq, gte, inArray } from "drizzle-orm";
 
 export type CitationSource = {
@@ -106,7 +106,7 @@ const UUID_NAMESPACE = "6ba7b810-9dad-11d1-80b4-00c04fd430c8";
 
 export async function indexJournal(journal: JournalForIndex) {
   try {
-    const { splitIntoChunks } = await import("@/lib/ai/chunking");
+    const { splitIntoChunks } = await import("@debo/ai/chunking");
     const fullContent = journal.tags && journal.tags.length > 0 
       ? `${journal.title ? journal.title + "\n" : ""}${journal.content}\n\nTags: ${journal.tags.map(t => `#${t}`).join(" ")}`
       : `${journal.title ? journal.title + "\n" : ""}${journal.content}`;

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
-import { StackProvider, StackTheme } from "@stackframe/stack";
-import { stackClientApp } from "@/stack/client";
+import { Navbar } from "@/components/landing/Navbar";
+import { Footer } from "@/components/landing/Footer";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -36,19 +36,19 @@ export default function RootLayout({
 				<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Nunito+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 			</head>
 			<body className="font-sans antialiased selection:bg-primary/20 selection:text-primary">
-				<StackProvider app={stackClientApp}>
-					<StackTheme>
-						<ThemeProvider
-							attribute="class"
-							defaultTheme="light"
-							enableSystem
-							disableTransitionOnChange
-						>
-							{children}
-							<Toaster />
-						</ThemeProvider>
-					</StackTheme>
-				</StackProvider>
+				<ThemeProvider
+					attribute="class"
+					defaultTheme="light"
+					enableSystem
+					disableTransitionOnChange
+				>
+					<div className="min-h-screen flex flex-col bg-background">
+						<Navbar />
+						<main className="flex-1">{children}</main>
+						<Footer />
+					</div>
+					<Toaster />
+				</ThemeProvider>
 			</body>
 		</html>
 	);

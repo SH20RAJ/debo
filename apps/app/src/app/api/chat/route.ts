@@ -130,7 +130,7 @@ async function buildRuntimeContext(userId: string, messages: any[]) {
   if (!shouldLoadMemoryContext(latestText)) return sections.join("\n\n") || null;
 
   try {
-    const { getRelevantMemories } = await import("@/lib/memory/query");
+    const { getRelevantMemories } = await import("@debo/memory/query");
     const result = await withContextTimeout(
       "Memory",
       () => getRelevantMemories(userId, latestText, 8, 0),
@@ -150,7 +150,7 @@ async function buildRuntimeContext(userId: string, messages: any[]) {
   }
 
   try {
-    const { searchJournals } = await import("@/lib/vector/search");
+    const { searchJournals } = await import("@debo/memory/vector/search");
     const journals = await withContextTimeout(
       "Journal citation",
       () => searchJournals(latestText, userId, 4),

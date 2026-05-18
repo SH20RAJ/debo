@@ -1,7 +1,7 @@
 "use server"
 
-import { db } from "@/db"
-import { userPreferences } from "@/db/schema"
+import { db } from "@debo/db"
+import { userPreferences } from "@debo/db/schema"
 import { eq } from "drizzle-orm"
 import { getUserId } from "./auth-sync"
 import { revalidatePath } from "next/cache"

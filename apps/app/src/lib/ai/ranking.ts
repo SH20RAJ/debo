@@ -1,6 +1,6 @@
 import "server-only";
 
-import { extractEntities } from "@/lib/ai/extract";
+import { extractEntities } from "@debo/ai/extract";
 
 export type RankedContextSource = {
   content: string;

@@ -1,9 +1,9 @@
 import { createWorkflow, createStep } from '@mastra/core/workflows';
 import { z } from 'zod';
-import { indexJournal } from '@/lib/vector/search';
-import { getQdrantErrorMessage, isQdrantAuthError } from '@/lib/vector/qdrant';
-import { upsertMemoryGraphForJournal } from '@/lib/life/graph';
-import { storeMemory } from '@/lib/memory/store';
+import { indexJournal } from '@debo/memory/vector/search';
+import { getQdrantErrorMessage, isQdrantAuthError } from '@debo/memory/vector/qdrant';
+import { upsertMemoryGraphForJournal } from '@debo/memory/life/graph';
+import { storeMemory } from '@debo/memory/store';
 
 const vectorIndexStep = createStep({
   id: 'vector-index',

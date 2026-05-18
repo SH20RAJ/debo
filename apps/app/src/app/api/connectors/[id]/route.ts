@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/db";
-import { connectors, connectorEvents } from "@/db/schema";
+import { db } from "@debo/db";
+import { connectors, connectorEvents } from "@debo/db/schema";
 import { eq, and } from "drizzle-orm";
 import { v4 as uuid } from "uuid";
 import crypto from "crypto";

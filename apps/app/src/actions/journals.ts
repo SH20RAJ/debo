@@ -1,13 +1,13 @@
 "use server"
 
-import { db } from "@/db";
-import { journals } from "@/db/schema";
+import { db } from "@debo/db";
+import { journals } from "@debo/db/schema";
 import { resolveUserId } from "./auth-sync";
 import { eq, desc, asc, and, count, inArray, ilike, or } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { cache } from "react";
 import { z } from "zod";
-import { logDatabaseIssue } from "@/lib/db/errors";
+import { logDatabaseIssue } from "@debo/db/errors";
 
 const journalSchema = z.object({
   title: z.string().max(200).optional(),
@@ -25,7 +25,7 @@ export const getJournals = cache(async (sortOrder: "asc" | "desc" = "desc", limi
     try {
         if (query && query.trim() !== "") {
             // Use semantic search if query is provided
-            const { searchJournals } = await import("@/lib/vector/search");
+            const { searchJournals } = await import("@debo/memory/vector/search");
             const semanticResults = await searchJournals(query, resolvedUserId, limit);
             
             if (semanticResults.length === 0) {
@@ -68,7 +68,7 @@ export const getJournalsCount = cache(async (query?: string, providedUserId?: st
 
     try {
         if (query && query.trim() !== "") {
-             const { searchJournals } = await import("@/lib/vector/search");
+             const { searchJournals } = await import("@debo/memory/vector/search");
              // Semantic search limits are typically around 20, let's estimate
              const semanticResults = await searchJournals(query, userId, 50);
              if (semanticResults.length > 0) return semanticResults.length;
@@ -166,14 +166,14 @@ export async function deleteJournal(id: string, userId?: string) {
         await db.delete(journals).where(eq(journals.id, id));
 
         try {
-            const { removeJournalFromIndex } = await import("@/lib/vector/search");
+            const { removeJournalFromIndex } = await import("@debo/memory/vector/search");
             await removeJournalFromIndex(id, resolvedUserId);
         } catch (err) {
             console.error("Failed to delete journal vector from Qdrant:", err);
         }
 
         try {
-            const { refreshMemoryGraph } = await import("@/lib/life/graph");
+            const { refreshMemoryGraph } = await import("@debo/memory/life/graph");
             await refreshMemoryGraph(resolvedUserId);
         } catch (err) {
             console.error("Failed to refresh memory graph after deletion:", err);
@@ -198,7 +198,7 @@ export const getRelatedJournals = cache(async (journalId: string, userId?: strin
         });
         if (!journal) return [];
 
-        const { searchJournals } = await import("@/lib/vector/search");
+        const { searchJournals } = await import("@debo/memory/vector/search");
         // Use journal content and title to find similar ones
         const query = journal.title ? `${journal.title}\n${journal.content}` : journal.content;
         const semanticResults = await searchJournals(query, resolvedUserId, limit + 1);
@@ -228,8 +228,8 @@ async function runJournalPostProcessing(userId: string, journalId: string) {
         if (!savedJournal) return;
 
         const [{ indexJournal }, { upsertMemoryGraphForJournal }, { captureCharacterMentionsFromText }] = await Promise.all([
-            import("@/lib/vector/search"),
-            import("@/lib/life/graph"),
+            import("@debo/memory/vector/search"),
+            import("@debo/memory/life/graph"),
             import("@/features/characters/actions"),
         ]);
 

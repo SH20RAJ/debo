@@ -2,6 +2,7 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": ".",
+    "incremental": false,
     "paths": {
       "@/*": ["./src/*"],
       "@debo/*": ["../../packages/*/src"]

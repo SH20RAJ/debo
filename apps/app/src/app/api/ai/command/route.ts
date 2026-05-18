@@ -18,7 +18,7 @@ import { type SlateEditor, createSlateEditor, nanoid } from 'platejs';
 import { z } from 'zod';
 
 import { BaseEditorKit } from '@/components/editor/editor-base-kit';
-import { getChatModel } from '@/lib/ai/openai';
+import { getChatModel } from '@debo/ai/openai';
 import { markdownJoinerTransform } from '@/lib/markdown-joiner-transform';
 
 import {

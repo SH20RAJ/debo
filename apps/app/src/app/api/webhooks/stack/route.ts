@@ -1,7 +1,7 @@
 import { Webhook } from "svix";
 import { headers } from "next/headers";
-import { db } from "@/db";
-import { user } from "@/db/schema";
+import { db } from "@debo/db";
+import { user } from "@debo/db/schema";
 import { eq } from "drizzle-orm";
 
 export async function POST(req: Request) {

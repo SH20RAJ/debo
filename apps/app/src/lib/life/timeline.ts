@@ -3,10 +3,10 @@ import "server-only";
 import { cache } from "react";
 import { asc, eq } from "drizzle-orm";
 
-import { db } from "@/db";
-import { journals } from "@/db/schema";
-import { extractEntities, summarizeEntities } from "@/lib/ai/extract";
-import { logDatabaseIssue } from "@/lib/db/errors";
+import { db } from "@debo/db";
+import { journals } from "@debo/db/schema";
+import { extractEntities, summarizeEntities } from "@debo/ai/extract";
+import { logDatabaseIssue } from "@debo/db/errors";
 
 export type TimelineGrouping = "daily" | "weekly" | "monthly";
 

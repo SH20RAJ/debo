@@ -17,6 +17,8 @@
     "build": "echo 'memory package - no build needed'"
   },
   "dependencies": {
+    "@debo/ai": "workspace:*",
+    "@debo/db": "workspace:*",
     "mem0ai": "^3.0.3",
     "uuid": "^11.0.0",
     "drizzle-orm": "^0.39.3"

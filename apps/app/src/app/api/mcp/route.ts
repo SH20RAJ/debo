@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/db";
-import { userPreferences } from "@/db/schema";
+import { db } from "@debo/db";
+import { userPreferences } from "@debo/db/schema";
 import { createDeboRuntimeTools } from "@/lib/chat/debo-tools";
 import { DEBO_MCP_SYSTEM_PROMPT } from "@/lib/mcp/instructions";
 import { eq } from "drizzle-orm";

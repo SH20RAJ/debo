@@ -7,7 +7,7 @@ import {
   resolveRequestedThreadId,
   serializeChatMessage,
 } from "@/lib/chat/server";
-import { isDatabaseUnavailable, logDatabaseIssue } from "@/lib/db/errors";
+import { isDatabaseUnavailable, logDatabaseIssue } from "@debo/db/errors";
 
 function readActiveThreadId(req: NextRequest) {
   const value = req.cookies.get(ACTIVE_THREAD_COOKIE)?.value;

@@ -2,10 +2,10 @@ import "server-only";
 
 import { and, asc, eq } from "drizzle-orm";
 
-import { db } from "@/db";
-import { journals, memoryEdges, memoryNodes } from "@/db/schema";
-import { extractEntities } from "@/lib/ai/extract";
-import { isDatabaseUnavailable, logDatabaseIssue } from "@/lib/db/errors";
+import { db } from "@debo/db";
+import { isDatabaseUnavailable, logDatabaseIssue } from "@debo/db/errors";
+import { journals, memoryEdges, memoryNodes } from "@debo/db/schema";
+import { extractEntities } from "@debo/ai/extract";
 
 export type Node =
   | { type: "person"; name: string }

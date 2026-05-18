@@ -1,11 +1,11 @@
 // CACHE_BUST: 1
 import "server-only";
 
-import { db } from "@/db";
-import { memoryEntities, memoryFacts } from "@/db/schema";
+import { db } from "@debo/db";
+import { memoryEntities, memoryFacts } from "@debo/db/schema";
 import { sql } from "drizzle-orm";
 
-import type { ExtractedMemory } from "@/lib/memory/extract";
+import type { ExtractedMemory } from "@debo/memory/extract";
 
 function normalizeContent(value: string) {
   return value.replace(/\s+/g, " ").trim();

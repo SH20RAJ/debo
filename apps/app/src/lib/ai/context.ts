@@ -1,8 +1,8 @@
 import "server-only";
 
-import { detectRecurringPatterns, dedupeRankedSources, scoreContextSource, type RankedContextSource } from "@/lib/ai/ranking";
-import { getRelevantMemories } from "@/lib/memory/query";
-import { searchJournals, type CitationSource } from "@/lib/vector/search";
+import { detectRecurringPatterns, dedupeRankedSources, scoreContextSource, type RankedContextSource } from "@debo/ai/ranking";
+import { getRelevantMemories } from "@debo/memory/query";
+import { searchJournals, type CitationSource } from "@debo/memory/vector/search";
 
 export type RetrievedContext = {
   items: RankedContextSource[];

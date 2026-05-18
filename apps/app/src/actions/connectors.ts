@@ -1,7 +1,7 @@
 "use server";
 
-import { db } from "@/db";
-import { connectors, connectorEvents, journals } from "@/db/schema";
+import { db } from "@debo/db";
+import { connectors, connectorEvents, journals } from "@debo/db/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { v4 as uuid } from "uuid";
 

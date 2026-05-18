@@ -8,7 +8,6 @@
     "./embeddings": "./src/embeddings.ts",
     "./ranking": "./src/ranking.ts",
     "./extract": "./src/extract.ts",
-    "./context": "./src/context.ts",
     "./chunking": "./src/chunking.ts"
   },
   "scripts": {
@@ -18,7 +17,6 @@
   "dependencies": {
     "@ai-sdk/openai": "^3.0.53",
     "@ai-sdk/anthropic": "^3.0.71",
-    "@debo/memory": "workspace:*",
     "ai": "6",
     "openai": "^6.35.0",
     "server-only": "^0.0.1"

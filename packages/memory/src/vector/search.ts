@@ -1,9 +1,10 @@
 import "server-only";
 
-import { db } from "@/db";
-import { journals } from "@/db/schema";
-import { extractEntities } from "@/lib/ai/extract";
-import { embed, warnEmbeddingProvider } from "@/lib/ai/embeddings";
+import { db } from "@debo/db";
+import { journals } from "@debo/db/schema";
+import { splitIntoChunks } from "@debo/ai/chunking";
+import { embed, warnEmbeddingProvider } from "@debo/ai/embeddings";
+import { extractEntities } from "@debo/ai/extract";
 import {
   deleteVectorsByFilter,
   getQdrantErrorMessage,
@@ -106,7 +107,6 @@ const UUID_NAMESPACE = "6ba7b810-9dad-11d1-80b4-00c04fd430c8";
 
 export async function indexJournal(journal: JournalForIndex) {
   try {
-    const { splitIntoChunks } = await import("@/lib/ai/chunking");
     const fullContent = journal.tags && journal.tags.length > 0
       ? `${journal.title ? journal.title + "\n" : ""}${journal.content}\n\nTags: ${journal.tags.map(t => `#${t}`).join(" ")}`
       : `${journal.title ? journal.title + "\n" : ""}${journal.content}`;

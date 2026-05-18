@@ -1,7 +1,7 @@
 "use server";
 
-import { db } from "@/db";
-import { chats, messages } from "@/db/schema";
+import { db } from "@debo/db";
+import { chats, messages } from "@debo/db/schema";
 import { resolveUserId } from "./auth-sync";
 import { eq, desc, and, asc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";

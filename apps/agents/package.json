@@ -6,7 +6,7 @@
     "dev": "echo 'Agents extraction pending - Mastra currently in apps/app'",
     "build": "echo 'Agents extraction pending'",
     "deploy": "echo 'Agents extraction pending - skipping deploy'",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "echo 'Agents extraction pending - no source to typecheck'"
   },
   "dependencies": {
     "@debo/config": "workspace:*",

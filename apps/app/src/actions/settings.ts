@@ -1,12 +1,12 @@
 "use server";
 
-import { db } from "@/db";
-import { userPreferences, aiProviders, memoryFacts } from "@/db/schema";
+import { db } from "@debo/db";
+import { userPreferences, aiProviders, memoryFacts } from "@debo/db/schema";
 import { resolveUserId } from "./auth-sync";
 import { eq, and, like } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { encrypt } from "@/lib/encryption";
-import { logDatabaseIssue } from "@/lib/db/errors";
+import { logDatabaseIssue } from "@debo/db/errors";
 
 const DEBO_TONES = ["warm", "calm", "direct", "coach", "concise"] as const;
 export type DeboTone = (typeof DEBO_TONES)[number];
