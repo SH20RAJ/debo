@@ -35,6 +35,28 @@ Debo is a **Multimodal Intelligence Lab** that turns your writing, research, and
 
 > 📋 See [Project Roadmap](./todo.md) for feature status and upcoming work
 
+## Monorepo Structure
+
+This is a **Bun monorepo** with separated apps and shared packages.
+
+### Apps
+| App | Description | Worker |
+|-----|-------------|--------|
+| `apps/web` | Landing page (debo.life) | `debo` |
+| `apps/app` | Dashboard + API + agents | `debo-app` |
+
+### Packages
+| Package | Description |
+|---------|-------------|
+| `@debo/db` | Drizzle schema, DB client, migrations |
+| `@debo/ai` | Model providers, embeddings, ranking |
+| `@debo/memory` | Memory graph, vector search, Qdrant |
+| `@debo/config` | Env validation, constants, utilities |
+| `@debo/types` | Shared TypeScript types |
+| `@debo/ui` | Shared UI components |
+
+See [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) and [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md).
+
 ## Getting Started
 
 ```bash
