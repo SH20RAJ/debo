@@ -1,3 +1,7 @@
-// @debo/config - Shared configuration
-// TODO: Move config from src/config/ and env helpers here during Phase 2
-export {};
+// @debo/config — Shared configuration, providers, env, constants, utilities
+
+export * from "./providers";
+export * from "./utils";
+export * from "./cloudflare";
+export * from "./constants";
+export * from "./env";

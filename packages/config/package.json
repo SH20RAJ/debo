@@ -4,15 +4,22 @@
   "private": true,
   "exports": {
     ".": "./src/index.ts",
-    "./env": "./src/env.ts",
-    "./constants": "./src/constants.ts"
+    "./providers": "./src/providers.ts",
+    "./utils": "./src/utils.ts",
+    "./cloudflare": "./src/cloudflare.ts",
+    "./constants": "./src/constants.ts",
+    "./env": "./src/env.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "build": "echo 'config package - no build needed'"
   },
-  "devDependencies": {
-    "typescript": "^5.7.4",
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^3.5.0",
     "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.4"
   }
 }

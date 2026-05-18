@@ -441,9 +441,13 @@
     "packages/config": {
       "name": "@debo/config",
       "version": "0.1.0",
+      "dependencies": {
+        "clsx": "^2.1.1",
+        "tailwind-merge": "^3.5.0",
+        "zod": "^4.4.3",
+      },
       "devDependencies": {
         "typescript": "^5.7.4",
-        "zod": "^4.4.3",
       },
     },
     "packages/db": {
