@@ -1,5 +1,50 @@
 # Technical Architecture
 
+## Monorepo Structure
+
+Debo is a **Bun monorepo** with separated apps and shared packages:
+
+```
+debo/
+├── apps/
+│   ├── web/              # Public landing page (debo.life) — Cloudflare worker "debo"
+│   ├── app/              # Product dashboard (app.debo.life) — Cloudflare worker "debo-app"
+│   ├── api/              # Backend API (stub — pending extraction)
+│   ├── agents/           # Mastra agents (stub — pending extraction)
+│   └── voice-worker/     # LiveKit voice (stub — pending extraction)
+├── packages/
+│   ├── db/               # Drizzle schema, DB client, migrations
+│   ├── ai/               # Model providers, embeddings, ranking, extraction
+│   ├── memory/           # Memory graph, vector search, Qdrant, life timeline
+│   ├── config/           # Env validation, providers, constants, utilities
+│   ├── types/            # Shared TypeScript types and Zod schemas
+│   └── ui/               # Shared UI components (button, card, dialog, etc.)
+└── src/                  # Legacy monolithic source (backward compat)
+```
+
+### Package Dependency Graph
+
+```
+apps/app ──→ @debo/db ──→ drizzle-orm, @neondatabase/serverless
+    │    ──→ @debo/ai ──→ @ai-sdk/openai, ai, openai
+    │    ──→ @debo/memory ──→ mem0ai, drizzle-orm
+    │    ──→ @debo/config ──→ clsx, tailwind-merge, zod
+    │    ──→ @debo/types ──→ zod
+    │    ──→ @debo/ui ──→ radix-ui, class-variance-authority, lucide-react
+apps/web ──→ next, react, @stackframe/stack (self-contained landing)
+```
+
+### Deployment
+
+| Worker | App | Domain | 
+|--------|-----|--------|
+| `debo` | `apps/web` | `debo.life` |
+| `debo-app` | `apps/app` | `app.debo.life` |
+
+Deploy order: packages → web → app → (optional: api, agents, voice). Use `bun run deploy` for orchestrated deploy.
+
+---
+
 Debo is built as a **Privacy-First Life Intelligence System**, architected for edge-latency and deep contextual recall. The system is split into four primary layers:
 
 1. **Ambient Interface Layer**: Next.js App Router for web, and **LiveKit** for real-time, low-latency Jarvis-style voice interactions.

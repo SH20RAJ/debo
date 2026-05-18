@@ -14,32 +14,68 @@ This is a **Mastra** project written in TypeScript. Debo is a **Multimodal Intel
 ## Commands
 
 ```bash
-npm run dev # Start Mastra Studio at localhost:4111 (long-running, use a separate terminal)
-npm run build # Build a production-ready server
+bun install          # Install all workspace dependencies
+bun run dev          # Start original dev server (root src/)
+bun run build:web    # Build landing page
+bun run build:app    # Build dashboard
+bun run deploy:web   # Deploy landing to Cloudflare
+bun run deploy:app   # Deploy dashboard to Cloudflare
+bun run deploy:all   # Deploy all services
+bun run db:push      # Push DB schema changes
 ```
 
 ## Project Structure
 
+This is a **Bun monorepo** with apps and shared packages.
+
+### Apps
+
 | Folder                 | Description                                                                                                                              |
 | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/mastra`           | Entry point for all Mastra-related code and configuration.                                                                               |
-| `src/mastra/agents`    | Define and configure your agents - their behavior, goals, and tools.                                                                     |
-| `src/mastra/workflows` | Define multi-step workflows that orchestrate agents and tools together.                                                                  |
-| `src/mastra/tools`     | Create reusable tools that your agents can call                                                                                          |
-| `src/mastra/mcp`       | (Optional) Implement custom MCP servers to share your tools with external agents                                                         |
-| `src/mastra/scorers`   | (Optional) Define scorers for evaluating agent performance over time                                                                     |
-| `src/mastra/public`    | (Optional) Contents are copied into the `.build/output` directory during the build process, making them available for serving at runtime |
+| `apps/web`             | Public landing page for debo.life, deployed as Cloudflare worker "debo"                                                                  |
+| `apps/app`             | Product dashboard, API routes, Mastra agents, deployed as Cloudflare worker "debo-app"                                                   |
+| `apps/api`             | Backend API service (stub — pending extraction)                                                                                          |
+| `apps/agents`          | Mastra agents service (stub — pending extraction)                                                                                        |
+| `apps/voice-worker`    | LiveKit voice worker (stub — pending extraction)                                                                                         |
+
+### Shared Packages
+
+| Folder                 | Description                                                                                                                              |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/db`          | Drizzle schema, DB client, migrations                                                                                                    |
+| `packages/ai`          | Model provider helpers, embeddings, ranking, AI utils                                                                                    |
+| `packages/memory`      | Memory graph, vector search, Qdrant helpers                                                                                              |
+| `packages/config`      | Env validation, shared constants, runtime config                                                                                         |
+| `packages/types`       | Shared TypeScript types and Zod schemas                                                                                                  |
+| `packages/ui`          | Shared UI components                                                                                                                     |
+
+### Mastra (inside apps/app)
+
+| Folder                       | Description                                                              |
+| ---------------------------- | ------------------------------------------------------------------------ |
+| `apps/app/src/mastra`        | Entry point for all Mastra-related code and configuration.               |
+| `apps/app/src/mastra/agents` | Define and configure agents — behavior, goals, and tools.                |
+| `apps/app/src/mastra/workflows` | Define multi-step workflows that orchestrate agents and tools.        |
+| `apps/app/src/mastra/tools`  | Create reusable tools that agents can call                               |
 
 ### Top-level files
 
-Top-level files define how your Mastra project is configured, built, and connected to its environment.
-
 | File                  | Description                                                                                                       |
 | --------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `src/mastra/index.ts` | Central entry point where you configure and initialize Mastra.                                                    |
+| `src/mastra/index.ts` | Central entry point where you configure and initialize Mastra (legacy location).                                  |
 | `.env.example`        | Template for environment variables - copy and rename to `.env` to add your secret [model provider](/models) keys. |
-| `package.json`        | Defines project metadata, dependencies, and available npm scripts.                                                |
-| `tsconfig.json`       | Configures TypeScript options such as path aliases, compiler settings, and build output.                          |
+| `package.json`        | Bun workspace root — defines workspaces, shared scripts, and dependencies.                                         |
+| `tsconfig.base.json`  | Shared TypeScript compiler options extended by all workspaces.                                                     |
+
+### Workspace Package Usage
+
+When writing Mastra agents or app code, import shared packages using workspace references:
+```ts
+import { db } from "@debo/db";
+import { embed } from "@debo/ai";
+import { storeMemory } from "@debo/memory";
+import { Button } from "@debo/ui";
+```
 
 ## Boundaries
 
@@ -66,9 +102,9 @@ Top-level files define how your Mastra project is configured, built, and connect
 - **Verify models:** Always run the provider registry before selecting a model:
 	- `node scripts/provider-registry.mjs --list`
 	- `node scripts/provider-registry.mjs --provider openai`
-- **Provider list:** See the available provider configs at [src/config/providers.ts](src/config/providers.ts).
-- **Default models and provider code:** Runtime helpers and defaults live in [src/lib/ai/openai.ts](src/lib/ai/openai.ts).
-- **User/provider storage:** User API keys, active provider, and configured providers are defined in the DB schema at [src/db/schema.ts](src/db/schema.ts) and managed by server actions in [src/actions/settings.ts](src/actions/settings.ts).
+- **Provider list:** See the available provider configs at [packages/config/src/providers.ts](packages/config/src/providers.ts) (also legacy: [src/config/providers.ts](src/config/providers.ts)).
+- **Default models and provider code:** Runtime helpers and defaults live in [packages/ai/src/openai.ts](packages/ai/src/openai.ts) (also legacy: [src/lib/ai/openai.ts](src/lib/ai/openai.ts)).
+- **User/provider storage:** User API keys, active provider, and configured providers are defined in the DB schema at [packages/db/src/schema.ts](packages/db/src/schema.ts) and managed by server actions in [apps/app/src/actions/settings.ts](apps/app/src/actions/settings.ts).
 - **UI for configuration:** The dashboard UI that lets users add providers and set the active provider is implemented at [src/components/dashboard/settings/provider-card.tsx](src/components/dashboard/settings/provider-card.tsx) and referenced by the settings page.
 - **Mastra guidance:** When writing Mastra agents or workflows, follow the repo's Mastra guidance in this file and the Mastra skill; prefer the provider registry and embedded docs over guessing model names.
 
