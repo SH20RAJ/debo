@@ -56,3 +56,5 @@ next-env.d.ts
 .projects/vault
 .env
 .env.local
+apps/web/.open-next/
+apps/app/.open-next/
