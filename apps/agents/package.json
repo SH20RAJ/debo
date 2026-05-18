@@ -1,0 +1,25 @@
+{
+  "name": "@debo/agents",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'Agents extraction pending - Mastra currently in apps/app'",
+    "build": "echo 'Agents extraction pending'",
+    "deploy": "echo 'Agents extraction pending - skipping deploy'",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@debo/config": "workspace:*",
+    "@debo/db": "workspace:*",
+    "@debo/ai": "workspace:*",
+    "@debo/memory": "workspace:*",
+    "@debo/types": "workspace:*",
+    "@mastra/core": "^1.31.0",
+    "@mastra/ai-sdk": "^1.4.1",
+    "@mastra/memory": "^1.17.4",
+    "@composio/mastra": "0.9.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.4"
+  }
+}

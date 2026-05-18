@@ -1,0 +1,20 @@
+{
+  "name": "@debo/types",
+  "version": "0.1.0",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./insights": "./src/insights.ts",
+    "./chat": "./src/chat.ts",
+    "./memory": "./src/memory.ts",
+    "./journal": "./src/journal.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "echo 'types package - no build needed'"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.4",
+    "zod": "^4.4.3"
+  }
+}

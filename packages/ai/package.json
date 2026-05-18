@@ -1,0 +1,28 @@
+{
+  "name": "@debo/ai",
+  "version": "0.1.0",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./openai": "./src/openai.ts",
+    "./embeddings": "./src/embeddings.ts",
+    "./ranking": "./src/ranking.ts",
+    "./extract": "./src/extract.ts",
+    "./context": "./src/context.ts",
+    "./chunking": "./src/chunking.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "echo 'ai package - no build needed'"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^3.0.53",
+    "@ai-sdk/anthropic": "^3.0.71",
+    "ai": "6",
+    "openai": "^6.35.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.4",
+    "zod": "^4.4.3"
+  }
+}

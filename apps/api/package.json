@@ -1,0 +1,20 @@
+{
+  "name": "@debo/api",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'API extraction pending - routes currently in apps/app'",
+    "build": "echo 'API extraction pending'",
+    "deploy": "echo 'API extraction pending - skipping deploy'",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@debo/config": "workspace:*",
+    "@debo/db": "workspace:*",
+    "@debo/ai": "workspace:*",
+    "@debo/types": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.4"
+  }
+}

@@ -2,6 +2,10 @@
   "name": "debo",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build --webpack",
@@ -10,7 +14,19 @@
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv ./cloudflare-env.d.ts",
-    "voice": "node --import tsx src/workers/voice-agent.ts dev"
+    "voice": "node --import tsx src/workers/voice-agent.ts dev",
+    "db:push": "bun run --filter '@debo/db' db:push",
+    "build:packages": "bun run --filter './packages/*' build",
+    "build:web": "bun run --filter '@debo/web' build",
+    "build:app": "bun run --filter '@debo/app' build",
+    "build:api": "bun run --filter '@debo/api' build",
+    "build:agents": "bun run --filter '@debo/agents' build",
+    "deploy:web": "bun run --filter '@debo/web' deploy",
+    "deploy:app": "bun run --filter '@debo/app' deploy",
+    "deploy:api": "bun run --filter '@debo/api' deploy",
+    "deploy:agents": "bun run --filter '@debo/agents' deploy",
+    "deploy:voice": "bun run --filter '@debo/voice-worker' deploy",
+    "deploy:all": "bun scripts/deploy-all.mjs"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.71",
@@ -163,7 +179,10 @@
     "use-file-picker": "2.1.2",
     "vaul": "^1.1.2",
     "zod": "^4.4.3",
-    "zustand": "^5.0.13"
+    "zustand": "^5.0.13",
+    "@radix-ui/react-dropdown-menu": "^2.1.16",
+    "@radix-ui/react-tooltip": "^1.1.14",
+    "uuid": "^11.0.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

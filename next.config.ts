@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "64mb",
     },
   },
-  serverExternalPackages: ["@mastra/core", "@mastra/ai-sdk", "@ast-grep/napi", "@libsql/client", "xxhash-wasm", "@libsql/isomorphic-ws"],
+  serverExternalPackages: ["@mastra/core", "@mastra/ai-sdk", "@ast-grep/napi", "@libsql/client", "libsql", "@mastra/libsql", "xxhash-wasm", "@libsql/isomorphic-ws"],
 };
 
 export default nextConfig;

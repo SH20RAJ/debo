@@ -1,0 +1,22 @@
+{
+  "name": "@debo/memory",
+  "version": "0.1.0",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./extract": "./src/extract.ts",
+    "./query": "./src/query.ts",
+    "./store": "./src/store.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "echo 'memory package - no build needed'"
+  },
+  "dependencies": {
+    "mem0ai": "^3.0.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.4",
+    "zod": "^4.4.3"
+  }
+}
