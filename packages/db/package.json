@@ -5,7 +5,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./schema": "./src/schema.ts",
-    "./migrations": "./src/migrations/index.ts"
+    "./client": "./src/index.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
