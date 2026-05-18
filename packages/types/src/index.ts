@@ -1,3 +1,8 @@
 // @debo/types - Shared TypeScript types
-// TODO: Move types from src/types/ here during Phase 2
-export {};
+
+export * from "./insights";
+export * from "./characters";
+export * from "./chat";
+export * from "./memory";
+export * from "./journal";
+export * from "./user";

@@ -5,16 +5,20 @@
   "exports": {
     ".": "./src/index.ts",
     "./insights": "./src/insights.ts",
+    "./characters": "./src/characters.ts",
     "./chat": "./src/chat.ts",
     "./memory": "./src/memory.ts",
-    "./journal": "./src/journal.ts"
+    "./journal": "./src/journal.ts",
+    "./user": "./src/user.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "build": "echo 'types package - no build needed'"
   },
-  "devDependencies": {
-    "typescript": "^5.7.4",
+  "dependencies": {
     "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.4"
   }
 }
