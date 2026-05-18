@@ -11,7 +11,7 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint .",
-    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "deploy": "bun scripts/deploy-all.mjs",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv ./cloudflare-env.d.ts",
     "voice": "node --import tsx src/workers/voice-agent.ts dev",
@@ -26,7 +26,8 @@
     "deploy:api": "bun run --filter '@debo/api' deploy",
     "deploy:agents": "bun run --filter '@debo/agents' deploy",
     "deploy:voice": "bun run --filter '@debo/voice-worker' deploy",
-    "deploy:all": "bun scripts/deploy-all.mjs"
+    "deploy:all": "bun scripts/deploy-all.mjs",
+    "deploy:legacy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.71",
