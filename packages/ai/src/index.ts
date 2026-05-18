@@ -1,3 +1,8 @@
-// @debo/ai - AI model providers and utilities
-// TODO: Move from src/lib/ai/ here during Phase 2
-export {};
+// @debo/ai — AI model providers, embeddings, ranking, extraction, chunking, and context utilities
+
+export * from "./openai";
+export * from "./embeddings";
+export * from "./extract";
+export * from "./ranking";
+export * from "./chunking";
+export * from "./context";
