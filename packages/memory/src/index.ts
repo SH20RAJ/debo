@@ -1,3 +1,9 @@
 // @debo/memory - Memory graph and vector search
-// TODO: Move from src/lib/memory/ and src/lib/vector/ here during Phase 2
-export {};
+
+export * from "./extract";
+export * from "./query";
+export * from "./store";
+export * from "./vector/qdrant";
+export * from "./vector/search";
+export * from "./life/graph";
+export * from "./life/timeline";
