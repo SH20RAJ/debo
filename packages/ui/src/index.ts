@@ -1,3 +1,15 @@
 // @debo/ui - Shared UI components
-// TODO: Move shared UI components from src/components/ui/ here during Phase 2
-export {};
+
+export * from "./utils"
+export * from "./badge"
+export * from "./button"
+export * from "./card"
+export * from "./dialog"
+export * from "./input"
+export * from "./scroll-area"
+export * from "./separator"
+export * from "./skeleton"
+export * from "./tabs"
+export * from "./theme-provider"
+export * from "./theme-toggle"
+export * from "./tooltip"
