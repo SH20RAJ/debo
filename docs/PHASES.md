@@ -2,6 +2,13 @@
 
 This document meticulously tracks the execution phases, architectural decisions, and granular sub-tasks of the Debo application.
 
+## Phase 0: Monorepo Migration
+**Goal:** Transition from a monolithic repository to a Bun-powered monorepo for scalability.
+- [x] Configure Bun workspaces for `apps/*` and `packages/*`.
+- [x] Extract shared logic into `@debo/db`, `@debo/ai`, `@debo/memory`, and `@debo/ui`.
+- [x] Split landing page into `apps/web` and dashboard into `apps/app`.
+- [x] Establish unified deploy orchestration via `bun run deploy`.
+
 ## Phase 1: Foundation & Tooling 
 **Goal:** Establish the monolithic repository and strictly define UI design systems and database connectors.
 - [x] Clean out generic Next.js boilerplate from App Router.

@@ -7,31 +7,40 @@ Debo is a **Bun monorepo** with separated apps and shared packages:
 ```
 debo/
 ├── apps/
-│   ├── web/              # Public landing page (debo.life) — Cloudflare worker "debo"
-│   ├── app/              # Product dashboard (app.debo.life) — Cloudflare worker "debo-app"
-│   ├── api/              # Backend API (stub — pending extraction)
-│   ├── agents/           # Mastra agents (stub — pending extraction)
-│   └── voice-worker/     # LiveKit voice (stub — pending extraction)
+│   ├── web/              # Public landing page (debo.life)
+│   ├── app/              # Product dashboard (app.debo.life)
+│   ├── api/              # Standalone API service
+│   ├── agents/           # Mastra agents service
+│   └── voice-worker/     # Real-time voice agent service
 ├── packages/
 │   ├── db/               # Drizzle schema, DB client, migrations
-│   ├── ai/               # Model providers, embeddings, ranking, extraction
-│   ├── memory/           # Memory graph, vector search, Qdrant, life timeline
-│   ├── config/           # Env validation, providers, constants, utilities
-│   ├── types/            # Shared TypeScript types and Zod schemas
-│   └── ui/               # Shared UI components (button, card, dialog, etc.)
-└── src/                  # Legacy monolithic source (backward compat)
+│   ├── ai/               # AI SDK wrappers, embeddings, extraction
+│   ├── memory/           # Memory graph, vector search, Qdrant
+│   ├── config/           # Env validation, shared constants
+│   ├── types/            # Shared TypeScript types
+│   └── ui/               # Shared UI components (shadcn/ui)
+└── scripts/              # Orchestration and deploy scripts
 ```
 
 ### Package Dependency Graph
 
-```
-apps/app ──→ @debo/db ──→ drizzle-orm, @neondatabase/serverless
-    │    ──→ @debo/ai ──→ @ai-sdk/openai, ai, openai
-    │    ──→ @debo/memory ──→ mem0ai, drizzle-orm
-    │    ──→ @debo/config ──→ clsx, tailwind-merge, zod
-    │    ──→ @debo/types ──→ zod
-    │    ──→ @debo/ui ──→ radix-ui, class-variance-authority, lucide-react
-apps/web ──→ next, react, @stackframe/stack (self-contained landing)
+```mermaid
+graph TD
+    App[apps/app] --> DB[@debo/db]
+    App --> AI[@debo/ai]
+    App --> Memory[@debo/memory]
+    App --> UI[@debo/ui]
+    App --> Config[@debo/config]
+    
+    Web[apps/web] --> UI
+    Web --> Config
+    
+    Agents[apps/agents] --> AI
+    Agents --> Memory
+    Agents --> DB
+    
+    Memory --> AI
+    Memory --> DB
 ```
 
 ### Deployment

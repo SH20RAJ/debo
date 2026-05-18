@@ -32,10 +32,12 @@
 
 ## Key Modules
 
-- **`src/mastra`**: The neural core. Agents for extraction, synthesis, and research.
-- **`src/lib/memory`**: The memory graph architecture.
-- **`src/lib/mcp`**: Server/Client for Model Context Protocol.
-- **`src/workers`**: Real-time voice and multimodal processing agents.
+- **`apps/app`**: The core dashboard and API handlers.
+- **`apps/web`**: The public landing page.
+- **`packages/db`**: Central database schema and migrations.
+- **`packages/ai`**: Shared AI SDK wrappers and utilities.
+- **`packages/memory`**: Memory extraction and vector retrieval logic.
+- **`packages/ui`**: Shared UI component library.
 
 ## Strategic Infrastructure
 

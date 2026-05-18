@@ -8,6 +8,7 @@ Debo is in the intelligence foundation stage.
 
 The core system already has the right shape:
 
+- **Bun Monorepo Structure**: Separated apps (`web`, `app`, `api`, `agents`) and shared packages (`db`, `ai`, `memory`, `ui`).
 - journals are stored in Neon Postgres,
 - journal text is indexed in Qdrant,
 - durable memory is handled by the in-house memory engine,

@@ -42,18 +42,21 @@ This is a **Bun monorepo** with separated apps and shared packages.
 ### Apps
 | App | Description | Worker |
 |-----|-------------|--------|
-| `apps/web` | Landing page (debo.life) | `debo` |
-| `apps/app` | Dashboard + API + agents | `debo-app` |
+| `apps/web` | Main landing page (debo.life) | `debo` |
+| `apps/app` | Core dashboard, API, and agents | `debo-app` |
+| `apps/api` | API service (Cloudflare) | `debo-api` |
+| `apps/agents` | AI Agent service (Mastra) | `debo-agents` |
+| `apps/voice-worker` | Real-time voice agent (LiveKit) | `debo-voice` |
 
 ### Packages
 | Package | Description |
 |---------|-------------|
-| `@debo/db` | Drizzle schema, DB client, migrations |
-| `@debo/ai` | Model providers, embeddings, ranking |
-| `@debo/memory` | Memory graph, vector search, Qdrant |
-| `@debo/config` | Env validation, constants, utilities |
-| `@debo/types` | Shared TypeScript types |
-| `@debo/ui` | Shared UI components |
+| `@debo/db` | Drizzle schema, DB client, and migrations |
+| `@debo/ai` | AI SDK wrappers, embeddings, and extraction |
+| `@debo/memory` | Life graph and context retrieval |
+| `@debo/config` | Shared configuration and environment validation |
+| `@debo/types` | Shared TypeScript types and Zod schemas |
+| `@debo/ui` | Shared UI components (shadcn/ui) |
 
 See [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) and [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md).
 
@@ -63,29 +66,33 @@ See [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) and [docs/DEPLOYMENT.md](./do
 # Install dependencies
 bun install
 
-# Copy environment variables
-cp .env.example .env.local
+# Run development server (App)
+bun dev
 
-# Set up database
-bun run db:push
-
-# Run development server
-bun run dev
+# Run other apps
+bun run dev:web    # Landing page
+bun run dev:api    # API service
 ```
 
 Then open [http://localhost:3000](http://localhost:3000)
 
 ## Project Structure
 
-```
-src/
-├── app/           # Next.js App Router pages
-├── actions/       # Server Actions (auth, chat, journals, memories)
-├── components/    # UI components (dashboard, landing, chat)
-├── db/            # Drizzle ORM schemas
-├── features/      # Scalable product modules such as Characters
-├── lib/           # Core logic (AI, vector search, memory)
-└── mastra/        # Mastra AI agents
+```bash
+├── apps/
+│   ├── web/          # Next.js landing page
+│   ├── app/          # Core dashboard application
+│   ├── api/          # Standalone API services
+│   ├── agents/       # AI agents and workflows
+│   └── voice-worker/ # Real-time voice agent
+├── packages/
+│   ├── db/           # Database schema and migrations
+│   ├── ai/           # AI and embedding logic
+│   ├── memory/       # Memory engine and vector search
+│   ├── ui/           # Shared React components
+│   ├── config/       # Shared configuration
+│   └── types/        # Shared TypeScript types
+└── scripts/          # Orchestration and deploy scripts
 ```
 
 ## Philosophy

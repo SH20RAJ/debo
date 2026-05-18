@@ -47,7 +47,17 @@ This is a **Bun monorepo** with apps and shared packages.
 | `packages/memory`      | Memory graph, vector search, Qdrant helpers                                                                                              |
 | `packages/config`      | Env validation, shared constants, runtime config                                                                                         |
 | `packages/types`       | Shared TypeScript types and Zod schemas                                                                                                  |
-| `packages/ui`          | Shared UI components                                                                                                                     |
+### Monorepo Structure
+
+| Package/App | Description |
+| ---------------------------- | ------------------------------------------------------------------------ |
+| `apps/app`                   | Main product dashboard and API backend.                                  |
+| `apps/web`                   | Public landing page.                                                     |
+| `apps/agents`                | Standalone AI agent service.                                             |
+| `packages/db`                | Shared database schema and migrations.                                   |
+| `packages/ai`                | Shared AI utilities and provider logic.                                  |
+| `packages/memory`            | Shared memory extraction and vector search logic.                        |
+| `packages/ui`                | Shared React component library.                                          |
 
 ### Mastra (inside apps/app)
 
@@ -62,10 +72,10 @@ This is a **Bun monorepo** with apps and shared packages.
 
 | File                  | Description                                                                                                       |
 | --------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `src/mastra/index.ts` | Central entry point where you configure and initialize Mastra (legacy location).                                  |
-| `.env.example`        | Template for environment variables - copy and rename to `.env` to add your secret [model provider](/models) keys. |
+| `.env.example`        | Template for environment variables.                                                                               |
 | `package.json`        | Bun workspace root — defines workspaces, shared scripts, and dependencies.                                         |
 | `tsconfig.base.json`  | Shared TypeScript compiler options extended by all workspaces.                                                     |
+
 
 ### Workspace Package Usage
 
@@ -101,11 +111,12 @@ import { Button } from "@debo/ui";
 - **Model format:** Use the `provider/model-name` format everywhere (for example `openai/gpt-5.4`).
 - **Verify models:** Always run the provider registry before selecting a model:
 	- `node scripts/provider-registry.mjs --list`
-	- `node scripts/provider-registry.mjs --provider openai`
-- **Provider list:** See the available provider configs at [packages/config/src/providers.ts](packages/config/src/providers.ts) (also legacy: [src/config/providers.ts](src/config/providers.ts)).
-- **Default models and provider code:** Runtime helpers and defaults live in [packages/ai/src/openai.ts](packages/ai/src/openai.ts) (also legacy: [src/lib/ai/openai.ts](src/lib/ai/openai.ts)).
-- **User/provider storage:** User API keys, active provider, and configured providers are defined in the DB schema at [packages/db/src/schema.ts](packages/db/src/schema.ts) and managed by server actions in [apps/app/src/actions/settings.ts](apps/app/src/actions/settings.ts).
-- **UI for configuration:** The dashboard UI that lets users add providers and set the active provider is implemented at [src/components/dashboard/settings/provider-card.tsx](src/components/dashboard/settings/provider-card.tsx) and referenced by the settings page.
+	- Register new agents, tools, workflows, and scorers in `apps/app/src/mastra/index.ts`.
+	- **Provider list:** See the available provider configs at `packages/config/src/providers.ts`.
+	- **Default models and provider code:** Runtime helpers and defaults live in `packages/ai/src/openai.ts`.
+	- **User/provider storage:** User API keys, active provider, and configured providers are defined in the DB schema at `packages/db/src/schema.ts` and managed by server actions in `apps/app/src/actions/settings.ts`.
+	- **UI for configuration:** The dashboard UI that lets users add providers and set the active provider is implemented at `apps/app/src/components/dashboard/settings/provider-card.tsx` and referenced by the settings page.
+
 - **Mastra guidance:** When writing Mastra agents or workflows, follow the repo's Mastra guidance in this file and the Mastra skill; prefer the provider registry and embedded docs over guessing model names.
 
 <!-- stripe-projects-cli managed:agents-md:start -->

@@ -16,38 +16,52 @@ Debo is designed to be a "quietly-confident" space for reflection. When contribu
 - [Bun](https://bun.sh/) (Runtime & Package Manager)
 - [Neon](https://neon.tech/) (Postgres Database)
 - [Stack Auth](https://stack-auth.com/) (Authentication)
-- [NVIDIA NIM](https://build.nvidia.com/) (LLM Inference - OpenAI compatible)
 - [Qdrant](https://qdrant.tech/) (Vector Search)
 
 ### 2. Initial Setup
-\`\`\`bash
+```bash
 # Fork and clone the repository
 git clone https://github.com/YOUR_USERNAME/debo.git
 cd debo
 
 # Install dependencies
 bun install
+```
 
-# Setup environment variables
-cp .env.example .env.local
-# Edit .env.local with your keys
-\`\`\`
+### 3. Environment Variables
+Each app has its own environment requirements. Copy the relevant `.env.example` files:
+```bash
+cp apps/app/.env.example apps/app/.env.local
+cp apps/web/.env.example apps/web/.env.local
+```
 
-### 3. Database & Auth
-\`\`\`bash
-# Sync your database schema
+### 4. Database & Auth
+```bash
+# Sync your database schema (scoped to the db package)
 bun run db:push
+```
 
-# Generate Cloudflare types (if working on workers)
-bun run cf-typegen
-\`\`\`
+### 5. Run Development Server
+```bash
+# Run the main application
+bun dev
 
-### 4. Run Development Server
-\`\`\`bash
-bun run dev
-\`\`\`
+# Or run specific apps
+bun run dev:web
+bun run dev:api
+```
 
-## 💻 Coding Standards
+## 💻 Monorepo Structure
+
+Debo uses a **Bun monorepo** to separate concerns:
+
+- **`apps/*`**: Deployable applications (Web, App, API, Agents).
+- **`packages/*`**: Shared logic and configuration used across apps.
+
+When adding a new feature:
+1. **Shared Logic**: If the logic (e.g., a new DB table or AI utility) is used by multiple apps, add it to the corresponding package in `packages/`.
+2. **UI Components**: Add shared components to `packages/ui`.
+3. **App Logic**: Add app-specific routes, actions, or components to the relevant app in `apps/`.
 
 - **React 19 & Next.js 16**: Use functional components, Server Components by default, and Server Actions for data mutations.
 - **TypeScript**: Strict type safety is required. Avoid \`any\`.
