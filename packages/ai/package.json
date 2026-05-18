@@ -20,7 +20,8 @@
     "@ai-sdk/anthropic": "^3.0.71",
     "@debo/memory": "workspace:*",
     "ai": "6",
-    "openai": "^6.35.0"
+    "openai": "^6.35.0",
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
     "typescript": "^5.7.4",
