@@ -1,0 +1,17 @@
+{
+  "name": "jarvis-voice-agent",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node --env-file=.env agent.js dev",
+    "start": "node --env-file=.env agent.js start",
+    "client": "node --env-file=.env server.js"
+  },
+  "dependencies": {
+    "@livekit/agents": "^1.4.2",
+    "@livekit/agents-plugin-silero": "^1.4.2",
+    "@livekit/rtc-node": "^0.13.28",
+    "livekit-server-sdk": "^2.12.0",
+    "zod": "^3.23.0"
+  }
+}
