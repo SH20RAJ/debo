@@ -1,9 +1,36 @@
+import { stackClientApp } from "@/stack/client";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
+/**
+ * Get the current Stack Auth access token.
+ * Returns null if user is not signed in.
+ */
+async function getAccessToken(): Promise<string | null> {
+  try {
+    const user = await stackClientApp.getUser();
+    if (!user) return null;
+    return await user.getAccessToken();
+  } catch {
+    return null;
+  }
+}
+
 async function fetchApi(path: string, options?: RequestInit) {
+  const token = await getAccessToken();
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...((options?.headers as Record<string, string>) ?? {}),
+  };
+
+  if (token) {
+    headers["x-stack-access-token"] = token;
+  }
+
   const res = await fetch(`${API_URL}${path}`, {
     ...options,
-    headers: { "Content-Type": "application/json", ...options?.headers },
+    headers,
   });
   if (!res.ok) throw new Error(`API error: ${res.status}`);
   return res.json();

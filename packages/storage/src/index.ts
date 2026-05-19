@@ -10,6 +10,7 @@ export {
   getPresignedDownloadUrl,
   deleteObject,
   headObject,
+  isR2Configured,
 } from "./r2.js";
 
 export type { PresignedUrlOptions } from "./r2.js";

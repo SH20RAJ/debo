@@ -9,7 +9,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@composio/core": "^0.10.0",
     "@debo/db": "workspace:*",
+    "@debo/memory": "workspace:*",
     "@debo/storage": "workspace:*",
     "@debo/types": "workspace:*",
     "dotenv": "^16.4.7",

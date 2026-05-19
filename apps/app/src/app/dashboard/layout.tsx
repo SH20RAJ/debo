@@ -18,13 +18,11 @@ export default function DashboardLayout({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [commandMenuOpen, setCommandMenuOpen] = useState(false);
 
-  // Pages with their own right rail hide the default ContextRail
   const hideContextRail =
     pathname === "/dashboard/ask" ||
     pathname.startsWith("/dashboard/journal") ||
     pathname.startsWith("/dashboard/library");
 
-  // Command menu keyboard shortcut
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
@@ -36,7 +34,6 @@ export default function DashboardLayout({
     return () => document.removeEventListener("keydown", handler);
   }, []);
 
-  // Collapse sidebar on small screens
   useEffect(() => {
     const mql = window.matchMedia("(max-width: 768px)");
     const handler = (e: MediaQueryListEvent | MediaQueryList) => {
@@ -48,7 +45,6 @@ export default function DashboardLayout({
     return () => mql.removeEventListener("change", handler);
   }, []);
 
-  // Close mobile sidebar on route change
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
@@ -56,7 +52,6 @@ export default function DashboardLayout({
   return (
     <TooltipProvider>
       <div className="flex h-screen overflow-hidden bg-background">
-        {/* Mobile overlay */}
         {mobileOpen && (
           <div
             className="fixed inset-0 z-30 bg-black/40 backdrop-blur-[2px] md:hidden"
@@ -64,7 +59,6 @@ export default function DashboardLayout({
           />
         )}
 
-        {/* Sidebar */}
         <div
           className={
             mobileOpen
@@ -86,23 +80,15 @@ export default function DashboardLayout({
           />
         </div>
 
-        {/* Main area */}
         <div className="flex flex-col flex-1 min-w-0">
-          <Topbar
-            onCommandMenuOpen={() => setCommandMenuOpen(true)}
-          />
-
+          <Topbar onCommandMenuOpen={() => setCommandMenuOpen(true)} />
           <div className="flex flex-1 min-h-0">
             <main className="flex-1 overflow-auto">{children}</main>
             {!hideContextRail && <ContextRail />}
           </div>
         </div>
 
-        {/* Command menu */}
-        <CommandMenu
-          open={commandMenuOpen}
-          onClose={() => setCommandMenuOpen(false)}
-        />
+        <CommandMenu open={commandMenuOpen} onClose={() => setCommandMenuOpen(false)} />
       </div>
     </TooltipProvider>
   );

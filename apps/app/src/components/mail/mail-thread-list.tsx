@@ -96,7 +96,7 @@ export function MailThreadList({ threads, selectedId, onSelect }: MailThreadList
                   </p>
                   <div className="flex items-center gap-1 shrink-0">
                     {isMemorySaved && (
-                      <Brain className="w-3 h-3 text-primary" title="Saved to memory" />
+                      <Brain className="w-3 h-3 text-primary" />
                     )}
                     {isUnread && (
                       <Circle className="w-2 h-2 fill-primary text-primary" />

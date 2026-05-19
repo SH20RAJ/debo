@@ -6,7 +6,7 @@ import { Check, Loader2, AlertCircle, Pause, Lock } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import type { Connector } from "@/lib/mock";
+import type { Connector } from "@/lib/types";
 
 const statusConfig: Record<Connector["status"], { label: string; variant: "secondary" | "default" | "outline"; icon?: React.ComponentType<{ className?: string }> }> = {
   not_connected: { label: "Not connected", variant: "secondary" },

@@ -28,6 +28,16 @@ function getR2Config() {
   };
 }
 
+/** Returns true if all required R2 environment variables are set. */
+export function isR2Configured(): boolean {
+  return !!(
+    process.env.R2_ACCOUNT_ID &&
+    process.env.R2_ACCESS_KEY_ID &&
+    process.env.R2_SECRET_ACCESS_KEY &&
+    process.env.R2_BUCKET_NAME
+  );
+}
+
 // ---------------------------------------------------------------------------
 // S3 client (R2-compatible)
 // ---------------------------------------------------------------------------

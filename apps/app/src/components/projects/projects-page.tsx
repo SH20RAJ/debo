@@ -37,19 +37,19 @@ function ProjectCard({ project }: { project: typeof PROJECTS[number] }) {
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
               <Database className="w-3 h-3" />
-              {project.pinnedMemoryCount} memories
+              {project.pinnedMemories} memories
             </span>
             <span className="flex items-center gap-1">
               <CheckSquare className="w-3 h-3" />
-              {project.openTaskCount} task{project.openTaskCount !== 1 ? "s" : ""}
+              {project.openTasks} task{project.openTasks !== 1 ? "s" : ""}
             </span>
           </div>
 
           <div className="flex -space-x-1.5">
-            {project.people.map((p, i) => (
-              <Avatar key={i} size="sm" className="ring-2 ring-card">
-                <AvatarFallback className={cn("text-[9px] font-bold", avatarColors[p.colorIdx % avatarColors.length])}>
-                  {p.initials}
+            {project.people.map((name, i) => (
+              <Avatar key={i} className="ring-2 ring-card w-6 h-6">
+                <AvatarFallback className={cn("text-[9px] font-bold", avatarColors[i % avatarColors.length])}>
+                  {name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
             ))}
