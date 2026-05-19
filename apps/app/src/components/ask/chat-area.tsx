@@ -16,10 +16,12 @@ export interface Message {
   sources?: SourceData[];
   suggestedActions?: ActionItem[];
   isTyping?: boolean;
+  retrievalActive?: boolean;
 }
 
 interface ChatAreaProps {
   messages: Message[];
+  isResponding?: boolean;
   onPromptClick?: (prompt: string) => void;
 }
 
@@ -29,12 +31,12 @@ const EMPTY_PROMPTS = [
   "Summarize my last 7 days",
 ];
 
-export function ChatArea({ messages, onPromptClick }: ChatAreaProps) {
+export function ChatArea({ messages, isResponding, onPromptClick }: ChatAreaProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, messages.map((m) => m.content).join("")]);
 
   if (messages.length === 0) {
     return (
@@ -68,7 +70,7 @@ export function ChatArea({ messages, onPromptClick }: ChatAreaProps) {
   return (
     <ScrollArea className="flex-1">
       <div className="px-4 py-6 space-y-6">
-        {messages.map((msg) => (
+        {messages.map((msg, idx) => (
           <div
             key={msg.id}
             className={cn(
@@ -94,9 +96,22 @@ export function ChatArea({ messages, onPromptClick }: ChatAreaProps) {
                       <span className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-pulse [animation-delay:0.15s]" />
                       <span className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-pulse [animation-delay:0.3s]" />
                     </div>
+                  ) : msg.retrievalActive ? (
+                    <div className="flex items-center gap-2 py-1">
+                      <Brain className="w-3.5 h-3.5 text-primary animate-pulse" />
+                      <span className="text-xs text-muted-foreground">
+                        Searching your memories...
+                      </span>
+                    </div>
                   ) : (
-                    <p className="text-sm leading-relaxed text-foreground">
+                    <p className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">
                       {msg.content}
+                      {/* Blinking cursor while streaming */}
+                      {msg.role === "assistant" &&
+                        isResponding &&
+                        idx === messages.length - 1 && (
+                          <span className="inline-block w-[2px] h-[14px] bg-primary ml-0.5 align-middle animate-pulse" />
+                        )}
                     </p>
                   )}
                 </Card>

@@ -53,7 +53,26 @@ export const api = {
     get: (id: string) => fetchApi(`/api/people/${id}`),
   },
   projects: { list: () => fetchApi("/api/projects") },
-  ask: { query: (question: string) => fetchApi("/api/ask", { method: "POST", body: JSON.stringify({ question }) }) },
+  ask: {
+    query: (question: string) => fetchApi("/api/ask", { method: "POST", body: JSON.stringify({ question }) }),
+    /**
+     * Stream an ask query via SSE. Returns the raw Response so the caller
+     * can read the body as a ReadableStream of SSE events.
+     */
+    stream: async (question: string, mode?: string) => {
+      const token = await getAccessToken();
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (token) headers["x-stack-access-token"] = token;
+
+      return fetch(`${API_URL}/api/ask`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ question, mode }),
+      });
+    },
+  },
   connectors: {
     list: () => fetchApi("/api/connectors"),
     connect: (provider: string) => fetchApi("/api/connectors/connect", { method: "POST", body: JSON.stringify({ provider }) }),

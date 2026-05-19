@@ -1,179 +1,256 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { ChatArea, type Message } from "./chat-area";
 import { Composer } from "./composer";
-import { SourceRail } from "./source-rail";
+import { SourceRail, type RelatedMemory } from "./source-rail";
 import { type SourceData } from "./source-citation";
-import {
-  ListPlus,
-  MessageSquare,
-  ExternalLink,
-} from "lucide-react";
+import { api } from "@/lib/api";
+import { toast } from "sonner";
 
-// Pre-filled demo conversation
-const DEMO_SOURCES: SourceData[] = [
-  {
-    id: "1",
-    type: "voice",
-    label: "Voice note",
-    detail: "Marketing Sync · 0:12",
-    confidence: "strong",
-    excerpt:
-      "I promised Raj I'll send the finalized Q4 budget allocation by Friday before the board meeting.",
-    timestamp: "0:12",
-    people: ["Raj"],
-    relatedTasks: ["Send Q4 budget to Raj"],
-  },
-  {
-    id: "2",
-    type: "task",
-    label: "Task",
-    detail: "Q4 Budget Follow-up",
-    confidence: "strong",
-  },
-];
+/* ------------------------------------------------------------------ */
+/*  SSE helpers                                                        */
+/* ------------------------------------------------------------------ */
 
-const DEMO_ACTIONS = [
-  { id: "draft-message", label: "Draft message to Raj", icon: MessageSquare },
-  { id: "create-task", label: "Create task", icon: ListPlus },
-  { id: "open-source", label: "Open source", icon: ExternalLink },
-];
-
-const DEMO_MESSAGES: Message[] = [
-  {
-    id: "demo-user",
-    role: "user",
-    content: "What did I promise Raj?",
-  },
-  {
-    id: "demo-assistant",
-    role: "assistant",
-    content:
-      "You promised Raj that you would send the finalized Q4 budget allocation by Friday before the board meeting.",
-    sources: DEMO_SOURCES,
-    suggestedActions: DEMO_ACTIONS,
-  },
-];
-
-// Mock responses for new user messages
-const MOCK_RESPONSES: Record<
-  string,
-  { content: string; sources: SourceData[]; actions?: typeof DEMO_ACTIONS }
-> = {
-  default: {
-    content:
-      "I searched your memories but couldn't find a specific source for that. I can still help reason from the current conversation, but I won't treat it as memory. Try saving a note or connecting a source first.",
-    sources: [],
-  },
-  ideas: {
-    content:
-      "You saved several ideas about Debo across 3 journal entries: the concept of a private memory OS, source-backed trust as the main differentiator, and the capture-process-ask-answer loop. You also sketched an early product vision in a voice note last Thursday.",
-    sources: [
-      {
-        id: "s1",
-        type: "journal",
-        label: "Journal",
-        detail: "Product Vision · May 12",
-        confidence: "strong",
-        excerpt: "Debo should feel like your private AI memory desk...",
-        people: [],
-      },
-      {
-        id: "s2",
-        type: "voice",
-        label: "Voice note",
-        detail: "Late Night Ideas · Thursday",
-        confidence: "partial",
-        timestamp: "2:34",
-      },
-    ],
-    actions: [
-      { id: "create-task", label: "Create task", icon: ListPlus },
-      { id: "draft-message", label: "Draft message", icon: MessageSquare },
-    ],
-  },
-  summary: {
-    content:
-      "Over the last 7 days you captured 12 memories: 4 journal entries, 3 voice notes, 2 uploaded PDFs, and 3 saved links. You mentioned Raj 5 times, discussed Q4 budget planning 3 times, and had 2 tasks extracted. Your most active day was Tuesday with 4 captures.",
-    sources: [
-      {
-        id: "s1",
-        type: "journal",
-        label: "Journal",
-        detail: "Weekly activity",
-        confidence: "strong",
-      },
-    ],
-    actions: [
-      { id: "create-task", label: "Create task", icon: ListPlus },
-      { id: "open-source", label: "Open source", icon: ExternalLink },
-    ],
-  },
-};
-
-function getMockResponse(input: string): {
-  content: string;
-  sources: SourceData[];
-  actions?: typeof DEMO_ACTIONS;
-} {
-  const lower = input.toLowerCase();
-  if (lower.includes("idea") || lower.includes("debo"))
-    return MOCK_RESPONSES.ideas;
-  if (
-    lower.includes("summar") ||
-    lower.includes("7 day") ||
-    lower.includes("week")
-  )
-    return MOCK_RESPONSES.summary;
-  return MOCK_RESPONSES.default;
+interface AskEvent {
+  type: string;
+  [key: string]: unknown;
 }
 
-export function AskPage() {
-  const [messages, setMessages] = useState<Message[]>(DEMO_MESSAGES);
-  const [activeSources, setActiveSources] = useState<SourceData[]>(
-    DEMO_SOURCES
-  );
-  const [isResponding, setIsResponding] = useState(false);
+/** Robustly parse SSE events from a text chunk, handling partial lines. */
+function createSSEParser() {
+  let buffer = "";
 
-  const handleSend = useCallback((text: string) => {
+  return function parse(chunk: string): AskEvent[] {
+    buffer += chunk;
+    const events: AskEvent[] = [];
+    const parts = buffer.split("\n\n");
+
+    // Keep the last part as it may be incomplete
+    buffer = parts.pop() ?? "";
+
+    for (const part of parts) {
+      for (const line of part.split("\n")) {
+        if (line.startsWith("data: ")) {
+          try {
+            events.push(JSON.parse(line.slice(6)));
+          } catch {
+            // skip malformed JSON
+          }
+        }
+      }
+    }
+    return events;
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/*  Map API source data -> UI SourceData                                */
+/* ------------------------------------------------------------------ */
+
+function mapSource(raw: Record<string, unknown>): SourceData {
+  return {
+    id: String(raw.id ?? crypto.randomUUID()),
+    type: (raw.type as SourceData["type"]) ?? "file",
+    label: String(raw.label ?? raw.title ?? "Source"),
+    detail: String(raw.detail ?? raw.meta ?? ""),
+    confidence: (raw.confidence as SourceData["confidence"]) ?? "partial",
+    excerpt: raw.excerpt ? String(raw.excerpt) : undefined,
+    timestamp: raw.timestamp ? String(raw.timestamp) : undefined,
+    people: raw.people as string[] | undefined,
+    relatedTasks: raw.relatedTasks as string[] | undefined,
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/*  Component                                                          */
+/* ------------------------------------------------------------------ */
+
+export function AskPage() {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [activeSources, setActiveSources] = useState<SourceData[]>([]);
+  const [relatedMemories, setRelatedMemories] = useState<RelatedMemory[]>([]);
+  const [followUps, setFollowUps] = useState<string[]>([]);
+  const [isResponding, setIsResponding] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
+
+  /* ---------------------------------------------------------------- */
+  /*  Send handler with SSE streaming                                  */
+  /* ---------------------------------------------------------------- */
+
+  const handleSend = useCallback(async (text: string, mode?: string) => {
     const userMsg: Message = {
       id: `user-${Date.now()}`,
       role: "user",
       content: text,
     };
 
-    const typingMsg: Message = {
-      id: `typing-${Date.now()}`,
+    // Create an empty assistant message we'll stream tokens into
+    const assistantId = `assistant-${Date.now()}`;
+    const assistantMsg: Message = {
+      id: assistantId,
       role: "assistant",
       content: "",
-      isTyping: true,
     };
 
-    setMessages((prev) => [...prev, userMsg, typingMsg]);
+    setMessages((prev) => [...prev, userMsg, assistantMsg]);
     setIsResponding(true);
 
-    setTimeout(() => {
-      const response = getMockResponse(text);
-      const assistantMsg: Message = {
-        id: `assistant-${Date.now()}`,
-        role: "assistant",
-        content: response.content,
-        sources: response.sources,
-        suggestedActions: response.actions,
-      };
+    // Reset rail data for the new query
+    setActiveSources([]);
+    setRelatedMemories([]);
+    setFollowUps([]);
 
-      setMessages((prev) =>
-        prev.filter((m) => !m.isTyping).concat(assistantMsg)
-      );
-      setActiveSources(response.sources);
+    // Accumulators for streaming
+    let answer = "";
+    const sources: SourceData[] = [];
+    const related: RelatedMemory[] = [];
+    const followupQuestions: string[] = [];
+
+    const abort = new AbortController();
+    abortRef.current = abort;
+
+    try {
+      const response = await api.ask.stream(text, mode);
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error("No response body");
+
+      const decoder = new TextDecoder();
+      const parse = createSSEParser();
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const events = parse(decoder.decode(value, { stream: true }));
+
+        for (const event of events) {
+          switch (event.type) {
+            case "retrieval_started": {
+              // Show retrieval loading indicator in the assistant message
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === assistantId
+                    ? { ...m, content: "", retrievalActive: true }
+                    : m
+                )
+              );
+              break;
+            }
+
+            case "source_found": {
+              const src = mapSource(event as Record<string, unknown>);
+              sources.push(src);
+              setActiveSources([...sources]);
+              break;
+            }
+
+            case "answer_delta": {
+              const token = String(event.token ?? event.delta ?? event.text ?? "");
+              answer += token;
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === assistantId
+                    ? { ...m, content: answer, retrievalActive: false }
+                    : m
+                )
+              );
+              break;
+            }
+
+            case "citation_added": {
+              const citation = mapSource(event as Record<string, unknown>);
+              // Merge into sources if not already there
+              if (!sources.find((s) => s.id === citation.id)) {
+                sources.push(citation);
+                setActiveSources([...sources]);
+              }
+              break;
+            }
+
+            case "related_memory": {
+              related.push({
+                id: String(event.id ?? crypto.randomUUID()),
+                type: (event.sourceType as SourceData["type"]) ?? "file",
+                title: String(event.title ?? ""),
+                meta: String(event.meta ?? ""),
+              });
+              setRelatedMemories([...related]);
+              break;
+            }
+
+            case "suggested_followup": {
+              const q = String(event.question ?? event.text ?? "");
+              if (q) followupQuestions.push(q);
+              setFollowUps([...followupQuestions]);
+              break;
+            }
+
+            case "done": {
+              // Extract any final metadata the server sends
+              if (event.sources) {
+                const finalSources = (event.sources as Record<string, unknown>[]).map(mapSource);
+                setActiveSources(finalSources);
+              }
+              if (event.followUps || event.follow_ups) {
+                const ups = (event.followUps ?? event.follow_ups) as string[];
+                setFollowUps(ups);
+              }
+              if (event.related) {
+                setRelatedMemories(event.related as RelatedMemory[]);
+              }
+              break;
+            }
+
+            case "error": {
+              throw new Error(String(event.message ?? "Stream error"));
+            }
+          }
+        }
+      }
+    } catch (err: unknown) {
+      if (abort.signal.aborted) return;
+
+      const msg = err instanceof Error ? err.message : "Something went wrong";
+      console.error("Ask stream error:", err);
+      toast.error(msg);
+
+      // If we got no answer content, replace with an error message
+      if (!answer) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === assistantId
+              ? {
+                  ...m,
+                  content:
+                    "I had trouble connecting to your memory. Please try again.",
+                  retrievalActive: false,
+                }
+              : m
+          )
+        );
+      }
+    } finally {
       setIsResponding(false);
-    }, 1000);
+      abortRef.current = null;
+    }
   }, []);
 
   const handlePromptClick = useCallback(
     (prompt: string) => {
-      handleSend(prompt);
+      handleSend(prompt, "Recall");
+    },
+    [handleSend]
+  );
+
+  const handleFollowUpClick = useCallback(
+    (question: string) => {
+      handleSend(question, "Recall");
     },
     [handleSend]
   );
@@ -182,12 +259,17 @@ export function AskPage() {
     <div className="flex h-full">
       {/* Main chat column */}
       <div className="flex-1 flex flex-col min-w-0">
-        <ChatArea messages={messages} onPromptClick={handlePromptClick} />
+        <ChatArea messages={messages} isResponding={isResponding} onPromptClick={handlePromptClick} />
         <Composer onSend={handleSend} isResponding={isResponding} />
       </div>
 
       {/* Right source rail */}
-      <SourceRail sources={activeSources} />
+      <SourceRail
+        sources={activeSources}
+        related={relatedMemories}
+        followUps={followUps}
+        onFollowUpClick={handleFollowUpClick}
+      />
     </div>
   );
 }

@@ -10,7 +10,7 @@ import { Mic, Paperclip, SlidersHorizontal, Send } from "lucide-react";
 const MODES = ["Recall", "Summarize", "Find tasks", "Compare", "Plan", "Draft"];
 
 interface ComposerProps {
-  onSend: (message: string) => void;
+  onSend: (message: string, mode: string) => void;
   isResponding?: boolean;
 }
 
@@ -21,7 +21,7 @@ export function Composer({ onSend, isResponding }: ComposerProps) {
 
   const handleSend = () => {
     if (!value.trim() || isResponding) return;
-    onSend(value.trim());
+    onSend(value.trim(), activeMode);
     setValue("");
     inputRef.current?.focus();
   };
