@@ -1,65 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import { Mic } from "lucide-react";
-import { VoiceCard, type VoiceNote } from "./voice-card";
+import { Mic, Phone, PhoneOff } from "lucide-react";
+import { VoiceCard } from "./voice-card";
 import { cn } from "@/lib/utils";
-
-const mockNotes: VoiceNote[] = [
-  {
-    id: "1",
-    title: "Marketing Sync Follow-up",
-    duration: 72,
-    date: "Today, 2:30 PM",
-    transcriptionStatus: "completed",
-    waveform: [0.3, 0.5, 0.8, 0.6, 0.9, 0.4, 0.7, 0.5, 0.8, 0.3, 0.6, 0.9, 0.4, 0.7, 0.5, 0.8, 0.3, 0.6, 0.4, 0.7, 0.5, 0.9, 0.3, 0.6, 0.8, 0.4, 0.7, 0.5, 0.6, 0.3],
-  },
-  {
-    id: "2",
-    title: "Product Ideas - Voice Dump",
-    duration: 145,
-    date: "Today, 11:15 AM",
-    transcriptionStatus: "completed",
-    waveform: [0.2, 0.4, 0.6, 0.3, 0.7, 0.5, 0.8, 0.4, 0.6, 0.9, 0.3, 0.5, 0.7, 0.4, 0.8, 0.6, 0.3, 0.5, 0.7, 0.4, 0.6, 0.8, 0.3, 0.5, 0.7, 0.4, 0.9, 0.6, 0.3, 0.5],
-  },
-  {
-    id: "3",
-    title: "Call with Investor - Quick Notes",
-    duration: 210,
-    date: "Yesterday, 4:00 PM",
-    transcriptionStatus: "completed",
-    waveform: [0.4, 0.6, 0.3, 0.8, 0.5, 0.7, 0.4, 0.9, 0.6, 0.3, 0.5, 0.8, 0.4, 0.7, 0.6, 0.3, 0.5, 0.9, 0.4, 0.7, 0.6, 0.3, 0.8, 0.5, 0.4, 0.7, 0.6, 0.3, 0.5, 0.8],
-  },
-  {
-    id: "4",
-    title: "Morning Reflection",
-    duration: 48,
-    date: "Yesterday, 8:30 AM",
-    transcriptionStatus: "processing",
-    waveform: [0.5, 0.3, 0.7, 0.4, 0.6, 0.8, 0.3, 0.5, 0.7, 0.4, 0.6, 0.3, 0.8, 0.5, 0.4, 0.7, 0.6, 0.3, 0.5, 0.8, 0.4, 0.7, 0.3, 0.6, 0.5, 0.8, 0.4, 0.3, 0.7, 0.5],
-  },
-  {
-    id: "5",
-    title: "Feature Brainstorm - Debo Voice",
-    duration: 95,
-    date: "May 17",
-    transcriptionStatus: "completed",
-    waveform: [0.6, 0.4, 0.8, 0.5, 0.3, 0.7, 0.9, 0.4, 0.6, 0.3, 0.8, 0.5, 0.7, 0.4, 0.6, 0.9, 0.3, 0.5, 0.8, 0.4, 0.7, 0.6, 0.3, 0.5, 0.8, 0.4, 0.7, 0.6, 0.3, 0.9],
-  },
-];
-
-const tabs = ["Voice Notes", "AI Calls", "Transcripts"] as const;
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { VOICE_NOTES } from "@/lib/mock";
 
 export function VoicePage() {
-  const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>("Voice Notes");
   const [isRecording, setIsRecording] = useState(false);
+  const [inCall, setInCall] = useState(false);
 
   return (
-    <div className="p-8 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Voice</h1>
+    <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-8">
+      <div>
+        <h1 className="text-2xl font-bold">Voice</h1>
+        <p className="text-muted-foreground mt-1">Talk to Debo or record voice notes</p>
+      </div>
 
       {/* Record button */}
-      <div className="flex flex-col items-center mb-8">
+      <div className="flex flex-col items-center">
         <button
           onClick={() => setIsRecording(!isRecording)}
           className={cn(
@@ -76,47 +39,75 @@ export function VoicePage() {
         </p>
       </div>
 
+      {/* Voice Call Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Phone className="w-5 h-5 text-primary" />
+            Voice Call with Debo
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {!inCall ? (
+            <div className="text-center py-8">
+              <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <Phone className="w-10 h-10 text-primary" />
+              </div>
+              <p className="text-muted-foreground mb-4">Start a voice conversation with Debo</p>
+              <Button onClick={() => setInCall(true)}>
+                Start Call
+              </Button>
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <div className="w-24 h-24 rounded-full bg-primary flex items-center justify-center mx-auto mb-4 animate-pulse">
+                <Mic className="w-10 h-10 text-primary-foreground" />
+              </div>
+              <Badge variant="outline" className="mb-4">Connected</Badge>
+              <p className="text-muted-foreground mb-4">Talking with Debo...</p>
+              <Button onClick={() => setInCall(false)} variant="destructive">
+                <PhoneOff className="w-4 h-4 mr-2" />
+                End Call
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Tabs */}
-      <div className="flex gap-1 p-1 bg-muted rounded-xl mb-6">
-        {tabs.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={cn(
-              "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200",
-              activeTab === tab
-                ? "bg-card text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
+      <Tabs defaultValue="voice-notes">
+        <TabsList className="w-full mb-6">
+          <TabsTrigger value="voice-notes" className="flex-1">Voice Notes</TabsTrigger>
+          <TabsTrigger value="ai-calls" className="flex-1">AI Calls</TabsTrigger>
+          <TabsTrigger value="transcripts" className="flex-1">Transcripts</TabsTrigger>
+        </TabsList>
 
-      {/* Recordings list */}
-      <div className="space-y-3">
-        {activeTab === "Voice Notes" &&
-          mockNotes.map((note) => <VoiceCard key={note.id} note={note} />)}
+        <TabsContent value="voice-notes">
+          <div className="space-y-3">
+            {VOICE_NOTES.map((note) => (
+              <VoiceCard key={note.id} note={note} />
+            ))}
+          </div>
+        </TabsContent>
 
-        {activeTab === "AI Calls" && (
+        <TabsContent value="ai-calls">
           <div className="text-center py-12">
             <p className="text-muted-foreground">No AI calls yet.</p>
             <p className="text-sm text-muted-foreground mt-1">
               Start a call to debrief your day or plan with Debo.
             </p>
           </div>
-        )}
+        </TabsContent>
 
-        {activeTab === "Transcripts" && (
+        <TabsContent value="transcripts">
           <div className="text-center py-12">
             <p className="text-muted-foreground">Transcripts will appear here.</p>
             <p className="text-sm text-muted-foreground mt-1">
               Completed transcriptions from your voice notes and calls.
             </p>
           </div>
-        )}
-      </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

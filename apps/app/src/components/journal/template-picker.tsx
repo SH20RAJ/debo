@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  X,
   Sunrise,
   Users,
   Lightbulb,
@@ -9,10 +8,20 @@ import {
   BookOpen,
   CalendarDays,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface TemplatePickerProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onSelect: (title: string, content: string) => void;
-  onClose: () => void;
 }
 
 const TEMPLATES = [
@@ -60,50 +69,56 @@ const TEMPLATES = [
   },
 ];
 
-export function TemplatePicker({ onSelect, onClose }: TemplatePickerProps) {
+export function TemplatePicker({
+  open,
+  onOpenChange,
+  onSelect,
+}: TemplatePickerProps) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-card border border-border rounded-2xl shadow-xl w-full max-w-lg mx-4 overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-          <h2 className="text-sm font-bold text-foreground">Choose a template</h2>
-          <button
-            onClick={onClose}
-            className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Choose a template</DialogTitle>
+          <DialogDescription>
+            Pick a starting point for your journal entry.
+          </DialogDescription>
+        </DialogHeader>
 
         {/* Template grid */}
-        <div className="p-4 grid grid-cols-2 gap-2.5 max-h-[60vh] overflow-y-auto">
+        <div className="grid grid-cols-2 gap-2.5 max-h-[60vh] overflow-y-auto py-2">
           {TEMPLATES.map((template) => (
-            <button
+            <Card
               key={template.title}
+              className="cursor-pointer hover:border-primary/30 hover:bg-primary/5 transition-all group"
               onClick={() => onSelect(template.title, template.content)}
-              className="flex flex-col items-start p-3.5 rounded-xl border border-border bg-background hover:border-primary/30 hover:bg-primary/5 transition-all text-left group"
             >
-              <template.icon className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors mb-2" />
-              <p className="text-sm font-semibold text-foreground">
-                {template.title}
-              </p>
-              <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2">
-                {template.description}
-              </p>
-            </button>
+              <CardContent className="p-3.5 space-y-2">
+                <template.icon className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                <div>
+                  <p className="text-sm font-semibold text-foreground">
+                    {template.title}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2">
+                    {template.description}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
 
         {/* Free write option */}
-        <div className="px-5 py-3 border-t border-border">
-          <button
+        <div className="pt-2 border-t border-border">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-xs text-muted-foreground w-full"
             onClick={() => onSelect("Untitled", "")}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
             Or start with a blank page
-          </button>
+          </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

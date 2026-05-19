@@ -9,7 +9,6 @@ import {
   ListPlus,
   MessageSquare,
   ExternalLink,
-  CheckCircle2,
 } from "lucide-react";
 
 // Pre-filled demo conversation
@@ -58,7 +57,10 @@ const DEMO_MESSAGES: Message[] = [
 ];
 
 // Mock responses for new user messages
-const MOCK_RESPONSES: Record<string, { content: string; sources: SourceData[] }> = {
+const MOCK_RESPONSES: Record<
+  string,
+  { content: string; sources: SourceData[]; actions?: typeof DEMO_ACTIONS }
+> = {
   default: {
     content:
       "I searched your memories but couldn't find a specific source for that. I can still help reason from the current conversation, but I won't treat it as memory. Try saving a note or connecting a source first.",
@@ -86,6 +88,10 @@ const MOCK_RESPONSES: Record<string, { content: string; sources: SourceData[] }>
         timestamp: "2:34",
       },
     ],
+    actions: [
+      { id: "create-task", label: "Create task", icon: ListPlus },
+      { id: "draft-message", label: "Draft message", icon: MessageSquare },
+    ],
   },
   summary: {
     content:
@@ -99,67 +105,71 @@ const MOCK_RESPONSES: Record<string, { content: string; sources: SourceData[] }>
         confidence: "strong",
       },
     ],
+    actions: [
+      { id: "create-task", label: "Create task", icon: ListPlus },
+      { id: "open-source", label: "Open source", icon: ExternalLink },
+    ],
   },
 };
 
-function getMockResponse(input: string): { content: string; sources: SourceData[] } {
+function getMockResponse(input: string): {
+  content: string;
+  sources: SourceData[];
+  actions?: typeof DEMO_ACTIONS;
+} {
   const lower = input.toLowerCase();
-  if (lower.includes("idea") || lower.includes("debo")) return MOCK_RESPONSES.ideas;
-  if (lower.includes("summar") || lower.includes("7 day") || lower.includes("week"))
+  if (lower.includes("idea") || lower.includes("debo"))
+    return MOCK_RESPONSES.ideas;
+  if (
+    lower.includes("summar") ||
+    lower.includes("7 day") ||
+    lower.includes("week")
+  )
     return MOCK_RESPONSES.summary;
   return MOCK_RESPONSES.default;
 }
 
 export function AskPage() {
   const [messages, setMessages] = useState<Message[]>(DEMO_MESSAGES);
+  const [activeSources, setActiveSources] = useState<SourceData[]>(
+    DEMO_SOURCES
+  );
   const [isResponding, setIsResponding] = useState(false);
 
-  const handleSend = useCallback(
-    (text: string) => {
-      const userMsg: Message = {
-        id: `user-${Date.now()}`,
-        role: "user",
-        content: text,
-      };
+  const handleSend = useCallback((text: string) => {
+    const userMsg: Message = {
+      id: `user-${Date.now()}`,
+      role: "user",
+      content: text,
+    };
 
-      const typingMsg: Message = {
-        id: `typing-${Date.now()}`,
+    const typingMsg: Message = {
+      id: `typing-${Date.now()}`,
+      role: "assistant",
+      content: "",
+      isTyping: true,
+    };
+
+    setMessages((prev) => [...prev, userMsg, typingMsg]);
+    setIsResponding(true);
+
+    setTimeout(() => {
+      const response = getMockResponse(text);
+      const assistantMsg: Message = {
+        id: `assistant-${Date.now()}`,
         role: "assistant",
-        content: "",
-        isTyping: true,
+        content: response.content,
+        sources: response.sources,
+        suggestedActions: response.actions,
       };
 
-      setMessages((prev) => [...prev, userMsg, typingMsg]);
-      setIsResponding(true);
-
-      setTimeout(() => {
-        const response = getMockResponse(text);
-        const assistantMsg: Message = {
-          id: `assistant-${Date.now()}`,
-          role: "assistant",
-          content: response.content,
-          sources: response.sources,
-          suggestedActions:
-            response.sources.length > 0
-              ? [
-                  { id: "create-task", label: "Create task", icon: ListPlus },
-                  {
-                    id: "draft-message",
-                    label: "Draft message",
-                    icon: MessageSquare,
-                  },
-                ]
-              : undefined,
-        };
-
-        setMessages((prev) =>
-          prev.filter((m) => !m.isTyping).concat(assistantMsg)
-        );
-        setIsResponding(false);
-      }, 1000);
-    },
-    []
-  );
+      setMessages((prev) =>
+        prev.filter((m) => !m.isTyping).concat(assistantMsg)
+      );
+      setActiveSources(response.sources);
+      setIsResponding(false);
+    }, 1000);
+  }, []);
 
   const handlePromptClick = useCallback(
     (prompt: string) => {
@@ -173,11 +183,11 @@ export function AskPage() {
       {/* Main chat column */}
       <div className="flex-1 flex flex-col min-w-0">
         <ChatArea messages={messages} onPromptClick={handlePromptClick} />
-        <Composer onSend={handleSend} />
+        <Composer onSend={handleSend} isResponding={isResponding} />
       </div>
 
       {/* Right source rail */}
-      <SourceRail />
+      <SourceRail sources={activeSources} />
     </div>
   );
 }

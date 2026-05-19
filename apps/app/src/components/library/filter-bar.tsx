@@ -1,40 +1,41 @@
 "use client";
 
-import {
-  Search,
-  LayoutGrid,
-  List,
-  ChevronDown,
-  BookOpen,
-  Mic,
-  FileText,
-  Link as LinkIcon,
-  Users,
-  CheckSquare,
-  Layers,
-} from "lucide-react";
+import { Search, LayoutGrid, List } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { SourceType } from "./library-page";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import type { SourceType } from "@/lib/types";
+
+export type ViewMode = "grid" | "list";
+export type SortMode = "date" | "title";
 
 interface FilterBarProps {
   search: string;
   onSearchChange: (v: string) => void;
-  activeType: SourceType;
-  onTypeChange: (t: SourceType) => void;
-  viewMode: "grid" | "list";
-  onViewModeChange: (v: "grid" | "list") => void;
-  sortMode: "date" | "title";
-  onSortModeChange: (s: "date" | "title") => void;
+  activeType: SourceType | "all";
+  onTypeChange: (t: SourceType | "all") => void;
+  viewMode: ViewMode;
+  onViewModeChange: (v: ViewMode) => void;
+  sortMode: SortMode;
+  onSortModeChange: (s: SortMode) => void;
 }
 
-const TYPE_TABS: { value: SourceType; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { value: "all", label: "All", icon: Layers },
-  { value: "journal", label: "Journal", icon: BookOpen },
-  { value: "voice", label: "Voice", icon: Mic },
-  { value: "file", label: "Files", icon: FileText },
-  { value: "link", label: "Links", icon: LinkIcon },
-  { value: "meeting", label: "Meetings", icon: Users },
-  { value: "task", label: "Tasks", icon: CheckSquare },
+const TYPE_TABS: { value: SourceType | "all"; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "journal", label: "Journal" },
+  { value: "voice", label: "Voice" },
+  { value: "file", label: "Files" },
+  { value: "link", label: "Links" },
+  { value: "meeting", label: "Meetings" },
+  { value: "task", label: "Tasks" },
 ];
 
 export function FilterBar({
@@ -51,78 +52,59 @@ export function FilterBar({
     <div className="space-y-3">
       {/* Search + controls row */}
       <div className="flex items-center gap-3">
-        {/* Search */}
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input
-            type="text"
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          <Input
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search sources..."
-            className="w-full pl-9 pr-3 py-2 text-sm bg-secondary rounded-xl border border-border outline-none focus:ring-1 focus:ring-ring"
+            className="pl-9"
           />
         </div>
 
-        {/* Sort */}
-        <div className="relative">
-          <select
-            value={sortMode}
-            onChange={(e) => onSortModeChange(e.target.value as "date" | "title")}
-            className="appearance-none pl-3 pr-8 py-2 text-xs font-medium bg-secondary rounded-xl border border-border outline-none focus:ring-1 focus:ring-ring cursor-pointer"
-          >
-            <option value="date">Sort by date</option>
-            <option value="title">Sort by title</option>
-          </select>
-          <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
-        </div>
+        <Select value={sortMode} onValueChange={(v) => onSortModeChange(v as SortMode)}>
+          <SelectTrigger size="sm">
+            <SelectValue placeholder="Sort by" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="date">Sort by date</SelectItem>
+            <SelectItem value="title">Sort by title</SelectItem>
+          </SelectContent>
+        </Select>
 
-        {/* View toggle */}
-        <div className="flex items-center bg-secondary rounded-xl border border-border overflow-hidden">
-          <button
+        <div className="flex items-center border rounded-md overflow-hidden">
+          <Button
+            variant={viewMode === "grid" ? "default" : "ghost"}
+            size="icon"
+            className="size-8 rounded-none"
             onClick={() => onViewModeChange("grid")}
-            className={cn(
-              "p-2 transition-colors",
-              viewMode === "grid"
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-            title="Grid view"
           >
-            <LayoutGrid className="w-3.5 h-3.5" />
-          </button>
-          <button
+            <LayoutGrid className="size-3.5" />
+          </Button>
+          <Button
+            variant={viewMode === "list" ? "default" : "ghost"}
+            size="icon"
+            className="size-8 rounded-none"
             onClick={() => onViewModeChange("list")}
-            className={cn(
-              "p-2 transition-colors",
-              viewMode === "list"
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-            title="List view"
           >
-            <List className="w-3.5 h-3.5" />
-          </button>
+            <List className="size-3.5" />
+          </Button>
         </div>
       </div>
 
       {/* Type tabs */}
-      <div className="flex items-center gap-1 overflow-x-auto pb-0.5">
-        {TYPE_TABS.map(({ value, label, icon: Icon }) => (
-          <button
-            key={value}
-            onClick={() => onTypeChange(value)}
-            className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg whitespace-nowrap transition-colors",
-              activeType === value
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-            )}
-          >
-            <Icon className="w-3.5 h-3.5" />
-            {label}
-          </button>
-        ))}
-      </div>
+      <Tabs
+        value={activeType}
+        onValueChange={(v) => onTypeChange(v as SourceType | "all")}
+      >
+        <TabsList variant="line" className="w-full justify-start overflow-x-auto">
+          {TYPE_TABS.map(({ value, label }) => (
+            <TabsTrigger key={value} value={value}>
+              {label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
     </div>
   );
 }

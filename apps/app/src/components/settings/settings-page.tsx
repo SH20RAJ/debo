@@ -3,40 +3,50 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { SettingsSection } from "./settings-section";
-
-const tabs = ["Account", "Appearance", "AI Preferences", "Memory Preferences", "Shortcuts"] as const;
-type Tab = (typeof tabs)[number];
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 
 export function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<Tab>("Account");
-
   return (
-    <div className="p-8 max-w-3xl mx-auto">
+    <div className="p-6 md:p-8 max-w-3xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">Settings</h1>
 
-      {/* Tabs */}
-      <div className="flex gap-1 p-1 bg-muted rounded-xl mb-8 overflow-x-auto">
-        {tabs.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={cn(
-              "py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap",
-              activeTab === tab
-                ? "bg-card text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
+      <Tabs defaultValue="account">
+        <TabsList className="w-full mb-8 overflow-x-auto">
+          <TabsTrigger value="account">Account</TabsTrigger>
+          <TabsTrigger value="appearance">Appearance</TabsTrigger>
+          <TabsTrigger value="ai-preferences">AI Preferences</TabsTrigger>
+          <TabsTrigger value="memory-preferences">Memory Preferences</TabsTrigger>
+          <TabsTrigger value="shortcuts">Shortcuts</TabsTrigger>
+        </TabsList>
 
-      {activeTab === "Account" && <AccountSection />}
-      {activeTab === "Appearance" && <AppearanceSection />}
-      {activeTab === "AI Preferences" && <AIPreferencesSection />}
-      {activeTab === "Memory Preferences" && <MemoryPreferencesSection />}
-      {activeTab === "Shortcuts" && <ShortcutsSection />}
+        <TabsContent value="account">
+          <AccountSection />
+        </TabsContent>
+        <TabsContent value="appearance">
+          <AppearanceSection />
+        </TabsContent>
+        <TabsContent value="ai-preferences">
+          <AIPreferencesSection />
+        </TabsContent>
+        <TabsContent value="memory-preferences">
+          <MemoryPreferencesSection />
+        </TabsContent>
+        <TabsContent value="shortcuts">
+          <ShortcutsSection />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
@@ -46,7 +56,9 @@ function AccountSection() {
     <SettingsSection title="Account" description="Your account information.">
       <div className="space-y-3">
         <Field label="Email" value="shaswat@example.com" />
+        <Separator />
         <Field label="Name" value="Shaswat Raj" />
+        <Separator />
         <Field label="Plan" value="Private Beta" />
       </div>
     </SettingsSection>
@@ -54,48 +66,35 @@ function AccountSection() {
 }
 
 function AppearanceSection() {
-  const [theme, setTheme] = useState<"light" | "dark" | "system">("system");
-  const [density, setDensity] = useState<"comfortable" | "compact">("comfortable");
+  const [theme, setTheme] = useState("system");
+  const [density, setDensity] = useState("comfortable");
 
   return (
     <SettingsSection title="Appearance" description="Customize how Debo looks.">
       <div>
-        <label className="text-sm font-semibold text-foreground mb-2 block">Theme</label>
-        <div className="flex gap-2">
-          {(["light", "dark", "system"] as const).map((t) => (
-            <button
-              key={t}
-              onClick={() => setTheme(t)}
-              className={cn(
-                "py-2 px-4 rounded-xl text-sm font-medium transition-all border-2",
-                theme === t
-                  ? "border-primary bg-primary/5 text-foreground"
-                  : "border-border text-muted-foreground hover:border-primary/20"
-              )}
-            >
-              {t.charAt(0).toUpperCase() + t.slice(1)}
-            </button>
-          ))}
-        </div>
+        <label className="text-sm font-semibold mb-2 block">Theme</label>
+        <Select value={theme} onValueChange={setTheme}>
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="light">Light</SelectItem>
+            <SelectItem value="dark">Dark</SelectItem>
+            <SelectItem value="system">System</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       <div>
-        <label className="text-sm font-semibold text-foreground mb-2 block">Density</label>
-        <div className="flex gap-2">
-          {(["comfortable", "compact"] as const).map((d) => (
-            <button
-              key={d}
-              onClick={() => setDensity(d)}
-              className={cn(
-                "py-2 px-4 rounded-xl text-sm font-medium transition-all border-2",
-                density === d
-                  ? "border-primary bg-primary/5 text-foreground"
-                  : "border-border text-muted-foreground hover:border-primary/20"
-              )}
-            >
-              {d.charAt(0).toUpperCase() + d.slice(1)}
-            </button>
-          ))}
-        </div>
+        <label className="text-sm font-semibold mb-2 block">Density</label>
+        <Select value={density} onValueChange={setDensity}>
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="comfortable">Comfortable</SelectItem>
+            <SelectItem value="compact">Compact</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
     </SettingsSection>
   );
@@ -109,44 +108,54 @@ function AIPreferencesSection() {
 
   return (
     <SettingsSection title="AI Preferences" description="Configure how Debo responds and processes information.">
-      <SelectField
-        label="Default ask mode"
-        value={askMode}
-        onChange={setAskMode}
-        options={[
-          { value: "recall", label: "Recall" },
-          { value: "summarize", label: "Summarize" },
-          { value: "find-tasks", label: "Find tasks" },
-          { value: "compare", label: "Compare" },
-          { value: "plan", label: "Plan" },
-        ]}
-      />
-      <SelectField
-        label="Answer style"
-        value={answerStyle}
-        onChange={setAnswerStyle}
-        options={[
-          { value: "concise", label: "Concise" },
-          { value: "detailed", label: "Detailed" },
-          { value: "bullet-points", label: "Bullet points" },
-        ]}
-      />
-      <SelectField
-        label="Source strictness"
-        value={sourceStrictness}
-        onChange={setSourceStrictness}
-        options={[
-          { value: "strict", label: "Strict - only answer from saved sources" },
-          { value: "moderate", label: "Moderate - prefer sources, allow reasoning" },
-          { value: "relaxed", label: "Relaxed - answer freely" },
-        ]}
-      />
-      <Toggle
-        label="Auto-extract tasks"
-        description="Automatically detect tasks from journals, voice notes, and meetings."
-        checked={autoExtract}
-        onChange={setAutoExtract}
-      />
+      <div>
+        <label className="text-sm font-semibold mb-2 block">Default ask mode</label>
+        <Select value={askMode} onValueChange={setAskMode}>
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="recall">Recall</SelectItem>
+            <SelectItem value="summarize">Summarize</SelectItem>
+            <SelectItem value="find-tasks">Find tasks</SelectItem>
+            <SelectItem value="compare">Compare</SelectItem>
+            <SelectItem value="plan">Plan</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div>
+        <label className="text-sm font-semibold mb-2 block">Answer style</label>
+        <Select value={answerStyle} onValueChange={setAnswerStyle}>
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="concise">Concise</SelectItem>
+            <SelectItem value="detailed">Detailed</SelectItem>
+            <SelectItem value="bullet-points">Bullet points</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div>
+        <label className="text-sm font-semibold mb-2 block">Source strictness</label>
+        <Select value={sourceStrictness} onValueChange={setSourceStrictness}>
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="strict">Strict - only answer from saved sources</SelectItem>
+            <SelectItem value="moderate">Moderate - prefer sources, allow reasoning</SelectItem>
+            <SelectItem value="relaxed">Relaxed - answer freely</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="flex items-center justify-between py-1">
+        <div>
+          <p className="text-sm font-medium">Auto-extract tasks</p>
+          <p className="text-xs text-muted-foreground">Automatically detect tasks from journals, voice notes, and meetings.</p>
+        </div>
+        <Switch checked={autoExtract} onCheckedChange={setAutoExtract} />
+      </div>
     </SettingsSection>
   );
 }
@@ -166,22 +175,22 @@ function MemoryPreferencesSection() {
 
   return (
     <SettingsSection title="Memory Preferences" description="Choose what Debo remembers.">
-      <Toggle label="Remember journal entries" description="Save and index your journal entries." checked={prefs.journals} onChange={() => toggle("journals")} />
-      <Toggle label="Remember voice notes" description="Transcribe and save voice recordings." checked={prefs.voice} onChange={() => toggle("voice")} />
-      <Toggle label="Remember uploaded files" description="Process and index uploaded documents." checked={prefs.files} onChange={() => toggle("files")} />
-      <Toggle label="Remember connector data" description="Save data from connected apps." checked={prefs.connectors} onChange={() => toggle("connectors")} />
-      <Toggle label="Require review before saving" description="Review extracted facts before they are saved to memory." checked={prefs.requireReview} onChange={() => toggle("requireReview")} />
+      <ToggleRow label="Remember journal entries" description="Save and index your journal entries." checked={prefs.journals} onChange={() => toggle("journals")} />
+      <ToggleRow label="Remember voice notes" description="Transcribe and save voice recordings." checked={prefs.voice} onChange={() => toggle("voice")} />
+      <ToggleRow label="Remember uploaded files" description="Process and index uploaded documents." checked={prefs.files} onChange={() => toggle("files")} />
+      <ToggleRow label="Remember connector data" description="Save data from connected apps." checked={prefs.connectors} onChange={() => toggle("connectors")} />
+      <ToggleRow label="Require review before saving" description="Review extracted facts before they are saved to memory." checked={prefs.requireReview} onChange={() => toggle("requireReview")} />
     </SettingsSection>
   );
 }
 
 function ShortcutsSection() {
   const shortcuts = [
-    { keys: ["⌘", "K"], label: "Command menu" },
-    { keys: ["⌘", "A"], label: "Ask Debo" },
-    { keys: ["⌘", "J"], label: "New journal" },
-    { keys: ["⌘", "U"], label: "Upload" },
-    { keys: ["⌘", "⇧", "V"], label: "Voice note" },
+    { keys: ["\u2318", "K"], label: "Command menu" },
+    { keys: ["\u2318", "A"], label: "Ask Debo" },
+    { keys: ["\u2318", "J"], label: "New journal" },
+    { keys: ["\u2318", "U"], label: "Upload" },
+    { keys: ["\u2318", "\u21E7", "V"], label: "Voice note" },
     { keys: ["/"], label: "Slash commands" },
     { keys: ["Esc"], label: "Close modal" },
   ];
@@ -191,7 +200,7 @@ function ShortcutsSection() {
       <div className="space-y-2">
         {shortcuts.map((s) => (
           <div key={s.label} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-muted/50 transition-colors">
-            <span className="text-sm text-foreground">{s.label}</span>
+            <span className="text-sm">{s.label}</span>
             <div className="flex gap-1">
               {s.keys.map((k) => (
                 <kbd
@@ -215,53 +224,19 @@ function Field({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between py-2">
       <span className="text-sm text-muted-foreground">{label}</span>
-      <span className="text-sm font-medium text-foreground">{value}</span>
+      <span className="text-sm font-medium">{value}</span>
     </div>
   );
 }
 
-function SelectField({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: { value: string; label: string }[] }) {
-  return (
-    <div>
-      <label className="text-sm font-semibold text-foreground mb-2 block">{label}</label>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full py-2 px-3 rounded-xl border-2 border-border bg-card text-sm text-foreground focus:outline-none focus:border-primary transition-colors"
-      >
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-}
-
-function Toggle({ label, description, checked, onChange }: { label: string; description: string; checked: boolean; onChange: () => void }) {
+function ToggleRow({ label, description, checked, onChange }: { label: string; description: string; checked: boolean; onChange: () => void }) {
   return (
     <div className="flex items-center justify-between py-1">
       <div>
-        <p className="text-sm font-medium text-foreground">{label}</p>
+        <p className="text-sm font-medium">{label}</p>
         <p className="text-xs text-muted-foreground">{description}</p>
       </div>
-      <button
-        role="switch"
-        aria-checked={checked}
-        onClick={onChange}
-        className={cn(
-          "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors duration-200",
-          checked ? "bg-primary" : "bg-muted"
-        )}
-      >
-        <span
-          className={cn(
-            "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition-transform duration-200 mt-0.5",
-            checked ? "translate-x-[1.375rem]" : "translate-x-0.5"
-          )}
-        />
-      </button>
+      <Switch checked={checked} onCheckedChange={onChange} />
     </div>
   );
 }

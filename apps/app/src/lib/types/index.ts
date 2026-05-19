@@ -78,8 +78,10 @@ export type Connector = {
   name: string;
   description: string;
   icon: string;
-  status: "not_connected" | "connected" | "syncing" | "needs_attention";
+  color?: string;
+  status: "not_connected" | "connected" | "syncing" | "needs_attention" | "paused";
   permissions: string[];
+  permission?: string;
   category: string;
 };
 

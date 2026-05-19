@@ -1,34 +1,24 @@
 "use client";
 
-import { useState } from "react";
 import {
   ArrowLeft,
-  MessageSquare,
-  Plus,
-  Search,
+  Calendar,
   CheckSquare,
   Database,
-  Calendar,
   FileText,
-  Send,
   ListTodo,
-  HelpCircle,
+  Send,
+  Plus,
+  Search,
+  MessageSquare,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-
-interface PersonDetail {
-  id: string;
-  name: string;
-  initials: string;
-  context: string;
-  summary: string;
-  color: string;
-  recentMentions: Mention[];
-  promises: string[];
-  openTasks: { title: string; source: string }[];
-  relatedSources: { title: string; type: string; date: string }[];
-}
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface Mention {
   date: string;
@@ -37,14 +27,23 @@ interface Mention {
   excerpt: string;
 }
 
-const mockPerson: PersonDetail = {
-  id: "raj",
+interface PersonDetailData {
+  id: string;
+  name: string;
+  context: string;
+  summary: string;
+  recentMentions: Mention[];
+  promises: string[];
+  openTasks: { title: string; source: string }[];
+  relatedSources: { title: string; type: string; date: string }[];
+}
+
+const mockPerson: PersonDetailData = {
+  id: "person-001",
   name: "Raj",
-  initials: "R",
   context: "Marketing / Q4 Budget",
   summary:
     "Raj is related to your marketing work and Q4 budget planning. You recently promised to send him the finalized allocation by Friday before the board meeting.",
-  color: "0",
   recentMentions: [
     {
       date: "Tuesday",
@@ -70,7 +69,7 @@ const mockPerson: PersonDetail = {
     {
       date: "3 weeks ago",
       source: "Budget Draft email",
-      sourceType: "meeting",
+      sourceType: "email",
       excerpt:
         '"...Raj sent over the initial figures, looks like we need to adjust the allocation..."',
     },
@@ -97,24 +96,25 @@ const avatarColors = [
   "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-400",
   "bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-400",
   "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400",
-  "bg-orange-100 text-orange-700 dark:bg-orange-950/50 dark:text-orange-400",
 ];
 
-const sourceTypeIcons: Record<string, React.ComponentType<{ className?: string }>> = {
-  voice: FileText,
-  journal: FileText,
-  meeting: Calendar,
-  file: FileText,
-};
+function getInitials(name: string) {
+  return name
+    .split(" ")
+    .map((p) => p[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
 
 export function PersonDetail({ personId }: { personId: string }) {
-  const person = mockPerson; // In production, fetch by personId
-  const colorClass =
-    avatarColors[parseInt(person.color) % avatarColors.length];
+  const person = mockPerson;
+  const colorIdx =
+    personId.split("").reduce((a, c) => a + c.charCodeAt(0), 0) %
+    avatarColors.length;
 
   return (
     <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-6">
-      {/* Back */}
       <Link
         href="/dashboard/people"
         className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
@@ -125,26 +125,37 @@ export function PersonDetail({ personId }: { personId: string }) {
 
       {/* Header */}
       <div className="flex items-start gap-4">
-        <div
-          className={cn(
-            "flex-shrink-0 w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold",
-            colorClass
-          )}
-        >
-          {person.initials}
-        </div>
+        <Avatar size="lg" className="size-14">
+          <AvatarFallback
+            className={cn("text-lg font-bold", avatarColors[colorIdx])}
+          >
+            {getInitials(person.name)}
+          </AvatarFallback>
+        </Avatar>
         <div>
           <h1 className="text-2xl font-bold">{person.name}</h1>
-          <p className="text-sm text-muted-foreground">{person.context}</p>
+          <Badge variant="secondary" className="mt-1">
+            {person.context}
+          </Badge>
         </div>
       </div>
 
-      {/* Summary */}
-      <div className="rounded-2xl border border-border bg-card p-5">
-        <p className="text-sm text-muted-foreground leading-relaxed">
-          {person.summary}
-        </p>
-      </div>
+      {/* AI Summary */}
+      <Card className="rounded-xl">
+        <CardContent className="p-5">
+          <div className="flex items-center gap-2 mb-2">
+            <MessageSquare className="w-4 h-4 text-primary" />
+            <span className="text-xs font-semibold text-primary">
+              AI Summary
+            </span>
+          </div>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {person.summary}
+          </p>
+        </CardContent>
+      </Card>
+
+      <Separator />
 
       {/* Recent Mentions */}
       <section className="space-y-3">
@@ -153,15 +164,11 @@ export function PersonDetail({ personId }: { personId: string }) {
           Recent Mentions
         </h2>
         <div className="space-y-2">
-          {person.recentMentions.map((mention, i) => {
-            const Icon = sourceTypeIcons[mention.sourceType] || FileText;
-            return (
-              <div
-                key={i}
-                className="rounded-2xl border border-border bg-card p-4"
-              >
-                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-                  <Icon className="w-3 h-3" />
+          {person.recentMentions.map((mention, i) => (
+            <Card key={i} className="rounded-xl">
+              <CardContent className="p-4 space-y-2">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <FileText className="w-3 h-3" />
                   <span className="font-medium">{mention.source}</span>
                   <span className="text-muted-foreground/60">
                     {mention.date}
@@ -170,9 +177,9 @@ export function PersonDetail({ personId }: { personId: string }) {
                 <p className="text-xs text-muted-foreground italic pl-5 border-l-2 border-border">
                   {mention.excerpt}
                 </p>
-              </div>
-            );
-          })}
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </section>
 
@@ -184,12 +191,14 @@ export function PersonDetail({ personId }: { personId: string }) {
         </h2>
         <div className="space-y-2">
           {person.promises.map((promise, i) => (
-            <div
+            <Card
               key={i}
-              className="rounded-2xl border border-amber-200 bg-amber-50 dark:border-amber-900/30 dark:bg-amber-950/20 p-4"
+              className="rounded-xl border-amber-200 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-950/20"
             >
-              <p className="text-sm font-medium">{promise}</p>
-            </div>
+              <CardContent className="p-4">
+                <p className="text-sm font-medium">{promise}</p>
+              </CardContent>
+            </Card>
           ))}
         </div>
       </section>
@@ -202,16 +211,15 @@ export function PersonDetail({ personId }: { personId: string }) {
         </h2>
         <div className="space-y-2">
           {person.openTasks.map((task, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4"
-            >
-              <div className="w-4 h-4 rounded-full border-2 border-muted-foreground" />
-              <div>
-                <p className="text-sm font-medium">{task.title}</p>
-                <p className="text-xs text-muted-foreground">{task.source}</p>
-              </div>
-            </div>
+            <Card key={i} className="rounded-xl">
+              <CardContent className="flex items-center gap-3 p-4">
+                <div className="w-4 h-4 rounded-full border-2 border-muted-foreground shrink-0" />
+                <div>
+                  <p className="text-sm font-medium">{task.title}</p>
+                  <p className="text-xs text-muted-foreground">{task.source}</p>
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       </section>
@@ -226,13 +234,13 @@ export function PersonDetail({ personId }: { personId: string }) {
           {person.relatedSources.map((source, i) => (
             <div
               key={i}
-              className="flex items-center gap-3 rounded-xl px-4 py-2.5 hover:bg-accent transition-colors cursor-pointer"
+              className="flex items-center gap-3 rounded-lg px-4 py-2.5 hover:bg-accent transition-colors cursor-pointer"
             >
-              <FileText className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+              <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm truncate">{source.title}</p>
               </div>
-              <span className="text-xs text-muted-foreground flex-shrink-0">
+              <span className="text-xs text-muted-foreground shrink-0">
                 {source.date}
               </span>
             </div>
@@ -240,25 +248,24 @@ export function PersonDetail({ personId }: { personId: string }) {
         </div>
       </section>
 
+      <Separator />
+
       {/* Suggested Follow-ups */}
       <section className="space-y-3">
-        <h2 className="text-sm font-bold flex items-center gap-2">
-          <HelpCircle className="w-4 h-4 text-primary" />
-          Suggested Follow-ups
-        </h2>
+        <h2 className="text-sm font-bold">Suggested Follow-ups</h2>
         <div className="flex flex-wrap gap-2">
-          <button className="inline-flex items-center gap-1.5 rounded-full bg-primary text-primary-foreground px-4 py-2 text-xs font-semibold hover:opacity-90 transition-opacity">
+          <Button size="sm" className="rounded-lg gap-1.5">
             <Send className="w-3 h-3" />
             Draft message
-          </button>
-          <button className="inline-flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-xs font-medium hover:bg-accent transition-colors">
+          </Button>
+          <Button variant="outline" size="sm" className="rounded-lg gap-1.5">
             <Plus className="w-3 h-3" />
             Create task
-          </button>
-          <button className="inline-flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-xs font-medium hover:bg-accent transition-colors">
+          </Button>
+          <Button variant="outline" size="sm" className="rounded-lg gap-1.5">
             <Search className="w-3 h-3" />
             Ask about {person.name}
-          </button>
+          </Button>
         </div>
       </section>
     </div>

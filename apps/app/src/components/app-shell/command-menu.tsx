@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Search,
   BookOpen,
@@ -15,6 +15,14 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface CommandItem {
   icon: React.ComponentType<{ className?: string }>;
@@ -26,19 +34,19 @@ interface CommandItem {
 
 const commands: CommandItem[] = [
   // Capture
-  { icon: BookOpen, label: "New journal entry", shortcut: "⌘J", group: "Capture", action: () => {} },
-  { icon: Mic, label: "Record voice note", shortcut: "⌘⇧V", group: "Capture", action: () => {} },
-  { icon: Upload, label: "Upload file", shortcut: "⌘U", group: "Capture", action: () => {} },
+  { icon: BookOpen, label: "New journal entry", shortcut: "\u2318J", group: "Capture", action: () => {} },
+  { icon: Mic, label: "Record voice note", shortcut: "\u2318\u21E7V", group: "Capture", action: () => {} },
+  { icon: Upload, label: "Upload file", shortcut: "\u2318U", group: "Capture", action: () => {} },
   { icon: LinkIcon, label: "Save link", group: "Capture", action: () => {} },
 
   // Ask
-  { icon: MessageSquare, label: "Ask Debo", shortcut: "⌘A", group: "Ask", action: () => {} },
+  { icon: MessageSquare, label: "Ask Debo", shortcut: "\u2318A", group: "Ask", action: () => {} },
   { icon: Search, label: "Search memories", group: "Ask", action: () => {} },
   { icon: CheckSquare, label: "Find tasks", group: "Ask", action: () => {} },
   { icon: Users, label: "Find person", group: "Ask", action: () => {} },
 
   // Navigate
-  { icon: Library, label: "Go to Library", shortcut: "⌘L", group: "Navigate", action: () => {} },
+  { icon: Library, label: "Go to Library", shortcut: "\u2318L", group: "Navigate", action: () => {} },
   { icon: Users, label: "Go to People", group: "Navigate", action: () => {} },
   { icon: CheckSquare, label: "Go to Tasks", group: "Navigate", action: () => {} },
   { icon: Plug, label: "Go to Connectors", group: "Navigate", action: () => {} },
@@ -56,24 +64,14 @@ interface CommandMenuProps {
 
 export function CommandMenu({ open, onClose }: CommandMenuProps) {
   const [query, setQuery] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   useEffect(() => {
     if (open) {
       setQuery("");
-      setTimeout(() => inputRef.current?.focus(), 50);
+      setSelectedIndex(0);
     }
   }, [open]);
-
-  // Close on Escape
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
-  }, [open, onClose]);
 
   const filtered = query.trim()
     ? commands.filter((c) =>
@@ -81,88 +79,154 @@ export function CommandMenu({ open, onClose }: CommandMenuProps) {
       )
     : commands;
 
-  const groups = ["Capture", "Ask", "Navigate", "Actions"].reduce<
-    Record<string, CommandItem[]>
-  >((acc, group) => {
+  const groupOrder = ["Capture", "Ask", "Navigate", "Actions"];
+  const groups = groupOrder.reduce<Record<string, CommandItem[]>>((acc, group) => {
     const items = filtered.filter((c) => c.group === group);
     if (items.length) acc[group] = items;
     return acc;
   }, {});
 
-  if (!open) return null;
+  const flatItems = Object.values(groups).flat();
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setSelectedIndex((prev) => Math.min(prev + 1, flatItems.length - 1));
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setSelectedIndex((prev) => Math.max(prev - 1, 0));
+      } else if (e.key === "Enter" && flatItems[selectedIndex]) {
+        e.preventDefault();
+        flatItems[selectedIndex].action();
+        onClose();
+      }
+    },
+    [flatItems, selectedIndex, onClose]
+  );
+
+  let itemIndex = -1;
 
   return (
-    <>
-      {/* Overlay */}
-      <div
-        className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px]"
-        onClick={onClose}
-      />
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent
+        showCloseButton={false}
+        className={cn(
+          "top-[20%] translate-y-0 max-w-[540px] gap-0 p-0 overflow-hidden",
+          "rounded-2xl border-2 border-border bg-card",
+          "shadow-[0_4px_0_var(--border)]"
+        )}
+        onKeyDown={handleKeyDown}
+      >
+        <DialogTitle className="sr-only">Command Menu</DialogTitle>
+        <DialogDescription className="sr-only">
+          Search for commands, navigate, or perform actions
+        </DialogDescription>
 
-      {/* Dialog */}
-      <div className="fixed z-50 top-[20%] left-1/2 -translate-x-1/2 w-full max-w-[540px] px-4">
-        <div className="bg-card border border-border rounded-xl shadow-2xl overflow-hidden">
-          {/* Search input */}
-          <div className="flex items-center gap-2 px-4 h-12 border-b border-border">
-            <Search className="w-4 h-4 text-muted-foreground shrink-0" />
-            <input
-              ref={inputRef}
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search or type a command..."
-              className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
-            />
-          </div>
+        {/* Search input */}
+        <div className="flex items-center gap-3 px-4 h-14 border-b border-border">
+          <Search className="w-4 h-4 text-muted-foreground shrink-0" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setSelectedIndex(0);
+            }}
+            placeholder="Search or type a command..."
+            className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 outline-none font-medium"
+            autoFocus
+          />
+          {query && (
+            <Badge variant="secondary" className="text-[10px]">
+              {filtered.length}
+            </Badge>
+          )}
+        </div>
 
-          {/* Results */}
-          <div className="max-h-[360px] overflow-y-auto py-2">
+        {/* Results */}
+        <ScrollArea className="max-h-[360px]">
+          <div className="py-2">
             {Object.entries(groups).map(([group, items]) => (
               <div key={group}>
-                <p className="px-4 py-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                <p className="px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground/70">
                   {group}
                 </p>
-                {items.map((item) => (
-                  <button
-                    key={item.label}
-                    onClick={() => {
-                      item.action();
-                      onClose();
-                    }}
-                    className="flex items-center gap-3 w-full px-4 py-2 text-sm text-foreground hover:bg-accent transition-colors"
-                  >
-                    <item.icon className="w-4 h-4 text-muted-foreground shrink-0" />
-                    <span className="flex-1 text-left">{item.label}</span>
-                    {item.shortcut && (
-                      <kbd className="text-[11px] font-mono text-muted-foreground/60">
-                        {item.shortcut}
-                      </kbd>
-                    )}
-                  </button>
-                ))}
+                {items.map((item) => {
+                  itemIndex++;
+                  const idx = itemIndex;
+                  const isSelected = idx === selectedIndex;
+                  return (
+                    <button
+                      key={item.label}
+                      onClick={() => {
+                        item.action();
+                        onClose();
+                      }}
+                      onMouseEnter={() => setSelectedIndex(idx)}
+                      className={cn(
+                        "flex items-center gap-3 w-full px-4 py-2.5 text-sm transition-all mx-1 rounded-xl",
+                        "max-w-[calc(100%-8px)]",
+                        isSelected
+                          ? "bg-primary/10 text-foreground"
+                          : "text-foreground hover:bg-accent"
+                      )}
+                    >
+                      <item.icon className={cn(
+                        "w-4 h-4 shrink-0",
+                        isSelected ? "text-primary" : "text-muted-foreground"
+                      )} />
+                      <span className="flex-1 text-left font-medium">{item.label}</span>
+                      {item.shortcut && (
+                        <kbd className={cn(
+                          "text-[10px] font-mono px-1.5 py-0.5 rounded border",
+                          isSelected
+                            ? "border-primary/20 text-primary bg-primary/5"
+                            : "border-border text-muted-foreground/50 bg-muted"
+                        )}>
+                          {item.shortcut}
+                        </kbd>
+                      )}
+                      {isSelected && (
+                        <ArrowRight className="w-3 h-3 text-primary shrink-0" />
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             ))}
 
             {Object.keys(groups).length === 0 && (
-              <p className="px-4 py-8 text-sm text-muted-foreground text-center">
-                No results found.
-              </p>
+              <div className="px-4 py-10 text-center">
+                <p className="text-sm text-muted-foreground font-medium">No results found</p>
+                <p className="text-xs text-muted-foreground/60 mt-1">Try a different search term</p>
+              </div>
             )}
           </div>
+        </ScrollArea>
 
-          {/* Footer hint */}
-          <div className="flex items-center gap-4 px-4 py-2 border-t border-border text-[11px] text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <kbd className="px-1 py-0.5 rounded border border-border bg-muted font-mono">↵</kbd>
-              select
-            </span>
-            <span className="flex items-center gap-1">
-              <kbd className="px-1 py-0.5 rounded border border-border bg-muted font-mono">esc</kbd>
-              close
-            </span>
-          </div>
+        {/* Footer hints */}
+        <div className="flex items-center gap-4 px-4 py-2.5 border-t border-border bg-muted/30">
+          <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+            <kbd className="inline-flex items-center justify-center h-5 min-w-[20px] px-1 rounded border border-border bg-muted font-mono text-[10px]">
+              &uarr;&darr;
+            </kbd>
+            navigate
+          </span>
+          <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+            <kbd className="inline-flex items-center justify-center h-5 min-w-[20px] px-1 rounded border border-border bg-muted font-mono text-[10px]">
+              &crarr;
+            </kbd>
+            select
+          </span>
+          <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+            <kbd className="inline-flex items-center justify-center h-5 min-w-[20px] px-1 rounded border border-border bg-muted font-mono text-[10px]">
+              esc
+            </kbd>
+            close
+          </span>
         </div>
-      </div>
-    </>
+      </DialogContent>
+    </Dialog>
   );
 }

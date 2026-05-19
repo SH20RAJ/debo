@@ -1,5 +1,10 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "tw-shimmer";
+
+@plugin "@tailwindcss/typography";
+@plugin "tailwind-scrollbar-hide";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -27,92 +32,193 @@
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
 
-  /* Debo semantic colors */
+  /* Duo accent colors */
+  --color-duo-eel: var(--duo-eel);
+  --color-duo-wolf: var(--duo-wolf);
+  --color-duo-swan: var(--duo-swan);
+  --color-duo-polar: var(--duo-polar);
+  --color-duo-snow: var(--duo-snow);
+  --color-duo-feather: var(--duo-feather);
+  --color-duo-green: var(--duo-green);
+  --color-duo-macaw: var(--duo-macaw);
+  --color-duo-blue: var(--duo-blue);
+  --color-duo-fox: var(--duo-fox);
+  --color-duo-orange: var(--duo-orange);
+  --color-duo-cardinal: var(--duo-cardinal);
+  --color-duo-red: var(--duo-red);
+  --color-duo-beetle: var(--duo-beetle);
+  --color-duo-purple: var(--duo-purple);
+  --color-duo-yellow: var(--duo-yellow);
+  --color-duo-canary: var(--duo-canary);
+
+  /* Landing page colors */
+  --color-landing-bg: var(--landing-bg);
+  --color-landing-surface: var(--landing-surface);
+  --color-landing-surface-subtle: var(--landing-surface-subtle);
+  --color-landing-border: var(--landing-border);
+  --color-landing-border-light: var(--landing-border-light);
+  --color-landing-text-primary: var(--landing-text-primary);
+  --color-landing-text-secondary: var(--landing-text-secondary);
+  --color-landing-text-tertiary: var(--landing-text-tertiary);
+  --color-landing-accent: var(--landing-accent);
+  --color-landing-accent-hover: var(--landing-accent-hover);
+
+  /* Sidebar */
+  --color-sidebar-background: var(--sidebar-background);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+
+  /* Semantic colors */
   --color-memory: var(--memory);
   --color-memory-foreground: var(--memory-foreground);
   --color-surface: var(--surface);
   --color-surface-foreground: var(--surface-foreground);
+
+  /* Landing font sizes */
+  --font-size-landing-xs: 0.75rem;
+  --font-size-landing-sm: 0.875rem;
+  --font-size-landing-base: 1.01rem;
+  --font-size-landing-lg: 1.125rem;
+  --font-size-landing-xl: 1.25rem;
+  --font-size-landing-2xl: 1.5rem;
+  --font-size-landing-3xl: 1.875rem;
+  --font-size-landing-4xl: 2.25rem;
+  --font-size-landing-hero: 4.5rem;
 }
 
 :root {
-  /* Typography */
   --font-body: "Nunito Sans", "Nunito", "Segoe UI", sans-serif;
   --font-display: "Nunito", "Segoe UI", sans-serif;
 
-  /* Color system — warm, calm, premium */
-  --background: #FAFAF8;
-  --foreground: #1A1A1A;
+  /* Duolingo-inspired palette */
+  --background: #FBFCFA;
+  --foreground: #222222;
   --card: #FFFFFF;
-  --card-foreground: #1A1A1A;
-  --surface: #F5F5F3;
-  --surface-foreground: #1A1A1A;
+  --card-foreground: #222222;
   --popover: #FFFFFF;
-  --popover-foreground: #1A1A1A;
-
-  /* Primary — indigo/purple for memory/AI */
-  --primary: #6366F1;
+  --popover-foreground: #222222;
+  --primary: #58CC02;
   --primary-foreground: #FFFFFF;
-
-  --secondary: #F0F0EE;
-  --secondary-foreground: #525252;
-  --muted: #F0F0EE;
-  --muted-foreground: #737373;
-  --accent: #F0F0EE;
-  --accent-foreground: #1A1A1A;
-
-  /* Memory / AI accent — electric indigo */
-  --memory: #6366F1;
-  --memory-foreground: #FFFFFF;
-
-  /* Status colors */
-  --destructive: #EF4444;
+  --secondary: #FAFAF7;
+  --secondary-foreground: #555555;
+  --muted: #FAFAF7;
+  --muted-foreground: #888888;
+  --accent: #FAFAF7;
+  --accent-foreground: #222222;
+  --destructive: #FF4B4B;
   --destructive-foreground: #FFFFFF;
+  --border: #EAEAEA;
+  --input: #EAEAEA;
+  --ring: #58CC02;
+  --radius: 1rem;
 
-  /* Borders and inputs */
-  --border: #E5E5E3;
-  --input: #E5E5E3;
-  --ring: #6366F1;
+  /* Memory/AI accent */
+  --memory: #58CC02;
+  --memory-foreground: #FFFFFF;
+  --surface: #F5F5F3;
+  --surface-foreground: #222222;
 
-  /* Spacing */
-  --radius: 1.25rem;
-  --radius-sm: 0.75rem;
-  --radius-lg: 1.5rem;
-  --radius-full: 9999px;
+  /* Duo accent colors */
+  --duo-eel: #4B4B4B;
+  --duo-wolf: #777777;
+  --duo-swan: #E5E5E5;
+  --duo-polar: #F7F7F7;
+  --duo-snow: #FFFFFF;
+  --duo-feather: #58CC02;
+  --duo-green: #58CC02;
+  --duo-macaw: #1CB0F6;
+  --duo-blue: #1CB0F6;
+  --duo-fox: #FF9600;
+  --duo-orange: #FF9600;
+  --duo-cardinal: #FF4B4B;
+  --duo-red: #FF4B4B;
+  --duo-beetle: #CE82FF;
+  --duo-purple: #CE82FF;
+  --duo-yellow: #FFC800;
+  --duo-canary: #FFC800;
 
-  --page-padding: 2rem;
-  --card-padding: 1.25rem;
-  --section-gap: 2rem;
+  /* Sidebar */
+  --sidebar-background: #FFFFFF;
+  --sidebar-foreground: #4B4B4B;
+  --sidebar-border: #E5E5E5;
+  --sidebar-accent: #F7F7F7;
+  --sidebar-accent-foreground: #4B4B4B;
+
+  /* Landing page */
+  --landing-bg: #FBFCFA;
+  --landing-surface: #FFFFFF;
+  --landing-surface-subtle: #FAFAF7;
+  --landing-border: #EAEAEA;
+  --landing-border-light: #F0F0F0;
+  --landing-text-primary: #222222;
+  --landing-text-secondary: #555555;
+  --landing-text-tertiary: #888888;
+  --landing-accent: #58CC02;
+  --landing-accent-hover: #4ea603;
 }
 
 .dark {
-  --background: #0A0A0B;
-  --foreground: #EDEDEC;
-  --card: #141416;
-  --card-foreground: #EDEDEC;
+  --background: #0C0F0A;
+  --foreground: #ECEEEC;
+  --card: #121610;
+  --card-foreground: #ECEEEC;
+  --popover: #121610;
+  --popover-foreground: #ECEEEC;
+  --primary: #58CC02;
+  --primary-foreground: #FFFFFF;
+  --secondary: #181E15;
+  --secondary-foreground: #B0B5B0;
+  --muted: #181E15;
+  --muted-foreground: #808680;
+  --accent: #181E15;
+  --accent-foreground: #ECEEEC;
+  --destructive: #FF4B4B;
+  --destructive-foreground: #FFFFFF;
+  --border: #1F261B;
+  --input: #1F261B;
+  --ring: #58CC02;
+
+  --memory: #58CC02;
+  --memory-foreground: #FFFFFF;
   --surface: #1A1A1E;
-  --surface-foreground: #EDEDEC;
-  --popover: #141416;
-  --popover-foreground: #EDEDEC;
+  --surface-foreground: #ECEEEC;
 
-  --primary: #818CF8;
-  --primary-foreground: #0A0A0B;
+  --duo-eel: #e6edf3;
+  --duo-wolf: #8b949e;
+  --duo-swan: #30363d;
+  --duo-polar: #21262d;
+  --duo-snow: #0d1117;
+  --duo-feather: #58CC02;
+  --duo-green: #58CC02;
+  --duo-macaw: #1CB0F6;
+  --duo-blue: #1CB0F6;
+  --duo-fox: #FF9600;
+  --duo-orange: #FF9600;
+  --duo-cardinal: #FF4B4B;
+  --duo-red: #FF4B4B;
+  --duo-beetle: #CE82FF;
+  --duo-purple: #CE82FF;
+  --duo-yellow: #FFC800;
+  --duo-canary: #FFC800;
 
-  --secondary: #1E1E22;
-  --secondary-foreground: #A3A3A3;
-  --muted: #1E1E22;
-  --muted-foreground: #737373;
-  --accent: #1E1E22;
-  --accent-foreground: #EDEDEC;
+  --sidebar-background: #0d1117;
+  --sidebar-foreground: #e6edf3;
+  --sidebar-border: #30363d;
+  --sidebar-accent: #21262d;
+  --sidebar-accent-foreground: #e6edf3;
 
-  --memory: #818CF8;
-  --memory-foreground: #0A0A0B;
-
-  --destructive: #F87171;
-  --destructive-foreground: #0A0A0B;
-
-  --border: #26262A;
-  --input: #26262A;
-  --ring: #818CF8;
+  --landing-bg: #0C0F0A;
+  --landing-surface: #121610;
+  --landing-surface-subtle: #181E15;
+  --landing-border: #1F261B;
+  --landing-border-light: #181E15;
+  --landing-text-primary: #ECEEEC;
+  --landing-text-secondary: #B0B5B0;
+  --landing-text-tertiary: #808680;
+  --landing-accent: #58CC02;
+  --landing-accent-hover: #69DF0E;
 }
 
 @layer base {
@@ -120,37 +226,134 @@
     @apply border-border/40;
   }
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground antialiased selection:bg-primary/20 selection:text-primary;
     font-family: var(--font-body);
+  }
+  .dark body {
+    background:
+      radial-gradient(circle at 18% 0%, rgba(88, 204, 2, 0.06), transparent 28rem),
+      radial-gradient(circle at 82% 8%, rgba(88, 204, 2, 0.04), transparent 24rem),
+      var(--background);
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading font-bold tracking-tight;
   }
 }
 
+/* Landing page utilities */
+@utility text-landing-xs { font-size: 0.75rem; }
+@utility text-landing-sm { font-size: 0.875rem; }
+@utility text-landing-base { font-size: 1.01rem; }
+@utility text-landing-lg { font-size: 1.125rem; }
+@utility text-landing-xl { font-size: 1.25rem; }
+@utility text-landing-2xl { font-size: 1.5rem; }
+@utility text-landing-3xl { font-size: 1.875rem; }
+@utility text-landing-4xl { font-size: 2.25rem; }
+@utility text-landing-hero { font-size: 4.5rem; }
+
+@utility minimal-card {
+  @apply rounded-2xl border-2 border-border bg-card p-6 transition-all duration-200;
+  @apply hover:border-primary/30 hover:shadow-[0_2px_0_var(--border)];
+}
+
+@utility minimal-btn {
+  @apply inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-extrabold uppercase tracking-wide transition-all duration-100;
+  @apply active:translate-y-[2px] disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+@utility minimal-btn-primary {
+  @apply minimal-btn bg-primary text-primary-foreground;
+  box-shadow: 0 4px 0 #46A302;
+  @apply hover:brightness-105 active:shadow-none;
+}
+
+@utility minimal-btn-outline {
+  @apply minimal-btn bg-transparent text-foreground border-2 border-border;
+  box-shadow: 0 4px 0 var(--border);
+  @apply hover:bg-muted active:shadow-none;
+}
+
+@utility hover-pop {
+  @apply transition-all duration-200 ease-out;
+  @apply hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-none;
+}
+
+@utility grad-green {
+  background: linear-gradient(135deg, #58CC02 0%, #89E219 100%);
+}
+
+@utility glass {
+  @apply bg-background/60 backdrop-blur-xl border-2 border-border/30;
+}
+
+@utility glass-card {
+  @apply bg-card/80 backdrop-blur-xl border-2 border-border/20;
+}
+
+@utility duo-card {
+  @apply rounded-2xl border-2 border-border bg-card p-4;
+  box-shadow: 0 2px 0 var(--border);
+}
+
+@utility duo-input {
+  @apply rounded-xl border-2 border-border bg-card px-4 py-3 text-sm font-medium text-foreground placeholder:text-muted-foreground/60;
+  @apply focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none;
+  @apply transition-all duration-200;
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(3deg); }
+  75% { transform: rotate(-3deg); }
+}
+
+.animate-wiggle {
+  animation: wiggle 0.3s ease-in-out infinite;
+}
+
+@keyframes fadeInUp {
+  0% { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s ease-out forwards;
+}
+
+/* BlockNote editor — scope Mantine styles so they don't leak into shadcn */
+.blocknote-editor {
+  --mantine-color-scheme: var(--mantine-color-scheme, light);
+}
+.blocknote-editor .bn-container,
+.blocknote-editor [data-mantine-color-scheme] {
+  font-family: inherit;
+  line-height: inherit;
+}
+/* Prevent Mantine resets from bleeding into global elements */
+.blocknote-editor *,
+.blocknote-editor *::before,
+.blocknote-editor *::after {
+  box-sizing: border-box;
+}
+
+/* shadcn component overrides for Debo style */
 @layer components {
-  /* Card base with Debo-spec radius */
   .debo-card {
-    @apply rounded-[1.25rem] bg-card text-card-foreground border border-border/40 shadow-sm;
+    @apply rounded-2xl bg-card text-card-foreground border-2 border-border shadow-[0_2px_0_var(--border)];
   }
 
-  /* Glass effect for overlays */
-  .debo-glass {
-    @apply backdrop-blur-xl bg-card/80 border border-border/30;
-  }
-
-  /* Source chip */
   .source-chip {
     @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium;
   }
 
-  /* Confidence badge */
   .confidence-strong {
     @apply text-emerald-700 dark:text-emerald-400;
   }
+
   .confidence-partial {
     @apply text-amber-700 dark:text-amber-400;
   }
+
   .confidence-weak {
     @apply text-muted-foreground;
   }

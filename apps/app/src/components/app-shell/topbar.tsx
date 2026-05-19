@@ -3,6 +3,8 @@
 import { Search, Plus, Bell, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 interface TopbarProps {
   onCommandMenuOpen: () => void;
@@ -13,52 +15,58 @@ export function Topbar({ onCommandMenuOpen }: TopbarProps) {
 
   return (
     <header className="flex items-center h-14 px-4 border-b border-border bg-card/80 backdrop-blur-sm shrink-0 gap-3">
-      {/* Search */}
+      {/* Search trigger */}
       <button
         onClick={onCommandMenuOpen}
         className={cn(
-          "flex items-center gap-2 flex-1 max-w-md h-9 px-3 rounded-lg",
-          "bg-background border border-border text-muted-foreground text-sm",
-          "hover:border-primary/30 transition-colors cursor-text"
+          "flex items-center gap-2 flex-1 max-w-md h-10 px-4 rounded-xl",
+          "bg-background border-2 border-border text-muted-foreground text-sm",
+          "hover:border-primary/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 transition-all cursor-text"
         )}
       >
         <Search className="w-4 h-4 shrink-0" />
         <span className="flex-1 text-left truncate">Search or ask Debo...</span>
-        <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded border border-border bg-muted text-[11px] font-mono text-muted-foreground">
-          ⌘K
+        <kbd className="hidden sm:inline-flex items-center px-2 py-1 rounded-lg border border-border bg-muted text-[11px] font-mono font-semibold text-muted-foreground">
+          {navigator?.platform?.includes("Mac") ? "\u2318" : "Ctrl+"}K
         </kbd>
       </button>
 
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1.5">
         {/* Quick capture */}
-        <button
+        <Button
           className={cn(
-            "flex items-center gap-1.5 h-9 px-3 rounded-lg text-sm font-medium",
-            "bg-primary text-primary-foreground hover:brightness-105 transition-all"
+            "rounded-xl bg-primary text-primary-foreground font-bold",
+            "shadow-[0_4px_0_#46A302] hover:brightness-105 hover:shadow-[0_4px_0_#46A302]",
+            "active:translate-y-[2px] active:shadow-none transition-all"
           )}
+          size="sm"
         >
           <Plus className="w-4 h-4" />
           <span className="hidden sm:inline">Capture</span>
-        </button>
+        </Button>
 
         {/* Theme toggle */}
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          className="flex items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+          className="text-muted-foreground hover:text-foreground rounded-xl"
           aria-label="Toggle theme"
         >
           <Sun className="w-4 h-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
           <Moon className="absolute w-4 h-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-        </button>
+        </Button>
 
         {/* Notification bell */}
-        <button
-          className="flex items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors relative"
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-muted-foreground hover:text-foreground rounded-xl relative"
           aria-label="Notifications"
         >
           <Bell className="w-4 h-4" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary" />
-        </button>
+          <Badge className="absolute -top-0.5 -right-0.5 h-2 w-2 p-0 rounded-full border-2 border-card" />
+        </Button>
       </div>
     </header>
   );

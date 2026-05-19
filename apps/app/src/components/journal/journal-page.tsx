@@ -1,10 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { JournalEntryList } from "@/components/journal/entry-list";
-import { JournalEditor } from "@/components/journal/editor";
 import { JournalInsightRail } from "@/components/journal/insight-rail";
 import { TemplatePicker } from "@/components/journal/template-picker";
+
+const JournalEditor = dynamic(
+  () => import("@/components/journal/editor").then((m) => m.JournalEditor),
+  { ssr: false, loading: () => <div className="p-8 text-muted-foreground">Loading editor...</div> }
+);
 
 export interface JournalEntry {
   id: string;
@@ -61,7 +66,9 @@ const MOCK_ENTRIES: JournalEntry[] = [
 
 export function JournalPage() {
   const [entries] = useState<JournalEntry[]>(MOCK_ENTRIES);
-  const [activeEntryId, setActiveEntryId] = useState<string>(MOCK_ENTRIES[0].id);
+  const [activeEntryId, setActiveEntryId] = useState<string>(
+    MOCK_ENTRIES[0].id
+  );
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
 
   const activeEntry = entries.find((e) => e.id === activeEntryId) ?? entries[0];
@@ -72,39 +79,37 @@ export function JournalPage() {
 
   const handleSelectTemplate = (title: string, content: string) => {
     setShowTemplatePicker(false);
-    // In a real app this would create a new entry
     console.log("New entry from template:", title);
   };
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full overflow-hidden">
       {/* Left: Entry list */}
-      <div className="w-64 shrink-0 border-r border-border bg-card">
+      <aside className="w-[250px] shrink-0 border-r border-border bg-card hidden md:block">
         <JournalEntryList
           entries={entries}
           activeEntryId={activeEntryId}
           onSelect={setActiveEntryId}
           onNewEntry={handleNewEntry}
         />
-      </div>
+      </aside>
 
       {/* Center: Editor */}
-      <div className="flex-1 overflow-y-auto">
+      <main className="flex-1 min-w-0 overflow-y-auto">
         <JournalEditor entry={activeEntry} />
-      </div>
+      </main>
 
       {/* Right: Insight rail */}
-      <div className="w-72 shrink-0 border-l border-border bg-card overflow-y-auto">
+      <aside className="w-[280px] shrink-0 border-l border-border bg-card overflow-y-auto hidden lg:block">
         <JournalInsightRail entry={activeEntry} />
-      </div>
+      </aside>
 
-      {/* Template picker modal */}
-      {showTemplatePicker && (
-        <TemplatePicker
-          onSelect={handleSelectTemplate}
-          onClose={() => setShowTemplatePicker(false)}
-        />
-      )}
+      {/* Template picker dialog */}
+      <TemplatePicker
+        open={showTemplatePicker}
+        onOpenChange={setShowTemplatePicker}
+        onSelect={handleSelectTemplate}
+      />
     </div>
   );
 }

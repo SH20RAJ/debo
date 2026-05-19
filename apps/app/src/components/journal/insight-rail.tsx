@@ -8,6 +8,11 @@ import {
   Clock,
   Hash,
 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
+import { getInitials } from "@/lib/utils";
 import type { JournalEntry } from "./journal-page";
 
 interface JournalInsightRailProps {
@@ -39,7 +44,7 @@ export function JournalInsightRail({ entry }: JournalInsightRailProps) {
   const readingTime = Math.max(1, Math.ceil(wordCount / 200));
 
   return (
-    <div className="p-4 space-y-6">
+    <div className="p-4 space-y-5">
       {/* Detected People */}
       <InsightSection
         icon={User}
@@ -47,14 +52,18 @@ export function JournalInsightRail({ entry }: JournalInsightRailProps) {
         count={entry.people.length}
       >
         {entry.people.length > 0 ? (
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-2">
             {entry.people.map((person) => (
-              <span
-                key={person}
-                className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-secondary rounded-full text-foreground"
-              >
-                {person}
-              </span>
+              <div key={person} className="flex items-center gap-1.5">
+                <Avatar className="w-5 h-5">
+                  <AvatarFallback className="text-[9px] bg-secondary text-foreground">
+                    {getInitials(person)}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-xs font-medium text-foreground">
+                  {person}
+                </span>
+              </div>
             ))}
           </div>
         ) : (
@@ -64,6 +73,8 @@ export function JournalInsightRail({ entry }: JournalInsightRailProps) {
         )}
       </InsightSection>
 
+      <Separator />
+
       {/* Detected Tasks */}
       <InsightSection
         icon={CheckSquare}
@@ -71,15 +82,15 @@ export function JournalInsightRail({ entry }: JournalInsightRailProps) {
         count={entry.tasks.length}
       >
         {entry.tasks.length > 0 ? (
-          <div className="space-y-1.5">
+          <div className="flex flex-wrap gap-1.5">
             {entry.tasks.map((task, i) => (
-              <div
+              <Badge
                 key={i}
-                className="flex items-start gap-2 text-xs text-foreground"
+                variant="secondary"
+                className="text-xs font-normal"
               >
-                <div className="w-3.5 h-3.5 mt-0.5 rounded border border-border shrink-0" />
-                <span>{task}</span>
-              </div>
+                {task}
+              </Badge>
             ))}
           </div>
         ) : (
@@ -89,36 +100,46 @@ export function JournalInsightRail({ entry }: JournalInsightRailProps) {
         )}
       </InsightSection>
 
+      <Separator />
+
       {/* Related Memories */}
       <InsightSection icon={Brain} title="Related memories">
         <div className="space-y-2">
           {MOCK_MEMORIES.map((memory) => (
-            <div
+            <Card
               key={memory.id}
-              className="p-2.5 rounded-lg bg-secondary/60 border border-border hover:border-primary/20 transition-colors cursor-pointer"
+              className="cursor-pointer hover:border-primary/20 transition-colors"
             >
-              <div className="flex items-center gap-1.5 mb-1">
-                <FileText className="w-3 h-3 text-muted-foreground" />
-                <span className="text-xs font-medium text-foreground truncate">
-                  {memory.title}
-                </span>
-              </div>
-              <p className="text-[11px] text-muted-foreground line-clamp-2">
-                {memory.snippet}
-              </p>
-              <p className="text-[10px] text-muted-foreground/60 mt-1">
-                {memory.type} &middot; {memory.date}
-              </p>
-            </div>
+              <CardContent className="p-2.5 space-y-1">
+                <div className="flex items-center gap-1.5">
+                  <FileText className="w-3 h-3 text-muted-foreground shrink-0" />
+                  <span className="text-xs font-medium text-foreground truncate">
+                    {memory.title}
+                  </span>
+                </div>
+                <p className="text-[11px] text-muted-foreground line-clamp-2">
+                  {memory.snippet}
+                </p>
+                <p className="text-[10px] text-muted-foreground/60">
+                  {memory.type} &middot; {memory.date}
+                </p>
+              </CardContent>
+            </Card>
           ))}
         </div>
       </InsightSection>
+
+      <Separator />
 
       {/* Writing Stats */}
       <InsightSection icon={Hash} title="Writing stats">
         <div className="space-y-2">
           <StatRow icon={FileText} label="Words" value={wordCount} />
-          <StatRow icon={Clock} label="Reading time" value={`${readingTime} min`} />
+          <StatRow
+            icon={Clock}
+            label="Reading time"
+            value={`${readingTime} min`}
+          />
         </div>
       </InsightSection>
     </div>
@@ -144,9 +165,9 @@ function InsightSection({
           {title}
         </h3>
         {count !== undefined && count > 0 && (
-          <span className="text-[10px] font-medium text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">
+          <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">
             {count}
-          </span>
+          </Badge>
         )}
       </div>
       {children}

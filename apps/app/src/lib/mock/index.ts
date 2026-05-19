@@ -6,3 +6,5 @@ export { CONNECTORS } from "./connectors";
 export { OPEN_LOOPS } from "./open-loops";
 export { PROJECTS } from "./projects";
 export { TIMELINE } from "./timeline";
+export { VOICE_NOTES, type VoiceNote } from "./voice-notes";
+export { AUDIT_LOG, CONNECTED_APPS, type AuditEntry, type ConnectedApp } from "./vault";
