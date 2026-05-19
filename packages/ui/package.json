@@ -16,6 +16,7 @@
     "./tooltip": "./src/tooltip.tsx",
     "./theme-provider": "./src/theme-provider.tsx",
     "./theme-toggle": "./src/theme-toggle.tsx",
+    "./accordion": "./src/accordion.tsx",
     "./utils": "./src/utils.ts"
   },
   "scripts": {

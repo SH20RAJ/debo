@@ -81,7 +81,10 @@ export default function DashboardLayout({
         </div>
 
         <div className="flex flex-col flex-1 min-w-0">
-          <Topbar onCommandMenuOpen={() => setCommandMenuOpen(true)} />
+          <Topbar
+            onCommandMenuOpen={() => setCommandMenuOpen(true)}
+            onMobileMenuToggle={() => setMobileOpen((prev) => !prev)}
+          />
           <div className="flex flex-1 min-h-0">
             <main className="flex-1 overflow-auto">{children}</main>
             {!hideContextRail && <ContextRail />}

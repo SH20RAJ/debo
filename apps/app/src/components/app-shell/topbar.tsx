@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, Plus, Bell, Moon, Sun } from "lucide-react";
+import { Search, Plus, Bell, Moon, Sun, Menu } from "lucide-react";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -8,13 +8,27 @@ import { Badge } from "@/components/ui/badge";
 
 interface TopbarProps {
   onCommandMenuOpen: () => void;
+  onMobileMenuToggle?: () => void;
 }
 
-export function Topbar({ onCommandMenuOpen }: TopbarProps) {
+export function Topbar({ onCommandMenuOpen, onMobileMenuToggle }: TopbarProps) {
   const { theme, setTheme } = useTheme();
 
   return (
     <header className="flex items-center h-14 px-4 border-b border-border bg-card/80 backdrop-blur-sm shrink-0 gap-3">
+      {/* Mobile menu toggle */}
+      {onMobileMenuToggle && (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onMobileMenuToggle}
+          className="md:hidden text-muted-foreground hover:text-foreground rounded-xl shrink-0"
+          aria-label="Toggle menu"
+        >
+          <Menu className="w-5 h-5" />
+        </Button>
+      )}
+
       {/* Search trigger */}
       <button
         onClick={onCommandMenuOpen}

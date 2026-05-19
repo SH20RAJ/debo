@@ -22,6 +22,7 @@ import {
   Settings,
   ChevronsLeft,
   ChevronsRight,
+  ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,12 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface NavItem {
   label: string;
@@ -129,26 +136,42 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
         {/* Primary nav */}
         <ScrollArea className="flex-1">
           <nav className="py-2 px-2">
-            {navSections.map((section, i) => (
-              <div key={section.label}>
-                {i > 0 && <Separator className="my-2" />}
-                {!collapsed && (
-                  <p className="px-3 py-1 text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">
-                    {section.label}
-                  </p>
-                )}
-                <div className="space-y-0.5">
-                  {section.items.map((item) => (
-                    <SidebarItem
-                      key={item.href}
-                      item={item}
-                      active={isActive(item.href)}
-                      collapsed={collapsed}
-                    />
-                  ))}
-                </div>
-              </div>
-            ))}
+            {collapsed ? (
+              // Collapsed: flat list, no sections
+              navSections.flatMap((section) =>
+                section.items.map((item) => (
+                  <SidebarItem
+                    key={item.href}
+                    item={item}
+                    active={isActive(item.href)}
+                    collapsed
+                  />
+                ))
+              )
+            ) : (
+              // Expanded: accordion sections
+              <Accordion type="multiple" defaultValue={navSections.map((s) => s.label)}>
+                {navSections.map((section) => (
+                  <AccordionItem key={section.label} value={section.label} className="border-b-0">
+                    <AccordionTrigger className="py-1.5 px-3 text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider hover:no-underline hover:bg-transparent">
+                      {section.label}
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="space-y-0.5">
+                        {section.items.map((item) => (
+                          <SidebarItem
+                            key={item.href}
+                            item={item}
+                            active={isActive(item.href)}
+                            collapsed={false}
+                          />
+                        ))}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            )}
           </nav>
         </ScrollArea>
 
