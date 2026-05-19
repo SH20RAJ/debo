@@ -10,7 +10,7 @@ export function Product() {
     {
       icon: <BrainCircuit className="w-5 h-5 text-landing-text-primary" />,
       title: "Automatic memory extraction",
-      text: "Debo detects people, dates, decisions, tasks, topics, and useful facts from your saved context.",
+      text: "Debo detects people, dates, decisions, tasks, promises, topics, and useful facts from your saved context.",
     },
     {
       icon: <SearchCheck className="w-5 h-5 text-landing-text-primary" />,

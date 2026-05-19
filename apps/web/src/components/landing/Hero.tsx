@@ -111,8 +111,26 @@ export function Hero() {
                   </div>
                 </div>
 
-                {/* Timeline memory card */}
+                {/* Debo Found Memory Receipt */}
                 <div className="flex justify-start pt-2">
+                   <div className="ml-[18px] border-l border-landing-border pl-6 py-2 relative">
+                     <div className="absolute w-[7px] h-[7px] rounded-full bg-landing-accent -left-[4px] top-[22px]"></div>
+                     <div className="text-landing-xs font-bold text-landing-accent uppercase tracking-widest mb-3 pl-1">Debo found</div>
+                     <div className="bg-landing-surface border border-landing-border-light p-4 rounded-xl shadow-sm space-y-2.5 w-72 md:w-80">
+                       <div className="flex flex-wrap gap-1.5">
+                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-landing-accent/10 text-landing-xs font-semibold text-landing-accent border border-landing-accent/20">Person: Raj</span>
+                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-landing-surface-subtle text-landing-xs font-medium text-landing-text-secondary border border-landing-border">Task: Submit Q4 budget allocation</span>
+                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-landing-surface-subtle text-landing-xs font-medium text-landing-text-secondary border border-landing-border">Due: Friday</span>
+                       </div>
+                       <div className="pt-2 border-t border-landing-border-light text-landing-xs text-landing-text-tertiary">
+                         Source: Voice note · Marketing Sync
+                       </div>
+                     </div>
+                   </div>
+                </div>
+
+                {/* Related Memory */}
+                <div className="flex justify-start">
                    <div className="ml-[18px] border-l border-landing-border pl-6 py-2 relative">
                      <div className="absolute w-[7px] h-[7px] rounded-full bg-landing-border -left-[4px] top-[22px]"></div>
                      <div className="text-landing-xs font-bold text-landing-text-tertiary uppercase tracking-widest mb-3 pl-1">Related Memory</div>

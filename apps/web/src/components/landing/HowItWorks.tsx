@@ -7,8 +7,8 @@ export function HowItWorks() {
     },
     {
       num: "02",
-      title: "Organize",
-      text: "Debo extracts entities, dates, topics, decisions, and relationships automatically.",
+      title: "Extract",
+      text: "Debo extracts people, dates, tasks, promises, decisions, topics, and relationships automatically.",
     },
     {
       num: "03",
@@ -17,6 +17,11 @@ export function HowItWorks() {
     },
     {
       num: "04",
+      title: "Act",
+      text: "Follow up on promises, complete tasks, and act on what Debo found for you.",
+    },
+    {
+      num: "05",
       title: "Control",
       text: "Review, edit, export, or delete your saved memories anytime.",
     },
@@ -28,7 +33,7 @@ export function HowItWorks() {
         <h2 className="text-center font-heading font-size-landing-3xl md:text-landing-4xl font-semibold tracking-tight text-landing-text-primary">
           How Debo works
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-6">
           {steps.map((s, i) => (
             <div key={i} className="space-y-4">
               <div className="text-landing-xs font-bold tracking-widest text-landing-text-tertiary">

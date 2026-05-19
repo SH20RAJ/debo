@@ -14,6 +14,13 @@ export function Problem() {
     },
   ];
 
+  const unfinished = [
+    "You promised Raj the Q4 budget by Friday.",
+    "You saved 5 product ideas but never picked one.",
+    'You mentioned "landing page revamp" three times.',
+    "You have 2 voice notes waiting for review.",
+  ];
+
   return (
     <section className="py-24 md:py-32 px-6 bg-landing-surface">
       <div className="mx-auto max-w-[1120px] space-y-20">
@@ -33,6 +40,21 @@ export function Problem() {
               <p className="text-landing-base font-medium text-landing-text-secondary leading-relaxed">{p.text}</p>
             </div>
           ))}
+        </div>
+
+        {/* Open Loops Section */}
+        <div className="text-center space-y-8">
+          <h2 className="font-heading font-size-landing-3xl md:text-landing-4xl font-semibold tracking-tight text-landing-text-primary">
+            Debo finds what you left unfinished.
+          </h2>
+          <div className="mx-auto max-w-2xl space-y-4">
+            {unfinished.map((item, i) => (
+              <div key={i} className="flex items-center gap-4 p-5 border border-landing-border rounded-2xl bg-landing-bg text-left transition-all duration-300 hover:shadow-md hover:shadow-black/[0.02]">
+                <div className="w-2 h-2 rounded-full bg-landing-accent shrink-0"></div>
+                <p className="text-landing-base font-medium text-landing-text-primary">{item}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

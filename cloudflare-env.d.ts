@@ -1,0 +1,1 @@
+// Cloudflare environment types - placeholder

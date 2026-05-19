@@ -7,6 +7,7 @@ export function Privacy() {
     "Source references for every answer",
     "Clear connected-app permissions",
     "No fake \"magic\" without showing where answers came from",
+    "Private session mode — choose what Debo remembers",
   ];
 
   return (
@@ -17,7 +18,7 @@ export function Privacy() {
             Memory is personal. Debo treats it that way.
           </h2>
           <p className="text-landing-base md:text-landing-lg font-medium leading-relaxed text-landing-text-secondary">
-            Debo is designed around user control, not data lock-in. You decide what gets saved, what gets connected, and what gets deleted.
+            Debo does not silently remember everything. You choose what gets saved, reviewed, deleted, or exported. Debo is designed around user control, not data lock-in.
           </p>
         </div>
         <div className="flex-1 w-full bg-landing-bg p-8 rounded-[20px] border border-landing-border">
