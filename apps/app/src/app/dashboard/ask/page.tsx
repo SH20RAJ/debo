@@ -1,10 +1,21 @@
-import { AskPage } from "@/components/ask/ask-page";
+"use client";
 
-export const metadata = {
-  title: "Ask Debo",
-  description: "Ask your memories anything with source-backed answers.",
-};
+import { CopilotChat } from "@copilotkit/react-ui";
+import { CopilotActions } from "@/components/ask/copilot-actions";
+import "@copilotkit/react-ui/styles.css";
 
 export default function AskDeboPage() {
-  return <AskPage />;
+  return (
+    <div className="h-full">
+      <CopilotActions />
+      <CopilotChat
+        labels={{
+          title: "Ask Debo",
+          initial: "Ask me anything about your memories...",
+          placeholder: "Ask Debo about your memories...",
+        }}
+        className="h-full"
+      />
+    </div>
+  );
 }

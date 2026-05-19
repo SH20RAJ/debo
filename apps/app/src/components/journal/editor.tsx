@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/mantine";
 import "@blocknote/mantine/style.css";
@@ -11,11 +11,14 @@ import type { JournalEntry } from "./journal-page";
 
 interface JournalEditorProps {
   entry: JournalEntry;
+  onSave?: (entryId: string, data: { title?: string; content?: string }) => void;
 }
 
-export function JournalEditor({ entry }: JournalEditorProps) {
+export function JournalEditor({ entry, onSave }: JournalEditorProps) {
   const [title, setTitle] = useState(entry.title);
   const { resolvedTheme } = useTheme();
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastSavedRef = useRef({ title: entry.title, entryId: entry.id });
 
   const editor = useCreateBlockNote({
     initialContent: entry.content
@@ -29,12 +32,72 @@ export function JournalEditor({ entry }: JournalEditorProps) {
       : [{ type: "paragraph" as const, content: "" }],
   });
 
-  // Update title when entry changes
-  const prevIdRef = { current: entry.id } as { current: string };
-  if (prevIdRef.current !== entry.id) {
-    prevIdRef.current = entry.id;
+  // Reset editor when entry changes
+  useEffect(() => {
     setTitle(entry.title);
-  }
+    lastSavedRef.current = { title: entry.title, entryId: entry.id };
+
+    // Replace editor content
+    const blocks = entry.content
+      ? entry.content
+          .split("\n\n")
+          .filter(Boolean)
+          .map((paragraph) => ({
+            type: "paragraph" as const,
+            content: paragraph.trim(),
+          }))
+      : [{ type: "paragraph" as const, content: "" }];
+
+    try {
+      editor.replaceBlocks(editor.document, blocks);
+    } catch {
+      // BlockNote may not be ready yet
+    }
+  }, [entry.id]);
+
+  const getContentText = useCallback(() => {
+    try {
+      return editor?.document
+        ?.map((block: any) => {
+          if (!block.content) return "";
+          if (Array.isArray(block.content)) {
+            return block.content
+              .map((inline: any) =>
+                typeof inline === "string" ? inline : inline.text || ""
+              )
+              .join("");
+          }
+          return typeof block.content === "string" ? block.content : "";
+        })
+        .filter(Boolean)
+        .join("\n\n") ?? "";
+    } catch {
+      return "";
+    }
+  }, [editor]);
+
+  const debouncedSave = useCallback(
+    (newTitle?: string) => {
+      if (!onSave) return;
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = setTimeout(() => {
+        const content = getContentText();
+        const titleVal = newTitle ?? title;
+        if (titleVal !== lastSavedRef.current.title || entry.id !== lastSavedRef.current.entryId || content !== entry.content) {
+          onSave(entry.id, { title: titleVal, content });
+          lastSavedRef.current = { title: titleVal, entryId: entry.id };
+        }
+      }, 1000);
+    },
+    [onSave, entry.id, entry.content, title, getContentText]
+  );
+
+  // Save on editor content change
+  useEffect(() => {
+    const handler = () => debouncedSave();
+    editor?.onChange?.(handler);
+    return () => {};
+  }, [editor, debouncedSave]);
 
   const wordCount = (() => {
     try {
@@ -91,7 +154,10 @@ export function JournalEditor({ entry }: JournalEditorProps) {
           <input
             type="text"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) => {
+              setTitle(e.target.value);
+              debouncedSave(e.target.value);
+            }}
             placeholder="Untitled"
             className="w-full text-3xl font-bold text-foreground bg-transparent outline-none border-none placeholder:text-muted-foreground/40 mb-6 leading-tight"
           />
@@ -111,7 +177,7 @@ export function JournalEditor({ entry }: JournalEditorProps) {
       <div className="border-t border-border px-4 py-1.5 flex items-center gap-4 text-[11px] text-muted-foreground">
         <span>{wordCount} words</span>
         <span>{readingTime} min read</span>
-        <span className="ml-auto">Saved</span>
+        <span className="ml-auto">Auto-saved</span>
       </div>
     </div>
   );

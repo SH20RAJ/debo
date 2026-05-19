@@ -39,6 +39,13 @@ export const api = {
     list: (type?: string) => fetchApi(`/api/sources${type ? `?type=${type}` : ""}`),
     get: (id: string) => fetchApi(`/api/sources/${id}`),
     create: (data: any) => fetchApi("/api/sources", { method: "POST", body: JSON.stringify(data) }),
+    update: (id: string, data: any) => fetchApi(`/api/sources/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+  },
+  journal: {
+    list: () => fetchApi("/api/sources?type=journal"),
+    get: (id: string) => fetchApi(`/api/sources/${id}`),
+    create: (data: any) => fetchApi("/api/sources", { method: "POST", body: JSON.stringify({ ...data, type: "journal" }) }),
+    update: (id: string, data: any) => fetchApi(`/api/sources/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
   },
   tasks: {
     list: (status?: string) => fetchApi(`/api/tasks${status ? `?status=${status}` : ""}`),

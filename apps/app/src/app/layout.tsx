@@ -4,6 +4,7 @@ import { stackServerApp } from "@/stack/server";
 import { ThemeProvider } from "next-themes";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "sonner";
+import { CopilotKitWrapper } from "@/components/copilot-wrapper";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -46,7 +47,7 @@ export default function RootLayout({
               disableTransitionOnChange
             >
               <TooltipProvider>
-                {children}
+                <CopilotKitWrapper>{children}</CopilotKitWrapper>
                 <Toaster position="top-right" />
               </TooltipProvider>
             </ThemeProvider>

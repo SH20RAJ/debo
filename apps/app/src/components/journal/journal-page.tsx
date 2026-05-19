@@ -1,10 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
+import { Loader2, Video, X } from "lucide-react";
 import { JournalEntryList } from "@/components/journal/entry-list";
 import { JournalInsightRail } from "@/components/journal/insight-rail";
 import { TemplatePicker } from "@/components/journal/template-picker";
+import { VideoCapture } from "@/components/journal/video-capture";
+import { Button } from "@/components/ui/button";
+import { api } from "@/lib/api";
 
 const JournalEditor = dynamic(
   () => import("@/components/journal/editor").then((m) => m.JournalEditor),
@@ -19,57 +23,54 @@ export interface JournalEntry {
   content: string;
   people: string[];
   tasks: string[];
+  createdAt?: string;
+  type?: string;
+  status?: string;
 }
 
-const MOCK_ENTRIES: JournalEntry[] = [
-  {
-    id: "1",
-    title: "Product Ideas",
-    preview: "Three features that could differentiate us from competitors...",
-    date: "May 18, 2026",
-    content:
-      "Three features that could differentiate us from competitors:\n\n1. Voice-first capture — let users record thoughts hands-free\n2. Source-backed answers — every AI response shows where it came from\n3. Private memory graph — users control what gets remembered\n\nWe should prioritize the voice capture flow. It's the most defensible moat and hardest to copy.",
-    people: ["Shaswat"],
-    tasks: ["Prototype voice capture flow"],
-  },
-  {
-    id: "2",
-    title: "Weekly Review",
-    preview: "This week was productive. Shipped the library page and started...",
-    date: "May 17, 2026",
-    content:
-      "This week was productive. Shipped the library page and started on the journal editor.\n\nWhat went well:\n- Clean component architecture\n- Mock data layer is reusable\n\nWhat to improve:\n- Need better error states\n- Mobile responsiveness needs work",
-    people: [],
-    tasks: ["Add error boundaries", "Mobile polish pass"],
-  },
-  {
-    id: "3",
-    title: "Meeting Notes - Sarah",
-    preview: "Discussed the Q3 roadmap with Sarah. Key takeaways...",
-    date: "May 15, 2026",
-    content:
-      "Discussed the Q3 roadmap with Sarah.\n\nKey takeaways:\n- Ship journal by end of May\n- Library needs search before launch\n- Voice capture is P1 for next sprint\n\nSarah suggested we look at how Reflect handles their editor. Worth investigating.",
-    people: ["Sarah"],
-    tasks: ["Ship journal by end of May", "Investigate Reflect editor"],
-  },
-  {
-    id: "4",
-    title: "Startup Brainstorm",
-    preview: "Explored pricing models. Freemium with a generous free tier...",
-    date: "May 14, 2026",
-    content:
-      "Explored pricing models.\n\nFreemium with a generous free tier seems right:\n- Free: 100 memories, basic search\n- Pro: Unlimited, voice, connectors\n- Team: Shared memory spaces\n\nNeed to validate willingness to pay with 10 more user interviews.",
-    people: [],
-    tasks: ["Run 10 user interviews", "Draft pricing page"],
-  },
-];
+function makePreview(content: string): string {
+  const text = content.replace(/[#*_~`>\[\]()!-]/g, "").trim();
+  return text.length > 120 ? text.slice(0, 120) + "..." : text || "Empty entry";
+}
 
 export function JournalPage() {
-  const [entries] = useState<JournalEntry[]>(MOCK_ENTRIES);
-  const [activeEntryId, setActiveEntryId] = useState<string>(
-    MOCK_ENTRIES[0].id
-  );
+  const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeEntryId, setActiveEntryId] = useState<string>("");
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
+  const [showVideoCapture, setShowVideoCapture] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  // Fetch entries on mount
+  const fetchEntries = useCallback(async () => {
+    try {
+      const data = await api.journal.list();
+      const mapped: JournalEntry[] = (Array.isArray(data) ? data : []).map((s: any) => ({
+        id: s.id,
+        title: s.title ?? "Untitled",
+        preview: makePreview(s.content ?? ""),
+        date: new Date(s.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+        content: s.content ?? "",
+        people: s.people ?? [],
+        tasks: s.tasks ?? [],
+        createdAt: s.createdAt,
+        type: s.type,
+        status: s.status,
+      }));
+      setEntries(mapped);
+      if (mapped.length > 0 && !activeEntryId) {
+        setActiveEntryId(mapped[0].id);
+      }
+    } catch (err) {
+      console.error("Failed to fetch journal entries:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [activeEntryId]);
+
+  useEffect(() => {
+    fetchEntries();
+  }, []);
 
   const activeEntry = entries.find((e) => e.id === activeEntryId) ?? entries[0];
 
@@ -77,10 +78,69 @@ export function JournalPage() {
     setShowTemplatePicker(true);
   };
 
-  const handleSelectTemplate = (title: string, content: string) => {
+  const handleSelectTemplate = async (title: string, content: string) => {
     setShowTemplatePicker(false);
-    console.log("New entry from template:", title);
+    setSaving(true);
+    try {
+      const result = await api.journal.create({ title, content });
+      const newEntry: JournalEntry = {
+        id: result.id,
+        title: result.title ?? title,
+        preview: makePreview(content),
+        date: new Date(result.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+        content,
+        people: [],
+        tasks: [],
+        createdAt: result.createdAt,
+        type: "journal",
+        status: "draft",
+      };
+      setEntries((prev) => [newEntry, ...prev]);
+      setActiveEntryId(newEntry.id);
+    } catch (err) {
+      console.error("Failed to create entry:", err);
+    } finally {
+      setSaving(false);
+    }
   };
+
+  const handleSave = async (entryId: string, data: { title?: string; content?: string }) => {
+    setSaving(true);
+    try {
+      await api.journal.update(entryId, data);
+      setEntries((prev) =>
+        prev.map((e) =>
+          e.id === entryId
+            ? {
+                ...e,
+                title: data.title ?? e.title,
+                content: data.content ?? e.content,
+                preview: makePreview(data.content ?? e.content),
+              }
+            : e
+        )
+      );
+    } catch (err) {
+      console.error("Failed to save entry:", err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleVideoTranscript = (transcript: string, sourceId: string) => {
+    // Refresh entries to pick up the new video source
+    fetchEntries();
+    setShowVideoCapture(false);
+    if (sourceId) setActiveEntryId(sourceId);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-full overflow-hidden">
@@ -95,14 +155,55 @@ export function JournalPage() {
       </aside>
 
       {/* Center: Editor */}
-      <main className="flex-1 min-w-0 overflow-y-auto">
-        <JournalEditor entry={activeEntry} />
+      <main className="flex-1 min-w-0 overflow-y-auto flex flex-col">
+        {/* Video capture bar */}
+        <div className="border-b border-border px-4 py-2 flex items-center gap-2">
+          {showVideoCapture ? (
+            <div className="flex-1 flex items-center gap-3">
+              <VideoCapture onTranscriptReady={handleVideoTranscript} />
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 p-0 shrink-0"
+                onClick={() => setShowVideoCapture(false)}
+              >
+                <X className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+          ) : (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-1.5 text-xs text-muted-foreground"
+              onClick={() => setShowVideoCapture(true)}
+            >
+              <Video className="w-3.5 h-3.5" />
+              Record video
+            </Button>
+          )}
+          {saving && (
+            <span className="flex items-center gap-1 text-xs text-muted-foreground ml-auto">
+              <Loader2 className="w-3 h-3 animate-spin" />
+              Saving...
+            </span>
+          )}
+        </div>
+
+        {activeEntry ? (
+          <JournalEditor entry={activeEntry} onSave={handleSave} />
+        ) : (
+          <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
+            No entries yet. Create one to get started.
+          </div>
+        )}
       </main>
 
       {/* Right: Insight rail */}
-      <aside className="w-[280px] shrink-0 border-l border-border bg-card overflow-y-auto hidden lg:block">
-        <JournalInsightRail entry={activeEntry} />
-      </aside>
+      {activeEntry && (
+        <aside className="w-[280px] shrink-0 border-l border-border bg-card overflow-y-auto hidden lg:block">
+          <JournalInsightRail entry={activeEntry} />
+        </aside>
+      )}
 
       {/* Template picker dialog */}
       <TemplatePicker
