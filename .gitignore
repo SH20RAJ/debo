@@ -19,7 +19,7 @@ node_modules/
 .wrangler-*
 # production
 /build
-
+.next
 # misc
 .DS_Store
 *.pem
@@ -59,3 +59,4 @@ apps/*/.open-next/
 .env.local
 prompt.md
 .open-next/
+.openclaude/

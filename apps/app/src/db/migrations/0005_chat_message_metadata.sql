@@ -1,1 +1,0 @@
-ALTER TABLE "message" ADD COLUMN IF NOT EXISTS "metadata" text;--> statement-breakpoint
