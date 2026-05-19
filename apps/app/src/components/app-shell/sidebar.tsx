@@ -11,6 +11,7 @@ import {
   Users,
   FolderKanban,
   Plug,
+  Inbox,
   Mic,
   Shield,
   Settings,
@@ -48,6 +49,7 @@ const primaryNav: NavItem[] = [
   { label: "Projects", href: "/dashboard/projects", icon: FolderKanban },
   { label: "Connectors", href: "/dashboard/connectors", icon: Plug },
   { label: "Voice", href: "/dashboard/voice", icon: Mic },
+  { label: "Debo Mail", href: "/dashboard/mail", icon: Inbox },
   { label: "Vault", href: "/dashboard/vault", icon: Shield },
 ];
 

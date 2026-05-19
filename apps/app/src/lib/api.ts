@@ -32,6 +32,18 @@ export const api = {
     connect: (provider: string) => fetchApi("/api/connectors/connect", { method: "POST", body: JSON.stringify({ provider }) }),
     disconnect: (id: string) => fetchApi(`/api/connectors/${id}`, { method: "DELETE" }),
   },
+  mail: {
+    getAddress: () => fetchApi("/api/mail/address"),
+    checkUsername: (username: string) => fetchApi("/api/mail/address/check", { method: "POST", body: JSON.stringify({ username }) }),
+    claimAddress: (username: string) => fetchApi("/api/mail/address/claim", { method: "POST", body: JSON.stringify({ username }) }),
+    listThreads: (folder?: string) => fetchApi(`/api/mail/threads${folder ? `?folder=${folder}` : ""}`),
+    getThread: (threadId: string) => fetchApi(`/api/mail/threads/${threadId}`),
+    send: (data: { to: string; subject: string; body: string }) => fetchApi("/api/mail/send", { method: "POST", body: JSON.stringify(data) }),
+    markRead: (threadId: string) => fetchApi(`/api/mail/threads/${threadId}/read`, { method: "POST" }),
+    archiveThread: (threadId: string) => fetchApi(`/api/mail/threads/${threadId}/archive`, { method: "POST" }),
+    deleteThread: (threadId: string) => fetchApi(`/api/mail/threads/${threadId}`, { method: "DELETE" }),
+    saveToMemory: (messageId: string) => fetchApi(`/api/mail/messages/${messageId}/save-to-memory`, { method: "POST" }),
+  },
   voice: {
     createSession: () => fetchApi("/api/voice/sessions", { method: "POST", body: JSON.stringify({}) }),
     getToken: (sessionId: string) => fetchApi(`/api/voice/sessions/${sessionId}/token`, { method: "POST" }),

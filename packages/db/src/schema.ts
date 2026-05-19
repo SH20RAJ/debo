@@ -89,6 +89,7 @@ export const sources = pgTable(
         "image",
         "link",
         "email",
+        "debo_mail",
         "calendar",
         "notion",
         "github",
@@ -866,5 +867,122 @@ export const voiceSessions = pgTable(
     index("voice_sessions_workspace_id_idx").on(t.workspaceId),
     index("voice_sessions_source_id_idx").on(t.sourceId),
     index("voice_sessions_status_idx").on(t.status),
+  ],
+);
+
+// ─── 26. debo_mail_addresses ──────────────────────────────────────────────────
+
+export const deboMailAddresses = pgTable(
+  "debo_mail_addresses",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspaces.id),
+    username: text("username").notNull(),
+    address: text("address").notNull(),
+    isPrimary: integer("is_primary").notNull().default(1),
+    createdAt: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { mode: "string" }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("debo_mail_addresses_user_id_idx").on(t.userId),
+    index("debo_mail_addresses_workspace_id_idx").on(t.workspaceId),
+    uniqueIndex("debo_mail_addresses_username_idx").on(t.username),
+    uniqueIndex("debo_mail_addresses_address_idx").on(t.address),
+    uniqueIndex("debo_mail_addresses_user_unique_idx").on(t.userId),
+  ],
+);
+
+// ─── 27. debo_mail_threads ────────────────────────────────────────────────────
+
+export const deboMailThreads = pgTable(
+  "debo_mail_threads",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspaces.id),
+    subject: text("subject").notNull(),
+    createdByUserId: text("created_by_user_id")
+      .notNull()
+      .references(() => users.id),
+    lastMessageAt: timestamp("last_message_at", { mode: "string" }),
+    createdAt: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { mode: "string" }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("debo_mail_threads_workspace_id_idx").on(t.workspaceId),
+    index("debo_mail_threads_created_by_user_id_idx").on(t.createdByUserId),
+    index("debo_mail_threads_last_message_at_idx").on(t.lastMessageAt),
+  ],
+);
+
+// ─── 28. debo_mail_messages ───────────────────────────────────────────────────
+
+export const deboMailMessages = pgTable(
+  "debo_mail_messages",
+  {
+    id: text("id").primaryKey(),
+    threadId: text("thread_id")
+      .notNull()
+      .references(() => deboMailThreads.id),
+    senderUserId: text("sender_user_id")
+      .notNull()
+      .references(() => users.id),
+    senderAddress: text("sender_address").notNull(),
+    recipientUserId: text("recipient_user_id")
+      .notNull()
+      .references(() => users.id),
+    recipientAddress: text("recipient_address").notNull(),
+    subject: text("subject").notNull(),
+    body: text("body").notNull(),
+    status: text("status", {
+      enum: ["sent", "delivered", "read", "archived", "deleted"],
+    })
+      .notNull()
+      .default("sent"),
+    isMemorySaved: integer("is_memory_saved").notNull().default(0),
+    sourceId: text("source_id").references(() => sources.id),
+    createdAt: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
+    readAt: timestamp("read_at", { mode: "string" }),
+    deletedAt: timestamp("deleted_at", { mode: "string" }),
+  },
+  (t) => [
+    index("debo_mail_messages_thread_id_idx").on(t.threadId),
+    index("debo_mail_messages_sender_user_id_idx").on(t.senderUserId),
+    index("debo_mail_messages_recipient_user_id_idx").on(t.recipientUserId),
+    index("debo_mail_messages_status_idx").on(t.status),
+    index("debo_mail_messages_created_at_idx").on(t.createdAt),
+    index("debo_mail_messages_is_memory_saved_idx").on(t.isMemorySaved),
+  ],
+);
+
+// ─── 29. debo_mail_participants ───────────────────────────────────────────────
+
+export const deboMailParticipants = pgTable(
+  "debo_mail_participants",
+  {
+    id: text("id").primaryKey(),
+    threadId: text("thread_id")
+      .notNull()
+      .references(() => deboMailThreads.id),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id),
+    address: text("address").notNull(),
+    role: text("role", { enum: ["sender", "recipient"] }).notNull(),
+    archivedAt: timestamp("archived_at", { mode: "string" }),
+    deletedAt: timestamp("deleted_at", { mode: "string" }),
+    lastReadAt: timestamp("last_read_at", { mode: "string" }),
+    createdAt: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("debo_mail_participants_thread_id_idx").on(t.threadId),
+    index("debo_mail_participants_user_id_idx").on(t.userId),
+    uniqueIndex("debo_mail_participants_unique_idx").on(t.threadId, t.userId),
   ],
 );

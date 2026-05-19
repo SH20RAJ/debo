@@ -17,6 +17,7 @@ import connectorsRouter from "./routes/connectors";
 import voiceRouter from "./routes/voice";
 import vaultRouter from "./routes/vault";
 import uploadsRouter from "./routes/uploads";
+import mailRouter from "./routes/mail";
 
 const app = new Hono();
 
@@ -40,6 +41,7 @@ app.route("/api/connectors", connectorsRouter);
 app.route("/api/voice", voiceRouter);
 app.route("/api/vault", vaultRouter);
 app.route("/api/uploads", uploadsRouter);
+app.route("/api/mail", mailRouter);
 
 app.notFound((c) => c.json({ error: "Not found" }, 404));
 
