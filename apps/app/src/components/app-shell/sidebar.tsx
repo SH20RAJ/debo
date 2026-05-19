@@ -44,23 +44,48 @@ interface NavItem {
   badge?: string;
 }
 
-const primaryNav: NavItem[] = [
-  { label: "Home", href: "/dashboard", icon: LayoutDashboard, shortcut: "H" },
-  { label: "Ask Debo", href: "/dashboard/ask", icon: MessageSquare, shortcut: "A" },
-  { label: "Journal", href: "/dashboard/journal", icon: BookOpen, shortcut: "J" },
-  { label: "Memory Inbox", href: "/dashboard/inbox", icon: Bell, badge: "5" },
-  { label: "Daily Debrief", href: "/dashboard/debrief", icon: Sun },
-  { label: "Timeline", href: "/dashboard/timeline", icon: Clock },
-  { label: "Library", href: "/dashboard/library", icon: Library, shortcut: "L" },
-  { label: "Tasks", href: "/dashboard/tasks", icon: CheckSquare },
-  { label: "People", href: "/dashboard/people", icon: Users },
-  { label: "Follow-Up Radar", href: "/dashboard/radar", icon: Radar },
-  { label: "Projects", href: "/dashboard/projects", icon: FolderKanban },
-  { label: "Decisions", href: "/dashboard/decisions", icon: Diamond },
-  { label: "Connectors", href: "/dashboard/connectors", icon: Plug },
-  { label: "Voice", href: "/dashboard/voice", icon: Mic },
-  { label: "Debo Mail", href: "/dashboard/mail", icon: Inbox },
-  { label: "Vault", href: "/dashboard/vault", icon: Shield },
+interface NavSection {
+  label: string;
+  items: NavItem[];
+}
+
+const navSections: NavSection[] = [
+  {
+    label: "Core",
+    items: [
+      { label: "Home", href: "/dashboard", icon: LayoutDashboard, shortcut: "H" },
+      { label: "Ask Debo", href: "/dashboard/ask", icon: MessageSquare, shortcut: "A" },
+      { label: "Journal", href: "/dashboard/journal", icon: BookOpen, shortcut: "J" },
+    ],
+  },
+  {
+    label: "Memory",
+    items: [
+      { label: "Inbox", href: "/dashboard/inbox", icon: Bell, badge: "5" },
+      { label: "Daily Debrief", href: "/dashboard/debrief", icon: Sun },
+      { label: "Timeline", href: "/dashboard/timeline", icon: Clock },
+      { label: "Library", href: "/dashboard/library", icon: Library, shortcut: "L" },
+    ],
+  },
+  {
+    label: "Work",
+    items: [
+      { label: "Tasks", href: "/dashboard/tasks", icon: CheckSquare },
+      { label: "Projects", href: "/dashboard/projects", icon: FolderKanban },
+      { label: "Decisions", href: "/dashboard/decisions", icon: Diamond },
+      { label: "People", href: "/dashboard/people", icon: Users },
+      { label: "Follow-Up Radar", href: "/dashboard/radar", icon: Radar },
+    ],
+  },
+  {
+    label: "Tools",
+    items: [
+      { label: "Voice", href: "/dashboard/voice", icon: Mic },
+      { label: "Debo Mail", href: "/dashboard/mail", icon: Inbox },
+      { label: "Connectors", href: "/dashboard/connectors", icon: Plug },
+      { label: "Vault", href: "/dashboard/vault", icon: Shield },
+    ],
+  },
 ];
 
 const bottomNav: NavItem[] = [
@@ -103,14 +128,26 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
         {/* Primary nav */}
         <ScrollArea className="flex-1">
-          <nav className="py-2 px-2 space-y-0.5">
-            {primaryNav.map((item) => (
-              <SidebarItem
-                key={item.href}
-                item={item}
-                active={isActive(item.href)}
-                collapsed={collapsed}
-              />
+          <nav className="py-2 px-2">
+            {navSections.map((section, i) => (
+              <div key={section.label}>
+                {i > 0 && <Separator className="my-2" />}
+                {!collapsed && (
+                  <p className="px-3 py-1 text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">
+                    {section.label}
+                  </p>
+                )}
+                <div className="space-y-0.5">
+                  {section.items.map((item) => (
+                    <SidebarItem
+                      key={item.href}
+                      item={item}
+                      active={isActive(item.href)}
+                      collapsed={collapsed}
+                    />
+                  ))}
+                </div>
+              </div>
             ))}
           </nav>
         </ScrollArea>
