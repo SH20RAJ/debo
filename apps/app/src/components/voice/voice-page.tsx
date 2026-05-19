@@ -2,13 +2,11 @@
 
 import { useState } from "react";
 import { Mic, Phone, PhoneOff } from "lucide-react";
-import { VoiceCard } from "./voice-card";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { VOICE_NOTES } from "@/lib/mock";
 
 export function VoicePage() {
   const [isRecording, setIsRecording] = useState(false);
@@ -83,10 +81,11 @@ export function VoicePage() {
         </TabsList>
 
         <TabsContent value="voice-notes">
-          <div className="space-y-3">
-            {VOICE_NOTES.map((note) => (
-              <VoiceCard key={note.id} note={note} />
-            ))}
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">No voice notes yet.</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Tap the record button above to create your first voice note.
+            </p>
           </div>
         </TabsContent>
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   ArrowLeft,
   Calendar,
@@ -19,6 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { api } from "@/lib/api";
 
 interface Mention {
   date: string;
@@ -38,58 +40,6 @@ interface PersonDetailData {
   relatedSources: { title: string; type: string; date: string }[];
 }
 
-const mockPerson: PersonDetailData = {
-  id: "person-001",
-  name: "Raj",
-  context: "Marketing / Q4 Budget",
-  summary:
-    "Raj is related to your marketing work and Q4 budget planning. You recently promised to send him the finalized allocation by Friday before the board meeting.",
-  recentMentions: [
-    {
-      date: "Tuesday",
-      source: "Marketing Sync voice note",
-      sourceType: "voice",
-      excerpt:
-        '"...promised Raj I\'ll send the finalized Q4 budget allocation by Friday..."',
-    },
-    {
-      date: "Last week",
-      source: "Q4 Planning meeting",
-      sourceType: "meeting",
-      excerpt:
-        '"...Raj raised concerns about the marketing spend allocation for Q4..."',
-    },
-    {
-      date: "2 weeks ago",
-      source: "Weekly Review journal",
-      sourceType: "journal",
-      excerpt:
-        '"...need to align with Raj on the revised budget numbers before presenting to the board..."',
-    },
-    {
-      date: "3 weeks ago",
-      source: "Budget Draft email",
-      sourceType: "email",
-      excerpt:
-        '"...Raj sent over the initial figures, looks like we need to adjust the allocation..."',
-    },
-  ],
-  promises: [
-    "Send finalized Q4 budget allocation by Friday (source: Marketing Sync voice note)",
-    "Schedule a review call before the board meeting (source: Q4 Planning meeting)",
-  ],
-  openTasks: [
-    { title: "Send finalized Q4 budget to Raj", source: "Marketing Sync" },
-    { title: "Schedule budget review call", source: "Q4 Planning" },
-  ],
-  relatedSources: [
-    { title: "Marketing Sync voice note", type: "voice", date: "Tuesday" },
-    { title: "Q4 Planning meeting", type: "meeting", date: "Last week" },
-    { title: "Q4 Allocation Draft.pdf", type: "file", date: "2 weeks ago" },
-    { title: "Weekly Review journal", type: "journal", date: "2 weeks ago" },
-  ],
-};
-
 const avatarColors = [
   "bg-violet-100 text-violet-700 dark:bg-violet-950/50 dark:text-violet-400",
   "bg-sky-100 text-sky-700 dark:bg-sky-950/50 dark:text-sky-400",
@@ -107,11 +57,91 @@ function getInitials(name: string) {
     .slice(0, 2);
 }
 
+function normalizePersonDetail(raw: any): PersonDetailData {
+  return {
+    id: raw.id ?? "",
+    name: raw.name ?? "Unknown",
+    context: raw.context ?? "",
+    summary: raw.summary ?? "No summary available.",
+    recentMentions: raw.recentMentions ?? raw.recent_mentions ?? [],
+    promises: raw.promises ?? [],
+    openTasks: raw.openTasks ?? raw.open_tasks ?? [],
+    relatedSources: raw.relatedSources ?? raw.related_sources ?? [],
+  };
+}
+
 export function PersonDetail({ personId }: { personId: string }) {
-  const person = mockPerson;
+  const [person, setPerson] = useState<PersonDetailData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function fetchPerson() {
+      try {
+        const data = await api.people.get(personId);
+        if (!cancelled) {
+          setPerson(normalizePersonDetail(data));
+          setLoading(false);
+        }
+      } catch {
+        if (!cancelled) {
+          setError(true);
+          setLoading(false);
+        }
+      }
+    }
+    fetchPerson();
+    return () => { cancelled = true; };
+  }, [personId]);
+
   const colorIdx =
     personId.split("").reduce((a, c) => a + c.charCodeAt(0), 0) %
     avatarColors.length;
+
+  if (loading) {
+    return (
+      <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-6">
+        <Link
+          href="/dashboard/people"
+          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          Back to People
+        </Link>
+        <div className="space-y-4">
+          <div className="flex items-start gap-4">
+            <div className="size-14 rounded-full bg-muted animate-pulse" />
+            <div className="space-y-2">
+              <div className="h-6 w-32 bg-muted rounded animate-pulse" />
+              <div className="h-5 w-24 bg-muted rounded animate-pulse" />
+            </div>
+          </div>
+          <div className="h-24 bg-muted rounded-xl animate-pulse" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !person) {
+    return (
+      <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-6">
+        <Link
+          href="/dashboard/people"
+          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          Back to People
+        </Link>
+        <div className="text-center py-16">
+          <MessageSquare className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
+          <p className="text-sm text-muted-foreground">
+            Could not load person details. Make sure the API is running.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-6">
@@ -158,95 +188,103 @@ export function PersonDetail({ personId }: { personId: string }) {
       <Separator />
 
       {/* Recent Mentions */}
-      <section className="space-y-3">
-        <h2 className="text-sm font-bold flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-primary" />
-          Recent Mentions
-        </h2>
-        <div className="space-y-2">
-          {person.recentMentions.map((mention, i) => (
-            <Card key={i} className="rounded-xl">
-              <CardContent className="p-4 space-y-2">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <FileText className="w-3 h-3" />
-                  <span className="font-medium">{mention.source}</span>
-                  <span className="text-muted-foreground/60">
-                    {mention.date}
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground italic pl-5 border-l-2 border-border">
-                  {mention.excerpt}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
+      {person.recentMentions.length > 0 && (
+        <section className="space-y-3">
+          <h2 className="text-sm font-bold flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-primary" />
+            Recent Mentions
+          </h2>
+          <div className="space-y-2">
+            {person.recentMentions.map((mention, i) => (
+              <Card key={i} className="rounded-xl">
+                <CardContent className="p-4 space-y-2">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <FileText className="w-3 h-3" />
+                    <span className="font-medium">{mention.source}</span>
+                    <span className="text-muted-foreground/60">
+                      {mention.date}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground italic pl-5 border-l-2 border-border">
+                    {mention.excerpt}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Promises Made */}
-      <section className="space-y-3">
-        <h2 className="text-sm font-bold flex items-center gap-2">
-          <CheckSquare className="w-4 h-4 text-primary" />
-          Promises Made
-        </h2>
-        <div className="space-y-2">
-          {person.promises.map((promise, i) => (
-            <Card
-              key={i}
-              className="rounded-xl border-amber-200 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-950/20"
-            >
-              <CardContent className="p-4">
-                <p className="text-sm font-medium">{promise}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
+      {person.promises.length > 0 && (
+        <section className="space-y-3">
+          <h2 className="text-sm font-bold flex items-center gap-2">
+            <CheckSquare className="w-4 h-4 text-primary" />
+            Promises Made
+          </h2>
+          <div className="space-y-2">
+            {person.promises.map((promise, i) => (
+              <Card
+                key={i}
+                className="rounded-xl border-amber-200 dark:border-amber-900/30 bg-amber-50 dark:bg-amber-950/20"
+              >
+                <CardContent className="p-4">
+                  <p className="text-sm font-medium">{promise}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Open Tasks */}
-      <section className="space-y-3">
-        <h2 className="text-sm font-bold flex items-center gap-2">
-          <ListTodo className="w-4 h-4 text-primary" />
-          Open Tasks
-        </h2>
-        <div className="space-y-2">
-          {person.openTasks.map((task, i) => (
-            <Card key={i} className="rounded-xl">
-              <CardContent className="flex items-center gap-3 p-4">
-                <div className="w-4 h-4 rounded-full border-2 border-muted-foreground shrink-0" />
-                <div>
-                  <p className="text-sm font-medium">{task.title}</p>
-                  <p className="text-xs text-muted-foreground">{task.source}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
+      {person.openTasks.length > 0 && (
+        <section className="space-y-3">
+          <h2 className="text-sm font-bold flex items-center gap-2">
+            <ListTodo className="w-4 h-4 text-primary" />
+            Open Tasks
+          </h2>
+          <div className="space-y-2">
+            {person.openTasks.map((task, i) => (
+              <Card key={i} className="rounded-xl">
+                <CardContent className="flex items-center gap-3 p-4">
+                  <div className="w-4 h-4 rounded-full border-2 border-muted-foreground shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium">{task.title}</p>
+                    <p className="text-xs text-muted-foreground">{task.source}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Related Sources */}
-      <section className="space-y-3">
-        <h2 className="text-sm font-bold flex items-center gap-2">
-          <Database className="w-4 h-4 text-primary" />
-          Related Sources
-        </h2>
-        <div className="space-y-1">
-          {person.relatedSources.map((source, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-3 rounded-lg px-4 py-2.5 hover:bg-accent transition-colors cursor-pointer"
-            >
-              <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm truncate">{source.title}</p>
+      {person.relatedSources.length > 0 && (
+        <section className="space-y-3">
+          <h2 className="text-sm font-bold flex items-center gap-2">
+            <Database className="w-4 h-4 text-primary" />
+            Related Sources
+          </h2>
+          <div className="space-y-1">
+            {person.relatedSources.map((source, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-3 rounded-lg px-4 py-2.5 hover:bg-accent transition-colors cursor-pointer"
+              >
+                <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm truncate">{source.title}</p>
+                </div>
+                <span className="text-xs text-muted-foreground shrink-0">
+                  {source.date}
+                </span>
               </div>
-              <span className="text-xs text-muted-foreground shrink-0">
-                {source.date}
-              </span>
-            </div>
-          ))}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      )}
 
       <Separator />
 

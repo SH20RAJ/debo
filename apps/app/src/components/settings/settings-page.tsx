@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useUser } from "@stackframe/stack";
+import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 import { SettingsSection } from "./settings-section";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -52,12 +52,14 @@ export function SettingsPage() {
 }
 
 function AccountSection() {
+  const user = useUser();
+
   return (
     <SettingsSection title="Account" description="Your account information.">
       <div className="space-y-3">
-        <Field label="Email" value="shaswat@example.com" />
+        <Field label="Email" value={user?.primaryEmail ?? "Not signed in"} />
         <Separator />
-        <Field label="Name" value="Shaswat Raj" />
+        <Field label="Name" value={user?.displayName ?? "—"} />
         <Separator />
         <Field label="Plan" value="Private Beta" />
       </div>
@@ -66,7 +68,7 @@ function AccountSection() {
 }
 
 function AppearanceSection() {
-  const [theme, setTheme] = useState("system");
+  const { theme, setTheme } = useTheme();
   const [density, setDensity] = useState("comfortable");
 
   return (
@@ -85,8 +87,11 @@ function AppearanceSection() {
         </Select>
       </div>
       <div>
-        <label className="text-sm font-semibold mb-2 block">Density</label>
-        <Select value={density} onValueChange={setDensity}>
+        <div className="flex items-center gap-2 mb-2">
+          <label className="text-sm font-semibold block">Density</label>
+          <ComingSoonBadge />
+        </div>
+        <Select value={density} onValueChange={setDensity} disabled>
           <SelectTrigger className="w-full">
             <SelectValue />
           </SelectTrigger>
@@ -108,9 +113,13 @@ function AIPreferencesSection() {
 
   return (
     <SettingsSection title="AI Preferences" description="Configure how Debo responds and processes information.">
+      <div className="flex items-center gap-2 mb-2">
+        <ComingSoonBadge />
+        <p className="text-xs text-muted-foreground">These preferences will be configurable after backend integration.</p>
+      </div>
       <div>
         <label className="text-sm font-semibold mb-2 block">Default ask mode</label>
-        <Select value={askMode} onValueChange={setAskMode}>
+        <Select value={askMode} onValueChange={setAskMode} disabled>
           <SelectTrigger className="w-full">
             <SelectValue />
           </SelectTrigger>
@@ -125,7 +134,7 @@ function AIPreferencesSection() {
       </div>
       <div>
         <label className="text-sm font-semibold mb-2 block">Answer style</label>
-        <Select value={answerStyle} onValueChange={setAnswerStyle}>
+        <Select value={answerStyle} onValueChange={setAnswerStyle} disabled>
           <SelectTrigger className="w-full">
             <SelectValue />
           </SelectTrigger>
@@ -138,7 +147,7 @@ function AIPreferencesSection() {
       </div>
       <div>
         <label className="text-sm font-semibold mb-2 block">Source strictness</label>
-        <Select value={sourceStrictness} onValueChange={setSourceStrictness}>
+        <Select value={sourceStrictness} onValueChange={setSourceStrictness} disabled>
           <SelectTrigger className="w-full">
             <SelectValue />
           </SelectTrigger>
@@ -149,12 +158,12 @@ function AIPreferencesSection() {
           </SelectContent>
         </Select>
       </div>
-      <div className="flex items-center justify-between py-1">
+      <div className="flex items-center justify-between py-1 opacity-50">
         <div>
           <p className="text-sm font-medium">Auto-extract tasks</p>
           <p className="text-xs text-muted-foreground">Automatically detect tasks from journals, voice notes, and meetings.</p>
         </div>
-        <Switch checked={autoExtract} onCheckedChange={setAutoExtract} />
+        <Switch checked={autoExtract} onCheckedChange={setAutoExtract} disabled />
       </div>
     </SettingsSection>
   );
@@ -175,11 +184,15 @@ function MemoryPreferencesSection() {
 
   return (
     <SettingsSection title="Memory Preferences" description="Choose what Debo remembers.">
-      <ToggleRow label="Remember journal entries" description="Save and index your journal entries." checked={prefs.journals} onChange={() => toggle("journals")} />
-      <ToggleRow label="Remember voice notes" description="Transcribe and save voice recordings." checked={prefs.voice} onChange={() => toggle("voice")} />
-      <ToggleRow label="Remember uploaded files" description="Process and index uploaded documents." checked={prefs.files} onChange={() => toggle("files")} />
-      <ToggleRow label="Remember connector data" description="Save data from connected apps." checked={prefs.connectors} onChange={() => toggle("connectors")} />
-      <ToggleRow label="Require review before saving" description="Review extracted facts before they are saved to memory." checked={prefs.requireReview} onChange={() => toggle("requireReview")} />
+      <div className="flex items-center gap-2 mb-2">
+        <ComingSoonBadge />
+        <p className="text-xs text-muted-foreground">These preferences will be configurable after backend integration.</p>
+      </div>
+      <ToggleRow label="Remember journal entries" description="Save and index your journal entries." checked={prefs.journals} onChange={() => toggle("journals")} disabled />
+      <ToggleRow label="Remember voice notes" description="Transcribe and save voice recordings." checked={prefs.voice} onChange={() => toggle("voice")} disabled />
+      <ToggleRow label="Remember uploaded files" description="Process and index uploaded documents." checked={prefs.files} onChange={() => toggle("files")} disabled />
+      <ToggleRow label="Remember connector data" description="Save data from connected apps." checked={prefs.connectors} onChange={() => toggle("connectors")} disabled />
+      <ToggleRow label="Require review before saving" description="Review extracted facts before they are saved to memory." checked={prefs.requireReview} onChange={() => toggle("requireReview")} disabled />
     </SettingsSection>
   );
 }
@@ -220,6 +233,10 @@ function ShortcutsSection() {
 
 /* Shared primitives */
 
+function ComingSoonBadge() {
+  return <Badge variant="outline" className="text-xs">Coming soon</Badge>;
+}
+
 function Field({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between py-2">
@@ -229,14 +246,14 @@ function Field({ label, value }: { label: string; value: string }) {
   );
 }
 
-function ToggleRow({ label, description, checked, onChange }: { label: string; description: string; checked: boolean; onChange: () => void }) {
+function ToggleRow({ label, description, checked, onChange, disabled }: { label: string; description: string; checked: boolean; onChange: () => void; disabled?: boolean }) {
   return (
-    <div className="flex items-center justify-between py-1">
+    <div className={cn("flex items-center justify-between py-1", disabled && "opacity-50")}>
       <div>
         <p className="text-sm font-medium">{label}</p>
         <p className="text-xs text-muted-foreground">{description}</p>
       </div>
-      <Switch checked={checked} onCheckedChange={onChange} />
+      <Switch checked={checked} onCheckedChange={onChange} disabled={disabled} />
     </div>
   );
 }

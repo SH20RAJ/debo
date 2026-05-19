@@ -5,7 +5,15 @@ import { Play, Clock, CheckCircle2, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import type { VoiceNote } from "@/lib/mock";
+
+interface VoiceNote {
+  id: string;
+  title: string;
+  duration: number;
+  date: string;
+  transcriptionStatus: "completed" | "processing" | "pending";
+  waveform: number[];
+}
 
 const statusConfig = {
   completed: { label: "Transcribed", variant: "default" as const, icon: CheckCircle2 },

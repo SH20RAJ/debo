@@ -3,26 +3,14 @@
 import { useState } from "react";
 import {
   Shield, Eye, Pause, Trash2, Download, Globe, Lock, FileText,
-  ChevronRight, CheckCircle2, XCircle, Link2, Unlink, Archive,
+  ChevronRight, CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { AUDIT_LOG, CONNECTED_APPS } from "@/lib/mock";
 
 type PrivacyMode = "normal" | "private" | "local";
-
-const auditIcons: Record<string, React.ComponentType<{ className?: string }>> = {
-  check: CheckCircle2,
-  link: Link2,
-  x: XCircle,
-  archive: Archive,
-  unlink: Unlink,
-};
 
 export function VaultPage() {
   const [privacyMode, setPrivacyMode] = useState<PrivacyMode>("normal");
@@ -55,28 +43,18 @@ export function VaultPage() {
         {/* Connected Apps */}
         <Card>
           <CardHeader>
-            <CardTitle>Connected Apps</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle>Connected Apps</CardTitle>
+              <Badge variant="outline" className="text-xs">Coming soon</Badge>
+            </div>
             <CardDescription>Apps that have shared data with your memory.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {CONNECTED_APPS.map((app) => (
-                <div key={app.name} className="flex items-center gap-3 p-3 rounded-xl border border-border">
-                  <div
-                    className="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold text-white shrink-0"
-                    style={{ backgroundColor: app.color }}
-                  >
-                    {app.icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold">{app.name}</p>
-                    <p className="text-xs text-muted-foreground">{app.sources} sources imported</p>
-                  </div>
-                  <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
-                    Disconnect
-                  </Button>
-                </div>
-              ))}
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">No connected apps yet.</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Connectors will be available after backend integration.
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -84,11 +62,14 @@ export function VaultPage() {
         {/* Privacy Modes */}
         <Card>
           <CardHeader>
-            <CardTitle>Privacy Modes</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle>Privacy Modes</CardTitle>
+              <Badge variant="outline" className="text-xs">Coming soon</Badge>
+            </div>
             <CardDescription>Control how Debo handles your data in this session.</CardDescription>
           </CardHeader>
           <CardContent>
-            <RadioGroup value={privacyMode} onValueChange={(v) => setPrivacyMode(v as PrivacyMode)}>
+            <RadioGroup value={privacyMode} onValueChange={(v) => setPrivacyMode(v as PrivacyMode)} disabled>
               <PrivacyOption
                 value="normal"
                 label="Normal"
@@ -117,27 +98,18 @@ export function VaultPage() {
         {/* Audit Log */}
         <Card>
           <CardHeader>
-            <CardTitle>Audit Log</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle>Audit Log</CardTitle>
+              <Badge variant="outline" className="text-xs">Coming soon</Badge>
+            </div>
             <CardDescription>A record of actions taken on your memory.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-1">
-              {AUDIT_LOG.map((entry, idx) => {
-                const Icon = auditIcons[entry.icon] || CheckCircle2;
-                return (
-                  <div key={entry.id}>
-                    {idx > 0 && <Separator className="mb-1" />}
-                    <div className="flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-muted/50 transition-colors">
-                      <Icon className={cn("w-4 h-4 shrink-0", entry.color)} />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium">{entry.action}</p>
-                        <p className="text-xs text-muted-foreground">{entry.detail}</p>
-                      </div>
-                      <span className="text-xs text-muted-foreground shrink-0">{entry.time}</span>
-                    </div>
-                  </div>
-                );
-              })}
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">No audit entries yet.</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Audit logging will be available after backend integration.
+              </p>
             </div>
           </CardContent>
         </Card>
