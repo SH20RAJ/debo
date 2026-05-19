@@ -66,6 +66,15 @@ const navSections: NavSection[] = [
     ],
   },
   {
+    label: "Tools",
+    items: [
+      { label: "Voice", href: "/dashboard/voice", icon: Mic },
+      { label: "Debo Mail", href: "/dashboard/mail", icon: Inbox },
+      { label: "Connectors", href: "/dashboard/connectors", icon: Plug },
+      { label: "Vault", href: "/dashboard/vault", icon: Shield },
+    ],
+  },
+  {
     label: "Memory",
     items: [
       { label: "Inbox", href: "/dashboard/inbox", icon: Bell, badge: "5" },
@@ -82,15 +91,6 @@ const navSections: NavSection[] = [
       { label: "Decisions", href: "/dashboard/decisions", icon: Diamond },
       { label: "People", href: "/dashboard/people", icon: Users },
       { label: "Follow-Up Radar", href: "/dashboard/radar", icon: Radar },
-    ],
-  },
-  {
-    label: "Tools",
-    items: [
-      { label: "Voice", href: "/dashboard/voice", icon: Mic },
-      { label: "Debo Mail", href: "/dashboard/mail", icon: Inbox },
-      { label: "Connectors", href: "/dashboard/connectors", icon: Plug },
-      { label: "Vault", href: "/dashboard/vault", icon: Shield },
     ],
   },
 ];
@@ -116,7 +116,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
     <TooltipProvider>
       <aside
         className={cn(
-          "flex flex-col h-full bg-card border-r border-border transition-all duration-200 ease-in-out select-none",
+          "flex flex-col h-full bg-card border-r border-border transition-all duration-200 ease-in-out select-none overflow-hidden",
           collapsed ? "w-[68px]" : "w-[240px]"
         )}
       >
@@ -150,7 +150,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
               )
             ) : (
               // Expanded: accordion sections
-              <Accordion type="multiple" defaultValue={navSections.map((s) => s.label)}>
+              <Accordion type="multiple" defaultValue={["Core", "Tools"]}>
                 {navSections.map((section) => (
                   <AccordionItem key={section.label} value={section.label} className="border-b-0">
                     <AccordionTrigger className="py-1.5 px-3 text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider hover:no-underline hover:bg-transparent">
