@@ -1,7 +1,5 @@
 import { stackClientApp } from "@/stack/client";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-
 /**
  * Get the current Stack Auth access token.
  * Returns null if user is not signed in.
@@ -28,7 +26,7 @@ async function fetchApi(path: string, options?: RequestInit) {
     headers["x-stack-access-token"] = token;
   }
 
-  const res = await fetch(`${API_URL}${path}`, {
+  const res = await fetch(path, {
     ...options,
     headers,
   });
@@ -66,7 +64,7 @@ export const api = {
       };
       if (token) headers["x-stack-access-token"] = token;
 
-      return fetch(`${API_URL}/api/ask`, {
+      return fetch("/api/ask", {
         method: "POST",
         headers,
         body: JSON.stringify({ question, mode }),

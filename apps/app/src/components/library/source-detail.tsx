@@ -13,31 +13,19 @@ import {
   Calendar,
   AlertCircle,
   Loader2,
-  Play,
   MessageSquare,
   Plus,
   Trash2,
-  ExternalLink,
   User,
-  Lightbulb,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Avatar,
   AvatarFallback,
-  AvatarGroup,
 } from "@/components/ui/avatar";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { api } from "@/lib/api";
 import type { MemorySource, SourceType, SourceStatus } from "@/lib/types";

@@ -26,8 +26,8 @@ export function Topbar({ onCommandMenuOpen }: TopbarProps) {
       >
         <Search className="w-4 h-4 shrink-0" />
         <span className="flex-1 text-left truncate">Search or ask Debo...</span>
-        <kbd className="hidden sm:inline-flex items-center px-2 py-1 rounded-lg border border-border bg-muted text-[11px] font-mono font-semibold text-muted-foreground">
-          {navigator?.platform?.includes("Mac") ? "\u2318" : "Ctrl+"}K
+        <kbd suppressHydrationWarning className="hidden sm:inline-flex items-center px-2 py-1 rounded-lg border border-border bg-muted text-[11px] font-mono font-semibold text-muted-foreground">
+          {typeof navigator !== "undefined" && navigator?.platform?.includes("Mac") ? "\u2318" : "Ctrl+"}K
         </kbd>
       </button>
 

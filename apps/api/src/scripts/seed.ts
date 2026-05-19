@@ -5,7 +5,7 @@
  *   or: cd apps/api && bun run seed
  *
  * Loads DATABASE_URL from apps/api/.env.local, connects to Neon,
- * and inserts a realistic dev dataset covering all 29 tables.
+ * and inserts a realistic dev dataset covering 21 of 29 tables.
  */
 
 import path from "node:path";
@@ -41,7 +41,7 @@ if (!DATABASE_URL) {
 }
 
 // ── neon config (longer timeout for seeding) ─────────────────────────────────
-neonConfig.fetchFunction = async (input: RequestInfo | URL, init?: RequestInit) => {
+neonConfig.fetchFunction = async (input: string | URL | globalThis.Request, init?: RequestInit) => {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 30_000);
   const upstreamSignal = init?.signal;
@@ -297,10 +297,9 @@ async function seed() {
 
   const sourceMap: Record<string, string> = {};
   for (const s of sourcesData) {
-    const connClause = s.connectorAccountId ? `'${s.connectorAccountId}'` : "NULL";
     await sqlClient`
-      INSERT INTO sources (id, user_id, workspace_id, type, title, description, status, origin, source_date, language, privacy_level, plain_text, summary, created_at, updated_at)
-      VALUES (${s.id}, ${USER_ID}, ${WORKSPACE_ID}, ${s.type}, ${s.title}, ${s.description}, ${s.status}, ${s.origin}, ${s.sourceDate}, 'en', 'normal', ${s.plainText}, ${s.summary}, ${now()}, ${now()})
+      INSERT INTO sources (id, user_id, workspace_id, type, title, description, status, origin, source_date, language, privacy_level, plain_text, summary, connector_account_id, created_at, updated_at)
+      VALUES (${s.id}, ${USER_ID}, ${WORKSPACE_ID}, ${s.type}, ${s.title}, ${s.description}, ${s.status}, ${s.origin}, ${s.sourceDate}, 'en', 'normal', ${s.plainText}, ${s.summary}, ${s.connectorAccountId ?? null}, ${now()}, ${now()})
       ON CONFLICT (id) DO NOTHING
     `;
     sourceMap[s.title] = s.id;
