@@ -17,11 +17,9 @@ export default function DashboardLayout({
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [commandMenuOpen, setCommandMenuOpen] = useState(false);
+  const [contextRailCollapsed, setContextRailCollapsed] = useState(false);
 
-  const hideContextRail =
-    pathname === "/dashboard/ask" ||
-    pathname.startsWith("/dashboard/journal") ||
-    pathname.startsWith("/dashboard/library");
+  const hideContextRail = pathname === "/dashboard/ask";
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -87,7 +85,12 @@ export default function DashboardLayout({
           />
           <div className="flex flex-1 min-h-0">
             <main className="flex-1 overflow-auto">{children}</main>
-            {!hideContextRail && <ContextRail />}
+            {!hideContextRail && (
+              <ContextRail
+                collapsed={contextRailCollapsed}
+                onToggle={() => setContextRailCollapsed((prev) => !prev)}
+              />
+            )}
           </div>
         </div>
 
