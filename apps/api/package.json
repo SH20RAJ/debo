@@ -3,18 +3,23 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "echo 'API extraction pending - routes currently in apps/app'",
-    "build": "echo 'API extraction pending'",
-    "deploy": "echo 'API extraction pending - skipping deploy'",
-    "typecheck": "echo 'API extraction pending - no source to typecheck'"
+    "dev": "tsx watch src/index.ts",
+    "build": "tsup src/index.ts --format esm --dts",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@debo/config": "workspace:*",
     "@debo/db": "workspace:*",
-    "@debo/ai": "workspace:*",
-    "@debo/types": "workspace:*"
+    "@debo/types": "workspace:*",
+    "drizzle-orm": "^0.39.3",
+    "hono": "^4.7.10",
+    "nanoid": "^5.1.5",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@types/node": "^25.6.0",
+    "tsup": "^8.4.0",
+    "tsx": "^4.19.4",
     "typescript": "^5.7.4"
   }
 }

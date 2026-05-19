@@ -1,0 +1,21 @@
+{
+  "name": "@debo/storage",
+  "version": "0.1.0",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./r2": "./src/r2.ts",
+    "./keys": "./src/keys.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "echo 'storage package - no build needed'"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.800.0",
+    "@aws-sdk/s3-request-presigner": "^3.800.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.4"
+  }
+}

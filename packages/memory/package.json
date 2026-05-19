@@ -4,27 +4,20 @@
   "private": true,
   "exports": {
     ".": "./src/index.ts",
-    "./extract": "./src/extract.ts",
-    "./query": "./src/query.ts",
-    "./store": "./src/store.ts",
-    "./vector/qdrant": "./src/vector/qdrant.ts",
-    "./vector/search": "./src/vector/search.ts",
-    "./life/graph": "./src/life/graph.ts",
-    "./life/timeline": "./src/life/timeline.ts"
+    "./chunking": "./src/chunking.ts",
+    "./retrieval": "./src/retrieval.ts",
+    "./citations": "./src/citations.ts",
+    "./extraction": "./src/extraction.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "build": "echo 'memory package - no build needed'"
   },
   "dependencies": {
-    "@debo/ai": "workspace:*",
     "@debo/db": "workspace:*",
-    "mem0ai": "^3.0.3",
-    "uuid": "^11.0.0",
-    "drizzle-orm": "^0.39.3"
+    "@debo/shared": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.7.4",
-    "zod": "^4.4.3"
+    "typescript": "^5.7.4"
   }
 }
