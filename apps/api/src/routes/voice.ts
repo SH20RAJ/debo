@@ -2,67 +2,48 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { nanoid } from "nanoid";
 import { getAppContext } from "../lib/context";
-import { parseBody } from "../lib/validate";
 
-const voiceRouter = new Hono();
+const app = new Hono();
 
-// In-memory session store — replace with DB table when voice is fully integrated
-const sessions = new Map<string, {
-  id: string;
-  userId: string;
-  roomName: string;
-  status: string;
-  createdAt: string;
-}>();
+const sessions = new Map<string, { id: string; userId: string; roomName: string; status: string; createdAt: string }>();
 
-const createSessionSchema = z.object({
-  roomName: z.string().min(1).max(200).optional(),
-});
-
-// POST /sessions — create voice session
-voiceRouter.post("/sessions", async (c) => {
+app.post("/sessions", async (c) => {
   const ctx = getAppContext(c);
-  const body = await parseBody(c, createSessionSchema);
-
+  const body = await c.req.json();
   const id = nanoid();
   const roomName = body.roomName ?? `debo-voice-${id}`;
-
-  const session = {
-    id,
-    userId: ctx.userId,
-    roomName,
-    status: "active",
-    createdAt: new Date().toISOString(),
-  };
-
+  const session = { id, userId: ctx.userId, roomName, status: "active", createdAt: new Date().toISOString() };
   sessions.set(id, session);
-  return c.json({ session }, 201);
+  return c.json(session, 201);
 });
 
-// GET /sessions — list voice sessions
-voiceRouter.get("/sessions", async (c) => {
+app.get("/sessions", async (c) => {
   const ctx = getAppContext(c);
-  const userSessions = [...sessions.values()].filter((s) => s.userId === ctx.userId);
-  return c.json({ sessions: userSessions });
+  return c.json([...sessions.values()].filter((s) => s.userId === ctx.userId));
 });
 
-// POST /sessions/:id/token — generate LiveKit token (stub)
-voiceRouter.post("/sessions/:id/token", async (c) => {
+app.post("/sessions/:id/token", async (c) => {
   const ctx = getAppContext(c);
   const id = c.req.param("id");
-
   const session = sessions.get(id);
-  if (!session || session.userId !== ctx.userId) {
-    return c.json({ error: "Session not found" }, 404);
+  if (!session || session.userId !== ctx.userId) return c.json({ error: "Not found" }, 404);
+
+  const apiKey = process.env.LIVEKIT_API_KEY;
+  const apiSecret = process.env.LIVEKIT_API_SECRET;
+
+  if (!apiKey || !apiSecret) {
+    return c.json({ token: `lk_stub_${nanoid(32)}`, roomName: session.roomName, wsUrl: process.env.LIVEKIT_URL ?? "wss://debo.livekit.cloud" });
   }
 
-  // TODO: Generate real LiveKit token using LiveKit server SDK
-  return c.json({
-    token: `lk_stub_${nanoid(32)}`,
-    roomName: session.roomName,
-    wsUrl: process.env.LIVEKIT_URL ?? "wss://debo.livekit.cloud",
-    expiresAt: new Date(Date.now() + 3600_000).toISOString(),
-  });
+  try {
+    const { AccessToken } = await import("livekit-server-sdk");
+    const at = new AccessToken(apiKey, apiSecret, { identity: ctx.userId, name: ctx.user.name });
+    at.addGrant({ roomJoin: true, room: session.roomName, canPublish: true, canSubscribe: true });
+    const token = await at.toJwt();
+    return c.json({ token, roomName: session.roomName, wsUrl: process.env.LIVEKIT_URL });
+  } catch (e: any) {
+    return c.json({ error: "Token generation failed", details: e.message }, 500);
+  }
 });
 
-export default voiceRouter;
+export default app;

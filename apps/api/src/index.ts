@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
@@ -15,12 +16,13 @@ import chatRouter from "./routes/chat";
 import connectorsRouter from "./routes/connectors";
 import voiceRouter from "./routes/voice";
 import vaultRouter from "./routes/vault";
+import uploadsRouter from "./routes/uploads";
 
 const app = new Hono();
 
 app.use("*", logger());
 app.use("*", requestId());
-app.use("*", cors());
+app.use("*", cors({ origin: ["http://localhost:3000", "https://app.debo.life", "https://debo-app.shraj.workers.dev"] }));
 app.onError(errorHandler);
 
 app.get("/health", (c) => c.json({ status: "ok", timestamp: new Date().toISOString() }));
@@ -37,6 +39,7 @@ app.route("/api/chat", chatRouter);
 app.route("/api/connectors", connectorsRouter);
 app.route("/api/voice", voiceRouter);
 app.route("/api/vault", vaultRouter);
+app.route("/api/uploads", uploadsRouter);
 
 app.notFound((c) => c.json({ error: "Not found" }, 404));
 

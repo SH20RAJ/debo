@@ -10,9 +10,12 @@
   },
   "dependencies": {
     "@debo/db": "workspace:*",
+    "@debo/storage": "workspace:*",
     "@debo/types": "workspace:*",
+    "dotenv": "^16.4.7",
     "drizzle-orm": "^0.39.3",
     "hono": "^4.7.10",
+    "livekit-server-sdk": "^2.13.3",
     "nanoid": "^5.1.5",
     "zod": "^4.4.3"
   },
