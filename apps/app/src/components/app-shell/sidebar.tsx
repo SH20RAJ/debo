@@ -17,6 +17,7 @@ import {
   Plug,
   Inbox,
   Mic,
+  Video,
   Shield,
   Sun,
   Settings,
@@ -69,6 +70,7 @@ const navSections: NavSection[] = [
     label: "Tools",
     items: [
       { label: "Voice", href: "/dashboard/voice", icon: Mic },
+      { label: "Media", href: "/dashboard/media", icon: Video },
       { label: "Debo Mail", href: "/dashboard/mail", icon: Inbox },
       { label: "Connectors", href: "/dashboard/connectors", icon: Plug },
       { label: "Vault", href: "/dashboard/vault", icon: Shield },

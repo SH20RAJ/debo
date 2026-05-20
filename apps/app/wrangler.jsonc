@@ -18,6 +18,10 @@
     {
       "binding": "NEXT_INC_CACHE_R2_BUCKET",
       "bucket_name": "debo-app-opennext-cache"
+    },
+    {
+      "binding": "MEDIA",
+      "bucket_name": "debo-media"
     }
   ],
     "observability": {
