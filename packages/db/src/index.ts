@@ -34,6 +34,10 @@ if (!databaseUrl && process.env.NODE_ENV === 'production') {
   console.warn("WARNING: DATABASE_URL is not set in production environment.");
 }
 
-// Use a placeholder if DATABASE_URL is missing to prevent build-time crashes
-const sql = neon(databaseUrl || 'postgres://localhost:5432/placeholder_for_build');
+if (!databaseUrl) {
+  console.warn("WARNING: DATABASE_URL is not set. DB queries will fail at runtime.");
+}
+
+// Use a neon-compatible placeholder to prevent build/import-time crashes
+const sql = neon(databaseUrl || 'postgresql://placeholder:placeholder@placeholder.neon.tech/placeholder');
 export const db = drizzle(sql, { schema });

@@ -1,4 +1,12 @@
-import "dotenv/config";
+import { config } from "dotenv";
+import { resolve } from "path";
+
+// Load env files from both api dir and monorepo root
+const cwd = process.cwd();
+config({ path: resolve(cwd, ".env.local") });
+config({ path: resolve(cwd, ".env") });
+config({ path: resolve(cwd, "apps/api/.env.local") });
+config({ path: resolve(cwd, "apps/api/.env") });
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
