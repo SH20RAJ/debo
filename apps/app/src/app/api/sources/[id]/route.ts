@@ -4,7 +4,6 @@ import { sources } from "@debo/db/schema";
 import { eq, and } from "drizzle-orm";
 import { requireAuth } from "@/lib/auth";
 
-export const runtime = "nodejs";
 
 /**
  * GET /api/sources/:id — Get a single source by ID.

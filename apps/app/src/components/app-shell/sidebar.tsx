@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useUser } from "@stackframe/stack";
 import {
   LayoutDashboard,
   MessageSquare,
@@ -10,24 +11,20 @@ import {
   CheckSquare,
   Users,
   FolderKanban,
-  Bell,
-  Clock,
-  Diamond,
-  Radar,
   Plug,
   Inbox,
   Mic,
   Video,
   Shield,
-  Sun,
   Settings,
   ChevronsLeft,
   ChevronsRight,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
@@ -36,98 +33,50 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { useSidebarPrefs, type SidebarItemDef } from "@/lib/sidebar-prefs";
 
-// ── Icon & metadata map ────────────────────────────────────────────────────
+// ── Navigation items ────────────────────────────────────────────────────────
 
-const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  home: LayoutDashboard,
-  ask: MessageSquare,
-  journal: BookOpen,
-  voice: Mic,
-  media: Video,
-  mail: Inbox,
-  connectors: Plug,
-  vault: Shield,
-  inbox: Bell,
-  debrief: Sun,
-  timeline: Clock,
-  library: Library,
-  tasks: CheckSquare,
-  projects: FolderKanban,
-  decisions: Diamond,
-  people: Users,
-  radar: Radar,
-};
+const NAV_ITEMS = [
+  { id: "home", label: "Home", href: "/dashboard", icon: LayoutDashboard },
+  { id: "ask", label: "Ask Debo", href: "/dashboard/ask", icon: MessageSquare },
+  { id: "journal", label: "Journal", href: "/dashboard/journal", icon: BookOpen },
+  { id: "voice", label: "Voice", href: "/dashboard/voice", icon: Mic },
+  { id: "media", label: "Media", href: "/dashboard/media", icon: Video },
+  { id: "library", label: "Library", href: "/dashboard/library", icon: Library },
+  { id: "tasks", label: "Tasks", href: "/dashboard/tasks", icon: CheckSquare },
+  { id: "people", label: "People", href: "/dashboard/people", icon: Users },
+  { id: "projects", label: "Projects", href: "/dashboard/projects", icon: FolderKanban },
+  { id: "mail", label: "Debo Mail", href: "/dashboard/mail", icon: Inbox },
+  { id: "connectors", label: "Connectors", href: "/dashboard/connectors", icon: Plug },
+  { id: "vault", label: "Vault", href: "/dashboard/vault", icon: Shield },
+];
 
-const SHORTCUT_MAP: Record<string, string> = {
-  home: "H",
-  ask: "A",
-  journal: "J",
-  library: "L",
-};
-
-const BADGE_MAP: Record<string, string> = {
-  inbox: "5",
-};
-
-function getItemMeta(id: string) {
-  return {
-    icon: ICON_MAP[id] ?? LayoutDashboard,
-    shortcut: SHORTCUT_MAP[id],
-    badge: BADGE_MAP[id],
-  };
-}
-
-// ── Nav item ───────────────────────────────────────────────────────────────
+// ── Nav item component ──────────────────────────────────────────────────────
 
 function SidebarItem({
   item,
   active,
   collapsed,
 }: {
-  item: SidebarItemDef;
+  item: { label: string; href: string; icon: React.ComponentType<{ className?: string }> };
   active: boolean;
   collapsed: boolean;
 }) {
-  const { icon, shortcut, badge } = getItemMeta(item.id);
+  const Icon = item.icon;
 
   const content = (
     <Link
       href={item.href}
       className={cn(
-        "flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all relative group",
-        collapsed && "justify-center px-0",
+        "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+        collapsed && "justify-center px-2",
         active
-          ? "bg-primary/10 text-primary shadow-[0_3px_0_var(--border)] font-semibold"
+          ? "bg-primary/10 text-primary font-semibold"
           : "text-muted-foreground hover:text-foreground hover:bg-accent"
       )}
     >
-      {(() => {
-        const Icon = icon;
-        return <Icon className={cn("w-[18px] h-[18px] shrink-0", active && "text-primary")} />;
-      })()}
-      {!collapsed && (
-        <>
-          <span className="flex-1 truncate">{item.label}</span>
-          {badge && (
-            <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">
-              {badge}
-            </Badge>
-          )}
-          {shortcut && (
-            <kbd className="hidden lg:inline-flex text-[10px] font-mono text-muted-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity bg-muted px-1.5 py-0.5 rounded">
-              {shortcut}
-            </kbd>
-          )}
-        </>
-      )}
+      <Icon className={cn("w-[18px] h-[18px] shrink-0", active && "text-primary")} />
+      {!collapsed && <span className="truncate">{item.label}</span>}
     </Link>
   );
 
@@ -136,14 +85,7 @@ function SidebarItem({
       <Tooltip>
         <TooltipTrigger asChild>{content}</TooltipTrigger>
         <TooltipContent side="right" sideOffset={8}>
-          <div className="flex items-center gap-2">
-            <span>{item.label}</span>
-            {shortcut && (
-              <kbd className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-                {shortcut}
-              </kbd>
-            )}
-          </div>
+          {item.label}
         </TooltipContent>
       </Tooltip>
     );
@@ -161,148 +103,115 @@ interface SidebarProps {
 
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const pathname = usePathname();
-  const { prefs, loaded, toggleSection } = useSidebarPrefs();
+  const router = useRouter();
+  const user = useUser();
 
   const isActive = (href: string) => {
     if (href === "/dashboard") return pathname === "/dashboard";
     return pathname.startsWith(href);
   };
 
-  // Accordion value = section IDs where collapsed === false
-  const openSections = prefs.sections.filter((s) => !s.collapsed).map((s) => s.id);
-
-  const handleAccordionChange = (values: string[]) => {
-    // Find which section was toggled
-    for (const section of prefs.sections) {
-      const wasOpen = openSections.includes(section.id);
-      const isOpen = values.includes(section.id);
-      if (wasOpen !== isOpen) {
-        toggleSection(section.id);
-      }
+  const handleLogout = async () => {
+    try {
+      await user?.signOut();
+      router.push("/");
+    } catch {
+      // Force redirect even if signOut fails
+      router.push("/handler/signout");
     }
   };
 
-  // Build items per section (only non-hidden)
-  const visibleSections = prefs.sections
-    .map((section) => ({
-      ...section,
-      items: section.itemIds
-        .filter((id) => !prefs.hiddenItemIds.includes(id))
-        .map((id) => ALL_NAV_ITEMS_MAP[id])
-        .filter(Boolean),
-    }))
-    .filter((s) => s.items.length > 0);
+  // User display info
+  const displayName = user?.displayName || user?.primaryEmail?.split("@")[0] || "User";
+  const initials = displayName.slice(0, 2).toUpperCase();
 
   return (
     <TooltipProvider>
       <aside
         className={cn(
           "flex flex-col h-full bg-card border-r border-border transition-all duration-200 ease-in-out select-none overflow-hidden",
-          collapsed ? "w-[68px]" : "w-[240px]"
+          collapsed ? "w-[68px]" : "w-[220px]"
         )}
       >
         {/* Logo */}
         <div className="flex items-center justify-between h-14 px-4 border-b border-border shrink-0">
           {collapsed ? (
-            <Link href="/dashboard" className="text-lg font-heading font-bold text-primary mx-auto">
+            <Link href="/dashboard" className="text-lg font-bold text-primary mx-auto">
               d
             </Link>
           ) : (
-            <Link href="/dashboard" className="text-lg font-heading font-bold text-primary tracking-tight">
+            <Link href="/dashboard" className="text-lg font-bold text-primary tracking-tight">
               debo
             </Link>
           )}
         </div>
 
-        {/* Primary nav */}
+        {/* Navigation */}
         <ScrollArea className="flex-1">
-          <nav className="py-2 px-2">
-            {!loaded ? (
-              // Skeleton while loading prefs
-              <div className="space-y-2 p-2">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="h-8 rounded-lg bg-muted animate-pulse" />
-                ))}
-              </div>
-            ) : collapsed ? (
-              // Collapsed: flat list, no sections
-              visibleSections.flatMap((section) =>
-                section.items.map((item) => (
-                  <SidebarItem
-                    key={item.id}
-                    item={item}
-                    active={isActive(item.href)}
-                    collapsed
-                  />
-                ))
-              )
-            ) : (
-              // Expanded: accordion sections
-              <Accordion
-                type="multiple"
-                value={openSections}
-                onValueChange={handleAccordionChange}
-              >
-                {visibleSections.map((section) => (
-                  <AccordionItem key={section.id} value={section.id} className="border-b-0">
-                    <AccordionTrigger className="py-1.5 px-3 text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider hover:no-underline hover:bg-transparent">
-                      {section.label}
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <div className="space-y-0.5">
-                        {section.items.map((item) => (
-                          <SidebarItem
-                            key={item.id}
-                            item={item}
-                            active={isActive(item.href)}
-                            collapsed={false}
-                          />
-                        ))}
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            )}
+          <nav className="py-2 px-2 space-y-0.5">
+            {NAV_ITEMS.map((item) => (
+              <SidebarItem
+                key={item.id}
+                item={item}
+                active={isActive(item.href)}
+                collapsed={collapsed}
+              />
+            ))}
           </nav>
         </ScrollArea>
 
-        {/* Bottom nav + user */}
-        <div className="border-t border-border py-2 px-2 space-y-0.5">
+        {/* Bottom: Settings + User + Logout */}
+        <div className="border-t border-border py-2 px-2 space-y-1">
           <SidebarItem
-            item={{ id: "settings", label: "Settings", href: "/dashboard/settings" }}
+            item={{ label: "Settings", href: "/dashboard/settings", icon: Settings }}
             active={isActive("/dashboard/settings")}
             collapsed={collapsed}
           />
 
           <Separator className="my-2" />
 
-          {/* User section */}
+          {/* User info */}
+          <div
+            className={cn(
+              "flex items-center gap-3 px-3 py-2 rounded-lg",
+              collapsed && "justify-center px-0"
+            )}
+          >
+            <Avatar className="w-7 h-7">
+              {user?.profileImageUrl && <AvatarImage src={user.profileImageUrl} />}
+              <AvatarFallback className="bg-primary/15 text-primary text-xs font-semibold">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            {!collapsed && (
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground truncate">{displayName}</p>
+                <p className="text-[11px] text-muted-foreground truncate">
+                  {user?.primaryEmail || ""}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Logout button */}
           <Tooltip>
             <TooltipTrigger asChild>
-              <div
+              <Button
+                variant="ghost"
+                size={collapsed ? "icon" : "default"}
+                onClick={handleLogout}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer hover:bg-accent transition-colors",
-                  collapsed && "justify-center px-0"
+                  "w-full text-muted-foreground hover:text-destructive hover:bg-destructive/10",
+                  !collapsed && "justify-start gap-3 px-3"
                 )}
               >
-                <Avatar size="sm">
-                  <AvatarFallback className="bg-primary/15 text-primary text-xs font-semibold">
-                    S
-                  </AvatarFallback>
-                </Avatar>
-                {!collapsed && (
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground truncate">Shaswat</p>
-                    <p className="text-[11px] text-muted-foreground truncate">Free plan</p>
-                  </div>
-                )}
-              </div>
+                <LogOut className="w-4 h-4" />
+                {!collapsed && <span className="text-xs">Sign out</span>}
+              </Button>
             </TooltipTrigger>
             {collapsed && (
               <TooltipContent side="right" sideOffset={8}>
-                <p className="font-medium">Shaswat</p>
-                <p className="text-muted-foreground">Free plan</p>
+                Sign out
               </TooltipContent>
             )}
           </Tooltip>
@@ -341,11 +250,3 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
     </TooltipProvider>
   );
 }
-
-// ── Item lookup map ────────────────────────────────────────────────────────
-
-import { ALL_NAV_ITEMS } from "@/lib/sidebar-prefs";
-
-const ALL_NAV_ITEMS_MAP: Record<string, SidebarItemDef> = Object.fromEntries(
-  ALL_NAV_ITEMS.map((item) => [item.id, item])
-);

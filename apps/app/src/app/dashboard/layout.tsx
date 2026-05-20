@@ -6,7 +6,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Sidebar } from "@/components/app-shell/sidebar";
 import { Topbar } from "@/components/app-shell/topbar";
 import { CommandMenu } from "@/components/app-shell/command-menu";
-import { ContextRail } from "@/components/app-shell/context-rail";
 
 export default function DashboardLayout({
   children,
@@ -17,10 +16,8 @@ export default function DashboardLayout({
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [commandMenuOpen, setCommandMenuOpen] = useState(false);
-  const [contextRailCollapsed, setContextRailCollapsed] = useState(false);
 
-  const hideContextRail = pathname === "/dashboard/ask";
-
+  // Ctrl+K / Cmd+K to open command menu
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
@@ -32,6 +29,7 @@ export default function DashboardLayout({
     return () => document.removeEventListener("keydown", handler);
   }, []);
 
+  // Auto-collapse sidebar on mobile
   useEffect(() => {
     const mql = window.matchMedia("(max-width: 768px)");
     const handler = (e: MediaQueryListEvent | MediaQueryList) => {
@@ -43,6 +41,7 @@ export default function DashboardLayout({
     return () => mql.removeEventListener("change", handler);
   }, []);
 
+  // Close mobile sidebar on navigation
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
@@ -50,6 +49,7 @@ export default function DashboardLayout({
   return (
     <TooltipProvider>
       <div className="flex h-screen overflow-hidden bg-background">
+        {/* Mobile overlay */}
         {mobileOpen && (
           <div
             className="fixed inset-0 z-30 bg-black/40 backdrop-blur-[2px] md:hidden"
@@ -57,13 +57,12 @@ export default function DashboardLayout({
           />
         )}
 
+        {/* Sidebar */}
         <div
           className={
             mobileOpen
               ? "fixed inset-y-0 left-0 z-40"
-              : sidebarCollapsed
-                ? "hidden md:block"
-                : "hidden md:block"
+              : "hidden md:block"
           }
         >
           <Sidebar
@@ -78,20 +77,13 @@ export default function DashboardLayout({
           />
         </div>
 
+        {/* Main content area — no context rail */}
         <div className="flex flex-col flex-1 min-w-0">
           <Topbar
             onCommandMenuOpen={() => setCommandMenuOpen(true)}
             onMobileMenuToggle={() => setMobileOpen((prev) => !prev)}
           />
-          <div className="flex flex-1 min-h-0">
-            <main className="flex-1 overflow-auto">{children}</main>
-            {!hideContextRail && (
-              <ContextRail
-                collapsed={contextRailCollapsed}
-                onToggle={() => setContextRailCollapsed((prev) => !prev)}
-              />
-            )}
-          </div>
+          <main className="flex-1 overflow-auto">{children}</main>
         </div>
 
         <CommandMenu open={commandMenuOpen} onClose={() => setCommandMenuOpen(false)} />

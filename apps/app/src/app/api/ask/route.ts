@@ -4,7 +4,6 @@ import { db } from "@debo/db";
 import { sources } from "@debo/db/schema";
 import { eq, desc, sql } from "drizzle-orm";
 
-export const runtime = "nodejs";
 
 // NVIDIA NIM API config — OpenAI-compatible endpoint
 const NVIDIA_API_URL = process.env.NVIDIA_BASE_URL || "https://integrate.api.nvidia.com/v1";

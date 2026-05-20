@@ -5,7 +5,6 @@ import { eq, and, desc } from "drizzle-orm";
 import { requireAuth } from "@/lib/auth";
 import type { NextRequest } from "next/server";
 
-export const runtime = "nodejs";
 
 /**
  * GET /api/sources — List all sources for the authenticated user.

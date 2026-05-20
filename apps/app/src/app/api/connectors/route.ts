@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-export const runtime = "nodejs";
 export async function GET() {
   return NextResponse.json([
     { id: "conn-gmail", provider: "gmail", status: "disconnected", name: "Gmail" },
