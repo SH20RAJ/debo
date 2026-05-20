@@ -5,8 +5,6 @@ import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/mantine";
 import "@blocknote/mantine/style.css";
 import { useTheme } from "next-themes";
-import { LayoutTemplate } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import type { JournalEntry } from "./journal-page";
 
 interface JournalEditorProps {
@@ -37,7 +35,6 @@ export function JournalEditor({ entry, onSave }: JournalEditorProps) {
     setTitle(entry.title);
     lastSavedRef.current = { title: entry.title, entryId: entry.id };
 
-    // Replace editor content
     const blocks = entry.content
       ? entry.content
           .split("\n\n")
@@ -124,32 +121,12 @@ export function JournalEditor({ entry, onSave }: JournalEditorProps) {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Toolbar */}
-      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border">
-        <div className="flex items-center justify-between px-4 py-2">
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <span>{entry.date}</span>
-            {entry.people.length > 0 && (
-              <>
-                <span className="w-1 h-1 rounded-full bg-muted-foreground/40" />
-                <span>{entry.people.join(", ")}</span>
-              </>
-            )}
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="gap-1.5 text-xs text-muted-foreground"
-          >
-            <LayoutTemplate className="w-3.5 h-3.5" />
-            Template
-          </Button>
-        </div>
-      </div>
-
-      {/* Editor area */}
+      {/* Clean editor area — no toolbar, just write */}
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-2xl mx-auto px-8 py-10">
+          {/* Date */}
+          <p className="text-xs text-muted-foreground mb-4">{entry.date}</p>
+
           {/* Title */}
           <input
             type="text"
@@ -173,7 +150,7 @@ export function JournalEditor({ entry, onSave }: JournalEditorProps) {
         </div>
       </div>
 
-      {/* Status bar */}
+      {/* Minimal status bar */}
       <div className="border-t border-border px-4 py-1.5 flex items-center gap-4 text-[11px] text-muted-foreground">
         <span>{wordCount} words</span>
         <span>{readingTime} min read</span>

@@ -2,11 +2,10 @@
 
 import { useState, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
-import { Loader2, Video, X } from "lucide-react";
+import { Loader2, PanelRight, PanelRightClose } from "lucide-react";
 import { JournalEntryList } from "@/components/journal/entry-list";
 import { JournalInsightRail } from "@/components/journal/insight-rail";
 import { TemplatePicker } from "@/components/journal/template-picker";
-import { VideoCapture } from "@/components/journal/video-capture";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 
@@ -38,8 +37,8 @@ export function JournalPage() {
   const [loading, setLoading] = useState(true);
   const [activeEntryId, setActiveEntryId] = useState<string>("");
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
-  const [showVideoCapture, setShowVideoCapture] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [showInsights, setShowInsights] = useState(false);
 
   // Fetch entries on mount
   const fetchEntries = useCallback(async () => {
@@ -127,13 +126,6 @@ export function JournalPage() {
     }
   };
 
-  const handleVideoTranscript = (transcript: string, sourceId: string) => {
-    // Refresh entries to pick up the new video source
-    fetchEntries();
-    setShowVideoCapture(false);
-    if (sourceId) setActiveEntryId(sourceId);
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -154,40 +146,32 @@ export function JournalPage() {
         />
       </aside>
 
-      {/* Center: Editor */}
-      <main className="flex-1 min-w-0 overflow-y-auto flex flex-col">
-        {/* Video capture bar */}
-        <div className="border-b border-border px-4 py-2 flex items-center gap-2">
-          {showVideoCapture ? (
-            <div className="flex-1 flex items-center gap-3">
-              <VideoCapture onTranscriptReady={handleVideoTranscript} />
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 w-7 p-0 shrink-0"
-                onClick={() => setShowVideoCapture(false)}
-              >
-                <X className="w-3.5 h-3.5" />
-              </Button>
-            </div>
-          ) : (
+      {/* Center: Clean editor */}
+      <main className="flex-1 min-w-0 overflow-y-auto flex flex-col relative">
+        {/* Minimal top bar — just save status & insight toggle */}
+        {activeEntry && (
+          <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
+            {saving && (
+              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Loader2 className="w-3 h-3 animate-spin" />
+                Saving…
+              </span>
+            )}
             <Button
               variant="ghost"
-              size="sm"
-              className="gap-1.5 text-xs text-muted-foreground"
-              onClick={() => setShowVideoCapture(true)}
+              size="icon"
+              className="h-7 w-7 text-muted-foreground hover:text-foreground"
+              onClick={() => setShowInsights(!showInsights)}
+              title={showInsights ? "Hide insights" : "Show insights"}
             >
-              <Video className="w-3.5 h-3.5" />
-              Record video
+              {showInsights ? (
+                <PanelRightClose className="w-4 h-4" />
+              ) : (
+                <PanelRight className="w-4 h-4" />
+              )}
             </Button>
-          )}
-          {saving && (
-            <span className="flex items-center gap-1 text-xs text-muted-foreground ml-auto">
-              <Loader2 className="w-3 h-3 animate-spin" />
-              Saving...
-            </span>
-          )}
-        </div>
+          </div>
+        )}
 
         {activeEntry ? (
           <JournalEditor entry={activeEntry} onSave={handleSave} />
@@ -198,9 +182,9 @@ export function JournalPage() {
         )}
       </main>
 
-      {/* Right: Insight rail */}
-      {activeEntry && (
-        <aside className="w-[280px] shrink-0 border-l border-border bg-card overflow-y-auto hidden lg:block">
+      {/* Right: Insight rail — hidden by default, toggle with button */}
+      {activeEntry && showInsights && (
+        <aside className="w-[260px] shrink-0 border-l border-border bg-card overflow-y-auto animate-in slide-in-from-right-4 duration-200">
           <JournalInsightRail entry={activeEntry} />
         </aside>
       )}

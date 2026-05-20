@@ -6,12 +6,9 @@ import {
   Brain,
   FileText,
   Clock,
-  Hash,
 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
 import { getInitials } from "@/lib/utils";
 import type { JournalEntry } from "./journal-page";
 
@@ -43,15 +40,22 @@ export function JournalInsightRail({ entry }: JournalInsightRailProps) {
     .filter((w) => w.length > 0).length;
   const readingTime = Math.max(1, Math.ceil(wordCount / 200));
 
+  const hasPeople = entry.people.length > 0;
+  const hasTasks = entry.tasks.length > 0;
+
   return (
-    <div className="p-4 space-y-5">
-      {/* Detected People */}
-      <InsightSection
-        icon={User}
-        title="Detected people"
-        count={entry.people.length}
-      >
-        {entry.people.length > 0 ? (
+    <div className="p-4 space-y-6">
+      <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+        Insights
+      </h3>
+
+      {/* People — only show if detected */}
+      {hasPeople && (
+        <section>
+          <div className="flex items-center gap-1.5 mb-2">
+            <User className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className="text-xs font-medium text-muted-foreground">People</span>
+          </div>
           <div className="flex flex-wrap gap-2">
             {entry.people.map((person) => (
               <div key={person} className="flex items-center gap-1.5">
@@ -60,137 +64,72 @@ export function JournalInsightRail({ entry }: JournalInsightRailProps) {
                     {getInitials(person)}
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-xs font-medium text-foreground">
-                  {person}
-                </span>
+                <span className="text-xs text-foreground">{person}</span>
               </div>
             ))}
           </div>
-        ) : (
-          <p className="text-xs text-muted-foreground italic">
-            No people detected
-          </p>
-        )}
-      </InsightSection>
+        </section>
+      )}
 
-      <Separator />
-
-      {/* Detected Tasks */}
-      <InsightSection
-        icon={CheckSquare}
-        title="Detected tasks"
-        count={entry.tasks.length}
-      >
-        {entry.tasks.length > 0 ? (
+      {/* Tasks — only show if detected */}
+      {hasTasks && (
+        <section>
+          <div className="flex items-center gap-1.5 mb-2">
+            <CheckSquare className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className="text-xs font-medium text-muted-foreground">Tasks</span>
+          </div>
           <div className="flex flex-wrap gap-1.5">
             {entry.tasks.map((task, i) => (
-              <Badge
-                key={i}
-                variant="secondary"
-                className="text-xs font-normal"
-              >
+              <Badge key={i} variant="secondary" className="text-xs font-normal">
                 {task}
               </Badge>
             ))}
           </div>
-        ) : (
-          <p className="text-xs text-muted-foreground italic">
-            No tasks detected
-          </p>
-        )}
-      </InsightSection>
-
-      <Separator />
+        </section>
+      )}
 
       {/* Related Memories */}
-      <InsightSection icon={Brain} title="Related memories">
+      <section>
+        <div className="flex items-center gap-1.5 mb-2">
+          <Brain className="w-3.5 h-3.5 text-muted-foreground" />
+          <span className="text-xs font-medium text-muted-foreground">Related</span>
+        </div>
         <div className="space-y-2">
           {MOCK_MEMORIES.map((memory) => (
-            <Card
+            <button
               key={memory.id}
-              className="cursor-pointer hover:border-primary/20 transition-colors"
+              className="w-full text-left p-2.5 rounded-md border border-border/50 hover:border-border hover:bg-accent/30 transition-colors"
             >
-              <CardContent className="p-2.5 space-y-1">
-                <div className="flex items-center gap-1.5">
-                  <FileText className="w-3 h-3 text-muted-foreground shrink-0" />
-                  <span className="text-xs font-medium text-foreground truncate">
-                    {memory.title}
-                  </span>
-                </div>
-                <p className="text-[11px] text-muted-foreground line-clamp-2">
-                  {memory.snippet}
-                </p>
-                <p className="text-[10px] text-muted-foreground/60">
-                  {memory.type} &middot; {memory.date}
-                </p>
-              </CardContent>
-            </Card>
+              <div className="flex items-center gap-1.5">
+                <FileText className="w-3 h-3 text-muted-foreground shrink-0" />
+                <span className="text-xs font-medium text-foreground truncate">
+                  {memory.title}
+                </span>
+              </div>
+              <p className="text-[11px] text-muted-foreground line-clamp-2 mt-1">
+                {memory.snippet}
+              </p>
+              <p className="text-[10px] text-muted-foreground/50 mt-1">
+                {memory.type} · {memory.date}
+              </p>
+            </button>
           ))}
         </div>
-      </InsightSection>
+      </section>
 
-      <Separator />
-
-      {/* Writing Stats */}
-      <InsightSection icon={Hash} title="Writing stats">
-        <div className="space-y-2">
-          <StatRow icon={FileText} label="Words" value={wordCount} />
-          <StatRow
-            icon={Clock}
-            label="Reading time"
-            value={`${readingTime} min`}
-          />
+      {/* Stats — compact */}
+      <section className="pt-2 border-t border-border/50">
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <div className="flex items-center gap-1.5">
+            <FileText className="w-3 h-3" />
+            <span>{wordCount} words</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Clock className="w-3 h-3" />
+            <span>{readingTime} min</span>
+          </div>
         </div>
-      </InsightSection>
-    </div>
-  );
-}
-
-function InsightSection({
-  icon: Icon,
-  title,
-  count,
-  children,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  title: string;
-  count?: number;
-  children: React.ReactNode;
-}) {
-  return (
-    <div>
-      <div className="flex items-center gap-2 mb-2.5">
-        <Icon className="w-3.5 h-3.5 text-muted-foreground" />
-        <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider">
-          {title}
-        </h3>
-        {count !== undefined && count > 0 && (
-          <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">
-            {count}
-          </Badge>
-        )}
-      </div>
-      {children}
-    </div>
-  );
-}
-
-function StatRow({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: string | number;
-}) {
-  return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <Icon className="w-3 h-3" />
-        <span>{label}</span>
-      </div>
-      <span className="text-xs font-medium text-foreground">{value}</span>
+      </section>
     </div>
   );
 }
