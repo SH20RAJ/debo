@@ -4,7 +4,6 @@ import { stackServerApp } from "@/stack/server";
 import { ThemeProvider } from "next-themes";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "sonner";
-import { CopilotKitWrapper } from "@/components/copilot-wrapper";
 import "./globals.css";
 
 export const dynamic = "force-dynamic";
@@ -49,7 +48,7 @@ export default function RootLayout({
               disableTransitionOnChange
             >
               <TooltipProvider>
-                <CopilotKitWrapper>{children}</CopilotKitWrapper>
+                {children}
                 <Toaster position="top-right" />
               </TooltipProvider>
             </ThemeProvider>
