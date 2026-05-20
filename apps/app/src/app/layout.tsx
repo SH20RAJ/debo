@@ -7,6 +7,8 @@ import { Toaster } from "sonner";
 import { CopilotKitWrapper } from "@/components/copilot-wrapper";
 import "./globals.css";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://app.debo.life"),
   title: {

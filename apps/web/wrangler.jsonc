@@ -22,5 +22,11 @@
 			"binding": "NEXT_INC_CACHE_R2_BUCKET",
 			"bucket_name": "debo-opennext-cache"
 		}
-	]
+	],
+	"observability": {
+		"logs": {
+			"enabled": false,
+			"invocation_logs": true
+		}
+	}
 }
