@@ -47,9 +47,9 @@ export function JournalPage() {
       const mapped: JournalEntry[] = (Array.isArray(data) ? data : []).map((s: any) => ({
         id: s.id,
         title: s.title ?? "Untitled",
-        preview: makePreview(s.content ?? ""),
+        preview: makePreview(s.plainText ?? s.content ?? ""),
         date: new Date(s.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-        content: s.content ?? "",
+        content: s.plainText ?? s.content ?? "", // DB stores as plainText
         people: s.people ?? [],
         tasks: s.tasks ?? [],
         createdAt: s.createdAt,

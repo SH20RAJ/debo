@@ -1,37 +1,59 @@
 import { NextResponse } from "next/server";
+import { db } from "@debo/db";
+import { sources } from "@debo/db/schema";
+import { eq, and, desc } from "drizzle-orm";
+import { requireAuth } from "@/lib/auth";
+import type { NextRequest } from "next/server";
 
 export const runtime = "nodejs";
 
-// Shared in-memory store (same object reference via module caching)
-// Will be replaced by DB when available
-const sources: Map<string, any> = (globalThis as any).__sources ?? new Map();
-(globalThis as any).__sources = sources;
+/**
+ * GET /api/sources — List all sources for the authenticated user.
+ * Optional ?type=journal filter.
+ */
+export async function GET(req: NextRequest) {
+  const user = await requireAuth(req);
+  if (user instanceof NextResponse) return user;
 
-export async function GET(req: Request) {
-  const url = new URL(req.url);
-  const type = url.searchParams.get("type");
+  const type = req.nextUrl.searchParams.get("type");
 
-  let items = Array.from(sources.values());
-  if (type) {
-    items = items.filter((s) => s.type === type);
-  }
+  // Build conditions: always scope by userId, optionally filter by type
+  const conditions = [eq(sources.userId, user.id)];
+  if (type) conditions.push(eq(sources.type, type as any));
 
-  // Sort newest first
-  items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const rows = await db
+    .select()
+    .from(sources)
+    .where(and(...conditions))
+    .orderBy(desc(sources.createdAt));
 
-  return NextResponse.json(items);
+  return NextResponse.json(rows);
 }
 
-export async function POST(req: Request) {
+/**
+ * POST /api/sources — Create a new source (journal entry, voice note, etc).
+ */
+export async function POST(req: NextRequest) {
+  const user = await requireAuth(req);
+  if (user instanceof NextResponse) return user;
+
   const body = await req.json();
-  const id = `src_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
-  const entry = {
-    id,
-    ...body,
-    status: body.status ?? "draft",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-  sources.set(id, entry);
-  return NextResponse.json(entry, { status: 201 });
+  const id = crypto.randomUUID();
+
+  const [created] = await db
+    .insert(sources)
+    .values({
+      id,
+      userId: user.id,
+      workspaceId: user.id, // single-user workspace for now
+      type: body.type ?? "manual",
+      title: body.title ?? "Untitled",
+      description: body.description,
+      plainText: body.content, // journal content stored in plainText
+      status: "draft",
+      origin: body.origin ?? "manual",
+    })
+    .returning();
+
+  return NextResponse.json(created, { status: 201 });
 }
