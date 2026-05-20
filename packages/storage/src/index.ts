@@ -2,7 +2,7 @@ export {
   sourceOriginalKey,
   sourceProcessedKey,
   exportKey,
-} from "./keys.js";
+} from "./keys";
 
 export {
   getR2Client,
@@ -11,6 +11,6 @@ export {
   deleteObject,
   headObject,
   isR2Configured,
-} from "./r2.js";
+} from "./r2";
 
-export type { PresignedUrlOptions } from "./r2.js";
+export type { PresignedUrlOptions } from "./r2";

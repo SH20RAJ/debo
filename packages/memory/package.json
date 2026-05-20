@@ -15,7 +15,8 @@
   },
   "dependencies": {
     "@debo/db": "workspace:*",
-    "@debo/shared": "workspace:*"
+    "@debo/shared": "workspace:*",
+    "drizzle-orm": "^0.39.3"
   },
   "devDependencies": {
     "typescript": "^5.7.4"

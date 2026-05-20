@@ -94,7 +94,8 @@ export async function getPresignedUploadUrl(
     ContentType: contentType,
   });
 
-  return getSignedUrl(client, command, { expiresIn });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- AWS SDK v3 type mismatch
+  return getSignedUrl(client as any, command as any, { expiresIn });
 }
 
 /**
@@ -112,7 +113,8 @@ export async function getPresignedDownloadUrl(
     Key: key,
   });
 
-  return getSignedUrl(client, command, { expiresIn });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- AWS SDK v3 type mismatch
+  return getSignedUrl(client as any, command as any, { expiresIn });
 }
 
 // ---------------------------------------------------------------------------

@@ -7,7 +7,7 @@ const databaseUrl = process.env.DATABASE_URL;
 const defaultTimeout = process.env.NODE_ENV === "development" ? 3000 : 2500;
 const neonFetchTimeoutMs = Number(process.env.NEON_FETCH_TIMEOUT_MS || defaultTimeout);
 
-neonConfig.fetchFunction = async (input: RequestInfo | URL, init?: RequestInit) => {
+neonConfig.fetchFunction = async (input: string | URL | Request, init?: RequestInit) => {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), neonFetchTimeoutMs);
   const upstreamSignal = init?.signal;
