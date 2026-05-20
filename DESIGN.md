@@ -1,27 +1,29 @@
 # Debo Design & Architecture
 
-Debo is a **Privacy-First Life Intelligence System**, architected for edge-latency and deep contextual recall.
+Debo is a **private AI memory operating system**, architected for source-backed contextual recall with edge-fast UI.
 
 ## 1. Monorepo Architecture
 
-Debo is built as a **Bun monorepo** to ensure strict separation of concerns and optimized deployments.
+Debo is built as a **Bun monorepo** with strict separation of concerns.
 
 ### Directory Structure
 
 ```bash
 debo/
 ├── apps/
-│   ├── web/              # Public landing page (debo.life)
-│   ├── app/              # Core product dashboard (app.debo.life)
-│   ├── api/              # Standalone API service
-│   ├── agents/           # Mastra AI agent service
+│   ├── web/              # Public landing page (debo.life) — CF Worker
+│   ├── app/              # Product dashboard UI (app.debo.life) — CF Worker
+│   ├── api/              # Product backend — Hono, auth, DB, APIs
+│   ├── agents/           # AI intelligence service (standalone)
 │   └── voice-worker/     # Real-time voice interaction (LiveKit)
 └── packages/
-    ├── db/               # Drizzle schema, DB client, migrations
-    ├── ai/               # AI SDK wrappers, embeddings, extraction logic
-    ├── memory/           # Life graph and context retrieval
+    ├── db/               # Drizzle schema, Neon DB client, migrations
+    ├── ai/               # AI SDK wrappers, embeddings, extraction
+    ├── memory/           # Source-backed retrieval, citations, chunking
+    ├── storage/          # Cloudflare R2 upload/download helpers
     ├── config/           # Shared environment and constants
     ├── types/            # Shared TypeScript types and Zod schemas
+    ├── shared/           # Shared validators and error classes
     └── ui/               # Shared UI components (shadcn/ui)
 ```
 
@@ -29,22 +31,24 @@ debo/
 
 ```mermaid
 graph TD
-    App[apps/app] --> DB[@debo/db]
-    App --> AI[@debo/ai]
-    App --> Memory[@debo/memory]
-    App --> UI[@debo/ui]
-    App --> Config[@debo/config]
+    App[apps/app] -->|HTTP| API[apps/api]
     
-    Web[apps/web] --> UI
-    Web --> Config
+    API --> DB[@debo/db]
+    API --> Memory[@debo/memory]
+    API --> Storage[@debo/storage]
+    API -->|optional| Agents[apps/agents]
     
-    Agents[apps/agents] --> AI
+    Agents --> AI[@debo/ai]
     Agents --> Memory
     Agents --> DB
     
-    Memory --> AI
     Memory --> DB
+    
+    App --> UI[@debo/ui]
+    Web[apps/web] --> UI
 ```
+
+**Critical:** `apps/app` does NOT directly import `@debo/db`, `@debo/memory`, or `@debo/ai` for production API logic. It calls `apps/api` via HTTP. This keeps the Cloudflare Worker bundle under 10MiB.
 
 ## 2. Design Philosophy: Editorial Calm
 
@@ -60,9 +64,11 @@ Debo follows a design philosophy focused on reducing cognitive load and fosterin
 ## 3. Technical Stack
 
 - **Runtime**: Bun
-- **Framework**: Next.js 16 (App Router), React 19
-- **Orchestration**: Mastra (Agents & Workflows)
-- **Database**: Neon (PostgreSQL) + Qdrant (Vector)
+- **Dashboard**: Next.js 16 (App Router), React 19
+- **Backend API**: Hono
+- **AI Providers**: NVIDIA NIM / OpenAI / Anthropic via Vercel AI SDK
+- **Database**: Neon (PostgreSQL) via Drizzle ORM + Qdrant (Vector)
+- **Media Storage**: Cloudflare R2
 - **Auth**: Stack Auth
-- **Real-time**: LiveKit (Voice)
-- **Deployment**: Cloudflare Workers (OpenNext)
+- **Real-time Voice**: LiveKit
+- **Deployment**: Cloudflare Workers (web/app), Railway/Fly.io (API/agents)

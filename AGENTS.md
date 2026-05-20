@@ -1,21 +1,30 @@
 # AGENTS.md
 
-You are a TypeScript developer experienced with the Mastra framework. You build AI agents, tools, workflows, and scorers. You follow strict TypeScript practices and always consult up-to-date Mastra documentation before making changes.
+You are a TypeScript developer working on the Debo monorepo. You follow strict TypeScript practices and consult up-to-date documentation before making changes.
 
+## CRITICAL ARCHITECTURE RULES
 
-## CRITICAL: Load `mastra` skill
+1. **NEVER add Mastra, LangChain, LangGraph, Composio SDK, Mem0 SDK, CrewAI, or any heavy AI orchestration framework to `apps/app`.** The `apps/app` dashboard is deployed to Cloudflare Workers with a strict ~10MiB bundle limit. Heavy AI frameworks (like `@mastra/core` at 57MB) will break the build.
 
-**BEFORE doing ANYTHING with Mastra, load the `mastra` skill FIRST.** Never rely on cached knowledge as Mastra's APIs change frequently between versions. Use the skill to read up-to-date documentation from `node_modules`.
+2. **`apps/app`** is a lightweight Next.js dashboard that calls `apps/api` via HTTP. It contains UI, route pages, and lightweight server actions only.
+
+3. **`apps/api`** is the real product backend (Hono). It owns auth, DB access, permissions, and all product APIs.
+
+4. **`apps/agents`** is the standalone AI intelligence service. If heavy orchestration is needed, it belongs here — deployed to Railway/Fly.io, NOT Cloudflare.
+
+5. **`apps/app` should NOT directly import from `@debo/db`, `@debo/memory`, or `@debo/ai`** in production API routes. It should call `apps/api` instead.
 
 ## Project Overview
 
-This is a **Mastra** project written in TypeScript. Debo is a **Multimodal Intelligence Lab** focusing on Collaborative Intelligence. We use Mastra to orchestrate AI agents that process voice, text, images, and research papers into a private memory graph. The project includes a researcher-grade **Tinker API** for personal model training and fine-tuning. The Node.js runtime is `>=22.13.0`.
+Debo is a **private AI memory OS** — a system that captures voice, text, files, and connectors into a source-backed memory graph. Every answer Debo gives links back to the exact source. The product motto: "Capture anything. Ask your past. Trust every answer."
 
 ## Commands
 
 ```bash
 bun install          # Install all workspace dependencies
-bun run dev          # Start original dev server (root src/)
+bun run dev          # Start dashboard dev server
+bun run dev:web      # Start landing page dev server
+bun run dev:api      # Start API dev server
 bun run build:web    # Build landing page
 bun run build:app    # Build dashboard
 bun run deploy:web   # Deploy landing to Cloudflare
@@ -24,100 +33,76 @@ bun run deploy:all   # Deploy all services
 bun run db:push      # Push DB schema changes
 ```
 
-## Project Structure
+## Monorepo Structure
 
 This is a **Bun monorepo** with apps and shared packages.
 
 ### Apps
 
-| Folder                 | Description                                                                                                                              |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/web`             | Public landing page for debo.life, deployed as Cloudflare worker "debo"                                                                  |
-| `apps/app`             | Product dashboard, API routes, Mastra agents, deployed as Cloudflare worker "debo-app"                                                   |
-| `apps/api`             | Backend API service (stub — pending extraction)                                                                                          |
-| `apps/agents`          | Mastra agents service (stub — pending extraction)                                                                                        |
-| `apps/voice-worker`    | LiveKit voice worker (stub — pending extraction)                                                                                         |
+| Folder              | Description                                                        | Deployment          |
+| ------------------- | ------------------------------------------------------------------ | ------------------- |
+| `apps/web`          | Public landing page (debo.life)                                    | Cloudflare Worker   |
+| `apps/app`          | Product dashboard — lightweight UI only                            | Cloudflare Worker   |
+| `apps/api`          | Product backend — Hono, auth, DB, all product APIs                 | Bun / Railway       |
+| `apps/agents`       | AI intelligence service — heavy orchestration if needed            | Railway / Fly.io    |
+| `apps/voice-worker` | LiveKit real-time voice worker                                     | Dedicated server    |
 
 ### Shared Packages
 
-| Folder                 | Description                                                                                                                              |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/db`          | Drizzle schema, DB client, migrations                                                                                                    |
-| `packages/ai`          | Model provider helpers, embeddings, ranking, AI utils                                                                                    |
-| `packages/memory`      | Memory graph, vector search, Qdrant helpers                                                                                              |
-| `packages/config`      | Env validation, shared constants, runtime config                                                                                         |
-| `packages/types`       | Shared TypeScript types and Zod schemas                                                                                                  |
-### Monorepo Structure
-
-| Package/App | Description |
-| ---------------------------- | ------------------------------------------------------------------------ |
-| `apps/app`                   | Main product dashboard and API backend.                                  |
-| `apps/web`                   | Public landing page.                                                     |
-| `apps/agents`                | Standalone AI agent service.                                             |
-| `packages/db`                | Shared database schema and migrations.                                   |
-| `packages/ai`                | Shared AI utilities and provider logic.                                  |
-| `packages/memory`            | Shared memory extraction and vector search logic.                        |
-| `packages/ui`                | Shared React component library.                                          |
-
-### Mastra (inside apps/app)
-
-| Folder                       | Description                                                              |
-| ---------------------------- | ------------------------------------------------------------------------ |
-| `apps/app/src/mastra`        | Entry point for all Mastra-related code and configuration.               |
-| `apps/app/src/mastra/agents` | Define and configure agents — behavior, goals, and tools.                |
-| `apps/app/src/mastra/workflows` | Define multi-step workflows that orchestrate agents and tools.        |
-| `apps/app/src/mastra/tools`  | Create reusable tools that agents can call                               |
-
-### Top-level files
-
-| File                  | Description                                                                                                       |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `.env.example`        | Template for environment variables.                                                                               |
-| `package.json`        | Bun workspace root — defines workspaces, shared scripts, and dependencies.                                         |
-| `tsconfig.base.json`  | Shared TypeScript compiler options extended by all workspaces.                                                     |
-
+| Package           | Description                                           |
+| ----------------- | ----------------------------------------------------- |
+| `@debo/db`        | Drizzle schema, Neon DB client, migrations             |
+| `@debo/ai`        | AI SDK wrappers, embeddings, extraction helpers        |
+| `@debo/memory`    | Source-backed retrieval, citations, chunking            |
+| `@debo/storage`   | Cloudflare R2 upload/download helpers                  |
+| `@debo/config`    | Env validation, shared constants, runtime config       |
+| `@debo/types`     | Shared TypeScript types and Zod schemas                |
+| `@debo/shared`    | Shared validators, error classes, constants            |
+| `@debo/ui`        | Shared React UI components (shadcn/ui)                 |
 
 ### Workspace Package Usage
 
-When writing Mastra agents or app code, import shared packages using workspace references:
+When writing backend code in `apps/api`, import shared packages:
 ```ts
 import { db } from "@debo/db";
-import { embed } from "@debo/ai";
-import { storeMemory } from "@debo/memory";
-import { Button } from "@debo/ui";
+import { sources, memoryChunks } from "@debo/db/schema";
+import { getRelevantContext, buildCitation } from "@debo/memory";
+import { getPresignedUploadUrl } from "@debo/storage";
 ```
+
+### Models
+
+- **Model format:** Use the `provider/model-name` format (e.g. `openai/gpt-4o`).
+- **Provider list:** See `packages/config/src/providers.ts`.
+- **Default models:** See `packages/ai/src/openai.ts`.
+- **User provider storage:** DB schema at `packages/db/src/schema.ts`, managed by `apps/app/src/actions/settings.ts`.
 
 ## Boundaries
 
 ### Always do
 
-- Load the `mastra` skill before any Mastra-related work
-- Register new agents, tools, workflows, and scorers in `src/mastra/index.ts`
+- Keep `apps/app` lightweight (no heavy AI deps)
+- Put API logic in `apps/api`
+- Put heavy AI orchestration in `apps/agents`
 - Use schemas for tool inputs and outputs
-- Run `npm run build` to verify changes compile
+- Scope all DB queries by `userId` / `workspaceId`
+- Run `bun run typecheck` to verify changes compile
 
 ### Never do
 
+- Never add Mastra/LangChain/CrewAI to `apps/app`
 - Never commit `.env` files or secrets
-- Never modify `node_modules` or Mastra's database files directly
-- Never hardcode API keys (always use environment variables)
+- Never modify `node_modules`
+- Never hardcode API keys
+- Never bypass auth in API routes
+- Never let AI decide permissions
+- Never expose private R2 files with permanent public URLs
+
 ## Resources
 
-- [Mastra Documentation](https://mastra.ai/llms.txt)
-- [Mastra .well-known skills discovery](https://mastra.ai/.well-known/skills/index.json)
-
-## Models
-
-- **Model format:** Use the `provider/model-name` format everywhere (for example `openai/gpt-5.4`).
-- **Verify models:** Always run the provider registry before selecting a model:
-	- `node scripts/provider-registry.mjs --list`
-	- Register new agents, tools, workflows, and scorers in `apps/app/src/mastra/index.ts`.
-	- **Provider list:** See the available provider configs at `packages/config/src/providers.ts`.
-	- **Default models and provider code:** Runtime helpers and defaults live in `packages/ai/src/openai.ts`.
-	- **User/provider storage:** User API keys, active provider, and configured providers are defined in the DB schema at `packages/db/src/schema.ts` and managed by server actions in `apps/app/src/actions/settings.ts`.
-	- **UI for configuration:** The dashboard UI that lets users add providers and set the active provider is implemented at `apps/app/src/components/dashboard/settings/provider-card.tsx` and referenced by the settings page.
-
-- **Mastra guidance:** When writing Mastra agents or workflows, follow the repo's Mastra guidance in this file and the Mastra skill; prefer the provider registry and embedded docs over guessing model names.
+- [Hono Documentation](https://hono.dev)
+- [Drizzle ORM](https://orm.drizzle.team)
+- [Stack Auth](https://stack-auth.com)
 
 <!-- stripe-projects-cli managed:agents-md:start -->
 ## Stripe Projects CLI
@@ -126,5 +111,5 @@ This repository is initialized for the Stripe project "debo".
 
 ## Tools used
 
-- [Stripe CLI](https://docs.stripe.com/stripe-cli) with the `projects` plugin to manage third-party services, credentials, and deployments for this project. Use the stripe-projects-cli to manage deploying and access to third party services.
+- [Stripe CLI](https://docs.stripe.com/stripe-cli) with the `projects` plugin to manage third-party services, credentials, and deployments for this project.
 <!-- stripe-projects-cli managed:agents-md:end -->

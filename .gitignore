@@ -60,3 +60,6 @@ apps/*/.open-next/
 prompt.md
 .open-next/
 .openclaude/
+
+# Build output
+dist/

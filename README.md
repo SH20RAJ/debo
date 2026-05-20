@@ -1,64 +1,88 @@
-# Debo — Your Life Intelligence System
+# Debo — Your Private Memory OS
 
 <p align="center">
   <img src="./public/logo-text.png" alt="Debo" width="200" />
 </p>
 
-> Debo is not a journal with a chat box. It stores meaning, not just text — turning your life data into genuine self-knowledge.
+> Capture anything. Ask your past. Trust every answer.
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org/)
-[![Mastra](https://img.shields.io/badge/Orchestration-Mastra-FF5733?logo=mastra)](https://mastra.ai/)
+[![Hono](https://img.shields.io/badge/API-Hono-E36002?logo=hono)](https://hono.dev/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
 ## What is Debo?
 
-Debo is a **Multimodal Intelligence Lab** that turns your writing, research, and data into a private memory graph. We blend **Personal Research** with **Collaborative Intelligence**, allowing you to not just store data, but to train your own personal AI on your life.
+Debo is a **private AI memory operating system**. It turns your writing, voice notes, files, and connected apps into a source-backed memory graph. When you ask Debo a question, every answer links back to the exact source — a voice note, journal entry, email, or document.
 
 ### Core Features
 
-- **Multimodal Foundation** — Processes text, voice, images, and research papers (PDFs) into a unified knowledge base.
-- **Tinker API** — Researcher-grade control over your personal model training and fine-tuning (LoRA).
-- **Collaborative Intelligence** — A partner that thinks with you, citing your own history and data for every insight.
-- **Connectionism Engine** — Discover latent manifolds and hidden relationships across your memory graph.
-- **Character Graph** — Turn people mentioned in chat, journals, and voice into editable profiles with relationships and source references.
-- **Voice Capture (Jarvis)** — Real-time ambient voice interface with sub-second response powered by NVIDIA.
+- **Source-Backed Answers** — Every answer Debo gives has citations you can verify
+- **Multimodal Capture** — Process text, voice, files (PDF/images), and connected apps
+- **Voice Capture** — Real-time voice interface powered by LiveKit
+- **Character Graph** — People mentioned in your memories become editable profiles
+- **Connectors** — Import from Gmail, Calendar, Notion (manual/explicit import only)
+- **Debo Mail** — Internal Debo-to-Debo messaging with memory integration
+- **Private by Design** — Your data stays yours. No training on your memories.
+
 ## Tech Stack
 
-- **Framework**: Next.js 16 (App Router), React 19
-- **Orchestration**: Mastra (multi-agent system)
-- **AI**: NVIDIA NIM / OpenAI / Anthropic
-- **Database**: Neon (PostgreSQL), Qdrant (Vector DB)
-- **Media Storage**: Google Drive (video/audio journals)
-- **Auth**: Stack Auth
-- **Voice**: LiveKit
-- **Deployment**: Cloudflare Workers
+| Layer | Technology |
+|-------|-----------|
+| **Dashboard** | Next.js 16 (App Router), React 19 |
+| **API Backend** | Hono (Bun) |
+| **AI Providers** | NVIDIA NIM / OpenAI / Anthropic via Vercel AI SDK |
+| **Database** | Neon (PostgreSQL) via Drizzle ORM |
+| **Vector DB** | Qdrant |
+| **Media Storage** | Cloudflare R2 |
+| **Auth** | Stack Auth |
+| **Voice** | LiveKit |
+| **Deployment** | Cloudflare Workers (web/app), Railway (API/agents) |
 
-> 📋 See [Project Roadmap](./todo.md) for feature status and upcoming work
+## Architecture
+
+```
+┌─────────────┐     ┌──────────────┐     ┌──────────────┐
+│  apps/web   │     │  apps/app    │     │ apps/agents  │
+│  Landing    │     │  Dashboard   │────▶│ AI Service   │
+│  (CF Worker)│     │  (CF Worker) │     │ (Railway)    │
+└─────────────┘     └──────┬───────┘     └──────────────┘
+                           │ HTTP
+                    ┌──────▼───────┐
+                    │  apps/api    │
+                    │  Hono Backend│
+                    │  (Bun)       │
+                    └──────┬───────┘
+                           │
+              ┌────────────┼────────────┐
+              │            │            │
+        ┌─────▼────┐ ┌────▼─────┐ ┌────▼────┐
+        │ Neon PG  │ │ Qdrant   │ │ R2      │
+        │ (Drizzle)│ │ (Vector) │ │ (Media) │
+        └──────────┘ └──────────┘ └─────────┘
+```
+
+**Key rule:** `apps/app` (Cloudflare Worker) is lightweight UI only. All product logic, DB access, and AI orchestration goes through `apps/api` or `apps/agents`.
 
 ## Monorepo Structure
 
-This is a **Bun monorepo** with separated apps and shared packages.
-
-### Apps
-| App | Description | Worker |
-|-----|-------------|--------|
-| `apps/web` | Main landing page (debo.life) | `debo` |
-| `apps/app` | Core dashboard, API, and agents | `debo-app` |
-| `apps/api` | API service (Cloudflare) | `debo-api` |
-| `apps/agents` | AI Agent service (Mastra) | `debo-agents` |
-| `apps/voice-worker` | Real-time voice agent (LiveKit) | `debo-voice` |
-
-### Packages
-| Package | Description |
-|---------|-------------|
-| `@debo/db` | Drizzle schema, DB client, and migrations |
-| `@debo/ai` | AI SDK wrappers, embeddings, and extraction |
-| `@debo/memory` | Life graph and context retrieval |
-| `@debo/config` | Shared configuration and environment validation |
-| `@debo/types` | Shared TypeScript types and Zod schemas |
-| `@debo/ui` | Shared UI components (shadcn/ui) |
-
-See [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) and [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md).
+```bash
+debo/
+├── apps/
+│   ├── web/              # Public landing page (debo.life)
+│   ├── app/              # Dashboard UI (app.debo.life) — CF Worker
+│   ├── api/              # Product backend — Hono, auth, DB, APIs
+│   ├── agents/           # AI intelligence service (standalone)
+│   └── voice-worker/     # Real-time voice agent (LiveKit)
+└── packages/
+    ├── db/               # Drizzle schema, Neon DB client, migrations
+    ├── ai/               # AI SDK wrappers, embeddings, extraction
+    ├── memory/           # Source-backed retrieval, citations, chunking
+    ├── storage/          # Cloudflare R2 upload/download helpers
+    ├── config/           # Environment validation, constants
+    ├── types/            # Shared TypeScript types and Zod schemas
+    ├── shared/           # Shared validators and error classes
+    └── ui/               # Shared React components (shadcn/ui)
+```
 
 ## Getting Started
 
@@ -66,78 +90,35 @@ See [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) and [docs/DEPLOYMENT.md](./do
 # Install dependencies
 bun install
 
-# Run development server (App)
-bun dev
+# Copy environment template
+cp .env.example .env.local
 
-# Run other apps
-bun run dev:web    # Landing page
-bun run dev:api    # API service
+# Run dashboard
+bun run dev
+
+# Run API backend
+bun run dev:api
+
+# Run landing page
+bun run dev:web
 ```
 
 Then open [http://localhost:3000](http://localhost:3000)
 
-## Project Structure
+## Data Flow
 
-```bash
-├── apps/
-│   ├── web/          # Next.js landing page
-│   ├── app/          # Core dashboard application
-│   ├── api/          # Standalone API services
-│   ├── agents/       # AI agents and workflows
-│   └── voice-worker/ # Real-time voice agent
-├── packages/
-│   ├── db/           # Database schema and migrations
-│   ├── ai/           # AI and embedding logic
-│   ├── memory/       # Memory engine and vector search
-│   ├── ui/           # Shared React components
-│   ├── config/       # Shared configuration
-│   └── types/        # Shared TypeScript types
-└── scripts/          # Orchestration and deploy scripts
-```
+1. **Capture** → Source created (journal, voice, file, connector import)
+2. **Process** → Chunked, parsed, entities extracted, summarized
+3. **Store** → Chunks in Neon + embeddings in Qdrant
+4. **Ask** → Semantic + structured retrieval from both stores
+5. **Answer** → Grounded response with source citations
 
-## Philosophy
+## Design Philosophy: Editorial Calm
 
-Debo follows **Editorial Calm** — a design philosophy focused on:
-- Distraction-free, magazine-like aesthetic
-- Typography-first approach
-- Minimal UI with generous whitespace
-
-## Technical Architecture
-
-```mermaid
-graph TD
-    User[User] --> Web[Next.js 16 Web UI]
-    User --> Voice[LiveKit Jarvis Voice Agent]
-    
-    subgraph Edge[Cloudflare Edge]
-        Web --> Actions[Server Actions]
-        Web --> ChatRoute[Chat Runtime]
-    end
-
-    subgraph Orchestration[Mastra]
-        ChatRoute --> Agents[AI Agents]
-        Agents --> Tools[Tools]
-    end
-
-    subgraph Storage[Data Layer]
-        Tools --> DB[(Neon Postgres)]
-        Tools --> Qdrant[(Qdrant Vector)]
-    end
-
-    Agents --> LLM[LLM Provider]
-    LLM --> Stream[Streaming Response]
-    Stream --> User
-
-```
-
-### Data Flow
-
-1. **Journal Entry** → Saved to Neon Postgres
-2. **Embedding** → Chunked and stored in Qdrant for semantic search
-3. **Memory Extraction** → Facts, preferences, people stored in memory table
-4. **Character Sync** → People are deduplicated into editable character profiles with references
-5. **Query** → Retrieved from both Qdrant (semantic) + Postgres (structured)
-6. **Answer** → Grounded response with citations sent back to user
+- **Typography-First** — Large, readable headings; warm aesthetics
+- **Warm Canvas** — Cream (`#f7f7f4`) and warm ink (`#26251e`), no pure black/white
+- **Minimal UI** — 1px hairlines, generous whitespace, no heavy shadows
+- **Source Trust** — Every answer shows where it came from
 
 ## License
 
