@@ -23,7 +23,6 @@ import {
   Settings,
   ChevronsLeft,
   ChevronsRight,
-  ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -43,63 +42,117 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { useSidebarPrefs, type SidebarItemDef } from "@/lib/sidebar-prefs";
 
-interface NavItem {
-  label: string;
-  href: string;
-  icon: React.ComponentType<{ className?: string }>;
-  shortcut?: string;
-  badge?: string;
+// ── Icon & metadata map ────────────────────────────────────────────────────
+
+const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  home: LayoutDashboard,
+  ask: MessageSquare,
+  journal: BookOpen,
+  voice: Mic,
+  media: Video,
+  mail: Inbox,
+  connectors: Plug,
+  vault: Shield,
+  inbox: Bell,
+  debrief: Sun,
+  timeline: Clock,
+  library: Library,
+  tasks: CheckSquare,
+  projects: FolderKanban,
+  decisions: Diamond,
+  people: Users,
+  radar: Radar,
+};
+
+const SHORTCUT_MAP: Record<string, string> = {
+  home: "H",
+  ask: "A",
+  journal: "J",
+  library: "L",
+};
+
+const BADGE_MAP: Record<string, string> = {
+  inbox: "5",
+};
+
+function getItemMeta(id: string) {
+  return {
+    icon: ICON_MAP[id] ?? LayoutDashboard,
+    shortcut: SHORTCUT_MAP[id],
+    badge: BADGE_MAP[id],
+  };
 }
 
-interface NavSection {
-  label: string;
-  items: NavItem[];
+// ── Nav item ───────────────────────────────────────────────────────────────
+
+function SidebarItem({
+  item,
+  active,
+  collapsed,
+}: {
+  item: SidebarItemDef;
+  active: boolean;
+  collapsed: boolean;
+}) {
+  const { icon, shortcut, badge } = getItemMeta(item.id);
+
+  const content = (
+    <Link
+      href={item.href}
+      className={cn(
+        "flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all relative group",
+        collapsed && "justify-center px-0",
+        active
+          ? "bg-primary/10 text-primary shadow-[0_3px_0_var(--border)] font-semibold"
+          : "text-muted-foreground hover:text-foreground hover:bg-accent"
+      )}
+    >
+      {(() => {
+        const Icon = icon;
+        return <Icon className={cn("w-[18px] h-[18px] shrink-0", active && "text-primary")} />;
+      })()}
+      {!collapsed && (
+        <>
+          <span className="flex-1 truncate">{item.label}</span>
+          {badge && (
+            <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">
+              {badge}
+            </Badge>
+          )}
+          {shortcut && (
+            <kbd className="hidden lg:inline-flex text-[10px] font-mono text-muted-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity bg-muted px-1.5 py-0.5 rounded">
+              {shortcut}
+            </kbd>
+          )}
+        </>
+      )}
+    </Link>
+  );
+
+  if (collapsed) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>{content}</TooltipTrigger>
+        <TooltipContent side="right" sideOffset={8}>
+          <div className="flex items-center gap-2">
+            <span>{item.label}</span>
+            {shortcut && (
+              <kbd className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                {shortcut}
+              </kbd>
+            )}
+          </div>
+        </TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  return content;
 }
 
-const navSections: NavSection[] = [
-  {
-    label: "Core",
-    items: [
-      { label: "Home", href: "/dashboard", icon: LayoutDashboard, shortcut: "H" },
-      { label: "Ask Debo", href: "/dashboard/ask", icon: MessageSquare, shortcut: "A" },
-      { label: "Journal", href: "/dashboard/journal", icon: BookOpen, shortcut: "J" },
-    ],
-  },
-  {
-    label: "Tools",
-    items: [
-      { label: "Voice", href: "/dashboard/voice", icon: Mic },
-      { label: "Media", href: "/dashboard/media", icon: Video },
-      { label: "Debo Mail", href: "/dashboard/mail", icon: Inbox },
-      { label: "Connectors", href: "/dashboard/connectors", icon: Plug },
-      { label: "Vault", href: "/dashboard/vault", icon: Shield },
-    ],
-  },
-  {
-    label: "Memory",
-    items: [
-      { label: "Inbox", href: "/dashboard/inbox", icon: Bell, badge: "5" },
-      { label: "Daily Debrief", href: "/dashboard/debrief", icon: Sun },
-      { label: "Timeline", href: "/dashboard/timeline", icon: Clock },
-      { label: "Library", href: "/dashboard/library", icon: Library, shortcut: "L" },
-    ],
-  },
-  {
-    label: "Work",
-    items: [
-      { label: "Tasks", href: "/dashboard/tasks", icon: CheckSquare },
-      { label: "Projects", href: "/dashboard/projects", icon: FolderKanban },
-      { label: "Decisions", href: "/dashboard/decisions", icon: Diamond },
-      { label: "People", href: "/dashboard/people", icon: Users },
-      { label: "Follow-Up Radar", href: "/dashboard/radar", icon: Radar },
-    ],
-  },
-];
-
-const bottomNav: NavItem[] = [
-  { label: "Settings", href: "/dashboard/settings", icon: Settings },
-];
+// ── Sidebar ────────────────────────────────────────────────────────────────
 
 interface SidebarProps {
   collapsed: boolean;
@@ -108,11 +161,37 @@ interface SidebarProps {
 
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const pathname = usePathname();
+  const { prefs, loaded, toggleSection } = useSidebarPrefs();
 
   const isActive = (href: string) => {
     if (href === "/dashboard") return pathname === "/dashboard";
     return pathname.startsWith(href);
   };
+
+  // Accordion value = section IDs where collapsed === false
+  const openSections = prefs.sections.filter((s) => !s.collapsed).map((s) => s.id);
+
+  const handleAccordionChange = (values: string[]) => {
+    // Find which section was toggled
+    for (const section of prefs.sections) {
+      const wasOpen = openSections.includes(section.id);
+      const isOpen = values.includes(section.id);
+      if (wasOpen !== isOpen) {
+        toggleSection(section.id);
+      }
+    }
+  };
+
+  // Build items per section (only non-hidden)
+  const visibleSections = prefs.sections
+    .map((section) => ({
+      ...section,
+      items: section.itemIds
+        .filter((id) => !prefs.hiddenItemIds.includes(id))
+        .map((id) => ALL_NAV_ITEMS_MAP[id])
+        .filter(Boolean),
+    }))
+    .filter((s) => s.items.length > 0);
 
   return (
     <TooltipProvider>
@@ -138,12 +217,19 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
         {/* Primary nav */}
         <ScrollArea className="flex-1">
           <nav className="py-2 px-2">
-            {collapsed ? (
+            {!loaded ? (
+              // Skeleton while loading prefs
+              <div className="space-y-2 p-2">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="h-8 rounded-lg bg-muted animate-pulse" />
+                ))}
+              </div>
+            ) : collapsed ? (
               // Collapsed: flat list, no sections
-              navSections.flatMap((section) =>
+              visibleSections.flatMap((section) =>
                 section.items.map((item) => (
                   <SidebarItem
-                    key={item.href}
+                    key={item.id}
                     item={item}
                     active={isActive(item.href)}
                     collapsed
@@ -152,9 +238,13 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
               )
             ) : (
               // Expanded: accordion sections
-              <Accordion type="multiple" defaultValue={["Core", "Tools"]}>
-                {navSections.map((section) => (
-                  <AccordionItem key={section.label} value={section.label} className="border-b-0">
+              <Accordion
+                type="multiple"
+                value={openSections}
+                onValueChange={handleAccordionChange}
+              >
+                {visibleSections.map((section) => (
+                  <AccordionItem key={section.id} value={section.id} className="border-b-0">
                     <AccordionTrigger className="py-1.5 px-3 text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider hover:no-underline hover:bg-transparent">
                       {section.label}
                     </AccordionTrigger>
@@ -162,7 +252,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                       <div className="space-y-0.5">
                         {section.items.map((item) => (
                           <SidebarItem
-                            key={item.href}
+                            key={item.id}
                             item={item}
                             active={isActive(item.href)}
                             collapsed={false}
@@ -179,14 +269,11 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
         {/* Bottom nav + user */}
         <div className="border-t border-border py-2 px-2 space-y-0.5">
-          {bottomNav.map((item) => (
-            <SidebarItem
-              key={item.href}
-              item={item}
-              active={isActive(item.href)}
-              collapsed={collapsed}
-            />
-          ))}
+          <SidebarItem
+            item={{ id: "settings", label: "Settings", href: "/dashboard/settings" }}
+            active={isActive("/dashboard/settings")}
+            collapsed={collapsed}
+          />
 
           <Separator className="my-2" />
 
@@ -255,62 +342,10 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   );
 }
 
-function SidebarItem({
-  item,
-  active,
-  collapsed,
-}: {
-  item: NavItem;
-  active: boolean;
-  collapsed: boolean;
-}) {
-  const content = (
-    <Link
-      href={item.href}
-      className={cn(
-        "flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all relative group",
-        collapsed && "justify-center px-0",
-        active
-          ? "bg-primary/10 text-primary shadow-[0_3px_0_var(--border)] font-semibold"
-          : "text-muted-foreground hover:text-foreground hover:bg-accent"
-      )}
-    >
-      <item.icon className={cn("w-[18px] h-[18px] shrink-0", active && "text-primary")} />
-      {!collapsed && (
-        <>
-          <span className="flex-1 truncate">{item.label}</span>
-          {item.badge && (
-            <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">
-              {item.badge}
-            </Badge>
-          )}
-          {item.shortcut && (
-            <kbd className="hidden lg:inline-flex text-[10px] font-mono text-muted-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity bg-muted px-1.5 py-0.5 rounded">
-              {item.shortcut}
-            </kbd>
-          )}
-        </>
-      )}
-    </Link>
-  );
+// ── Item lookup map ────────────────────────────────────────────────────────
 
-  if (collapsed) {
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>{content}</TooltipTrigger>
-        <TooltipContent side="right" sideOffset={8}>
-          <div className="flex items-center gap-2">
-            <span>{item.label}</span>
-            {item.shortcut && (
-              <kbd className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-                {item.shortcut}
-              </kbd>
-            )}
-          </div>
-        </TooltipContent>
-      </Tooltip>
-    );
-  }
+import { ALL_NAV_ITEMS } from "@/lib/sidebar-prefs";
 
-  return content;
-}
+const ALL_NAV_ITEMS_MAP: Record<string, SidebarItemDef> = Object.fromEntries(
+  ALL_NAV_ITEMS.map((item) => [item.id, item])
+);

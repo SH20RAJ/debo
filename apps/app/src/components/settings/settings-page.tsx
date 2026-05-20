@@ -8,6 +8,8 @@ import { SettingsSection } from "./settings-section";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -16,6 +18,23 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import {
+  useSidebarPrefs,
+  ALL_NAV_ITEMS,
+  type SidebarSectionDef,
+} from "@/lib/sidebar-prefs";
+import {
+  Eye,
+  EyeOff,
+  RotateCcw,
+  GripVertical,
+  Plus,
+  Trash2,
+  ChevronUp,
+  ChevronDown,
+  Check,
+  X,
+} from "lucide-react";
 
 export function SettingsPage() {
   return (
@@ -26,6 +45,7 @@ export function SettingsPage() {
         <TabsList className="w-full mb-8 overflow-x-auto">
           <TabsTrigger value="account">Account</TabsTrigger>
           <TabsTrigger value="appearance">Appearance</TabsTrigger>
+          <TabsTrigger value="sidebar">Sidebar</TabsTrigger>
           <TabsTrigger value="ai-preferences">AI Preferences</TabsTrigger>
           <TabsTrigger value="memory-preferences">Memory Preferences</TabsTrigger>
           <TabsTrigger value="shortcuts">Shortcuts</TabsTrigger>
@@ -36,6 +56,9 @@ export function SettingsPage() {
         </TabsContent>
         <TabsContent value="appearance">
           <AppearanceSection />
+        </TabsContent>
+        <TabsContent value="sidebar">
+          <SidebarSection />
         </TabsContent>
         <TabsContent value="ai-preferences">
           <AIPreferencesSection />
@@ -193,6 +216,242 @@ function MemoryPreferencesSection() {
       <ToggleRow label="Remember uploaded files" description="Process and index uploaded documents." checked={prefs.files} onChange={() => toggle("files")} disabled />
       <ToggleRow label="Remember connector data" description="Save data from connected apps." checked={prefs.connectors} onChange={() => toggle("connectors")} disabled />
       <ToggleRow label="Require review before saving" description="Review extracted facts before they are saved to memory." checked={prefs.requireReview} onChange={() => toggle("requireReview")} disabled />
+    </SettingsSection>
+  );
+}
+
+function SidebarSection() {
+  const {
+    prefs,
+    hideItem,
+    unhideItem,
+    moveItem,
+    reorderSections,
+    addSection,
+    removeSection,
+    renameSection,
+    resetToDefaults,
+  } = useSidebarPrefs();
+
+  const [newSectionName, setNewSectionName] = useState("");
+  const [editingSection, setEditingSection] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+
+  const assignedIds = new Set(prefs.sections.flatMap((s) => s.itemIds));
+  const hiddenItems = ALL_NAV_ITEMS.filter(
+    (item) => prefs.hiddenItemIds.includes(item.id)
+  );
+  const unassignedItems = ALL_NAV_ITEMS.filter(
+    (item) => !assignedIds.has(item.id) && !prefs.hiddenItemIds.includes(item.id)
+  );
+
+  const handleAddSection = () => {
+    const name = newSectionName.trim();
+    if (!name) return;
+    addSection(name);
+    setNewSectionName("");
+  };
+
+  const handleRename = (sectionId: string) => {
+    const name = editName.trim();
+    if (name) renameSection(sectionId, name);
+    setEditingSection(null);
+  };
+
+  const handleMoveUp = (sectionIndex: number) => {
+    if (sectionIndex > 0) reorderSections(sectionIndex, sectionIndex - 1);
+  };
+
+  const handleMoveDown = (sectionIndex: number) => {
+    if (sectionIndex < prefs.sections.length - 1) reorderSections(sectionIndex, sectionIndex + 1);
+  };
+
+  return (
+    <SettingsSection
+      title="Sidebar"
+      description="Customize your sidebar layout. Drag items between sections, hide what you don't use, or create your own groups."
+    >
+      {/* Reset button */}
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-sm text-muted-foreground">
+          {prefs.sections.length} sections, {ALL_NAV_ITEMS.length - prefs.hiddenItemIds.length} items visible
+        </p>
+        <Button variant="outline" size="sm" onClick={resetToDefaults} className="gap-2">
+          <RotateCcw className="w-3.5 h-3.5" />
+          Reset to defaults
+        </Button>
+      </div>
+
+      {/* Sections */}
+      <div className="space-y-4">
+        {prefs.sections.map((section, sectionIndex) => (
+          <div key={section.id} className="rounded-xl border-2 border-border bg-card">
+            {/* Section header */}
+            <div className="flex items-center gap-2 px-3 py-2.5 border-b border-border bg-muted/30 rounded-t-xl">
+              <div className="flex flex-col gap-0.5">
+                <button
+                  onClick={() => handleMoveUp(sectionIndex)}
+                  disabled={sectionIndex === 0}
+                  className="text-muted-foreground hover:text-foreground disabled:opacity-20"
+                >
+                  <ChevronUp className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => handleMoveDown(sectionIndex)}
+                  disabled={sectionIndex === prefs.sections.length - 1}
+                  className="text-muted-foreground hover:text-foreground disabled:opacity-20"
+                >
+                  <ChevronDown className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              {editingSection === section.id ? (
+                <div className="flex items-center gap-1.5 flex-1">
+                  <Input
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleRename(section.id);
+                      if (e.key === "Escape") setEditingSection(null);
+                    }}
+                    className="h-7 text-sm"
+                    autoFocus
+                  />
+                  <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleRename(section.id)}>
+                    <Check className="w-3.5 h-3.5" />
+                  </Button>
+                  <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setEditingSection(null)}>
+                    <X className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+              ) : (
+                <span
+                  className="flex-1 text-sm font-semibold cursor-pointer hover:text-primary"
+                  onClick={() => {
+                    setEditingSection(section.id);
+                    setEditName(section.label);
+                  }}
+                >
+                  {section.label}
+                </span>
+              )}
+
+              {!["core", "tools", "memory", "work"].includes(section.id) && (
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                  onClick={() => removeSection(section.id)}
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </Button>
+              )}
+            </div>
+
+            {/* Section items */}
+            <div className="p-2 space-y-0.5">
+              {section.itemIds.length === 0 && (
+                <p className="text-xs text-muted-foreground/50 py-2 text-center">No items — drag items here or add from below</p>
+              )}
+              {section.itemIds.map((itemId) => {
+                const item = ALL_NAV_ITEMS.find((i) => i.id === itemId);
+                if (!item) return null;
+                const isHidden = prefs.hiddenItemIds.includes(itemId);
+
+                return (
+                  <div
+                    key={itemId}
+                    className={cn(
+                      "flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm transition-colors group",
+                      isHidden ? "opacity-40" : "hover:bg-muted/50"
+                    )}
+                  >
+                    <GripVertical className="w-3.5 h-3.5 text-muted-foreground/30 shrink-0 cursor-grab" />
+                    <span className="flex-1 truncate">{item.label}</span>
+
+                    {/* Move to prev/next section */}
+                    {sectionIndex > 0 && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-6 w-6 opacity-0 group-hover:opacity-100 text-muted-foreground"
+                        title={`Move to ${prefs.sections[sectionIndex - 1]?.label}`}
+                        onClick={() => moveItem(itemId, prefs.sections[sectionIndex - 1].id, 999)}
+                      >
+                        <ChevronUp className="w-3 h-3" />
+                      </Button>
+                    )}
+                    {sectionIndex < prefs.sections.length - 1 && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-6 w-6 opacity-0 group-hover:opacity-100 text-muted-foreground"
+                        title={`Move to ${prefs.sections[sectionIndex + 1]?.label}`}
+                        onClick={() => moveItem(itemId, prefs.sections[sectionIndex + 1].id, 0)}
+                      >
+                        <ChevronDown className="w-3 h-3" />
+                      </Button>
+                    )}
+
+                    {/* Hide/show toggle */}
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                      onClick={() => (isHidden ? unhideItem(itemId) : hideItem(itemId))}
+                      title={isHidden ? "Show in sidebar" : "Hide from sidebar"}
+                    >
+                      {isHidden ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Add new section */}
+      <div className="flex gap-2 mt-4">
+        <Input
+          placeholder="New section name..."
+          value={newSectionName}
+          onChange={(e) => setNewSectionName(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleAddSection();
+          }}
+          className="h-9"
+        />
+        <Button onClick={handleAddSection} disabled={!newSectionName.trim()} className="gap-1.5 shrink-0">
+          <Plus className="w-4 h-4" />
+          Add
+        </Button>
+      </div>
+
+      {/* Hidden items */}
+      {hiddenItems.length > 0 && (
+        <div className="mt-6">
+          <Separator className="mb-4" />
+          <p className="text-sm font-semibold mb-3">Hidden items</p>
+          <div className="space-y-1">
+            {hiddenItems.map((item) => (
+              <div key={item.id} className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm opacity-60 hover:opacity-100 transition-opacity">
+                <EyeOff className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                <span className="flex-1 truncate">{item.label}</span>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                  onClick={() => unhideItem(item.id)}
+                  title="Show in sidebar"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </SettingsSection>
   );
 }
