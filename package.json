@@ -20,7 +20,7 @@
     "build:app": "bun run build:website",
     "deploy": "bun scripts/deploy-all.mjs",
     "deploy:landing": "bun run --filter '@debo/landing-page' deploy",
-    "deploy:website": "bun scripts/deploy-netlify-website.mjs",
+    "deploy:website": "bun scripts/deploy-vercel-website.mjs",
     "deploy:web": "bun run deploy:landing",
     "deploy:app": "bun run deploy:website",
     "deploy:all": "bun scripts/deploy-all.mjs",
@@ -33,6 +33,7 @@
     "@opennextjs/cloudflare": "1.19.6",
     "@types/node": "^25.6.0",
     "typescript": "^5.7.4",
+    "vercel": "^50.26.1",
     "wrangler": "^4.87.0"
   }
 }

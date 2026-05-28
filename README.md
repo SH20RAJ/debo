@@ -37,7 +37,7 @@ Debo is a **private AI memory operating system**. It turns your writing, voice n
 | **Media Storage** | Cloudflare R2 |
 | **Auth** | Stack Auth |
 | **Voice** | LiveKit |
-| **Deployment** | `apps/landing-page` on Cloudflare Workers; `apps/website` on Netlify Node runtime |
+| **Deployment** | `apps/landing-page` on Cloudflare Workers; `apps/website` on Vercel |
 
 ## Architecture
 
@@ -59,7 +59,7 @@ Debo is a **private AI memory operating system**. It turns your writing, voice n
                    └──────────┘  └──────────┘   └──────────┘
 ```
 
-**Key rule:** `apps/website` is the full product and must run on Netlify's Node runtime. Do not deploy it as a Cloudflare Worker; LangChain/LangGraph and the product API surface live inside its Next.js app and route handlers.
+**Key rule:** `apps/website` is the full product and must run on Vercel's Node runtime. Do not deploy it as a Cloudflare Worker or to Netlify; LangChain/LangGraph and the product API surface live inside its Next.js app and route handlers.
 
 ## Monorepo Structure
 
@@ -67,7 +67,7 @@ Debo is a **private AI memory operating system**. It turns your writing, voice n
 debo/
 ├── apps/
 │   ├── landing-page/     # Public landing page (debo.life) — Cloudflare Worker
-│   └── website/          # Full-stack product (app.debo.life) — Netlify Node runtime
+│   └── website/          # Full-stack product (app.debo.life) — Vercel
 └── packages/
     ├── db/               # Drizzle schema, Neon DB client, migrations
     ├── ai/               # AI SDK wrappers, embeddings, extraction
@@ -103,15 +103,23 @@ Then open [http://localhost:3000](http://localhost:3000)
 ## Deployment
 
 ```bash
-# Required for apps/website Netlify deploys
-export NETLIFY_SITE_ID="your-app-site-id"
-export NETLIFY_AUTH_TOKEN="your-netlify-auth-token"
+# Required for apps/website Vercel deploys
+export VERCEL_TOKEN="your-vercel-token"        # https://vercel.com/account/settings/tokens
+# Optional explicit project link (otherwise apps/website/.vercel/project.json is used)
+export VERCEL_ORG_ID="team_xxx"
+export VERCEL_PROJECT_ID="prj_xxx"
 
-# Deploy landing page to Cloudflare and website to Netlify
+# Deploy landing page to Cloudflare and website to Vercel
 bun run deploy
 ```
 
-`NETLIFY_APP_SITE_ID` is also accepted as an alias for `NETLIFY_SITE_ID`.
+First-time setup (per machine):
+
+```bash
+cd apps/website
+bun run vercel:link        # picks an existing project or creates a new one
+bun run vercel:env:pull    # writes .env.local from project env
+```
 
 ## Data Flow
 

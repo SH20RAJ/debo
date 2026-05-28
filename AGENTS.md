@@ -9,7 +9,7 @@ Debo has **two deployables**:
 | App | URL | Description | Deploy Target |
 |-----|-----|-------------|---------------|
 | `apps/landing-page` | debo.life | Public landing page | Cloudflare Worker |
-| `apps/website` | app.debo.life | Full-stack product: UI + API + AI | Netlify |
+| `apps/website` | app.debo.life | Full-stack product: UI + API + AI | Vercel |
 
 **`apps/website` is the full product** — it contains:
 - Dashboard UI (Next.js pages + components)
@@ -20,7 +20,7 @@ Debo has **two deployables**:
 - Auth (Stack Auth)
 - DB access (`@debo/db`)
 
-**`apps/website` is NOT a Cloudflare Worker.** LangChain/LangGraph are too large for CF Worker bundle limits. Deploy it on Netlify with a Node runtime.
+**`apps/website` is NOT a Cloudflare Worker.** LangChain/LangGraph are too large for CF Worker bundle limits. Deploy it on Vercel with the default Next.js Node runtime.
 
 ## DEPRECATED — Do Not Use
 
@@ -100,6 +100,7 @@ apps/website/src/
 ### Never do
 - Never add Mastra or CopilotKit
 - Never deploy `apps/website` as a CF Worker
+- Never deploy `apps/website` to Netlify (we standardized on Vercel)
 - Never commit `.env` files
 - Never hardcode API keys
 - Never bypass auth in API routes

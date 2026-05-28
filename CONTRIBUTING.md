@@ -55,7 +55,7 @@ bun run dev:website
 Debo uses a **Bun monorepo** to separate concerns:
 
 - **`apps/landing-page`**: Public landing page deployed as a Cloudflare Worker.
-- **`apps/website`**: Full-stack product deployed on Netlify with Next.js route handlers, UI, and LangGraph server code.
+- **`apps/website`**: Full-stack product deployed on Vercel with Next.js route handlers, UI, and LangGraph server code.
 - **`packages/*`**: Shared logic and configuration used across apps.
 
 When adding a new feature:

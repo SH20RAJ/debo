@@ -10,7 +10,7 @@ Debo has two deployable applications:
 debo/
 ├── apps/
 │   ├── landing-page/     # Public landing page (debo.life) - Cloudflare Worker
-│   └── website/          # Full-stack product (app.debo.life) - Netlify Node runtime
+│   └── website/          # Full-stack product (app.debo.life) - Vercel
 └── packages/
     ├── db/               # Drizzle schema, Neon DB client, migrations
     ├── config/           # Shared environment and constants
@@ -35,7 +35,7 @@ graph TD
 
 `apps/landing-page` is the only Cloudflare Worker deployable. It uses OpenNext Cloudflare and Wrangler.
 
-`apps/website` is the full product. It owns UI, Next.js route handlers, auth, server modules, LangChain/LangGraph orchestration, mail, voice, connectors, and memory retrieval. It must deploy to a Node runtime such as Netlify, Vercel, Railway, or Fly.io.
+`apps/website` is the full product. It owns UI, Next.js route handlers, auth, server modules, LangChain/LangGraph orchestration, mail, voice, connectors, and memory retrieval. It deploys to Vercel, which runs Next.js on a Node runtime.
 
 ## 3. Design Philosophy: Editorial Calm
 
@@ -50,7 +50,7 @@ Debo should reduce cognitive load and support reflection.
 
 - **Runtime**: Bun and Node.js 22 for the product website
 - **Landing page**: Next.js 16, React 19, OpenNext Cloudflare, Wrangler
-- **Product website**: Next.js 16 App Router, React 19, Netlify
+- **Product website**: Next.js 16 App Router, React 19, Vercel
 - **Backend API**: Next.js route handlers in `apps/website`
 - **AI orchestration**: LangChain + LangGraph
 - **AI providers**: NVIDIA NIM and OpenAI-compatible APIs

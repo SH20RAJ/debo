@@ -1,4 +1,4 @@
-name: Deploy Website to Netlify
+name: Deploy Website to Vercel
 
 on:
   push:
@@ -36,36 +36,9 @@ jobs:
       - name: Build shared packages
         run: bun run build:packages
 
-      - name: Deploy to Netlify
+      - name: Deploy to Vercel
         env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_APP_SITE_ID }}
-          # Stack Auth
-          NEXT_PUBLIC_STACK_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_STACK_PROJECT_ID }}
-          NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY: ${{ secrets.NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY }}
-          STACK_SECRET_SERVER_KEY: ${{ secrets.STACK_SECRET_SERVER_KEY }}
-          # AI
-          OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
-          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
-          # Database
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          # Vector DB
-          QDRANT_URL: ${{ secrets.QDRANT_URL }}
-          QDRANT_API_KEY: ${{ secrets.QDRANT_API_KEY }}
-          QDRANT_COLLECTION: ${{ secrets.QDRANT_COLLECTION }}
-          # Memory
-          MEM0_API_KEY: ${{ secrets.MEM0_API_KEY }}
-          # Connectors
-          COMPOSIO_API_KEY: ${{ secrets.COMPOSIO_API_KEY }}
-          NANGO_SECRET_KEY: ${{ secrets.NANGO_SECRET_KEY }}
-          # Voice
-          LIVEKIT_URL: ${{ secrets.LIVEKIT_URL }}
-          LIVEKIT_API_KEY: ${{ secrets.LIVEKIT_API_KEY }}
-          LIVEKIT_API_SECRET: ${{ secrets.LIVEKIT_API_SECRET }}
-          DEEPGRAM_API_KEY: ${{ secrets.DEEPGRAM_API_KEY }}
-          CARTESIA_API_KEY: ${{ secrets.CARTESIA_API_KEY }}
-          # App
-          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL || 'https://app.debo.life' }}
-        run: cd apps/website && bun run deploy -- --site "$NETLIFY_SITE_ID" --auth "$NETLIFY_AUTH_TOKEN"
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: bun run deploy:website

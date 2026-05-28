@@ -63,5 +63,5 @@ prompt.md
 
 # Build output
 dist/
+.vercel/
 .netlify/
-apps/*/.netlify/
