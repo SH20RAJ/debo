@@ -31,22 +31,6 @@ interface Decision {
   confidence: number;
 }
 
-const API_DECISIONS = "/api/decisions";
-
-async function fetchDecisions(status?: string): Promise<Decision[]> {
-  const res = await fetch(status ? `/api/decisions?status=${status}` : "/api/decisions");
-  if (!res.ok) return [];
-  return res.json();
-}
-
-async function updateDecisionStatus(id: string, status: string): Promise<void> {
-  await fetch(`/api/decisions/${id}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ status }),
-  });
-}
-
 const statusConfig: Record<string, { label: string; className: string }> = {
   active: { label: "Active", className: "bg-green-100 text-green-700 border-green-200" },
   changed: { label: "Changed", className: "bg-amber-100 text-amber-700 border-amber-200" },
@@ -74,15 +58,16 @@ export function DecisionsPage() {
 
   useEffect(() => {
     setLoading(true);
-    fetchDecisions(filter === "all" ? undefined : filter)
-      .then(setDecisions)
+    api.decisions
+      .list(filter === "all" ? undefined : filter)
+      .then((data: any) => setDecisions(Array.isArray(data) ? data : []))
       .catch(() => setDecisions([]))
       .finally(() => setLoading(false));
   }, [filter]);
 
   const updateStatus = async (id: string, newStatus: string) => {
     try {
-      await updateDecisionStatus(id, newStatus);
+      await api.decisions.update(id, { status: newStatus });
       setDecisions((prev) =>
         prev.map((d) => (d.id === id ? { ...d, status: newStatus as any } : d))
       );

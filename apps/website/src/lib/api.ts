@@ -72,6 +72,7 @@ export const api = {
       fetchApi("/api/tasks", { method: "POST", body: JSON.stringify(data) }),
     update: (id: string, data: { title?: string; description?: string; dueAt?: string | null; status?: string; projectId?: string | null; relatedPersonId?: string | null }) =>
       fetchApi(`/api/tasks/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+    delete: (id: string) => fetchApi(`/api/tasks/${id}`, { method: "DELETE" }),
     approve: (id: string) => fetchApi(`/api/tasks/${id}/approve`, { method: "POST" }),
     dismiss: (id: string) => fetchApi(`/api/tasks/${id}/dismiss`, { method: "POST" }),
   },
@@ -82,11 +83,24 @@ export const api = {
       fetchApi("/api/people", { method: "POST", body: JSON.stringify(data) }),
     update: (id: string, data: { name?: string; relationship?: string; company?: string; role?: string; notes?: string }) =>
       fetchApi(`/api/people/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+    delete: (id: string) => fetchApi(`/api/people/${id}`, { method: "DELETE" }),
   },
   projects: {
     list: () => fetchApi("/api/projects"),
+    get: (id: string) => fetchApi(`/api/projects/${id}`),
     create: (data: { name: string; description?: string; color?: string }) =>
       fetchApi("/api/projects", { method: "POST", body: JSON.stringify(data) }),
+    update: (id: string, data: { name?: string; description?: string; color?: string; status?: string }) =>
+      fetchApi(`/api/projects/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+    archive: (id: string) => fetchApi(`/api/projects/${id}`, { method: "DELETE" }),
+  },
+  search: {
+    query: (q: string, opts?: { type?: string; limit?: number }) => {
+      const params = new URLSearchParams({ q });
+      if (opts?.type) params.set("type", opts.type);
+      if (opts?.limit) params.set("limit", String(opts.limit));
+      return fetchApi(`/api/search?${params.toString()}`);
+    },
   },
   vault: {
     list: () => fetchApi("/api/vault"),
@@ -94,6 +108,15 @@ export const api = {
   },
   decisions: {
     list: (status?: string) => fetchApi(`/api/decisions${status ? `?status=${status}` : ""}`),
+    create: (data: { title: string; decisionText: string; reason?: string; status?: string; sourceId?: string; projectId?: string; confidence?: number; decidedAt?: string }) =>
+      fetchApi("/api/decisions", { method: "POST", body: JSON.stringify(data) }),
+    update: (id: string, data: { title?: string; decisionText?: string; reason?: string; status?: string }) =>
+      fetchApi(`/api/decisions/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+    delete: (id: string) => fetchApi(`/api/decisions/${id}`, { method: "DELETE" }),
+  },
+  extractions: {
+    run: (text: string, sourceId?: string) =>
+      fetchApi("/api/extractions", { method: "POST", body: JSON.stringify({ text, sourceId }) }),
   },
   ask: {
     stream: async ({ question, mode, threadId }: AskStreamArgs) => {

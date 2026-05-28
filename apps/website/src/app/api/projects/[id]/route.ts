@@ -1,13 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@debo/db";
-import {
-  people,
-  personMentions,
-  sources,
-  auditLogs,
-} from "@debo/db/schema";
-import { and, desc, eq } from "drizzle-orm";
+import { projects, auditLogs } from "@debo/db/schema";
+import { and, eq } from "drizzle-orm";
 import {
   apiError,
   newId,
@@ -16,18 +11,13 @@ import {
   withErrorHandling,
 } from "@/lib/api-helpers";
 
-const PatchPersonSchema = z.object({
+const PatchProjectSchema = z.object({
   name: z.string().min(1).optional(),
-  relationship: z.string().optional().nullable(),
-  company: z.string().optional().nullable(),
-  role: z.string().optional().nullable(),
-  notes: z.string().optional().nullable(),
+  description: z.string().optional().nullable(),
+  color: z.string().optional().nullable(),
+  status: z.enum(["active", "paused", "archived"]).optional(),
 });
 
-/**
- * GET /api/people/:id
- * Returns the person with up to 20 recent mentions joined to source titles.
- */
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -38,49 +28,23 @@ export async function GET(
 
   return withErrorHandling(async () => {
     const { id } = await params;
-
-    const [person] = await db
+    const [row] = await db
       .select()
-      .from(people)
+      .from(projects)
       .where(
         and(
-          eq(people.id, id),
-          eq(people.userId, user.id),
-          eq(people.workspaceId, workspaceId),
+          eq(projects.id, id),
+          eq(projects.userId, user.id),
+          eq(projects.workspaceId, workspaceId),
         ),
       )
       .limit(1);
 
-    if (!person) return apiError("not_found", 404);
-
-    const mentions = await db
-      .select({
-        id: personMentions.id,
-        sourceId: personMentions.sourceId,
-        contextText: personMentions.contextText,
-        createdAt: personMentions.createdAt,
-        sourceTitle: sources.title,
-        sourceType: sources.type,
-      })
-      .from(personMentions)
-      .leftJoin(sources, eq(sources.id, personMentions.sourceId))
-      .where(
-        and(
-          eq(personMentions.personId, id),
-          eq(personMentions.userId, user.id),
-          eq(personMentions.workspaceId, workspaceId),
-        ),
-      )
-      .orderBy(desc(personMentions.createdAt))
-      .limit(20);
-
-    return NextResponse.json({ ...person, mentions });
+    if (!row) return apiError("not_found", 404);
+    return NextResponse.json(row);
   });
 }
 
-/**
- * PATCH /api/people/:id
- */
 export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -94,30 +58,24 @@ export async function PATCH(
     const raw = await readJson<unknown>(req);
     if (raw instanceof NextResponse) return raw;
 
-    const parsed = PatchPersonSchema.safeParse(raw);
+    const parsed = PatchProjectSchema.safeParse(raw);
     if (!parsed.success) return apiError("invalid_body", 400);
 
     const updates: Record<string, unknown> = {
       updatedAt: new Date().toISOString(),
     };
-    for (const key of [
-      "name",
-      "relationship",
-      "company",
-      "role",
-      "notes",
-    ] as const) {
+    for (const key of ["name", "description", "color", "status"] as const) {
       if (parsed.data[key] !== undefined) updates[key] = parsed.data[key];
     }
 
     const [updated] = await db
-      .update(people)
+      .update(projects)
       .set(updates)
       .where(
         and(
-          eq(people.id, id),
-          eq(people.userId, user.id),
-          eq(people.workspaceId, workspaceId),
+          eq(projects.id, id),
+          eq(projects.userId, user.id),
+          eq(projects.workspaceId, workspaceId),
         ),
       )
       .returning();
@@ -128,8 +86,8 @@ export async function PATCH(
       id: newId("audit"),
       userId: user.id,
       workspaceId,
-      action: "person.update",
-      targetType: "person",
+      action: "project.update",
+      targetType: "project",
       targetId: id,
       ipAddress: req.headers.get("x-forwarded-for"),
       userAgent: req.headers.get("user-agent"),
@@ -140,9 +98,6 @@ export async function PATCH(
   });
 }
 
-/**
- * DELETE /api/people/:id
- */
 export async function DELETE(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
@@ -153,25 +108,26 @@ export async function DELETE(
 
   return withErrorHandling(async () => {
     const { id } = await params;
-    const [deleted] = await db
-      .delete(people)
+    const [archived] = await db
+      .update(projects)
+      .set({ status: "archived", updatedAt: new Date().toISOString() })
       .where(
         and(
-          eq(people.id, id),
-          eq(people.userId, user.id),
-          eq(people.workspaceId, workspaceId),
+          eq(projects.id, id),
+          eq(projects.userId, user.id),
+          eq(projects.workspaceId, workspaceId),
         ),
       )
       .returning();
 
-    if (!deleted) return apiError("not_found", 404);
+    if (!archived) return apiError("not_found", 404);
 
     await db.insert(auditLogs).values({
       id: newId("audit"),
       userId: user.id,
       workspaceId,
-      action: "person.delete",
-      targetType: "person",
+      action: "project.archive",
+      targetType: "project",
       targetId: id,
       ipAddress: req.headers.get("x-forwarded-for"),
       userAgent: req.headers.get("user-agent"),

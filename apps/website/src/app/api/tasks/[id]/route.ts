@@ -83,3 +83,45 @@ export async function PATCH(
     return NextResponse.json(updated);
   });
 }
+
+/**
+ * DELETE /api/tasks/:id
+ */
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const session = await requireSession(req);
+  if (session instanceof NextResponse) return session;
+  const { user, workspaceId } = session;
+
+  return withErrorHandling(async () => {
+    const { id } = await params;
+    const [deleted] = await db
+      .delete(tasks)
+      .where(
+        and(
+          eq(tasks.id, id),
+          eq(tasks.userId, user.id),
+          eq(tasks.workspaceId, workspaceId),
+        ),
+      )
+      .returning();
+
+    if (!deleted) return apiError("not_found", 404);
+
+    await db.insert(auditLogs).values({
+      id: newId("audit"),
+      userId: user.id,
+      workspaceId,
+      action: "task.delete",
+      targetType: "task",
+      targetId: id,
+      ipAddress: req.headers.get("x-forwarded-for"),
+      userAgent: req.headers.get("user-agent"),
+      metadataJson: null,
+    });
+
+    return new NextResponse(null, { status: 204 });
+  });
+}
