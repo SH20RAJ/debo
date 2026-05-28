@@ -1,3 +1,5 @@
+// Re-export the drizzle-orm SQL builders that mail routes use.
+// Centralizing the import avoids each route re-discovering the package path.
 export {
   and,
   asc,
@@ -7,4 +9,4 @@ export {
   isNotNull,
   isNull,
   or,
-} from "../../../../../packages/db/node_modules/drizzle-orm";
+} from "drizzle-orm";

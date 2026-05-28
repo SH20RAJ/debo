@@ -2405,7 +2405,7 @@ RESEND_API_KEY=
 
 ```txt
 Landing: Cloudflare Worker
-App: Netlify Node runtime
+App: Vercel (Next.js Node runtime)
 Worker: Trigger.dev
 Database: Neon
 Storage: Cloudflare R2
@@ -2418,7 +2418,7 @@ Cache: Upstash Redis
 
 ```txt
 Landing: Cloudflare Worker
-App: Netlify Node runtime
+App: Vercel (Next.js Node runtime)
 Worker: Trigger.dev dedicated
 Voice Agent: LiveKit Cloud or dedicated Node worker later
 Database: Neon with branching/backups
