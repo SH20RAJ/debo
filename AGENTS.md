@@ -8,10 +8,10 @@ Debo has **two deployables**:
 
 | App | URL | Description | Deploy Target |
 |-----|-----|-------------|---------------|
-| `apps/web` | debo.life | Public landing page | Cloudflare / Vercel |
-| `apps/app` | app.debo.life | Full-stack product: UI + API + AI | Vercel / Railway |
+| `apps/landing-page` | debo.life | Public landing page | Cloudflare Worker |
+| `apps/website` | app.debo.life | Full-stack product: UI + API + AI | Netlify |
 
-**`apps/app` is the full product** — it contains:
+**`apps/website` is the full product** — it contains:
 - Dashboard UI (Next.js pages + components)
 - Backend API routes (`/api/*`)
 - LangChain + LangGraph intelligence (`src/server/langgraph/`)
@@ -20,15 +20,15 @@ Debo has **two deployables**:
 - Auth (Stack Auth)
 - DB access (`@debo/db`)
 
-**`apps/app` is NOT a Cloudflare Worker.** LangChain/LangGraph are too large for CF Worker bundle limits. Deploy on Vercel, Railway, or Fly.io with Node runtime.
+**`apps/website` is NOT a Cloudflare Worker.** LangChain/LangGraph are too large for CF Worker bundle limits. Deploy it on Netlify with a Node runtime.
 
 ## DEPRECATED — Do Not Use
 
 - **Mastra** — removed, replaced by LangChain/LangGraph
 - **CopilotKit** — removed, replaced by custom UI
-- **apps/api** — merged into `apps/app` API routes
-- **apps/agents** — merged into `apps/app/src/server/langgraph/`
-- **apps/voice-worker** — merged into `apps/app/api/voice/`
+- **apps/api** — merged into `apps/website` API routes
+- **apps/agents** — merged into `apps/website/src/server/langgraph/`
+- **apps/voice-worker** — merged into `apps/website/src/app/api/voice/`
 
 ## Project Overview
 
@@ -54,17 +54,18 @@ LangGraph powers:
 
 ```bash
 bun install          # Install all workspace dependencies
-bun run dev          # Start dashboard dev server
-bun run dev:web      # Start landing page dev server
-bun run build:web    # Build landing page
-bun run build:app    # Build dashboard
+bun run dev          # Start product website dev server
+bun run dev:landing  # Start landing page dev server
+bun run dev:website  # Start product website dev server
+bun run build:landing # Build landing page
+bun run build:website # Build product website
 bun run db:push      # Push DB schema changes
 ```
 
 ## Key Directories
 
 ```
-apps/app/src/
+apps/website/src/
   app/                    # Next.js pages + API routes
     dashboard/            # Dashboard pages
     api/                  # Backend API routes
@@ -90,7 +91,7 @@ apps/app/src/
 ## Boundaries
 
 ### Always do
-- Keep all product logic in `apps/app`
+- Keep all product logic in `apps/website`
 - Use LangGraph for AI orchestration
 - Scope all DB queries by `userId`
 - Use Zod for validation
@@ -98,7 +99,7 @@ apps/app/src/
 
 ### Never do
 - Never add Mastra or CopilotKit
-- Never deploy `apps/app` as a CF Worker
+- Never deploy `apps/website` as a CF Worker
 - Never commit `.env` files
 - Never hardcode API keys
 - Never bypass auth in API routes

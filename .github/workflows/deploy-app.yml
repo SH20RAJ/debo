@@ -1,20 +1,20 @@
-name: Deploy App to Cloudflare
+name: Deploy Website to Netlify
 
 on:
   push:
     branches: [main]
     paths:
-      - 'apps/app/**'
+      - 'apps/website/**'
       - 'packages/**'
       - '.github/workflows/deploy-app.yml'
 
 concurrency:
-  group: deploy-app-${{ github.ref }}
+  group: deploy-website-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   deploy:
-    name: Deploy Debo App
+    name: Deploy Debo Website
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -36,10 +36,10 @@ jobs:
       - name: Build shared packages
         run: bun run build:packages
 
-      - name: Deploy to Cloudflare
+      - name: Deploy to Netlify
         env:
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_APP_SITE_ID }}
           # Stack Auth
           NEXT_PUBLIC_STACK_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_STACK_PROJECT_ID }}
           NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY: ${{ secrets.NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY }}
@@ -68,4 +68,4 @@ jobs:
           CARTESIA_API_KEY: ${{ secrets.CARTESIA_API_KEY }}
           # App
           NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL || 'https://app.debo.life' }}
-        run: cd apps/app && bun run deploy
+        run: cd apps/website && bun run deploy -- --site "$NETLIFY_SITE_ID" --auth "$NETLIFY_AUTH_TOKEN"

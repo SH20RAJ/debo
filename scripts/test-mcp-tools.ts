@@ -1,22 +1,26 @@
-import { mcpDeboTools } from '../src/mastra/tools/debo-tools';
+import { createConnectorActionTool } from "../apps/website/src/server/langgraph/tools/connector-action.tool";
+import { createMemoryRetrievalTool } from "../apps/website/src/server/langgraph/tools/memory-retrieval.tool";
+
+function assertToolName(tool: { name?: string }, expectedName: string) {
+  if (tool.name !== expectedName) {
+    throw new Error(`Expected ${expectedName}, received ${tool.name ?? "unknown"}`);
+  }
+}
 
 async function main() {
-    console.log("Testing Mastra MCP tools...");
-    const mockContext = { mcp: { elicitation: {}, extra: { authInfo: { userId: "test_user_123" } } } } as any;
+  console.log("Testing Debo LangGraph tools...");
 
-    try {
-        console.log("1. Testing getJournalsTool...");
-        const journals = await mcpDeboTools.getJournalsTool.execute!({ limit: 1 }, mockContext);
-        console.log("Success!", journals);
+  const userId = "test_user_123";
+  const memoryTool = createMemoryRetrievalTool(userId);
+  const connectorTool = createConnectorActionTool(userId);
 
-        console.log("2. Testing getMemoriesTool...");
-        const memories = await mcpDeboTools.getMemoriesTool.execute!({ limit: 1 }, mockContext);
-        console.log("Success!", memories);
+  assertToolName(memoryTool, "retrieve_memory");
+  assertToolName(connectorTool, "propose_connector_action");
 
-        console.log("\nAll MCP tools initialized and basic methods execute successfully.");
-    } catch (err) {
-        console.error("Test failed:", err);
-        process.exit(1);
-    }
+  console.log("LangGraph tools initialized successfully.");
 }
-main();
+
+main().catch((err) => {
+  console.error("Test failed:", err);
+  process.exit(1);
+});

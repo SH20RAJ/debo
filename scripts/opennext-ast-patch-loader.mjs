@@ -20,12 +20,12 @@ const PATCHED_RETURN = "return node.commitEdits(edits) ?? code;";
 const ORIGINAL_SERVER_EXTERNALS =
   'external: ["next", "./middleware.mjs", "./next-server.runtime.prod.js"],';
 const PATCHED_SERVER_EXTERNALS =
-  'external: ["next", "./middleware.mjs", "./next-server.runtime.prod.js", "@ast-grep/napi", "@ast-grep/napi-*", "@ast-grep/napi-darwin-arm64", "@ast-grep/napi-darwin-x64", "@ast-grep/napi-linux-x64-gnu", "@ast-grep/napi-linux-arm64-gnu", "xxhash-wasm", "xxhash-wasm/*", "@mastra/*"],';
+  'external: ["next", "./middleware.mjs", "./next-server.runtime.prod.js", "@ast-grep/napi", "@ast-grep/napi-*", "@ast-grep/napi-darwin-arm64", "@ast-grep/napi-darwin-x64", "@ast-grep/napi-linux-x64-gnu", "@ast-grep/napi-linux-arm64-gnu", "xxhash-wasm", "xxhash-wasm/*"],';
 const ORIGINAL_CLOUDFLARE_SERVER_EXTERNALS = 'external: ["./middleware.mjs"],';
 const PATCHED_CLOUDFLARE_SERVER_EXTERNALS =
-  'external: ["./middleware.mjs", "@ast-grep/napi", "@ast-grep/napi-*", "@ast-grep/napi-darwin-arm64", "@ast-grep/napi-darwin-x64", "@ast-grep/napi-linux-x64-gnu", "@ast-grep/napi-linux-arm64-gnu", "xxhash-wasm", "xxhash-wasm/*", "@mastra/*"],';
+  'external: ["./middleware.mjs", "@ast-grep/napi", "@ast-grep/napi-*", "@ast-grep/napi-darwin-arm64", "@ast-grep/napi-darwin-x64", "@ast-grep/napi-linux-x64-gnu", "@ast-grep/napi-linux-arm64-gnu", "xxhash-wasm", "xxhash-wasm/*"],';
 const ORIGINAL_NEXT_SERVER_EXTERNALS = "const externals = [";
-const PATCHED_NEXT_SERVER_EXTERNALS = 'const externals = ["@ast-grep/napi", "@ast-grep/napi-*", "@ast-grep/napi-darwin-arm64", "@ast-grep/napi-darwin-x64", "@ast-grep/napi-linux-x64-gnu", "@ast-grep/napi-linux-arm64-gnu", "xxhash-wasm", "xxhash-wasm/*", "@mastra/*", ';
+const PATCHED_NEXT_SERVER_EXTERNALS = 'const externals = ["@ast-grep/napi", "@ast-grep/napi-*", "@ast-grep/napi-darwin-arm64", "@ast-grep/napi-darwin-x64", "@ast-grep/napi-linux-x64-gnu", "@ast-grep/napi-linux-arm64-gnu", "xxhash-wasm", "xxhash-wasm/*", ';
 
 const BUILD_LAMBDA_MARKER = "    // Build Lambda code";
 const AST_GREP_STUB = String.raw`

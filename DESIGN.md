@@ -1,74 +1,61 @@
 # Debo Design & Architecture
 
-Debo is a **private AI memory operating system**, architected for source-backed contextual recall with edge-fast UI.
+Debo is a private AI memory operating system, architected for source-backed contextual recall with a calm, focused interface.
 
 ## 1. Monorepo Architecture
 
-Debo is built as a **Bun monorepo** with strict separation of concerns.
-
-### Directory Structure
+Debo has two deployable applications:
 
 ```bash
 debo/
 ├── apps/
-│   ├── web/              # Public landing page (debo.life) — CF Worker
-│   ├── app/              # Product dashboard UI (app.debo.life) — CF Worker
-│   ├── api/              # Product backend — Hono, auth, DB, APIs
-│   ├── agents/           # AI intelligence service (standalone)
-│   └── voice-worker/     # Real-time voice interaction (LiveKit)
+│   ├── landing-page/     # Public landing page (debo.life) - Cloudflare Worker
+│   └── website/          # Full-stack product (app.debo.life) - Netlify Node runtime
 └── packages/
     ├── db/               # Drizzle schema, Neon DB client, migrations
-    ├── ai/               # AI SDK wrappers, embeddings, extraction
-    ├── memory/           # Source-backed retrieval, citations, chunking
-    ├── storage/          # Cloudflare R2 upload/download helpers
     ├── config/           # Shared environment and constants
     ├── types/            # Shared TypeScript types and Zod schemas
     ├── shared/           # Shared validators and error classes
-    └── ui/               # Shared UI components (shadcn/ui)
+    └── ui/               # Shared UI components
 ```
 
-### Package Dependency Graph
+Deprecated split services (`apps/api`, `apps/agents`, and `apps/voice-worker`) have been merged into `apps/website`.
+
+## 2. Runtime Boundaries
 
 ```mermaid
 graph TD
-    App[apps/app] -->|HTTP| API[apps/api]
-    
-    API --> DB[@debo/db]
-    API --> Memory[@debo/memory]
-    API --> Storage[@debo/storage]
-    API -->|optional| Agents[apps/agents]
-    
-    Agents --> AI[@debo/ai]
-    Agents --> Memory
-    Agents --> DB
-    
-    Memory --> DB
-    
-    App --> UI[@debo/ui]
-    Web[apps/web] --> UI
+    Landing[apps/landing-page] --> UI[@debo/ui]
+    Website[apps/website] --> UI
+    Website --> DB[@debo/db]
+    Website --> LangGraph[LangChain + LangGraph]
+    Website --> R2[Cloudflare R2]
+    Website --> Qdrant[Qdrant]
 ```
 
-**Critical:** `apps/app` does NOT directly import `@debo/db`, `@debo/memory`, or `@debo/ai` for production API logic. It calls `apps/api` via HTTP. This keeps the Cloudflare Worker bundle under 10MiB.
+`apps/landing-page` is the only Cloudflare Worker deployable. It uses OpenNext Cloudflare and Wrangler.
 
-## 2. Design Philosophy: Editorial Calm
+`apps/website` is the full product. It owns UI, Next.js route handlers, auth, server modules, LangChain/LangGraph orchestration, mail, voice, connectors, and memory retrieval. It must deploy to a Node runtime such as Netlify, Vercel, Railway, or Fly.io.
 
-Debo follows a design philosophy focused on reducing cognitive load and fostering reflection.
+## 3. Design Philosophy: Editorial Calm
 
-### Core Principles
+Debo should reduce cognitive load and support reflection.
 
-- **Typography-First**: Use large, readable headings and JetBrains Mono for metadata.
-- **Warm Aesthetics**: No pure blacks or whites. Use cream canvas (`#f7f7f4`) and warm ink (`#26251e`).
-- **Tactile UI**: Minimal depth without heavy shadows. Use 1px hairlines for separation.
-- **Generous Rhythm**: Maintain consistent vertical rhythm (80px) between major sections.
+- **Typography-first**: readable headings, clear hierarchy, restrained metadata.
+- **Warm aesthetics**: cream canvas (`#f7f7f4`) and warm ink (`#26251e`), no harsh pure black/white.
+- **Minimal depth**: 1px hairlines and restrained shadows.
+- **Generous rhythm**: consistent vertical spacing between major sections.
 
-## 3. Technical Stack
+## 4. Technical Stack
 
-- **Runtime**: Bun
-- **Dashboard**: Next.js 16 (App Router), React 19
-- **Backend API**: Hono
-- **AI Providers**: NVIDIA NIM / OpenAI / Anthropic via Vercel AI SDK
-- **Database**: Neon (PostgreSQL) via Drizzle ORM + Qdrant (Vector)
-- **Media Storage**: Cloudflare R2
+- **Runtime**: Bun and Node.js 22 for the product website
+- **Landing page**: Next.js 16, React 19, OpenNext Cloudflare, Wrangler
+- **Product website**: Next.js 16 App Router, React 19, Netlify
+- **Backend API**: Next.js route handlers in `apps/website`
+- **AI orchestration**: LangChain + LangGraph
+- **AI providers**: NVIDIA NIM and OpenAI-compatible APIs
+- **Database**: Neon PostgreSQL via Drizzle ORM
+- **Vector search**: Qdrant
+- **Media storage**: Cloudflare R2
 - **Auth**: Stack Auth
-- **Real-time Voice**: LiveKit
-- **Deployment**: Cloudflare Workers (web/app), Railway/Fly.io (API/agents)
+- **Realtime voice**: LiveKit

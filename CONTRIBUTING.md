@@ -29,10 +29,9 @@ bun install
 ```
 
 ### 3. Environment Variables
-Each app has its own environment requirements. Copy the relevant `.env.example` files:
+Copy the root environment template:
 ```bash
-cp apps/app/.env.example apps/app/.env.local
-cp apps/web/.env.example apps/web/.env.local
+cp .env.example .env.local
 ```
 
 ### 4. Database & Auth
@@ -47,15 +46,16 @@ bun run db:push
 bun dev
 
 # Or run specific apps
-bun run dev:web
-bun run dev:api
+bun run dev:landing
+bun run dev:website
 ```
 
 ## 💻 Monorepo Structure
 
 Debo uses a **Bun monorepo** to separate concerns:
 
-- **`apps/*`**: Deployable applications (Web, App, API, Agents).
+- **`apps/landing-page`**: Public landing page deployed as a Cloudflare Worker.
+- **`apps/website`**: Full-stack product deployed on Netlify with Next.js route handlers, UI, and LangGraph server code.
 - **`packages/*`**: Shared logic and configuration used across apps.
 
 When adding a new feature:
@@ -66,7 +66,7 @@ When adding a new feature:
 - **React 19 & Next.js 16**: Use functional components, Server Components by default, and Server Actions for data mutations.
 - **TypeScript**: Strict type safety is required. Avoid \`any\`.
 - **Styling**: Tailwind CSS v4. Stick to the design tokens defined in \`tailwind.config.ts\`.
-- **Orchestration**: Agent logic should be added to \`src/mastra/agents\` and tools to \`src/mastra/tools\`.
+- **Orchestration**: Agent logic should be added to `apps/website/src/server/langgraph`.
 - **Database**: Use Drizzle ORM for all database operations.
 
 ## 🌿 Branching & PRs

@@ -1,8 +1,12 @@
-name: Deploy to Cloudflare
+name: Deploy Landing Page to Cloudflare
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
+    paths:
+      - 'apps/landing-page/**'
+      - 'packages/**'
+      - '.github/workflows/deploy-cloudflare.yml.txt'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -10,12 +14,8 @@ concurrency:
 
 jobs:
   deploy:
-    name: Deploy ${{ matrix.app }}
+    name: Deploy Debo Landing Page
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        app: [web, app, api, agents, voice]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -36,7 +36,7 @@ jobs:
       - name: Build shared packages
         run: bun run build:packages
 
-      - name: Deploy to Cloudflare
+      - name: Deploy landing page to Cloudflare
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -61,4 +61,4 @@ jobs:
           LIVEKIT_API_KEY: ${{ secrets.LIVEKIT_API_KEY }}
           LIVEKIT_API_SECRET: ${{ secrets.LIVEKIT_API_SECRET }}
           NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
-        run: bun run deploy:${{ matrix.app }}
+        run: bun run deploy:landing

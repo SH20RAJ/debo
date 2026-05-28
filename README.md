@@ -7,7 +7,7 @@
 > Capture anything. Ask your past. Trust every answer.
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org/)
-[![Hono](https://img.shields.io/badge/API-Hono-E36002?logo=hono)](https://hono.dev/)
+[![LangGraph](https://img.shields.io/badge/AI-LangGraph-1C3C3C)](https://docs.langchain.com/oss/javascript/langgraph)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
 ## What is Debo?
@@ -28,51 +28,46 @@ Debo is a **private AI memory operating system**. It turns your writing, voice n
 
 | Layer | Technology |
 |-------|-----------|
-| **Dashboard** | Next.js 16 (App Router), React 19 |
-| **API Backend** | Hono (Bun) |
-| **AI Providers** | NVIDIA NIM / OpenAI / Anthropic via Vercel AI SDK |
+| **Landing** | `apps/landing-page` — Next.js 16 (App Router), React 19 |
+| **Product App** | `apps/website` — Next.js 16 full-stack UI + API routes |
+| **AI Orchestration** | LangChain + LangGraph |
+| **AI Providers** | NVIDIA NIM primary, OpenAI-compatible APIs |
 | **Database** | Neon (PostgreSQL) via Drizzle ORM |
 | **Vector DB** | Qdrant |
 | **Media Storage** | Cloudflare R2 |
 | **Auth** | Stack Auth |
 | **Voice** | LiveKit |
-| **Deployment** | Cloudflare Workers (web/app), Railway (API/agents) |
+| **Deployment** | `apps/landing-page` on Cloudflare Workers; `apps/website` on Netlify Node runtime |
 
 ## Architecture
 
 ```
-┌─────────────┐     ┌──────────────┐     ┌──────────────┐
-│  apps/web   │     │  apps/app    │     │ apps/agents  │
-│  Landing    │     │  Dashboard   │────▶│ AI Service   │
-│  (CF Worker)│     │  (CF Worker) │     │ (Railway)    │
-└─────────────┘     └──────┬───────┘     └──────────────┘
-                           │ HTTP
-                    ┌──────▼───────┐
-                    │  apps/api    │
-                    │  Hono Backend│
-                    │  (Bun)       │
-                    └──────┬───────┘
-                           │
-              ┌────────────┼────────────┐
-              │            │            │
-        ┌─────▼────┐ ┌────▼─────┐ ┌────▼────┐
-        │ Neon PG  │ │ Qdrant   │ │ R2      │
-        │ (Drizzle)│ │ (Vector) │ │ (Media) │
-        └──────────┘ └──────────┘ └─────────┘
+┌───────────────────────┐       ┌─────────────────────────────┐
+│ apps/landing-page     │       │ apps/website                │
+│ Landing               │       │ Full-stack Next.js product  │
+│ debo.life             │       │ app.debo.life               │
+└───────────────────────┘       │ UI + API routes + AI        │
+                         │  LangChain/LangGraph        │
+                         │  Node runtime               │
+                         └──────────────┬──────────────┘
+                                        │
+                         ┌──────────────┼──────────────┐
+                         │              │              │
+                   ┌─────▼────┐  ┌─────▼────┐   ┌─────▼────┐
+                   │ Neon PG  │  │ Qdrant   │   │ R2       │
+                   │ Drizzle  │  │ Vector   │   │ Media    │
+                   └──────────┘  └──────────┘   └──────────┘
 ```
 
-**Key rule:** `apps/app` (Cloudflare Worker) is lightweight UI only. All product logic, DB access, and AI orchestration goes through `apps/api` or `apps/agents`.
+**Key rule:** `apps/website` is the full product and must run on Netlify's Node runtime. Do not deploy it as a Cloudflare Worker; LangChain/LangGraph and the product API surface live inside its Next.js app and route handlers.
 
 ## Monorepo Structure
 
 ```bash
 debo/
 ├── apps/
-│   ├── web/              # Public landing page (debo.life)
-│   ├── app/              # Dashboard UI (app.debo.life) — CF Worker
-│   ├── api/              # Product backend — Hono, auth, DB, APIs
-│   ├── agents/           # AI intelligence service (standalone)
-│   └── voice-worker/     # Real-time voice agent (LiveKit)
+│   ├── landing-page/     # Public landing page (debo.life) — Cloudflare Worker
+│   └── website/          # Full-stack product (app.debo.life) — Netlify Node runtime
 └── packages/
     ├── db/               # Drizzle schema, Neon DB client, migrations
     ├── ai/               # AI SDK wrappers, embeddings, extraction
@@ -96,11 +91,11 @@ cp .env.example .env.local
 # Run dashboard
 bun run dev
 
-# Run API backend
-bun run dev:api
-
 # Run landing page
-bun run dev:web
+bun run dev:landing
+
+# Run product website explicitly
+bun run dev:website
 ```
 
 Then open [http://localhost:3000](http://localhost:3000)
