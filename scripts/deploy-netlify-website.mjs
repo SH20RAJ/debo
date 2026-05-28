@@ -3,7 +3,10 @@
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
-const appDir = fileURLToPath(new URL("../apps/website/", import.meta.url));
+// Deploy from the monorepo root so @netlify/plugin-nextjs reads the root
+// netlify.toml with `base = "apps/website"`. Running from apps/website caused
+// double-nested function output (apps/website/apps/website/.netlify/...).
+const appDir = fileURLToPath(new URL("../", import.meta.url));
 const binDir = fileURLToPath(new URL("../apps/website/node_modules/.bin/", import.meta.url));
 
 function consumeFlag(args, flag) {
@@ -46,7 +49,19 @@ const env = {
 console.log(`Deploying apps/website to Netlify site ${siteId}...`);
 
 const proc = Bun.spawn(
-  ["netlify", "deploy", "--prod", "--site", siteId, "--auth", authToken, ...args],
+  [
+    "netlify",
+    "deploy",
+    "--prod",
+    "--build",
+    "--filter",
+    "@debo/website",
+    "--site",
+    siteId,
+    "--auth",
+    authToken,
+    ...args,
+  ],
   {
     cwd: appDir,
     env,
