@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Sidebar } from "@/components/app-shell/sidebar";
@@ -48,46 +48,47 @@ export default function DashboardLayout({
 
   return (
     <TooltipProvider>
-      <div className="flex h-screen overflow-hidden bg-background">
-        {/* Mobile overlay */}
-        {mobileOpen && (
+      <Suspense fallback={null}>
+        <div className="flex h-screen overflow-hidden bg-background">
+          {mobileOpen && (
+            <div
+              className="fixed inset-0 z-30 bg-black/40 backdrop-blur-[2px] md:hidden"
+              onClick={() => setMobileOpen(false)}
+            />
+          )}
+
           <div
-            className="fixed inset-0 z-30 bg-black/40 backdrop-blur-[2px] md:hidden"
-            onClick={() => setMobileOpen(false)}
-          />
-        )}
+            className={
+              mobileOpen
+                ? "fixed inset-y-0 left-0 z-40"
+                : "hidden md:block"
+            }
+          >
+            <Sidebar
+              collapsed={sidebarCollapsed}
+              onToggle={() => {
+                if (window.innerWidth < 768) {
+                  setMobileOpen((prev) => !prev);
+                } else {
+                  setSidebarCollapsed((prev) => !prev);
+                }
+              }}
+            />
+          </div>
 
-        {/* Sidebar */}
-        <div
-          className={
-            mobileOpen
-              ? "fixed inset-y-0 left-0 z-40"
-              : "hidden md:block"
-          }
-        >
-          <Sidebar
-            collapsed={sidebarCollapsed}
-            onToggle={() => {
-              if (window.innerWidth < 768) {
-                setMobileOpen((prev) => !prev);
-              } else {
-                setSidebarCollapsed((prev) => !prev);
-              }
-            }}
-          />
+          <div className="flex flex-col flex-1 min-w-0">
+            <Topbar
+              onCommandMenuOpen={() => setCommandMenuOpen(true)}
+              onMobileMenuToggle={() => setMobileOpen((prev) => !prev)}
+            />
+            <main className="flex-1 overflow-auto">
+              <Suspense fallback={null}>{children}</Suspense>
+            </main>
+          </div>
+
+          <CommandMenu open={commandMenuOpen} onClose={() => setCommandMenuOpen(false)} />
         </div>
-
-        {/* Main content area — no context rail */}
-        <div className="flex flex-col flex-1 min-w-0">
-          <Topbar
-            onCommandMenuOpen={() => setCommandMenuOpen(true)}
-            onMobileMenuToggle={() => setMobileOpen((prev) => !prev)}
-          />
-          <main className="flex-1 overflow-auto">{children}</main>
-        </div>
-
-        <CommandMenu open={commandMenuOpen} onClose={() => setCommandMenuOpen(false)} />
-      </div>
+      </Suspense>
     </TooltipProvider>
   );
 }
