@@ -54,6 +54,9 @@ export const api = {
     update: (id: string, data: { title?: string; content?: string; description?: string; status?: string }) =>
       fetchApi(`/api/sources/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
     delete: (id: string) => fetchApi(`/api/sources/${id}`, { method: "DELETE" }),
+    getFileUrl: (id: string) => fetchApi(`/api/sources/${id}/file`),
+    transcribe: (id: string) =>
+      fetchApi(`/api/sources/${id}/transcribe`, { method: "POST" }),
   },
   journal: {
     list: () => fetchApi("/api/sources?type=journal"),
@@ -131,6 +134,13 @@ export const api = {
     },
     listThreads: () => fetchApi("/api/chat/threads"),
     getThread: (threadId: string) => fetchApi(`/api/chat/threads/${threadId}`),
+    renameThread: (threadId: string, title: string) =>
+      fetchApi(`/api/chat/threads/${threadId}`, {
+        method: "PATCH",
+        body: JSON.stringify({ title }),
+      }),
+    deleteThread: (threadId: string) =>
+      fetchApi(`/api/chat/threads/${threadId}`, { method: "DELETE" }),
   },
   connectors: {
     list: () => fetchApi("/api/connectors"),
