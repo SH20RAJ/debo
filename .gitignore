@@ -63,3 +63,5 @@ prompt.md
 
 # Build output
 dist/
+.netlify/
+apps/*/.netlify/

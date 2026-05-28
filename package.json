@@ -20,7 +20,7 @@
     "build:app": "bun run build:website",
     "deploy": "bun scripts/deploy-all.mjs",
     "deploy:landing": "bun run --filter '@debo/landing-page' deploy",
-    "deploy:website": "bun run --filter '@debo/website' deploy",
+    "deploy:website": "bun scripts/deploy-netlify-website.mjs",
     "deploy:web": "bun run deploy:landing",
     "deploy:app": "bun run deploy:website",
     "deploy:all": "bun scripts/deploy-all.mjs",

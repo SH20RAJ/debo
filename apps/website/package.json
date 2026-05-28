@@ -8,7 +8,8 @@
     "start": "next start",
     "netlify:dev": "netlify dev",
     "netlify:build": "netlify build",
-    "deploy": "netlify deploy --prod",
+    "deploy": "bun ../../scripts/deploy-netlify-website.mjs",
+    "deploy:raw": "netlify deploy --prod",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

@@ -1,7 +1,7 @@
 # Debo — Your Private Memory OS
 
 <p align="center">
-  <img src="./public/logo-text.png" alt="Debo" width="200" />
+  <img src="./apps/landing-page/public/debo.png" alt="Debo" width="200" />
 </p>
 
 > Capture anything. Ask your past. Trust every answer.
@@ -99,6 +99,19 @@ bun run dev:website
 ```
 
 Then open [http://localhost:3000](http://localhost:3000)
+
+## Deployment
+
+```bash
+# Required for apps/website Netlify deploys
+export NETLIFY_SITE_ID="your-app-site-id"
+export NETLIFY_AUTH_TOKEN="your-netlify-auth-token"
+
+# Deploy landing page to Cloudflare and website to Netlify
+bun run deploy
+```
+
+`NETLIFY_APP_SITE_ID` is also accepted as an alias for `NETLIFY_SITE_ID`.
 
 ## Data Flow
 

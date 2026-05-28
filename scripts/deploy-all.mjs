@@ -3,6 +3,8 @@
 import { $ } from "bun";
 
 const timestamp = () => new Date().toISOString().slice(11, 19);
+const netlifySiteId = process.env.NETLIFY_SITE_ID || process.env.NETLIFY_APP_SITE_ID;
+const netlifyAuthToken = process.env.NETLIFY_AUTH_TOKEN;
 
 const REQUIRED = [
   { name: "landing-page", script: "deploy:landing", label: "Landing page (debo.life)" },
@@ -10,6 +12,13 @@ const REQUIRED = [
 ];
 
 console.log(`[${timestamp()}] === Debo Monorepo Deploy ===\n`);
+
+if (!netlifySiteId || !netlifyAuthToken) {
+  console.error(`[${timestamp()}] FATAL: Netlify deploy is not configured.`);
+  console.error("Set NETLIFY_SITE_ID (or NETLIFY_APP_SITE_ID) and NETLIFY_AUTH_TOKEN before running bun run deploy.");
+  console.error("This prevents Netlify CLI from auto-creating a random site and failing during Blobs upload.\n");
+  process.exit(1);
+}
 
 // Step 1: Build packages
 console.log(`[${timestamp()}] Building shared packages...`);
