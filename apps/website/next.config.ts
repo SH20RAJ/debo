@@ -1,9 +1,13 @@
 import type { NextConfig } from "next";
+import { config as loadDotenv } from "dotenv";
+import { resolve } from "path";
+
+// Single source of truth: monorepo root .env.local
+loadDotenv({ path: resolve(__dirname, "../../.env.local"), override: false });
 
 const nextConfig: NextConfig = {
   // Deployed on Vercel (Node runtime). Do NOT deploy as a Cloudflare Worker —
   // LangChain/LangGraph + Neon + AI SDK exceed Worker bundle limits.
-  // Vercel auto-detects Next.js, so we keep the default build output (no `output: "standalone"`).
   typescript: { ignoreBuildErrors: true },
   serverExternalPackages: [
     "@neondatabase/serverless",

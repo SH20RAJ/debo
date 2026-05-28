@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import {
   Search,
   BookOpen,
@@ -32,30 +33,36 @@ interface CommandItem {
   action: () => void;
 }
 
-const commands: CommandItem[] = [
-  // Capture
-  { icon: BookOpen, label: "New journal entry", shortcut: "\u2318J", group: "Capture", action: () => {} },
-  { icon: Mic, label: "Record voice note", shortcut: "\u2318\u21E7V", group: "Capture", action: () => {} },
-  { icon: Upload, label: "Upload file", shortcut: "\u2318U", group: "Capture", action: () => {} },
-  { icon: LinkIcon, label: "Save link", group: "Capture", action: () => {} },
-
-  // Ask
-  { icon: MessageSquare, label: "Ask Debo", shortcut: "\u2318A", group: "Ask", action: () => {} },
-  { icon: Search, label: "Search memories", group: "Ask", action: () => {} },
-  { icon: CheckSquare, label: "Find tasks", group: "Ask", action: () => {} },
-  { icon: Users, label: "Find person", group: "Ask", action: () => {} },
-
-  // Navigate
-  { icon: Library, label: "Go to Library", shortcut: "\u2318L", group: "Navigate", action: () => {} },
-  { icon: Users, label: "Go to People", group: "Navigate", action: () => {} },
-  { icon: CheckSquare, label: "Go to Tasks", group: "Navigate", action: () => {} },
-  { icon: Plug, label: "Go to Connectors", group: "Navigate", action: () => {} },
-
-  // Actions
-  { icon: Upload, label: "Export memory", group: "Actions", action: () => {} },
-  { icon: Plug, label: "Connect Gmail", group: "Actions", action: () => {} },
-  { icon: CheckSquare, label: "Review extracted tasks", group: "Actions", action: () => {} },
-];
+function buildCommands(router: ReturnType<typeof useRouter>): CommandItem[] {
+  return [
+    { icon: BookOpen, label: "New journal entry", shortcut: "\u2318J", group: "Capture", action: () => router.push("/dashboard/journal") },
+    { icon: Mic, label: "Record voice note", shortcut: "\u2318\u21E7V", group: "Capture", action: () => router.push("/dashboard/voice") },
+    { icon: Upload, label: "Upload file", shortcut: "\u2318U", group: "Capture", action: () => document.getElementById("cmd-file-input")?.click() },
+    { icon: LinkIcon, label: "Save link", group: "Capture", action: () => {
+      const url = window.prompt("Paste the URL:");
+      if (url?.trim()) {
+        import("@/lib/api").then(({ api }) => {
+          api.sources.create({ type: "link", title: url, content: url, origin: "manual" });
+        });
+      }
+    }},
+    { icon: MessageSquare, label: "Ask Debo", shortcut: "\u2318A", group: "Ask", action: () => router.push("/dashboard/ask") },
+    { icon: Search, label: "Search memories", group: "Ask", action: () => router.push("/dashboard/ask") },
+    { icon: CheckSquare, label: "Find tasks", group: "Ask", action: () => router.push("/dashboard/tasks") },
+    { icon: Users, label: "Find person", group: "Ask", action: () => router.push("/dashboard/people") },
+    { icon: Library, label: "Go to Library", shortcut: "\u2318L", group: "Navigate", action: () => router.push("/dashboard/library") },
+    { icon: Users, label: "Go to People", group: "Navigate", action: () => router.push("/dashboard/people") },
+    { icon: CheckSquare, label: "Go to Tasks", group: "Navigate", action: () => router.push("/dashboard/tasks") },
+    { icon: Plug, label: "Go to Connectors", group: "Navigate", action: () => router.push("/dashboard/connectors") },
+    { icon: Upload, label: "Export memory", group: "Actions", action: () => {
+      import("@/lib/api").then(({ api }) => {
+        api.vault.requestExport().then(() => {}).catch(() => {});
+      });
+    }},
+    { icon: Plug, label: "Connect Gmail", group: "Actions", action: () => router.push("/dashboard/connectors") },
+    { icon: CheckSquare, label: "Review extracted tasks", group: "Actions", action: () => router.push("/dashboard/inbox") },
+  ];
+}
 
 interface CommandMenuProps {
   open: boolean;
@@ -63,8 +70,10 @@ interface CommandMenuProps {
 }
 
 export function CommandMenu({ open, onClose }: CommandMenuProps) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (open) {
@@ -72,6 +81,8 @@ export function CommandMenu({ open, onClose }: CommandMenuProps) {
       setSelectedIndex(0);
     }
   }, [open]);
+
+  const commands = useMemo(() => buildCommands(router), [router]);
 
   const filtered = query.trim()
     ? commands.filter((c) =>
@@ -118,6 +129,21 @@ export function CommandMenu({ open, onClose }: CommandMenuProps) {
         )}
         onKeyDown={handleKeyDown}
       >
+        <input
+          ref={fileInputRef}
+          id="cmd-file-input"
+          type="file"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              import("@/lib/api").then(({ api }) => {
+                api.media.upload(file);
+              });
+            }
+            e.target.value = "";
+          }}
+        />
         <DialogTitle className="sr-only">Command Menu</DialogTitle>
         <DialogDescription className="sr-only">
           Search for commands, navigate, or perform actions

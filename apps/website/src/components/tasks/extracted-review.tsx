@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { Sparkles, Check, Pencil, X, ChevronDown } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Sparkles, Check, Pencil, X, ChevronDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { api } from "@/lib/api";
+import { toast } from "sonner";
 
 interface ExtractedTask {
   id: string;
@@ -14,33 +16,6 @@ interface ExtractedTask {
   source: string;
   confidence: "strong" | "partial" | "weak";
 }
-
-const mockExtracted: ExtractedTask[] = [
-  {
-    id: "ext-1",
-    title: "Send finalized Q4 budget to Raj",
-    sourceExcerpt:
-      '"...I promised Raj I\'ll send the finalized Q4 budget allocation by Friday before the board meeting..."',
-    source: "Marketing Sync voice note",
-    confidence: "strong",
-  },
-  {
-    id: "ext-2",
-    title: "Follow up with Sarah about API integration",
-    sourceExcerpt:
-      '"...need to circle back with Sarah on the API integration timeline, she mentioned next sprint..."',
-    source: "Customer Call",
-    confidence: "partial",
-  },
-  {
-    id: "ext-3",
-    title: "Draft blog post on memory OS",
-    sourceExcerpt:
-      '"...should write a blog post explaining the memory OS concept, could be great for launch..."',
-    source: "Weekly Review journal",
-    confidence: "partial",
-  },
-];
 
 const confidenceConfig: Record<
   string,
@@ -54,9 +29,11 @@ const confidenceConfig: Record<
 function ExtractedItem({
   task,
   onDismiss,
+  onAccept,
 }: {
   task: ExtractedTask;
   onDismiss: (id: string) => void;
+  onAccept: (id: string) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const conf = confidenceConfig[task.confidence];
@@ -101,7 +78,7 @@ function ExtractedItem({
         )}
 
         <div className="flex items-center gap-2">
-          <Button size="sm" className="rounded-lg gap-1.5">
+          <Button size="sm" className="rounded-lg gap-1.5" onClick={() => onAccept(task.id)}>
             <Check className="w-3 h-3" />
             Accept
           </Button>
@@ -125,12 +102,40 @@ function ExtractedItem({
 }
 
 export function ExtractedReview() {
-  const [tasks, setTasks] = useState(mockExtracted);
+  const [tasks, setTasks] = useState<ExtractedTask[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  function dismiss(id: string) {
-    setTasks((prev) => prev.filter((t) => t.id !== id));
-  }
+  useEffect(() => {
+    api.tasks.list("inbox")
+      .then((data: any) => {
+        const mapped: ExtractedTask[] = (data ?? []).map((t: any) => ({
+          id: t.id,
+          title: t.title || t.description || "Untitled",
+          sourceExcerpt: t.description || t.title || "",
+          source: "Tasks · Inbox",
+          confidence: ("partial" as "strong" | "partial" | "weak"),
+        }));
+        setTasks(mapped);
+      })
+      .catch(() => setTasks([]))
+      .finally(() => setLoading(false));
+  }, []);
 
+  const dismiss = (id: string) => {
+    api.tasks.dismiss(id).then(() => {
+      setTasks((prev) => prev.filter((t) => t.id !== id));
+      toast.success("Dismissed");
+    }).catch(() => toast.error("Failed to dismiss"));
+  };
+
+  const accept = (id: string) => {
+    api.tasks.approve(id).then(() => {
+      setTasks((prev) => prev.filter((t) => t.id !== id));
+      toast.success("Task approved");
+    }).catch(() => toast.error("Failed to approve"));
+  };
+
+  if (loading && tasks.length === 0) return null;
   if (tasks.length === 0) return null;
 
   return (
@@ -144,7 +149,7 @@ export function ExtractedReview() {
       </div>
       <div className="space-y-2">
         {tasks.map((task) => (
-          <ExtractedItem key={task.id} task={task} onDismiss={dismiss} />
+          <ExtractedItem key={task.id} task={task} onDismiss={dismiss} onAccept={accept} />
         ))}
       </div>
     </section>

@@ -111,7 +111,7 @@ export function AskPage() {
     abortRef.current = abort;
 
     try {
-      const response = await api.ask.stream(text, mode);
+      const response = await api.ask.stream({ question: text, mode });
 
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);

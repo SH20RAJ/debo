@@ -3,10 +3,31 @@
 import { useState, useRef, useEffect } from "react";
 import { Send } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { api } from "@/lib/api";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
+}
+
+function createSSEParser() {
+  let buffer = "";
+  return function parse(chunk: string): { event: string; data: string }[] {
+    buffer += chunk;
+    const lines = buffer.split("\n");
+    buffer = lines.pop() ?? "";
+    const events: { event: string; data: string }[] = [];
+    let currentEvent = "";
+    for (const line of lines) {
+      if (line.startsWith("event: ")) {
+        currentEvent = line.slice(7).trim();
+      } else if (line.startsWith("data: ")) {
+        events.push({ event: currentEvent, data: line.slice(6) });
+        currentEvent = "";
+      }
+    }
+    return events;
+  };
 }
 
 export default function ChatPage() {
@@ -29,18 +50,12 @@ export default function ChatPage() {
     setIsLoading(true);
 
     try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: [...messages, { role: "user", content: userMessage }],
-        }),
-      });
-
-      if (!res.ok) throw new Error("Chat request failed");
+      const res = await api.ask.stream({ question: userMessage });
+      if (!res.ok) throw new Error("Ask request failed");
 
       const reader = res.body?.getReader();
       const decoder = new TextDecoder();
+      const parseSSE = createSSEParser();
       let assistantContent = "";
 
       setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
@@ -48,15 +63,21 @@ export default function ChatPage() {
       while (reader) {
         const { done, value } = await reader.read();
         if (done) break;
-        assistantContent += decoder.decode(value, { stream: true });
-        setMessages((prev) => {
-          const updated = [...prev];
-          updated[updated.length - 1] = {
-            role: "assistant",
-            content: assistantContent,
-          };
-          return updated;
-        });
+        const events = parseSSE(decoder.decode(value, { stream: true }));
+        for (const evt of events) {
+          if (evt.event === "answer_delta") {
+            const parsed = JSON.parse(evt.data);
+            assistantContent += parsed.delta ?? "";
+            setMessages((prev) => {
+              const updated = [...prev];
+              updated[updated.length - 1] = {
+                role: "assistant",
+                content: assistantContent,
+              };
+              return updated;
+            });
+          }
+        }
       }
     } catch {
       setMessages((prev) => [

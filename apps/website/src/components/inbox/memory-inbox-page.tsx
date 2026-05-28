@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   CheckSquare,
   Users,
@@ -16,11 +16,13 @@ import {
   Pencil,
   Inbox,
   Sparkles,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { api } from "@/lib/api";
 
 // --- Types ---
 
@@ -103,80 +105,37 @@ const filterToType: Record<string, ItemType | null> = {
 
 // --- Mock Data ---
 
-const initialItems: InboxItem[] = [
-  {
-    id: "1",
-    type: "task",
-    content: "Send Q4 budget allocation to Raj by Friday",
-    source: "voice",
-    sourceLabel: "Marketing Sync",
-    confidence: "Strong",
-  },
-  {
-    id: "2",
-    type: "person",
-    content: "Dev - related to landing page redesign",
-    source: "journal",
-    sourceLabel: "Journal",
-    confidence: "Partial",
-  },
-  {
-    id: "3",
-    type: "promise",
-    content: "You promised Raj the finalized budget by Friday",
-    source: "voice",
-    sourceLabel: "Marketing Sync",
-    confidence: "Strong",
-  },
-  {
-    id: "4",
-    type: "fact",
-    content: "Debo's beta launch is planned for July 28, 2026",
-    source: "journal",
-    sourceLabel: "Journal",
-    confidence: "Strong",
-  },
-  {
-    id: "5",
-    type: "decision",
-    content: "Use R2 for storage instead of S3",
-    source: "meeting",
-    sourceLabel: "Architecture Review",
-    confidence: "Strong",
-  },
-  {
-    id: "6",
-    type: "task",
-    content: "Review the new landing page mockups",
-    source: "chat",
-    sourceLabel: "Design Channel",
-    confidence: "Partial",
-  },
-  {
-    id: "7",
-    type: "person",
-    content: "Sarah - potential investor, mentioned in 2 sources",
-    source: "email",
-    sourceLabel: "Email",
-    confidence: "Strong",
-  },
-  {
-    id: "8",
-    type: "fact",
-    content: "User prefers minimal premium UI with soft shadows",
-    source: "journal",
-    sourceLabel: "Journal",
-    confidence: "Strong",
-  },
-];
+const initialItems: InboxItem[] = [];
 
 // --- Component ---
 
 export function MemoryInboxPage() {
-  const [items, setItems] = useState<InboxItem[]>(initialItems);
+  const [items, setItems] = useState<InboxItem[]>([]);
   const [approved, setApproved] = useState<Set<string>>(new Set());
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
   const [activeFilter, setActiveFilter] = useState<FilterTab>("All");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    api.tasks.list("inbox")
+      .then((data: any) => {
+        const tasks: any[] = data ?? [];
+        const mapped: InboxItem[] = tasks.map((t: any) => ({
+          id: t.id,
+          type: "task" as ItemType,
+          content: t.title || t.description || "Untitled",
+          source: "journal" as SourceType,
+          sourceLabel: "Inbox",
+          confidence: ("Strong" as Confidence),
+        }));
+        setItems(mapped);
+        setApproved(new Set());
+        setDismissed(new Set());
+      })
+      .catch(() => setItems([]))
+      .finally(() => setLoading(false));
+  }, []);
 
   const pendingItems = useMemo(
     () =>
@@ -209,12 +168,22 @@ export function MemoryInboxPage() {
     return counts;
   }, [pendingItems]);
 
-  const handleApprove = (id: string) => {
-    setApproved((prev) => new Set(prev).add(id));
+  const handleApprove = async (id: string) => {
+    try {
+      await api.tasks.approve(id);
+      setApproved((prev) => new Set(prev).add(id));
+    } catch {
+      // ignore
+    }
   };
 
-  const handleDismiss = (id: string) => {
-    setDismissed((prev) => new Set(prev).add(id));
+  const handleDismiss = async (id: string) => {
+    try {
+      await api.tasks.dismiss(id);
+      setDismissed((prev) => new Set(prev).add(id));
+    } catch {
+      // ignore
+    }
   };
 
   const totalCount = pendingItems.length;

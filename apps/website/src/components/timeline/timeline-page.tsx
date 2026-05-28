@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Mic,
   BookOpen,
@@ -12,11 +12,14 @@ import {
   ExternalLink,
   MessageCircle,
   Clock,
+  Loader2,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { api } from "@/lib/api";
 
 type TimeRange = "today" | "week" | "month";
 
@@ -94,134 +97,99 @@ const typeConfig: Record<
   },
 };
 
-const mockData: DayGroup[] = [
-  {
-    date: "2026-05-19",
-    label: "Today",
-    items: [
-      {
-        id: "1",
-        type: "mail",
-        summary: "Q4 budget follow-up",
-        detail: "from raj@debo.life",
-        time: "10:30 AM",
-        sourceChip: "Debo Mail",
-      },
-      {
-        id: "2",
-        type: "voice",
-        summary: "Marketing sync follow-up",
-        detail: "discussed Q4 allocation",
-        time: "9:15 AM",
-        sourceChip: "Voice",
-      },
-      {
-        id: "3",
-        type: "task",
-        summary: "Send Q4 budget to Raj by Friday",
-        detail: "",
-        time: "8:00 AM",
-        sourceChip: "Tasks",
-        people: ["Raj"],
-      },
-    ],
-  },
-  {
-    date: "2026-05-18",
-    label: "Yesterday",
-    items: [
-      {
-        id: "4",
-        type: "journal",
-        summary: "Debo product ideas",
-        detail: "wrote about memory-first architecture",
-        time: "3:00 PM",
-        sourceChip: "Journal",
-        projects: ["Debo"],
-      },
-      {
-        id: "5",
-        type: "person",
-        summary: "Dev",
-        detail: "discussed landing page redesign",
-        time: "2:30 PM",
-        people: ["Dev"],
-      },
-      {
-        id: "6",
-        type: "decision",
-        summary: "Use R2 for storage",
-        detail: "from backend planning",
-        time: "11:00 AM",
-        sourceChip: "Decision",
-        projects: ["Debo"],
-      },
-      {
-        id: "7",
-        type: "file",
-        summary: "Q4 Allocation Draft.pdf",
-        detail: "",
-        time: "9:00 AM",
-        sourceChip: "Upload",
-      },
-    ],
-  },
-  {
-    date: "2026-05-17",
-    label: "May 17",
-    items: [
-      {
-        id: "8",
-        type: "voice",
-        summary: "Quick thought on Debo pricing",
-        detail: "explored freemium model",
-        time: "4:00 PM",
-        sourceChip: "Voice",
-        projects: ["Debo"],
-      },
-      {
-        id: "9",
-        type: "decision",
-        summary: "Use BlockNote for editor",
-        detail: "from tech research",
-        time: "2:00 PM",
-        sourceChip: "Decision",
-      },
-      {
-        id: "10",
-        type: "journal",
-        summary: "Weekly reflection",
-        detail: "reviewed progress",
-        time: "10:00 AM",
-        sourceChip: "Journal",
-      },
-    ],
-  },
-  {
-    date: "2026-05-16",
-    label: "May 16",
-    items: [
-      {
-        id: "11",
-        type: "person",
-        summary: "Raj",
-        detail: "Q4 budget planning",
-        time: "5:00 PM",
-        people: ["Raj"],
-      },
-      {
-        id: "12",
-        type: "task",
-        summary: "Review competitor analysis",
-        detail: "",
-        time: "11:00 AM",
-        sourceChip: "Tasks",
-      },
-    ],
-  },
-];
+function fetchTimelineData(range: TimeRange): Promise<DayGroup[]> {
+  // Fetch sources, tasks, and people to build a timeline
+  return Promise.all([
+    api.sources.list(),
+    api.tasks.list(),
+    api.people.list(),
+  ]).then(([sources, tasks, people]) => {
+    const now = new Date();
+    const rangeDays = range === "today" ? 1 : range === "week" ? 7 : 30;
+    const cutoff = new Date(now.getTime() - rangeDays * 86400000);
 
-function TimelineItemCard({ item }: { item: TimelineItem }) {
+    const items: TimelineItem[] = [];
+
+    // Add sources
+    for (const s of sources ?? []) {
+      const createdAt = new Date(s.createdAt);
+      if (createdAt < cutoff) continue;
+      const type: MemoryType = s.type === "voice" || s.type === "audio" ? "voice"
+        : s.type === "journal" ? "journal"
+        : s.type === "file" || s.type === "image" ? "file"
+        : s.type === "debo_mail" || s.type === "email" ? "mail"
+        : "journal";
+      items.push({
+        id: s.id,
+        type,
+        summary: s.title || typeConfig[type].label,
+        detail: s.description || "",
+        time: createdAt.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+        sourceChip: typeConfig[type].label,
+        projects: s.projectId ? [s.projectId] : undefined,
+      });
+    }
+
+    // Add tasks
+    for (const t of tasks ?? []) {
+      const createdAt = new Date(t.createdAt);
+      if (createdAt < cutoff) continue;
+      items.push({
+        id: t.id,
+        type: "task",
+        summary: t.title || "Task",
+        detail: t.description || "",
+        time: createdAt.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+        sourceChip: "Tasks",
+        people: t.relatedPersonId ? [t.relatedPersonId] : undefined,
+      });
+    }
+
+    // Add people mentions
+    for (const p of people ?? []) {
+      const createdAt = new Date(p.createdAt);
+      if (createdAt < cutoff) continue;
+      items.push({
+        id: p.id,
+        type: "person",
+        summary: p.name || "Person",
+        detail: p.relationship || "",
+        time: createdAt.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+        sourceChip: "People",
+        people: [p.name],
+      });
+    }
+
+    // Sort by time desc
+    items.sort((a, b) => {
+      const timeA = new Date(`1970-01-01T${a.time}`).getTime();
+      const timeB = new Date(`1970-01-01T${b.time}`).getTime();
+      return timeB - timeA;
+    });
+
+    // Group by day
+    const groups: Record<string, TimelineItem[]> = {};
+    for (const item of items) {
+      // Find the date from the source/task/people's createdAt
+      // We'll approximate by grouping all today items as "today"
+      const label = "Today";
+      if (!groups[label]) groups[label] = [];
+      groups[label].push(item);
+    }
+
+    return Object.entries(groups).map(([label, groupItems]) => ({
+      date: new Date().toISOString().split("T")[0],
+      label,
+      items: groupItems,
+    }));
+  });
+}
+
+function TimelineItemCard({ item, onOpenSource, onAskAbout }: {
+  item: TimelineItem;
+  onOpenSource: (item: TimelineItem) => void;
+  onAskAbout: (item: TimelineItem) => void;
+}) {
   const config = typeConfig[item.type];
   const Icon = config.icon;
 
@@ -298,6 +266,7 @@ function TimelineItemCard({ item }: { item: TimelineItem }) {
                 size="icon"
                 className="h-7 w-7"
                 title="Open source"
+                onClick={() => onOpenSource(item)}
               >
                 <ExternalLink className="w-3.5 h-3.5" />
               </Button>
@@ -306,6 +275,7 @@ function TimelineItemCard({ item }: { item: TimelineItem }) {
                 size="icon"
                 className="h-7 w-7"
                 title="Ask about this"
+                onClick={() => onAskAbout(item)}
               >
                 <MessageCircle className="w-3.5 h-3.5" />
               </Button>
@@ -317,7 +287,11 @@ function TimelineItemCard({ item }: { item: TimelineItem }) {
   );
 }
 
-function DaySection({ day }: { day: DayGroup }) {
+function DaySection({ day, onOpenSource, onAskAbout }: {
+  day: DayGroup;
+  onOpenSource: (item: TimelineItem) => void;
+  onAskAbout: (item: TimelineItem) => void;
+}) {
   return (
     <div className="relative">
       {/* Date header */}
@@ -337,7 +311,7 @@ function DaySection({ day }: { day: DayGroup }) {
 
         <div className="space-y-4">
           {day.items.map((item) => (
-            <TimelineItemCard key={item.id} item={item} />
+            <TimelineItemCard key={item.id} item={item} onOpenSource={onOpenSource} onAskAbout={onAskAbout} />
           ))}
         </div>
       </div>
@@ -346,7 +320,18 @@ function DaySection({ day }: { day: DayGroup }) {
 }
 
 export function TimelinePage() {
+  const router = useRouter();
   const [range, setRange] = useState<TimeRange>("week");
+  const [data, setData] = useState<DayGroup[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    fetchTimelineData(range)
+      .then(setData)
+      .catch(() => setData([]))
+      .finally(() => setLoading(false));
+  }, [range]);
 
   const ranges: { value: TimeRange; label: string }[] = [
     { value: "today", label: "Today" },
@@ -354,7 +339,13 @@ export function TimelinePage() {
     { value: "month", label: "This Month" },
   ];
 
-  const data = mockData;
+  const handleOpenSource = (item: TimelineItem) => {
+    router.push(`/dashboard/library/${item.id}`);
+  };
+
+  const handleAskAbout = (item: TimelineItem) => {
+    router.push(`/dashboard/ask?q=${encodeURIComponent(item.summary)}`);
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -395,10 +386,15 @@ export function TimelinePage() {
 
       {/* Content */}
       <div className="flex-1 overflow-auto px-6 py-6">
-        {data.length > 0 ? (
+        {loading ? (
+          <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
+            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+            Loading timeline...
+          </div>
+        ) : data.length > 0 ? (
           <div className="max-w-2xl mx-auto space-y-8">
             {data.map((day) => (
-              <DaySection key={day.date} day={day} />
+              <DaySection key={day.date} day={day} onOpenSource={handleOpenSource} onAskAbout={handleAskAbout} />
             ))}
 
             {/* End marker */}

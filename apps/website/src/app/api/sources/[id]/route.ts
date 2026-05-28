@@ -1,79 +1,171 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { db } from "@debo/db";
-import { sources } from "@debo/db/schema";
-import { eq, and } from "drizzle-orm";
-import { requireAuth } from "@/lib/auth";
+import { sources, auditLogs } from "@debo/db/schema";
+import { and, eq } from "drizzle-orm";
+import {
+  apiError,
+  newId,
+  readJson,
+  requireSession,
+  withErrorHandling,
+} from "@/lib/api-helpers";
+import { indexSource } from "@/server/ingestion";
 
+const PatchSourceSchema = z.object({
+  title: z.string().optional().nullable(),
+  description: z.string().optional().nullable(),
+  content: z.string().optional().nullable(),
+  status: z
+    .enum(["draft", "uploaded", "processing", "ready", "needs_review", "failed"])
+    .optional(),
+});
 
 /**
- * GET /api/sources/:id — Get a single source by ID.
+ * GET /api/sources/:id
  */
 export async function GET(
   req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const user = await requireAuth(req);
-  if (user instanceof NextResponse) return user;
+  const session = await requireSession(req);
+  if (session instanceof NextResponse) return session;
+  const { user, workspaceId } = session;
 
-  const { id } = await params;
-  const [source] = await db
-    .select()
-    .from(sources)
-    .where(and(eq(sources.id, id), eq(sources.userId, user.id)));
+  return withErrorHandling(async () => {
+    const { id } = await params;
+    const [row] = await db
+      .select()
+      .from(sources)
+      .where(
+        and(
+          eq(sources.id, id),
+          eq(sources.userId, user.id),
+          eq(sources.workspaceId, workspaceId),
+        ),
+      )
+      .limit(1);
 
-  if (!source) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json(source);
+    if (!row) return apiError("not_found", 404);
+    return NextResponse.json(row);
+  });
 }
 
 /**
- * PATCH /api/sources/:id — Update a source (title, content, etc).
+ * PATCH /api/sources/:id
+ * If `content` changes, the source is re-indexed.
  */
 export async function PATCH(
   req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const user = await requireAuth(req);
-  if (user instanceof NextResponse) return user;
+  const session = await requireSession(req);
+  if (session instanceof NextResponse) return session;
+  const { user, workspaceId } = session;
 
-  const { id } = await params;
-  const body = await req.json();
+  return withErrorHandling(async () => {
+    const { id } = await params;
+    const raw = await readJson<unknown>(req);
+    if (raw instanceof NextResponse) return raw;
 
-  // Map frontend "content" field to DB "plainText" column
-  const updateData: Record<string, any> = {
-    updatedAt: new Date().toISOString(),
-  };
-  if (body.title !== undefined) updateData.title = body.title;
-  if (body.content !== undefined) updateData.plainText = body.content;
-  if (body.description !== undefined) updateData.description = body.description;
-  if (body.status !== undefined) updateData.status = body.status;
+    const parsed = PatchSourceSchema.safeParse(raw);
+    if (!parsed.success) return apiError("invalid_body", 400);
 
-  const [updated] = await db
-    .update(sources)
-    .set(updateData)
-    .where(and(eq(sources.id, id), eq(sources.userId, user.id)))
-    .returning();
+    const updates: Record<string, unknown> = {
+      updatedAt: new Date().toISOString(),
+    };
+    let contentChanged = false;
+    if (parsed.data.title !== undefined) updates.title = parsed.data.title;
+    if (parsed.data.description !== undefined) updates.description = parsed.data.description;
+    if (parsed.data.content !== undefined) {
+      updates.plainText = parsed.data.content;
+      contentChanged = true;
+    }
+    if (parsed.data.status !== undefined) updates.status = parsed.data.status;
 
-  if (!updated) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json(updated);
+    const [updated] = await db
+      .update(sources)
+      .set(updates)
+      .where(
+        and(
+          eq(sources.id, id),
+          eq(sources.userId, user.id),
+          eq(sources.workspaceId, workspaceId),
+        ),
+      )
+      .returning();
+
+    if (!updated) return apiError("not_found", 404);
+
+    if (contentChanged) {
+      indexSource({
+        sourceId: updated.id,
+        userId: user.id,
+        workspaceId,
+        plainText: updated.plainText,
+      }).catch((err) => console.error("[sources] re-index failed", err));
+    }
+
+    await db.insert(auditLogs).values({
+      id: newId("audit"),
+      userId: user.id,
+      workspaceId,
+      action: "source.update",
+      targetType: "source",
+      targetId: id,
+      ipAddress: req.headers.get("x-forwarded-for"),
+      userAgent: req.headers.get("user-agent"),
+      metadataJson: JSON.stringify({ contentChanged }),
+    });
+
+    return NextResponse.json(updated);
+  });
 }
 
 /**
- * DELETE /api/sources/:id — Soft-delete a source.
+ * DELETE /api/sources/:id
+ * Soft-delete; vectors are pruned by the next index pass on ID re-use.
  */
 export async function DELETE(
   req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const user = await requireAuth(req);
-  if (user instanceof NextResponse) return user;
+  const session = await requireSession(req);
+  if (session instanceof NextResponse) return session;
+  const { user, workspaceId } = session;
 
-  const { id } = await params;
-  const [deleted] = await db
-    .update(sources)
-    .set({ status: "deleted", deletedAt: new Date().toISOString() })
-    .where(and(eq(sources.id, id), eq(sources.userId, user.id)))
-    .returning();
+  return withErrorHandling(async () => {
+    const { id } = await params;
+    const [deleted] = await db
+      .update(sources)
+      .set({
+        status: "deleted",
+        deletedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })
+      .where(
+        and(
+          eq(sources.id, id),
+          eq(sources.userId, user.id),
+          eq(sources.workspaceId, workspaceId),
+        ),
+      )
+      .returning();
 
-  if (!deleted) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json({ success: true });
+    if (!deleted) return apiError("not_found", 404);
+
+    await db.insert(auditLogs).values({
+      id: newId("audit"),
+      userId: user.id,
+      workspaceId,
+      action: "source.delete",
+      targetType: "source",
+      targetId: id,
+      ipAddress: req.headers.get("x-forwarded-for"),
+      userAgent: req.headers.get("user-agent"),
+      metadataJson: null,
+    });
+
+    return new NextResponse(null, { status: 204 });
+  });
 }

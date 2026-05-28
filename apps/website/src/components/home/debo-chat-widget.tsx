@@ -47,7 +47,7 @@ export function DeboChatWidget() {
     let answer = "";
 
     try {
-      const response = await api.ask.stream(query, "Recall");
+      const response = await api.ask.stream({ question: query, mode: "Recall" });
       if (!response.ok) throw new Error(`API error: ${response.status}`);
 
       const reader = response.body?.getReader();

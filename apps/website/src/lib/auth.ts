@@ -18,7 +18,7 @@ const IS_DEV = process.env.NODE_ENV !== "production";
 const MOCK_USER: AuthUser = {
   id: "dev-user-001",
   email: "dev@debo.life",
-  name: "Dev User",
+  name: "Shaswat",
 };
 
 /**

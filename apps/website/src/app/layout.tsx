@@ -1,9 +1,5 @@
 import type { Metadata } from "next";
-import { StackProvider, StackTheme } from "@stackframe/stack";
-import { stackServerApp } from "@/stack/server";
-import { ThemeProvider } from "next-themes";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { Toaster } from "sonner";
+import { Providers } from "./providers";
 import "./globals.css";
 
 export const dynamic = "force-dynamic";
@@ -39,21 +35,7 @@ export default function RootLayout({
         />
       </head>
       <body className="font-sans antialiased selection:bg-primary/20 selection:text-primary">
-        <StackProvider app={stackServerApp}>
-          <StackTheme>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="dark"
-              enableSystem
-              disableTransitionOnChange
-            >
-              <TooltipProvider>
-                {children}
-                <Toaster position="top-right" />
-              </TooltipProvider>
-            </ThemeProvider>
-          </StackTheme>
-        </StackProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

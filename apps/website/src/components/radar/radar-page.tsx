@@ -1,24 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Radar,
   User,
-  Mail,
-  MessageSquare,
-  Mic,
-  BookOpen,
-  Clock,
-  Reply,
-  Bell,
   CheckCircle2,
   X,
   AlertCircle,
-  Calendar,
+  Loader2,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { api } from "@/lib/api";
+import { toast } from "sonner";
 
 interface RadarItem {
   id: string;
@@ -28,64 +24,8 @@ interface RadarItem {
   sourceIcon: React.ComponentType<{ className?: string }>;
   urgency: "today" | "this-week" | "later";
   dueLabel: string;
+  task?: any;
 }
-
-const mockRadarItems: RadarItem[] = [
-  {
-    id: "1",
-    title: "Send Q4 budget to Raj",
-    reason: "You promised this by Friday",
-    source: "Voice note",
-    sourceIcon: Mic,
-    urgency: "today",
-    dueLabel: "Today",
-  },
-  {
-    id: "2",
-    title: "Reply to Dev about landing page",
-    reason: "Unread mail",
-    source: "Debo Mail",
-    sourceIcon: Mail,
-    urgency: "today",
-    dueLabel: "Today",
-  },
-  {
-    id: "3",
-    title: "Review landing page mockups",
-    reason: "Task pending",
-    source: "Chat",
-    sourceIcon: MessageSquare,
-    urgency: "this-week",
-    dueLabel: "This week",
-  },
-  {
-    id: "4",
-    title: "Follow up with Sarah about investment",
-    reason: "Mentioned in 2 sources",
-    source: "Journal",
-    sourceIcon: BookOpen,
-    urgency: "this-week",
-    dueLabel: "This week",
-  },
-  {
-    id: "5",
-    title: "Process 2 unreviewed voice notes",
-    reason: "From last week",
-    source: "Voice notes",
-    sourceIcon: Mic,
-    urgency: "later",
-    dueLabel: "Next week",
-  },
-  {
-    id: "6",
-    title: "Update Debo architecture docs",
-    reason: "Decision changed",
-    source: "Meeting",
-    sourceIcon: MessageSquare,
-    urgency: "later",
-    dueLabel: "Next week",
-  },
-];
 
 const urgencyConfig = {
   today: {
@@ -108,9 +48,11 @@ const urgencyConfig = {
 function RadarItemCard({
   item,
   onDismiss,
+  onDone,
 }: {
   item: RadarItem;
   onDismiss: (id: string) => void;
+  onDone: (id: string) => void;
 }) {
   const config = urgencyConfig[item.urgency];
   const SourceIcon = item.sourceIcon;
@@ -149,15 +91,7 @@ function RadarItemCard({
           </span>
 
           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <Button variant="ghost" size="sm" className="h-7 px-2 text-[11px] gap-1 text-muted-foreground hover:text-foreground">
-              <Reply className="w-3 h-3" />
-              Draft reply
-            </Button>
-            <Button variant="ghost" size="sm" className="h-7 px-2 text-[11px] gap-1 text-muted-foreground hover:text-foreground">
-              <Bell className="w-3 h-3" />
-              Remind
-            </Button>
-            <Button variant="ghost" size="sm" className="h-7 px-2 text-[11px] gap-1 text-muted-foreground hover:text-primary">
+            <Button variant="ghost" size="sm" className="h-7 px-2 text-[11px] gap-1 text-muted-foreground hover:text-primary" onClick={() => onDone(item.id)}>
               <CheckCircle2 className="w-3 h-3" />
               Done
             </Button>
@@ -177,10 +111,54 @@ function RadarItemCard({
 }
 
 export function RadarPage() {
-  const [items, setItems] = useState<RadarItem[]>(mockRadarItems);
+  const router = useRouter();
+  const [items, setItems] = useState<RadarItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleDismiss = (id: string) => {
-    setItems((prev) => prev.filter((item) => item.id !== id));
+  useEffect(() => {
+    api.tasks.list()
+      .then((data: any) => {
+        const tasks: any[] = data ?? [];
+        const mapped: RadarItem[] = tasks.map((t: any) => {
+          const dueAt = t.dueAt ? new Date(t.dueAt) : null;
+          const now = new Date();
+          const diffDays = dueAt ? Math.ceil((dueAt.getTime() - now.getTime()) / 86400000) : 99;
+          const urgency: "today" | "this-week" | "later" = diffDays <= 1 ? "today" : diffDays <= 7 ? "this-week" : "later";
+          return {
+            id: t.id,
+            title: t.title || "Task",
+            reason: t.description || t.dueAt ? `Due ${dueAt?.toLocaleDateString()}` : "Pending task",
+            source: "Tasks",
+            sourceIcon: CheckCircle2,
+            urgency,
+            dueLabel: urgency === "today" ? "Today" : urgency === "this-week" ? "This week" : "Later",
+            task: t,
+          };
+        });
+        setItems(mapped);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleDismiss = async (id: string) => {
+    try {
+      await api.tasks.dismiss(id);
+      setItems((prev) => prev.filter((item) => item.id !== id));
+      toast.success("Dismissed");
+    } catch {
+      toast.error("Failed to dismiss");
+    }
+  };
+
+  const handleDone = async (id: string) => {
+    try {
+      await api.tasks.approve(id);
+      setItems((prev) => prev.filter((item) => item.id !== id));
+      toast.success("Marked done");
+    } catch {
+      toast.error("Failed to update");
+    }
   };
 
   const todayItems = items.filter((i) => i.urgency === "today");
@@ -202,8 +180,9 @@ export function RadarPage() {
             <div>
               <h1 className="text-2xl font-heading font-bold text-foreground">Follow-Up Radar</h1>
               <p className="text-sm text-muted-foreground mt-0.5">
-                {attentionItems.length} item{attentionItems.length !== 1 ? "s" : ""} need
-                {attentionItems.length === 1 ? "s" : ""} your attention
+                {loading
+                  ? "Loading..."
+                  : `${attentionItems.length} item${attentionItems.length !== 1 ? "s" : ""} need${attentionItems.length === 1 ? "s" : ""} your attention`}
               </p>
             </div>
           </div>
@@ -217,7 +196,12 @@ export function RadarPage() {
           )}
         </div>
 
-        {/* Needs attention */}
+        {loading ? (
+          <div className="flex items-center justify-center py-16 text-muted-foreground text-sm">
+            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+            Loading radar...
+          </div>
+        ) : (<>
         {attentionItems.length > 0 && (
           <section className="mb-10">
             <div className="flex items-center gap-2 mb-4">
@@ -228,7 +212,7 @@ export function RadarPage() {
             </div>
             <div className="space-y-3">
               {attentionItems.map((item) => (
-                <RadarItemCard key={item.id} item={item} onDismiss={handleDismiss} />
+                <RadarItemCard key={item.id} item={item} onDismiss={handleDismiss} onDone={handleDone} />
               ))}
             </div>
           </section>
@@ -245,12 +229,13 @@ export function RadarPage() {
             </div>
             <div className="space-y-3">
               {upcomingItems.map((item) => (
-                <RadarItemCard key={item.id} item={item} onDismiss={handleDismiss} />
+                <RadarItemCard key={item.id} item={item} onDismiss={handleDismiss} onDone={handleDone} />
               ))}
             </div>
           </section>
         )}
 
+        </>)}
         {items.length === 0 && (
           <div className="text-center py-16">
             <CheckCircle2 className="w-12 h-12 text-primary mx-auto mb-4" />
