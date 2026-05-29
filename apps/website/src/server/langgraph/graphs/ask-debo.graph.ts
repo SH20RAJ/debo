@@ -82,8 +82,14 @@ async function generateNode(
     return { answer };
   }
 
-  // Use LangChain ChatOpenAI with NVIDIA NIM
+  // Use LangChain ChatOpenAI with the resolved provider
   const llm = createNvidiaLLM(false); // non-streaming for graph invoke
+  if (!llm) {
+    return {
+      answer:
+        "AI answers are not configured. Set NVIDIA_API_KEY or OPENAI_API_KEY to enable them.",
+    };
+  }
   const systemPrompt = buildSystemPrompt(state.contextText, state.mode, state.intent);
 
   const response = await llm.invoke([

@@ -228,7 +228,7 @@ export function AskPage() {
               ? {
                   ...m,
                   content:
-                    "I had trouble connecting to your memory. Please try again.",
+                    "Hmm, I couldn't reach my AI brain just now. Give it another try in a sec.",
                   retrievalActive: false,
                 }
               : m

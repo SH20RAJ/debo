@@ -26,9 +26,10 @@ interface ChatAreaProps {
 }
 
 const EMPTY_PROMPTS = [
-  "What did I promise Raj?",
-  "What ideas did I save about Debo?",
-  "Summarize my last 7 days",
+  "Hey Debo 👋",
+  "What can you do?",
+  "What did I work on this week?",
+  "Any open tasks or promises?",
 ];
 
 export function ChatArea({ messages, isResponding, onPromptClick }: ChatAreaProps) {
@@ -44,19 +45,20 @@ export function ChatArea({ messages, isResponding, onPromptClick }: ChatAreaProp
         <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 mb-6">
           <Brain className="w-7 h-7 text-primary" />
         </div>
-        <h1 className="text-2xl font-bold text-foreground mb-2">
-          Ask your past anything.
+        <h1 className="text-2xl font-bold text-foreground mb-2 font-[var(--font-nunito)]">
+          Talk to Debo
         </h1>
         <p className="text-sm text-muted-foreground mb-8 max-w-sm text-center">
-          Debo searches your memories and shows sources for every answer.
+          Say hi, or ask anything about your past. Real questions come back
+          with sources — casual chat just flows.
         </p>
-        <div className="flex flex-col gap-2 w-full max-w-md">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-md">
           {EMPTY_PROMPTS.map((prompt) => (
             <Button
               key={prompt}
               variant="outline"
               onClick={() => onPromptClick?.(prompt)}
-              className="justify-start gap-3 h-auto px-4 py-3 rounded-2xl border-border bg-card hover:bg-muted/50 text-sm font-normal text-muted-foreground"
+              className="justify-start gap-3 h-auto px-4 py-3 rounded-2xl border-2 border-border bg-card hover:bg-accent/60 text-sm font-normal text-foreground/80"
             >
               <Sparkles className="w-4 h-4 text-primary/60 shrink-0" />
               {prompt}

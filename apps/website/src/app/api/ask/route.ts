@@ -16,7 +16,7 @@
 import { NextResponse } from "next/server";
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { requireSession, apiError } from "@/lib/api-helpers";
-import { classifyIntent } from "@/server/langgraph/nodes/classify-intent.node";
+import { classifyIntent, isChitchat } from "@/server/langgraph/nodes/classify-intent.node";
 import { retrieveMemory } from "@/server/langgraph/nodes/retrieve-memory.node";
 import {
   buildSystemPrompt,
@@ -24,6 +24,7 @@ import {
   computeConfidenceLabel,
   createNvidiaLLM,
 } from "@/server/langgraph/nodes/generate-answer.node";
+import { isLlmConfigured } from "@/server/llm/provider";
 import { suggestActionsNode } from "@/server/langgraph/nodes/suggest-actions.node";
 import { validateCitationsNode } from "@/server/langgraph/nodes/validate-citations.node";
 import { db } from "@debo/db";
@@ -54,7 +55,8 @@ export async function POST(req: Request) {
   if (!question) return apiError("question_required", 400);
 
   const mode = body.mode ?? "recall";
-  const apiKey = process.env.OPENAI_API_KEY || process.env.NVIDIA_API_KEY;
+  const llmReady = isLlmConfigured();
+  const chitchat = isChitchat(question);
 
   // Resolve or create the chat thread we attribute this turn to. We don't
   // require it client-side; create-on-demand is fine for now.
@@ -112,39 +114,45 @@ export async function POST(req: Request) {
       };
 
       try {
-        send({ type: "retrieval_started" });
-
         const intent = classifyIntent(question);
-        const { sourcesFound, contextText } = await retrieveMemory(
-          user.id,
-          question,
-          8,
-        );
 
-        for (const src of sourcesFound) {
-          send({
-            type: "source_found",
-            id: src.id,
-            sourceType: src.type,
-            title: src.title,
-            snippet: src.snippet,
-            confidence: "partial",
-          });
+        // Chitchat ("hey", "thanks") skips memory retrieval entirely so Debo
+        // can just talk. Only real questions trigger a memory search.
+        let sourcesFound: Awaited<ReturnType<typeof retrieveMemory>>["sourcesFound"] = [];
+        let contextText = "";
+        if (!chitchat) {
+          send({ type: "retrieval_started" });
+          const retrieved = await retrieveMemory(user.id, question, 8);
+          sourcesFound = retrieved.sourcesFound;
+          contextText = retrieved.contextText;
+
+          for (const src of sourcesFound) {
+            send({
+              type: "source_found",
+              id: src.id,
+              sourceType: src.type,
+              title: src.title,
+              snippet: src.snippet,
+              confidence: "partial",
+            });
+          }
         }
 
         let finalAnswer = "";
 
-        if (!apiKey) {
-          // Service degraded but transparent: tell the client + log it.
-          finalAnswer =
-            sourcesFound.length > 0
-              ? `I found ${sourcesFound.length} relevant memories: ${sourcesFound
+        if (!llmReady) {
+          // Service degraded but transparent.
+          finalAnswer = chitchat
+            ? "Hey! I'm Debo, your private memory companion. I can capture notes, voice, and answer questions about your past — though my AI brain needs an API key (NVIDIA_API_KEY or OPENAI_API_KEY) configured to chat fully."
+            : sourcesFound.length > 0
+              ? `I found ${sourcesFound.length} relevant ${sourcesFound.length === 1 ? "memory" : "memories"}: ${sourcesFound
                   .map((s) => `"${s.title}"`)
-                  .join(", ")}. Configure OPENAI_API_KEY (or NVIDIA_API_KEY) to enable AI answers.`
-              : "No stored memories found yet. Capture journals, voice notes, or connect apps to start. Configure OPENAI_API_KEY to enable AI answers.";
+                  .join(", ")}. Configure NVIDIA_API_KEY or OPENAI_API_KEY to get full AI answers.`
+              : "I don't have any stored memories about that yet. Capture journals, voice notes, or connect apps to start. (Configure NVIDIA_API_KEY or OPENAI_API_KEY for AI answers.)";
           send({ type: "answer_delta", token: finalAnswer });
         } else {
           const llm = createNvidiaLLM(true);
+          if (!llm) throw new Error("llm_unavailable");
           const systemPrompt = buildSystemPrompt(contextText, mode, intent);
           const tokenStream = await llm.stream([
             new SystemMessage(systemPrompt),

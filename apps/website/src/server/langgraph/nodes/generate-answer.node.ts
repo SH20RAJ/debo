@@ -1,59 +1,54 @@
 /**
- * generate-answer.node.ts — Streams a source-backed answer.
- * Uses OpenAI-compatible API; auto-detects NVIDIA NIM vs OpenAI by base URL.
+ * generate-answer.node.ts — Streams an answer.
+ * Provider (NVIDIA vs OpenAI) is resolved once in @/server/llm/provider so
+ * the key and endpoint can never mismatch.
  */
 
 import { ChatOpenAI } from "@langchain/openai";
 import type { SourceFound, Citation } from "../schemas/answer.schema";
-
-function pickConfig() {
-  // Prefer explicit overrides; otherwise auto-detect from base URL.
-  const baseURL =
-    process.env.NVIDIA_BASE_URL ||
-    process.env.OPENAI_BASE_URL ||
-    "https://api.openai.com/v1";
-  const apiKey =
-    process.env.NVIDIA_API_KEY ||
-    process.env.OPENAI_API_KEY ||
-    "";
-  const isNvidia = baseURL.includes("nvidia.com");
-  const model =
-    process.env.NVIDIA_ANSWER_MODEL ||
-    process.env.DEBO_ANSWER_MODEL ||
-    (isNvidia
-      ? "meta/llama-3.3-70b-instruct"
-      : "gpt-4o-mini");
-  return { baseURL, apiKey, model };
-}
+import { resolveProvider } from "@/server/llm/provider";
 
 /**
- * Create a LangChain ChatOpenAI instance.
+ * Create a LangChain ChatOpenAI instance. Returns null when no LLM is configured.
  */
-export function createNvidiaLLM(streaming = true) {
-  const { baseURL, apiKey, model } = pickConfig();
+export function createNvidiaLLM(streaming = true): ChatOpenAI | null {
+  const cfg = resolveProvider();
+  if (!cfg) return null;
   return new ChatOpenAI({
-    model,
-    temperature: 0.3,
+    model: cfg.chatModel,
+    temperature: 0.4,
     maxTokens: 1024,
     streaming,
+    apiKey: cfg.apiKey,
     configuration: {
-      baseURL,
-      apiKey,
+      baseURL: cfg.baseURL,
+      apiKey: cfg.apiKey,
     },
   });
 }
 
 /**
- * Build the system prompt with memory context and rules.
+ * Build the system prompt. For chitchat we drop the memory-only rules and let
+ * Debo just talk; for everything else we stay strictly source-backed.
  */
 export function buildSystemPrompt(
   contextText: string,
   mode: string,
   intent: string
 ): string {
+  if (intent === "chitchat") {
+    return [
+      `You are Debo, a warm, private AI memory companion.`,
+      `The user is just chatting (a greeting, thanks, or small talk) — respond naturally and briefly, like a friendly human.`,
+      `Do NOT mention searching memory, sources, or "stored memory" unless the user asks about their past.`,
+      `If it fits, gently remind them you can capture notes, voice, and answer questions about their past — but keep it to one short sentence and don't force it.`,
+      `Keep it to 1-2 sentences. No markdown headers.`,
+    ].join("\n");
+  }
+
   const parts = [
-    `You are Debo, a private AI memory assistant. You answer using ONLY the user's stored memory context below.`,
-    `Rules:\n- Cite sources by title and type (e.g., "Journal: Daily Reflection").\n- If no relevant memory, say "I don't have any stored memory about that."\n- Never invent or hallucinate memory.\n- Be concise. Use markdown for readability.\n- Separate memory-backed facts from reasoning.`,
+    `You are Debo, a private AI memory assistant. You answer using the user's stored memory context below.`,
+    `Rules:\n- Cite sources by title and type (e.g., "Journal: Daily Reflection").\n- If no relevant memory exists, say so plainly and offer to help capture it — do not invent memory.\n- Be concise. Use markdown for readability.\n- Separate memory-backed facts from your own reasoning.`,
   ];
 
   if (mode === "summarize") parts.push("Synthesize memory into a clear overview.");

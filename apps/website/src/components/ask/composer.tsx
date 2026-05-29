@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { Mic, Paperclip, SlidersHorizontal, Send } from "lucide-react";
+import { Mic, Send } from "lucide-react";
 
 const MODES = ["Recall", "Summarize", "Find tasks", "Compare", "Plan", "Draft"];
 
@@ -15,8 +16,10 @@ interface ComposerProps {
 }
 
 export function Composer({ onSend, isResponding }: ComposerProps) {
+  const router = useRouter();
   const [value, setValue] = useState("");
   const [activeMode, setActiveMode] = useState("Recall");
+  const [showModes, setShowModes] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSend = () => {
@@ -35,42 +38,40 @@ export function Composer({ onSend, isResponding }: ComposerProps) {
 
   return (
     <div className="border-t border-border bg-card/80 backdrop-blur-xl">
-      {/* Mode selector pills */}
-      <div className="flex items-center gap-1.5 px-4 pt-3 pb-1 overflow-x-auto scrollbar-none">
-        {MODES.map((mode) => (
-          <Badge
-            key={mode}
-            variant={activeMode === mode ? "default" : "secondary"}
-            onClick={() => setActiveMode(mode)}
-            className={cn(
-              "cursor-pointer px-3 py-1 text-xs font-semibold transition-all select-none",
-              activeMode === mode
-                ? "bg-primary text-primary-foreground shadow-[0_2px_0_#46A302] hover:bg-primary/90"
-                : "bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80"
-            )}
-          >
-            {mode}
-          </Badge>
-        ))}
-      </div>
+      {/* Mode selector — collapsed by default so chat feels like chat */}
+      {showModes && (
+        <div className="flex items-center gap-1.5 px-4 pt-3 pb-1 overflow-x-auto scrollbar-none">
+          {MODES.map((mode) => (
+            <Badge
+              key={mode}
+              variant={activeMode === mode ? "default" : "secondary"}
+              onClick={() => setActiveMode(mode)}
+              className={cn(
+                "cursor-pointer px-3 py-1 text-xs font-semibold transition-all select-none",
+                activeMode === mode
+                  ? "bg-primary text-primary-foreground shadow-[0_2px_0_#46A302] hover:bg-primary/90"
+                  : "bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80"
+              )}
+            >
+              {mode}
+            </Badge>
+          ))}
+        </div>
+      )}
 
       {/* Input row */}
-      <div className="flex items-end gap-2 px-4 pb-4 pt-2">
+      <div className="flex items-end gap-2 px-4 pb-4 pt-3">
         <Button
           variant="ghost"
-          size="icon"
-          className="shrink-0 text-muted-foreground hover:text-foreground"
-          title="Attach source"
+          size="sm"
+          onClick={() => setShowModes((s) => !s)}
+          className={cn(
+            "shrink-0 rounded-xl text-xs font-medium h-9 px-3",
+            showModes ? "text-foreground bg-accent/60" : "text-muted-foreground"
+          )}
+          title="Answer mode"
         >
-          <Paperclip className="w-4 h-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="shrink-0 text-muted-foreground hover:text-foreground"
-          title="Filter sources"
-        >
-          <SlidersHorizontal className="w-4 h-4" />
+          {activeMode}
         </Button>
 
         <div className="flex-1 relative">
@@ -79,7 +80,7 @@ export function Composer({ onSend, isResponding }: ComposerProps) {
             value={value}
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask Debo about your memories..."
+            placeholder="Message Debo — say hi or ask about your past..."
             className="duo-input pr-12 h-11 rounded-2xl"
           />
           <Button
@@ -100,8 +101,9 @@ export function Composer({ onSend, isResponding }: ComposerProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="shrink-0 text-muted-foreground hover:text-foreground"
-          title="Voice input"
+          onClick={() => router.push("/dashboard/voice")}
+          className="shrink-0 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/60"
+          title="Voice note"
         >
           <Mic className="w-4 h-4" />
         </Button>
@@ -109,3 +111,4 @@ export function Composer({ onSend, isResponding }: ComposerProps) {
     </div>
   );
 }
+
