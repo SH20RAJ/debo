@@ -68,15 +68,15 @@ function SidebarItem({
     <Link
       href={item.href}
       className={cn(
-        "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+        "flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-colors",
         collapsed && "justify-center px-2",
         active
           ? "bg-primary/10 text-primary font-semibold"
-          : "text-muted-foreground hover:text-foreground hover:bg-accent"
+          : "text-muted-foreground hover:text-foreground hover:bg-accent/60"
       )}
     >
       <Icon className={cn("w-[18px] h-[18px] shrink-0", active && "text-primary")} />
-      {!collapsed && <span className="truncate">{item.label}</span>}
+      {!collapsed && <span className="truncate font-[var(--font-nunito)]">{item.label}</span>}
     </Link>
   );
 

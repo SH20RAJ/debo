@@ -1,7 +1,6 @@
 "use client";
 
 import { Search, LayoutGrid, List } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -72,12 +71,13 @@ export function FilterBar({
           </SelectContent>
         </Select>
 
-        <div className="flex items-center border rounded-md overflow-hidden">
+        <div className="flex items-center border-2 border-border rounded-xl overflow-hidden">
           <Button
             variant={viewMode === "grid" ? "default" : "ghost"}
             size="icon"
             className="size-8 rounded-none"
             onClick={() => onViewModeChange("grid")}
+            aria-label="Grid view"
           >
             <LayoutGrid className="size-3.5" />
           </Button>
@@ -86,6 +86,7 @@ export function FilterBar({
             size="icon"
             className="size-8 rounded-none"
             onClick={() => onViewModeChange("list")}
+            aria-label="List view"
           >
             <List className="size-3.5" />
           </Button>

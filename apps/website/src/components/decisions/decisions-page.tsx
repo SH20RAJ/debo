@@ -6,13 +6,6 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -31,10 +24,24 @@ interface Decision {
   confidence: number;
 }
 
-const statusConfig: Record<string, { label: string; className: string }> = {
-  active: { label: "Active", className: "bg-green-100 text-green-700 border-green-200" },
-  changed: { label: "Changed", className: "bg-amber-100 text-amber-700 border-amber-200" },
-  deprecated: { label: "Deprecated", className: "bg-gray-100 text-gray-600 border-gray-200" },
+const statusConfig: Record<
+  string,
+  { label: string; className: string }
+> = {
+  active: {
+    label: "Active",
+    className: "bg-primary/10 text-primary border-primary/20",
+  },
+  changed: {
+    label: "Changed",
+    className:
+      "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-500/30",
+  },
+  deprecated: {
+    label: "Deprecated",
+    className:
+      "bg-muted text-muted-foreground border-border",
+  },
 };
 
 function getMonthYear(dateStr: string): string {
@@ -69,7 +76,9 @@ export function DecisionsPage() {
     try {
       await api.decisions.update(id, { status: newStatus });
       setDecisions((prev) =>
-        prev.map((d) => (d.id === id ? { ...d, status: newStatus as any } : d))
+        prev.map((d) =>
+          d.id === id ? { ...d, status: newStatus as Decision["status"] } : d
+        )
       );
     } catch {
       // ignore
@@ -77,73 +86,74 @@ export function DecisionsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 p-6 max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-heading font-bold tracking-tight">
-            Decision Log
-          </h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            {loading ? "Loading..." : `${decisions.length} decision${decisions.length !== 1 ? "s" : ""} logged`}
-          </p>
-        </div>
+    <div className="p-6 md:p-8 max-w-4xl mx-auto space-y-5">
+      <div>
+        <h1 className="text-2xl font-bold text-foreground font-[var(--font-nunito)]">
+          Decision Log
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          {loading
+            ? "Loading..."
+            : `${decisions.length} decision${
+                decisions.length !== 1 ? "s" : ""
+              } logged`}
+        </p>
       </div>
 
-      {/* Filters */}
-      <div className="flex gap-2">
-        {(["all", "active", "changed", "deprecated"] as const).map((status) => (
-          <Button
-            key={status}
-            variant={filter === status ? "default" : "outline"}
-            size="sm"
-            onClick={() => setFilter(status)}
-            className={cn(
-              "rounded-xl",
-              filter === status && "shadow-[0_3px_0_var(--border)]"
-            )}
-          >
-            {status === "all" ? "All" : statusConfig[status].label}
-          </Button>
-        ))}
+      <div className="flex gap-2 flex-wrap">
+        {(["all", "active", "changed", "deprecated"] as const).map((status) => {
+          const isActive = filter === status;
+          return (
+            <button
+              key={status}
+              onClick={() => setFilter(status)}
+              className={cn(
+                "px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors border-2",
+                isActive
+                  ? "bg-primary text-primary-foreground border-primary shadow-[0_3px_0_#46A302]"
+                  : "border-border text-muted-foreground hover:text-foreground hover:bg-accent/60"
+              )}
+            >
+              {status === "all" ? "All" : statusConfig[status].label}
+            </button>
+          );
+        })}
       </div>
 
-      {/* Decision List */}
       {loading ? (
-        <div className="flex items-center justify-center py-16 text-muted-foreground text-sm">
-          <Loader2 className="w-4 h-4 animate-spin mr-2" />
+        <div className="flex items-center gap-2 text-muted-foreground text-sm py-10">
+          <Loader2 className="size-4 animate-spin" />
           Loading decisions...
         </div>
       ) : decisions.length === 0 ? (
-        <Card className="rounded-xl border-dashed">
-          <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-            <Diamond className="w-12 h-12 text-muted-foreground/30 mb-4" />
-            <p className="text-muted-foreground font-medium">
-              No decisions logged yet
-            </p>
-            <p className="text-sm text-muted-foreground/70 mt-1 max-w-md">
-              Debo extracts decisions from your journals, voice notes, and meetings.
-            </p>
-          </CardContent>
-        </Card>
+        <div className="flex flex-col items-center text-center py-16 gap-3">
+          <div className="size-10 rounded-xl bg-accent flex items-center justify-center">
+            <Diamond className="size-5 text-muted-foreground" />
+          </div>
+          <p className="text-xs text-muted-foreground max-w-[32ch]">
+            Debo extracts decisions from your journals, voice notes, and meetings.
+          </p>
+        </div>
       ) : (
-        <div className="space-y-8">
-          {Object.entries(groupByMonth(decisions)).map(([month, monthDecisions]) => (
-            <div key={month}>
-              <h2 className="text-sm font-semibold text-muted-foreground mb-3 px-1">
-                {month}
-              </h2>
-              <div className="space-y-3">
-                {monthDecisions.map((decision) => (
-                  <DecisionCard
-                    key={decision.id}
-                    decision={decision}
-                    onStatusChange={updateStatus}
-                  />
-                ))}
+        <div className="space-y-6">
+          {Object.entries(groupByMonth(decisions)).map(
+            ([month, monthDecisions]) => (
+              <div key={month}>
+                <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">
+                  {month}
+                </h2>
+                <div className="space-y-2">
+                  {monthDecisions.map((decision) => (
+                    <DecisionCard
+                      key={decision.id}
+                      decision={decision}
+                      onStatusChange={updateStatus}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          )}
         </div>
       )}
     </div>
@@ -160,86 +170,87 @@ function DecisionCard({
   const { label, className } = statusConfig[decision.status];
 
   return (
-    <Card className="rounded-xl hover:shadow-md transition-shadow">
-      <CardContent className="p-4">
-        <div className="flex gap-3">
-          <div className="mt-0.5">
-            <Diamond className="w-5 h-5 text-primary shrink-0" />
+    <div className="rounded-2xl border-2 border-border bg-card p-4 transition-colors hover:border-primary/30">
+      <div className="flex gap-3">
+        <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+          <Diamond className="size-4" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <h3 className="text-sm font-semibold text-foreground leading-tight font-[var(--font-nunito)]">
+                {decision.title}
+              </h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                {decision.decisionText}
+              </p>
+            </div>
+            <Badge
+              variant="outline"
+              className={cn("shrink-0 rounded-full text-[10px]", className)}
+            >
+              {label}
+            </Badge>
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                <h3 className="font-semibold text-foreground leading-tight">
-                  {decision.title}
-                </h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {decision.decisionText}
-                </p>
-              </div>
-              <Badge variant="outline" className={cn("shrink-0", className)}>
-                {label}
-              </Badge>
+
+          {decision.reason && (
+            <div className="mt-2 flex items-start gap-2 text-xs">
+              <ArrowRight className="size-3 text-muted-foreground mt-0.5 shrink-0" />
+              <span className="text-muted-foreground italic">
+                {decision.reason}
+              </span>
             </div>
+          )}
 
-            {decision.reason && (
-              <div className="mt-2 flex items-start gap-2 text-sm">
-                <ArrowRight className="w-3.5 h-3.5 text-muted-foreground mt-0.5 shrink-0" />
-                <span className="text-muted-foreground italic">
-                  {decision.reason}
-                </span>
-              </div>
-            )}
+          <div className="flex items-center gap-3 mt-3 text-[11px] text-muted-foreground flex-wrap">
+            <span className="bg-accent rounded-md px-2 py-0.5">
+              {decision.source}
+            </span>
+            <span>
+              {new Date(decision.decidedAt).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+              })}
+            </span>
+            <span>{decision.confidence}% confidence</span>
 
-            <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
-              <span className="bg-muted px-2 py-0.5 rounded-md">
-                {decision.source}
-              </span>
-              <span>
-                {new Date(decision.decidedAt).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                })}
-              </span>
-              <span>Confidence: {decision.confidence}%</span>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="ml-auto h-7 px-2 text-xs"
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="xs"
+                  className="ml-auto h-7 px-2 text-[11px] rounded-lg hover:bg-accent/60"
+                >
+                  Actions <ChevronDown className="size-3 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="rounded-xl">
+                {decision.status !== "active" && (
+                  <DropdownMenuItem
+                    onClick={() => onStatusChange(decision.id, "active")}
                   >
-                    Actions <ChevronDown className="w-3 h-3 ml-1" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="rounded-xl">
-                  {decision.status !== "changed" && (
-                    <DropdownMenuItem
-                      onClick={() => onStatusChange(decision.id, "changed")}
-                    >
-                      Mark as Changed
-                    </DropdownMenuItem>
-                  )}
-                  {decision.status !== "deprecated" && (
-                    <DropdownMenuItem
-                      onClick={() => onStatusChange(decision.id, "deprecated")}
-                    >
-                      Mark as Deprecated
-                    </DropdownMenuItem>
-                  )}
-                  {decision.status !== "active" && (
-                    <DropdownMenuItem
-                      onClick={() => onStatusChange(decision.id, "active")}
-                    >
-                      Mark as Active
-                    </DropdownMenuItem>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+                    Mark as Active
+                  </DropdownMenuItem>
+                )}
+                {decision.status !== "changed" && (
+                  <DropdownMenuItem
+                    onClick={() => onStatusChange(decision.id, "changed")}
+                  >
+                    Mark as Changed
+                  </DropdownMenuItem>
+                )}
+                {decision.status !== "deprecated" && (
+                  <DropdownMenuItem
+                    onClick={() => onStatusChange(decision.id, "deprecated")}
+                  >
+                    Mark as Deprecated
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

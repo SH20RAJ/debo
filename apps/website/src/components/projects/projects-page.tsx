@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import { FolderKanban, CheckSquare, Database } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { api } from "@/lib/api";
 import type { ProjectMemory } from "@/lib/types";
@@ -30,46 +28,63 @@ const avatarColors = [
 
 function ProjectCard({ project }: { project: ProjectMemory }) {
   return (
-    <Card className="transition-all duration-200 hover:border-primary/30 hover:shadow-md cursor-pointer group">
-      <CardContent className="pt-6">
-        <div className="flex items-start gap-3 mb-3">
-          <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
-            <FolderKanban className="w-4 h-4 text-primary" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold group-hover:text-primary transition-colors">
-              {project.name}
-            </p>
+    <div
+      className={cn(
+        "rounded-2xl border-2 border-border bg-card p-4 h-full",
+        "transition-colors hover:border-primary/30 cursor-pointer group"
+      )}
+    >
+      <div className="flex items-start gap-3 mb-3">
+        <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+          <FolderKanban className="size-4" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors font-[var(--font-nunito)] truncate">
+            {project.name}
+          </p>
+          {project.description && (
             <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
               {project.description}
             </p>
-          </div>
+          )}
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between pt-2.5 border-t border-border">
+        <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+          <span className="inline-flex items-center gap-1">
+            <Database className="size-3" />
+            {project.pinnedMemories}
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <CheckSquare className="size-3" />
+            {project.openTasks} task{project.openTasks !== 1 ? "s" : ""}
+          </span>
         </div>
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <Database className="w-3 h-3" />
-              {project.pinnedMemories} memories
-            </span>
-            <span className="flex items-center gap-1">
-              <CheckSquare className="w-3 h-3" />
-              {project.openTasks} task{project.openTasks !== 1 ? "s" : ""}
-            </span>
-          </div>
-
+        {project.people.length > 0 && (
           <div className="flex -space-x-1.5">
-            {project.people.map((name, i) => (
+            {project.people.slice(0, 4).map((name, i) => (
               <Avatar key={i} className="ring-2 ring-card w-6 h-6">
-                <AvatarFallback className={cn("text-[9px] font-bold", avatarColors[i % avatarColors.length])}>
-                  {name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}
+                <AvatarFallback
+                  className={cn(
+                    "text-[9px] font-bold",
+                    avatarColors[i % avatarColors.length]
+                  )}
+                >
+                  {name
+                    .split(" ")
+                    .map((w) => w[0])
+                    .join("")
+                    .slice(0, 2)
+                    .toUpperCase()}
                 </AvatarFallback>
               </Avatar>
             ))}
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -96,72 +111,51 @@ export function ProjectsPage() {
       }
     }
     fetchProjects();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  if (loading) {
-    return (
-      <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <FolderKanban className="w-6 h-6 text-primary" />
-            Projects
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Projects group memories around ongoing work.
-          </p>
-        </div>
+  const header = (
+    <div>
+      <h1 className="text-2xl font-bold text-foreground font-[var(--font-nunito)]">
+        Projects
+      </h1>
+      <p className="text-sm text-muted-foreground mt-1">
+        Threads of work pulled from your memories.
+      </p>
+    </div>
+  );
+
+  return (
+    <div className="p-6 md:p-8 max-w-4xl mx-auto space-y-5">
+      {header}
+
+      {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="rounded-xl border-2 border-border bg-card p-6 h-32 animate-pulse" />
+            <div
+              key={i}
+              className="rounded-2xl border-2 border-border bg-card p-4 h-28 animate-pulse"
+            />
           ))}
         </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <FolderKanban className="w-6 h-6 text-primary" />
-            Projects
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Projects group memories around ongoing work.
-          </p>
-        </div>
-        <div className="text-center py-16">
-          <FolderKanban className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
-          <p className="text-sm text-muted-foreground">
+      ) : error ? (
+        <div className="flex flex-col items-center text-center py-16 gap-3">
+          <div className="size-10 rounded-xl bg-accent flex items-center justify-center">
+            <FolderKanban className="size-5 text-muted-foreground" />
+          </div>
+          <p className="text-xs text-muted-foreground max-w-[28ch]">
             Could not load projects. Make sure the API is running.
           </p>
         </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <FolderKanban className="w-6 h-6 text-primary" />
-          Projects
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Projects group memories around ongoing work.
-        </p>
-      </div>
-
-      {/* Projects Grid */}
-      {projects.length === 0 ? (
-        <div className="text-center py-16">
-          <FolderKanban className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
-          <p className="text-sm text-muted-foreground">No projects yet.</p>
-          <p className="text-xs text-muted-foreground/60 mt-1">
-            Projects will be created as you organize your memories.
+      ) : projects.length === 0 ? (
+        <div className="flex flex-col items-center text-center py-16 gap-3">
+          <div className="size-10 rounded-xl bg-accent flex items-center justify-center">
+            <FolderKanban className="size-5 text-muted-foreground" />
+          </div>
+          <p className="text-xs text-muted-foreground max-w-[28ch]">
+            Projects will appear here as you organize your memories.
           </p>
         </div>
       ) : (

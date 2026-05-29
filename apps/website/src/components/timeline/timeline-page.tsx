@@ -18,7 +18,6 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 import { api } from "@/lib/api";
 
 type TimeRange = "today" | "week" | "month";
@@ -51,54 +50,21 @@ interface DayGroup {
 
 const typeConfig: Record<
   MemoryType,
-  { icon: React.ComponentType<{ className?: string }>; color: string; bg: string; label: string }
+  {
+    icon: React.ComponentType<{ className?: string }>;
+    label: string;
+  }
 > = {
-  voice: {
-    icon: Mic,
-    color: "text-purple-600",
-    bg: "bg-purple-100",
-    label: "Voice note",
-  },
-  journal: {
-    icon: BookOpen,
-    color: "text-blue-600",
-    bg: "bg-blue-100",
-    label: "Journal",
-  },
-  task: {
-    icon: CheckSquare,
-    color: "text-green-600",
-    bg: "bg-green-100",
-    label: "Task created",
-  },
-  person: {
-    icon: Users,
-    color: "text-orange-500",
-    bg: "bg-orange-100",
-    label: "Person mentioned",
-  },
-  file: {
-    icon: FileText,
-    color: "text-gray-500",
-    bg: "bg-gray-100",
-    label: "File uploaded",
-  },
-  decision: {
-    icon: Diamond,
-    color: "text-yellow-600",
-    bg: "bg-yellow-100",
-    label: "Decision made",
-  },
-  mail: {
-    icon: Mail,
-    color: "text-primary",
-    bg: "bg-primary/10",
-    label: "Mail received",
-  },
+  voice: { icon: Mic, label: "Voice note" },
+  journal: { icon: BookOpen, label: "Journal" },
+  task: { icon: CheckSquare, label: "Task" },
+  person: { icon: Users, label: "Person mentioned" },
+  file: { icon: FileText, label: "File" },
+  decision: { icon: Diamond, label: "Decision" },
+  mail: { icon: Mail, label: "Mail" },
 };
 
 function fetchTimelineData(range: TimeRange): Promise<DayGroup[]> {
-  // Fetch sources, tasks, and people to build a timeline
   return Promise.all([
     api.sources.list(),
     api.tasks.list(),
@@ -110,28 +76,34 @@ function fetchTimelineData(range: TimeRange): Promise<DayGroup[]> {
 
     const items: TimelineItem[] = [];
 
-    // Add sources
-    for (const s of sources ?? []) {
+    for (const s of (sources ?? []) as any[]) {
       const createdAt = new Date(s.createdAt);
       if (createdAt < cutoff) continue;
-      const type: MemoryType = s.type === "voice" || s.type === "audio" ? "voice"
-        : s.type === "journal" ? "journal"
-        : s.type === "file" || s.type === "image" ? "file"
-        : s.type === "debo_mail" || s.type === "email" ? "mail"
-        : "journal";
+      const type: MemoryType =
+        s.type === "voice" || s.type === "audio"
+          ? "voice"
+          : s.type === "journal"
+          ? "journal"
+          : s.type === "file" || s.type === "image"
+          ? "file"
+          : s.type === "debo_mail" || s.type === "email"
+          ? "mail"
+          : "journal";
       items.push({
         id: s.id,
         type,
         summary: s.title || typeConfig[type].label,
         detail: s.description || "",
-        time: createdAt.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+        time: createdAt.toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit",
+        }),
         sourceChip: typeConfig[type].label,
         projects: s.projectId ? [s.projectId] : undefined,
       });
     }
 
-    // Add tasks
-    for (const t of tasks ?? []) {
+    for (const t of (tasks ?? []) as any[]) {
       const createdAt = new Date(t.createdAt);
       if (createdAt < cutoff) continue;
       items.push({
@@ -139,14 +111,16 @@ function fetchTimelineData(range: TimeRange): Promise<DayGroup[]> {
         type: "task",
         summary: t.title || "Task",
         detail: t.description || "",
-        time: createdAt.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+        time: createdAt.toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit",
+        }),
         sourceChip: "Tasks",
         people: t.relatedPersonId ? [t.relatedPersonId] : undefined,
       });
     }
 
-    // Add people mentions
-    for (const p of people ?? []) {
+    for (const p of (people ?? []) as any[]) {
       const createdAt = new Date(p.createdAt);
       if (createdAt < cutoff) continue;
       items.push({
@@ -154,24 +128,23 @@ function fetchTimelineData(range: TimeRange): Promise<DayGroup[]> {
         type: "person",
         summary: p.name || "Person",
         detail: p.relationship || "",
-        time: createdAt.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+        time: createdAt.toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit",
+        }),
         sourceChip: "People",
         people: [p.name],
       });
     }
 
-    // Sort by time desc
     items.sort((a, b) => {
       const timeA = new Date(`1970-01-01T${a.time}`).getTime();
       const timeB = new Date(`1970-01-01T${b.time}`).getTime();
       return timeB - timeA;
     });
 
-    // Group by day
     const groups: Record<string, TimelineItem[]> = {};
     for (const item of items) {
-      // Find the date from the source/task/people's createdAt
-      // We'll approximate by grouping all today items as "today"
       const label = "Today";
       if (!groups[label]) groups[label] = [];
       groups[label].push(item);
@@ -185,7 +158,11 @@ function fetchTimelineData(range: TimeRange): Promise<DayGroup[]> {
   });
 }
 
-function TimelineItemCard({ item, onOpenSource, onAskAbout }: {
+function TimelineItemCard({
+  item,
+  onOpenSource,
+  onAskAbout,
+}: {
   item: TimelineItem;
   onOpenSource: (item: TimelineItem) => void;
   onAskAbout: (item: TimelineItem) => void;
@@ -194,31 +171,24 @@ function TimelineItemCard({ item, onOpenSource, onAskAbout }: {
   const Icon = config.icon;
 
   return (
-    <div className="relative flex gap-4 group">
-      {/* Dot on the timeline */}
+    <div className="relative flex gap-3 group">
       <div className="relative z-10 flex-shrink-0">
-        <div
-          className={cn(
-            "w-10 h-10 rounded-xl flex items-center justify-center",
-            config.bg
-          )}
-        >
-          <Icon className={cn("w-[18px] h-[18px]", config.color)} />
+        <div className="size-9 rounded-xl bg-accent flex items-center justify-center">
+          <Icon className="size-4 text-muted-foreground" />
         </div>
       </div>
 
-      {/* Card */}
-      <Card className="flex-1 p-4 rounded-xl border-border/50 hover:border-primary/20 transition-all hover:shadow-sm">
+      <div className="flex-1 rounded-2xl border-2 border-border bg-card p-3 transition-colors hover:border-primary/30">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <span className={cn("text-xs font-medium", config.color)}>
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
                 {config.label}
               </span>
-              {item.sourceChip && (
+              {item.sourceChip && item.sourceChip !== config.label && (
                 <Badge
-                  variant="secondary"
-                  className="h-5 px-1.5 text-[10px] font-normal"
+                  variant="outline"
+                  className="rounded-full h-4 px-1.5 text-[10px] border-border"
                 >
                   {item.sourceChip}
                 </Badge>
@@ -228,18 +198,19 @@ function TimelineItemCard({ item, onOpenSource, onAskAbout }: {
               {item.summary}
             </p>
             {item.detail && (
-              <p className="text-xs text-muted-foreground mt-1">{item.detail}</p>
+              <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                {item.detail}
+              </p>
             )}
-            {/* Chips */}
             {(item.people?.length || item.projects?.length) && (
               <div className="flex flex-wrap gap-1.5 mt-2">
                 {item.people?.map((p) => (
                   <Badge
                     key={p}
                     variant="outline"
-                    className="h-5 px-1.5 text-[10px] font-normal border-orange-200 text-orange-600 bg-orange-50"
+                    className="rounded-full h-4 px-1.5 text-[10px] border-border text-muted-foreground"
                   >
-                    <Users className="w-2.5 h-2.5 mr-1" />
+                    <Users className="size-2.5 mr-1" />
                     {p}
                   </Badge>
                 ))}
@@ -247,7 +218,7 @@ function TimelineItemCard({ item, onOpenSource, onAskAbout }: {
                   <Badge
                     key={p}
                     variant="outline"
-                    className="h-5 px-1.5 text-[10px] font-normal border-primary/20 text-primary bg-primary/5"
+                    className="rounded-full h-4 px-1.5 text-[10px] border-primary/20 text-primary bg-primary/5"
                   >
                     {p}
                   </Badge>
@@ -256,62 +227,66 @@ function TimelineItemCard({ item, onOpenSource, onAskAbout }: {
             )}
           </div>
 
-          <div className="flex flex-col items-end gap-2 shrink-0">
-            <span className="text-xs text-muted-foreground whitespace-nowrap">
+          <div className="flex flex-col items-end gap-1.5 shrink-0">
+            <span className="text-[11px] text-muted-foreground whitespace-nowrap">
               {item.time}
             </span>
-            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7"
+                className="size-7 rounded-lg hover:bg-accent/60"
                 title="Open source"
                 onClick={() => onOpenSource(item)}
               >
-                <ExternalLink className="w-3.5 h-3.5" />
+                <ExternalLink className="size-3.5" />
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7"
+                className="size-7 rounded-lg hover:bg-accent/60"
                 title="Ask about this"
                 onClick={() => onAskAbout(item)}
               >
-                <MessageCircle className="w-3.5 h-3.5" />
+                <MessageCircle className="size-3.5" />
               </Button>
             </div>
           </div>
         </div>
-      </Card>
+      </div>
     </div>
   );
 }
 
-function DaySection({ day, onOpenSource, onAskAbout }: {
+function DaySection({
+  day,
+  onOpenSource,
+  onAskAbout,
+}: {
   day: DayGroup;
   onOpenSource: (item: TimelineItem) => void;
   onAskAbout: (item: TimelineItem) => void;
 }) {
   return (
     <div className="relative">
-      {/* Date header */}
-      <div className="flex items-center gap-3 mb-4">
-        <div className="flex items-center gap-2">
-          <Clock className="w-3.5 h-3.5 text-muted-foreground" />
-          <h3 className="text-sm font-bold text-foreground">{day.label}</h3>
-          <span className="text-xs text-muted-foreground">{day.date}</span>
-        </div>
+      <div className="flex items-center gap-3 mb-3">
+        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          {day.label}
+        </h3>
+        <span className="text-[11px] text-muted-foreground">{day.date}</span>
         <div className="flex-1 h-px bg-border" />
       </div>
 
-      {/* Items */}
-      <div className="relative pl-5">
-        {/* Vertical connecting line */}
-        <div className="absolute left-[19px] top-0 bottom-0 w-0.5 bg-primary/20" />
-
-        <div className="space-y-4">
+      <div className="relative pl-[18px]">
+        <div className="absolute left-[18px] top-0 bottom-0 w-[2px] bg-border" />
+        <div className="space-y-3 relative -ml-[18px]">
           {day.items.map((item) => (
-            <TimelineItemCard key={item.id} item={item} onOpenSource={onOpenSource} onAskAbout={onAskAbout} />
+            <TimelineItemCard
+              key={item.id}
+              item={item}
+              onOpenSource={onOpenSource}
+              onAskAbout={onAskAbout}
+            />
           ))}
         </div>
       </div>
@@ -335,8 +310,8 @@ export function TimelinePage() {
 
   const ranges: { value: TimeRange; label: string }[] = [
     { value: "today", label: "Today" },
-    { value: "week", label: "This Week" },
-    { value: "month", label: "This Month" },
+    { value: "week", label: "This week" },
+    { value: "month", label: "This month" },
   ];
 
   const handleOpenSource = (item: TimelineItem) => {
@@ -348,31 +323,24 @@ export function TimelinePage() {
   };
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <header className="flex items-center justify-between px-6 py-4 border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-20">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
-            <Clock className="w-[18px] h-[18px] text-primary" />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-foreground font-heading">
-              Memory Timeline
-            </h1>
-            <p className="text-xs text-muted-foreground">
-              Your memories, chronologically
-            </p>
-          </div>
+    <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-5">
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground font-[var(--font-nunito)]">
+            Timeline
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Your memories, in chronological order.
+          </p>
         </div>
 
-        {/* Range selector */}
         <div className="flex items-center gap-1 bg-muted rounded-xl p-1">
           {ranges.map((r) => (
             <button
               key={r.value}
               onClick={() => setRange(r.value)}
               className={cn(
-                "px-3 py-1.5 text-xs font-medium rounded-lg transition-all",
+                "px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors",
                 range === r.value
                   ? "bg-card text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
@@ -382,45 +350,34 @@ export function TimelinePage() {
             </button>
           ))}
         </div>
-      </header>
-
-      {/* Content */}
-      <div className="flex-1 overflow-auto px-6 py-6">
-        {loading ? (
-          <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-            <Loader2 className="w-4 h-4 animate-spin mr-2" />
-            Loading timeline...
-          </div>
-        ) : data.length > 0 ? (
-          <div className="max-w-2xl mx-auto space-y-8">
-            {data.map((day) => (
-              <DaySection key={day.date} day={day} onOpenSource={handleOpenSource} onAskAbout={handleAskAbout} />
-            ))}
-
-            {/* End marker */}
-            <div className="flex items-center justify-center gap-2 py-8">
-              <div className="w-2 h-2 rounded-full bg-primary/30" />
-              <span className="text-xs text-muted-foreground">
-                Your memory timeline will grow as you capture more.
-              </span>
-              <div className="w-2 h-2 rounded-full bg-primary/30" />
-            </div>
-          </div>
-        ) : (
-          /* Empty state */
-          <div className="flex flex-col items-center justify-center h-full text-center py-20">
-            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
-              <Clock className="w-7 h-7 text-primary" />
-            </div>
-            <h3 className="text-base font-semibold text-foreground mb-1">
-              No memories yet
-            </h3>
-            <p className="text-sm text-muted-foreground max-w-sm">
-              Your memory timeline will grow as you capture more.
-            </p>
-          </div>
-        )}
       </div>
+
+      {loading ? (
+        <div className="flex items-center gap-2 text-muted-foreground text-sm py-10">
+          <Loader2 className="size-4 animate-spin" />
+          Loading timeline...
+        </div>
+      ) : data.length > 0 ? (
+        <div className="space-y-6">
+          {data.map((day) => (
+            <DaySection
+              key={day.date}
+              day={day}
+              onOpenSource={handleOpenSource}
+              onAskAbout={handleAskAbout}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="flex flex-col items-center text-center py-16 gap-3">
+          <div className="size-10 rounded-xl bg-accent flex items-center justify-center">
+            <Clock className="size-5 text-muted-foreground" />
+          </div>
+          <p className="text-xs text-muted-foreground max-w-[28ch]">
+            Your memory timeline will grow as you capture more.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

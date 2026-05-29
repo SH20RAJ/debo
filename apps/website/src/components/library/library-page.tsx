@@ -63,15 +63,21 @@ export function LibraryPage() {
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
+  const header = (
+    <div className="px-6 pt-6 pb-3">
+      <h1 className="text-2xl font-bold text-foreground font-[var(--font-nunito)]">
+        Library
+      </h1>
+      <p className="text-sm text-muted-foreground mt-1">
+        Everything you&apos;ve captured, in one place.
+      </p>
+    </div>
+  );
+
   if (loading) {
     return (
       <div className="flex flex-col h-full">
-        <div className="px-6 pt-6 pb-4">
-          <h1 className="text-2xl font-bold text-foreground">Library</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Your complete source archive
-          </p>
-        </div>
+        {header}
         <div className="px-6 pb-4">
           <FilterBar
             search={search}
@@ -87,7 +93,10 @@ export function LibraryPage() {
         <div className="flex-1 overflow-y-auto px-6 pb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {[0, 1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="rounded-xl border-2 border-border bg-card p-4 h-40 animate-pulse" />
+              <div
+                key={i}
+                className="rounded-2xl border-2 border-border bg-card p-4 h-36 animate-pulse"
+              />
             ))}
           </div>
         </div>
@@ -98,17 +107,14 @@ export function LibraryPage() {
   if (error) {
     return (
       <div className="flex flex-col h-full">
-        <div className="px-6 pt-6 pb-4">
-          <h1 className="text-2xl font-bold text-foreground">Library</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Your complete source archive
-          </p>
-        </div>
+        {header}
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-sm font-medium text-foreground">Could not load sources</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Make sure the API is running.
+          <div className="flex flex-col items-center text-center gap-3">
+            <div className="size-10 rounded-xl bg-accent flex items-center justify-center">
+              <FileTextIcon />
+            </div>
+            <p className="text-xs text-muted-foreground max-w-[28ch]">
+              Could not load sources. Make sure the API is running.
             </p>
           </div>
         </div>
@@ -118,15 +124,7 @@ export function LibraryPage() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="px-6 pt-6 pb-4">
-        <h1 className="text-2xl font-bold text-foreground">Library</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Your complete source archive
-        </p>
-      </div>
-
-      {/* Filter bar */}
+      {header}
       <div className="px-6 pb-4">
         <FilterBar
           search={search}
@@ -140,13 +138,16 @@ export function LibraryPage() {
         />
       </div>
 
-      {/* Results */}
       <div className="flex-1 overflow-y-auto px-6 pb-6">
         {filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <p className="text-sm font-medium text-foreground">No sources found</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Try adjusting your search or filters
+          <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
+            <div className="size-10 rounded-xl bg-accent flex items-center justify-center">
+              <FileTextIcon />
+            </div>
+            <p className="text-xs text-muted-foreground max-w-[28ch]">
+              {search || activeType !== "all"
+                ? "No sources match your filters."
+                : "Capture a journal, voice note, or link to start your library."}
             </p>
           </div>
         ) : viewMode === "grid" ? (
@@ -156,7 +157,7 @@ export function LibraryPage() {
             ))}
           </div>
         ) : (
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             {filtered.map((source) => (
               <SourceCard key={source.id} source={source} variant="list" />
             ))}
@@ -164,5 +165,24 @@ export function LibraryPage() {
         )}
       </div>
     </div>
+  );
+}
+
+function FileTextIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="text-muted-foreground"
+    >
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <path d="M14 2v6h6" />
+    </svg>
   );
 }

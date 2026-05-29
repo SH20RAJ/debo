@@ -43,7 +43,9 @@ export function PeoplePage() {
       }
     }
     fetchPeople();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const filtered = query
@@ -54,63 +56,23 @@ export function PeoplePage() {
       )
     : people;
 
-  if (loading) {
-    return (
-      <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Users className="w-6 h-6 text-primary" />
-            People
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Debo remembers people like a personal CRM.
-          </p>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="rounded-xl border-2 border-border bg-card p-5 h-28 animate-pulse" />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Users className="w-6 h-6 text-primary" />
-            People
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Debo remembers people like a personal CRM.
-          </p>
-        </div>
-        <div className="text-center py-16">
-          <Users className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
-          <p className="text-sm text-muted-foreground">
-            Could not load people. Make sure the API is running.
-          </p>
-        </div>
-      </div>
-    );
-  }
+  const header = (
+    <div>
+      <h1 className="text-2xl font-bold text-foreground font-[var(--font-nunito)]">
+        People
+      </h1>
+      <p className="text-sm text-muted-foreground mt-1">
+        Everyone Debo has noticed in your memories.
+      </p>
+    </div>
+  );
 
   return (
-    <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Users className="w-6 h-6 text-primary" />
-          People
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Debo remembers people like a personal CRM.
-        </p>
-      </div>
+    <div className="p-6 md:p-8 max-w-4xl mx-auto space-y-5">
+      {header}
 
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+      <div className="relative max-w-sm">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
         <Input
           placeholder="Search people..."
           value={query}
@@ -119,17 +81,37 @@ export function PeoplePage() {
         />
       </div>
 
-      {filtered.length === 0 ? (
-        <div className="text-center py-16">
-          <Users className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
-          <p className="text-sm text-muted-foreground">
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {[0, 1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="rounded-2xl border-2 border-border bg-card p-4 h-24 animate-pulse"
+            />
+          ))}
+        </div>
+      ) : error ? (
+        <div className="flex flex-col items-center text-center py-16 gap-3">
+          <div className="size-10 rounded-xl bg-accent flex items-center justify-center">
+            <Users className="size-5 text-muted-foreground" />
+          </div>
+          <p className="text-xs text-muted-foreground max-w-[28ch]">
+            Could not load people. Make sure the API is running.
+          </p>
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="flex flex-col items-center text-center py-16 gap-3">
+          <div className="size-10 rounded-xl bg-accent flex items-center justify-center">
+            <Users className="size-5 text-muted-foreground" />
+          </div>
+          <p className="text-xs text-muted-foreground max-w-[28ch]">
             {query
               ? "No people match your search."
-              : "People will appear here when they are mentioned in your memories."}
+              : "People will appear here as they are mentioned in your memories."}
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {filtered.map((person) => (
             <PersonCard key={person.id} person={person} />
           ))}

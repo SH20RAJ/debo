@@ -42,11 +42,13 @@ function isThisWeek(dateStr?: string) {
 function TaskList({ tasks }: { tasks: DeboTask[] }) {
   if (tasks.length === 0) {
     return (
-      <div className="text-center py-16">
-        <ListTodo className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
-        <p className="text-sm text-muted-foreground">No tasks here yet.</p>
-        <p className="text-xs text-muted-foreground/60 mt-1">
-          Debo can detect tasks from journals, voice notes, and meetings.
+      <div className="flex flex-col items-center text-center py-12 gap-3">
+        <div className="size-10 rounded-xl bg-accent flex items-center justify-center">
+          <ListTodo className="size-5 text-muted-foreground" />
+        </div>
+        <p className="text-xs text-muted-foreground max-w-[32ch]">
+          No tasks here yet. Debo detects tasks from journals, voice notes, and
+          meetings.
         </p>
       </div>
     );
@@ -84,31 +86,43 @@ export function TasksPage() {
       }
     }
     fetchTasks();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const inboxTasks = tasks.filter((t) => t.status === "todo" || t.status === "doing");
-  const todayTasks = tasks.filter((t) => isToday(t.dueDate) && t.status !== "done");
+  const inboxTasks = tasks.filter(
+    (t) => t.status === "todo" || t.status === "doing"
+  );
+  const todayTasks = tasks.filter(
+    (t) => isToday(t.dueDate) && t.status !== "done"
+  );
   const upcomingTasks = tasks.filter(
     (t) => t.dueDate && isThisWeek(t.dueDate) && t.status !== "done"
   );
   const completedTasks = tasks.filter((t) => t.status === "done");
 
+  const header = (
+    <div>
+      <h1 className="text-2xl font-bold text-foreground font-[var(--font-nunito)]">
+        Tasks
+      </h1>
+      <p className="text-sm text-muted-foreground mt-1">
+        Hidden commitments, made visible.
+      </p>
+    </div>
+  );
+
   if (loading) {
     return (
-      <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <ListTodo className="w-6 h-6 text-primary" />
-            Tasks
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Debo turns hidden commitments into visible tasks.
-          </p>
-        </div>
+      <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-5">
+        {header}
         <div className="space-y-2">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="rounded-xl border-2 border-border bg-card p-4 h-20 animate-pulse" />
+            <div
+              key={i}
+              className="rounded-2xl border-2 border-border bg-card p-3 h-16 animate-pulse"
+            />
           ))}
         </div>
       </div>
@@ -117,19 +131,13 @@ export function TasksPage() {
 
   if (error) {
     return (
-      <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <ListTodo className="w-6 h-6 text-primary" />
-            Tasks
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Debo turns hidden commitments into visible tasks.
-          </p>
-        </div>
-        <div className="text-center py-16">
-          <ListTodo className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
-          <p className="text-sm text-muted-foreground">
+      <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-5">
+        {header}
+        <div className="flex flex-col items-center text-center py-16 gap-3">
+          <div className="size-10 rounded-xl bg-accent flex items-center justify-center">
+            <ListTodo className="size-5 text-muted-foreground" />
+          </div>
+          <p className="text-xs text-muted-foreground max-w-[28ch]">
             Could not load tasks. Make sure the API is running.
           </p>
         </div>
@@ -138,16 +146,8 @@ export function TasksPage() {
   }
 
   return (
-    <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <ListTodo className="w-6 h-6 text-primary" />
-          Tasks
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Debo turns hidden commitments into visible tasks.
-        </p>
-      </div>
+    <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-5">
+      {header}
 
       <Tabs defaultValue="inbox">
         <TabsList variant="line" className="w-full justify-start overflow-x-auto">
@@ -165,19 +165,15 @@ export function TasksPage() {
         <TabsContent value="inbox" className="mt-4">
           <TaskList tasks={inboxTasks} />
         </TabsContent>
-
         <TabsContent value="today" className="mt-4">
           <TaskList tasks={todayTasks} />
         </TabsContent>
-
         <TabsContent value="upcoming" className="mt-4">
           <TaskList tasks={upcomingTasks} />
         </TabsContent>
-
         <TabsContent value="extracted" className="mt-4">
           <ExtractedReview />
         </TabsContent>
-
         <TabsContent value="completed" className="mt-4">
           <TaskList tasks={completedTasks} />
         </TabsContent>

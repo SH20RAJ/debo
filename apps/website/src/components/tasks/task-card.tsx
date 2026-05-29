@@ -3,29 +3,17 @@
 import { useState } from "react";
 import { Calendar, User2, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import type { DeboTask } from "@/lib/types";
 
 const confidenceConfig: Record<
   DeboTask["confidence"],
-  { label: string; variant: "default" | "secondary" | "outline" }
+  { label: string }
 > = {
-  strong: { label: "Strong", variant: "default" },
-  partial: { label: "Partial", variant: "secondary" },
-  weak: { label: "Weak", variant: "outline" },
-};
-
-const sourceIcons: Record<string, string> = {
-  voice: "🎙",
-  journal: "📓",
-  meeting: "📋",
-  file: "📄",
-  email: "✉️",
-  calendar: "📅",
-  link: "🔗",
-  task: "✅",
+  strong: { label: "Strong" },
+  partial: { label: "Partial" },
+  weak: { label: "Weak" },
 };
 
 export function TaskCard({ task }: { task: DeboTask }) {
@@ -41,65 +29,55 @@ export function TaskCard({ task }: { task: DeboTask }) {
     : null;
 
   return (
-    <Card
+    <div
       className={cn(
-        "transition-all duration-200 rounded-xl",
+        "rounded-2xl border-2 border-border bg-card p-3 transition-colors",
         checked
-          ? "opacity-50 border-border/50"
-          : "hover:border-primary/30 hover:shadow-md"
+          ? "opacity-50"
+          : "hover:border-primary/30"
       )}
-      style={{
-        boxShadow: checked
-          ? undefined
-          : "0 2px 0 0 hsl(var(--border)), 0 4px 8px -2px hsl(var(--foreground) / 0.06)",
-      }}
     >
-      <CardContent className="flex items-start gap-3 p-4">
+      <div className="flex items-start gap-3">
         <Checkbox
           checked={checked}
           onCheckedChange={(v) => setChecked(v === true)}
           className="mt-0.5"
         />
 
-        <div className="flex-1 min-w-0 space-y-1.5">
+        <div className="flex-1 min-w-0 space-y-1">
           <p
             className={cn(
-              "text-sm font-semibold leading-snug",
+              "text-sm font-medium leading-snug text-foreground",
               checked && "line-through text-muted-foreground"
             )}
           >
             {task.title}
           </p>
 
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-muted-foreground">
             {dueLabel && (
-              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                <Calendar className="w-3 h-3" />
+              <span className="inline-flex items-center gap-1">
+                <Calendar className="size-3" />
                 {dueLabel}
               </span>
             )}
-
             {task.relatedPerson && (
-              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                <User2 className="w-3 h-3" />
+              <span className="inline-flex items-center gap-1">
+                <User2 className="size-3" />
                 {task.relatedPerson}
-              </span>
-            )}
-
-            {task.sourceId && (
-              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                <span aria-hidden="true">{sourceIcons.journal}</span>
-                Source
               </span>
             )}
           </div>
         </div>
 
-        <Badge variant={conf.variant} className="shrink-0 gap-1">
-          <Sparkles className="w-3 h-3" />
+        <Badge
+          variant="outline"
+          className="shrink-0 gap-1 rounded-full text-[10px] border-border"
+        >
+          <Sparkles className="size-3 text-primary/70" />
           {conf.label}
         </Badge>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

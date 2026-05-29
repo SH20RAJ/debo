@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { Plus, Search, ArrowDownAZ, ArrowUpAZ } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Plus, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,9 +13,8 @@ interface JournalEntryListProps {
   activeEntryId: string;
   onSelect: (id: string) => void;
   onNewEntry: () => void;
+  onClose?: () => void;
 }
-
-type SortOrder = "newest" | "oldest";
 
 function getDateGroup(dateStr: string): string {
   const date = new Date(dateStr);
@@ -26,8 +25,13 @@ function getDateGroup(dateStr: string): string {
 
   if (date >= startOfToday) return "Today";
   if (date >= startOfYesterday) return "Yesterday";
-  if (date >= startOfWeek) return "This Week";
+  if (date >= startOfWeek) return "This week";
   return "Older";
+}
+
+function formatRelative(dateStr: string): string {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 export function JournalEntryList({
@@ -35,137 +39,125 @@ export function JournalEntryList({
   activeEntryId,
   onSelect,
   onNewEntry,
+  onClose,
 }: JournalEntryListProps) {
   const [search, setSearch] = useState("");
-  const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
 
-  const filtered = useMemo(() => {
-    let list = entries;
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      list = list.filter(
-        (e) =>
-          e.title.toLowerCase().includes(q) ||
-          e.preview.toLowerCase().includes(q) ||
-          e.content.toLowerCase().includes(q)
-      );
-    }
-
-    list = [...list].sort((a, b) => {
-      const da = new Date(a.createdAt ?? a.date).getTime();
-      const db = new Date(b.createdAt ?? b.date).getTime();
-      return sortOrder === "newest" ? db - da : da - db;
-    });
-
-    return list;
-  }, [entries, search, sortOrder]);
-
-  // Group by date
   const grouped = useMemo(() => {
-    const groups: { label: string; entries: JournalEntry[] }[] = [];
+    const q = search.trim().toLowerCase();
+    const filtered = q
+      ? entries.filter(
+          (e) =>
+            e.title.toLowerCase().includes(q) ||
+            e.preview.toLowerCase().includes(q),
+        )
+      : entries;
+
+    const sorted = [...filtered].sort(
+      (a, b) =>
+        new Date(b.updatedAt ?? b.createdAt).getTime() -
+        new Date(a.updatedAt ?? a.createdAt).getTime(),
+    );
+
     const map = new Map<string, JournalEntry[]>();
-
-    for (const entry of filtered) {
-      const key = getDateGroup(entry.createdAt ?? entry.date);
-      if (!map.has(key)) map.set(key, []);
-      map.get(key)!.push(entry);
+    for (const entry of sorted) {
+      const key = getDateGroup(entry.updatedAt ?? entry.createdAt);
+      const list = map.get(key) ?? [];
+      list.push(entry);
+      map.set(key, list);
     }
-
-    // Maintain display order
-    const order = ["Today", "Yesterday", "This Week", "Older"];
-    for (const label of order) {
-      const items = map.get(label);
-      if (items?.length) groups.push({ label, entries: items });
-    }
-
-    return groups;
-  }, [filtered]);
+    const order = ["Today", "Yesterday", "This week", "Older"];
+    return order
+      .filter((k) => map.has(k))
+      .map((k) => ({ label: k, entries: map.get(k)! }));
+  }, [entries, search]);
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="p-3 border-b border-border">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-bold text-foreground">Journal</h2>
-          <div className="flex items-center gap-1">
+    <div className="flex h-full flex-col">
+      <div className="flex items-center justify-between gap-2 px-4 pt-4 pb-3">
+        <h2 className="text-sm font-semibold tracking-tight text-foreground">
+          Journal
+        </h2>
+        <div className="flex items-center gap-1">
+          <Button
+            onClick={onNewEntry}
+            size="sm"
+            className="h-7 gap-1 px-2 text-xs"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            New
+          </Button>
+          {onClose ? (
             <Button
               variant="ghost"
-              size="sm"
-              className="h-7 w-7 p-0"
-              onClick={() => setSortOrder((s) => (s === "newest" ? "oldest" : "newest"))}
-              title={sortOrder === "newest" ? "Newest first" : "Oldest first"}
+              size="icon"
+              className="h-7 w-7 md:hidden"
+              onClick={onClose}
+              aria-label="Close list"
             >
-              {sortOrder === "newest" ? (
-                <ArrowDownAZ className="w-3.5 h-3.5" />
-              ) : (
-                <ArrowUpAZ className="w-3.5 h-3.5" />
-              )}
+              <X className="h-4 w-4" />
             </Button>
-            <Button
-              onClick={onNewEntry}
-              size="sm"
-              className="gap-1.5 text-xs font-semibold shadow-sm"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              New
-            </Button>
-          </div>
+          ) : null}
         </div>
+      </div>
+
+      <div className="px-4 pb-3">
         <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Search entries..."
+            placeholder="Search entries"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-8 py-1.5 text-xs h-auto"
+            className="h-8 pl-8 text-xs"
           />
         </div>
       </div>
 
-      {/* Entry list */}
       <ScrollArea className="flex-1">
-        <div className="p-2">
+        <div className="px-2 pb-4">
           {grouped.length === 0 ? (
-            <p className="text-xs text-muted-foreground text-center py-8">
+            <div className="px-3 py-8 text-center text-xs text-muted-foreground">
               {search ? "No matching entries" : "No entries yet"}
-            </p>
+            </div>
           ) : (
             grouped.map((group) => (
-              <div key={group.label} className="mb-3">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-2 mb-1">
+              <div key={group.label} className="mb-4">
+                <p className="px-3 pb-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                   {group.label}
                 </p>
-                <div className="space-y-0.5">
-                  {group.entries.map((entry) => (
-                    <button
-                      key={entry.id}
-                      onClick={() => onSelect(entry.id)}
-                      className={cn(
-                        "w-full text-left p-2.5 rounded-lg transition-colors",
-                        entry.id === activeEntryId
-                          ? "bg-primary/10 border border-primary/20"
-                          : "hover:bg-secondary border border-transparent"
-                      )}
-                    >
-                      <p
+                <div className="space-y-px">
+                  {group.entries.map((entry) => {
+                    const active = entry.id === activeEntryId;
+                    return (
+                      <button
+                        key={entry.id}
+                        type="button"
+                        onClick={() => onSelect(entry.id)}
                         className={cn(
-                          "text-sm font-medium truncate",
-                          entry.id === activeEntryId
-                            ? "text-primary"
-                            : "text-foreground"
+                          "w-full rounded-md px-3 py-2 text-left transition-colors",
+                          active
+                            ? "bg-accent text-accent-foreground"
+                            : "hover:bg-accent/50 text-foreground",
                         )}
                       >
-                        {entry.title}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-                        {entry.preview}
-                      </p>
-                      <p className="text-[11px] text-muted-foreground/70 mt-1">
-                        {entry.date}
-                      </p>
-                    </button>
-                  ))}
+                        <p
+                          className={cn(
+                            "truncate text-sm font-medium",
+                            !entry.title && "text-muted-foreground italic",
+                          )}
+                        >
+                          {entry.title || "Untitled"}
+                        </p>
+                        <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
+                          {entry.preview || "Empty entry"}
+                        </p>
+                        <p className="mt-1 text-[10px] text-muted-foreground/70">
+                          {formatRelative(entry.updatedAt ?? entry.createdAt)}
+                        </p>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             ))

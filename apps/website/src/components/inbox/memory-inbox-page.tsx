@@ -21,7 +21,6 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 import { api } from "@/lib/api";
 
 // --- Types ---
@@ -39,42 +38,15 @@ interface InboxItem {
   confidence: Confidence;
 }
 
-// --- Config ---
-
 const typeConfig: Record<
   ItemType,
-  { icon: typeof CheckSquare; label: string; color: string; bg: string }
+  { icon: typeof CheckSquare; label: string }
 > = {
-  task: {
-    icon: CheckSquare,
-    label: "Task",
-    color: "text-blue-600",
-    bg: "bg-blue-50",
-  },
-  person: {
-    icon: Users,
-    label: "Person",
-    color: "text-violet-600",
-    bg: "bg-violet-50",
-  },
-  promise: {
-    icon: Handshake,
-    label: "Promise",
-    color: "text-amber-600",
-    bg: "bg-amber-50",
-  },
-  fact: {
-    icon: Lightbulb,
-    label: "Fact",
-    color: "text-emerald-600",
-    bg: "bg-emerald-50",
-  },
-  decision: {
-    icon: Diamond,
-    label: "Decision",
-    color: "text-rose-600",
-    bg: "bg-rose-50",
-  },
+  task: { icon: CheckSquare, label: "Task" },
+  person: { icon: Users, label: "Person" },
+  promise: { icon: Handshake, label: "Promise" },
+  fact: { icon: Lightbulb, label: "Fact" },
+  decision: { icon: Diamond, label: "Decision" },
 };
 
 const sourceConfig: Record<SourceType, { icon: typeof FileText; label: string }> = {
@@ -82,13 +54,7 @@ const sourceConfig: Record<SourceType, { icon: typeof FileText; label: string }>
   journal: { icon: FileText, label: "Journal" },
   email: { icon: Mail, label: "Email" },
   chat: { icon: MessageSquare, label: "Chat" },
-  meeting: { icon: MessageSquare, label: "Meeting note" },
-};
-
-const confidenceStyles: Record<Confidence, string> = {
-  Strong: "bg-emerald-100 text-emerald-700",
-  Partial: "bg-amber-100 text-amber-700",
-  Weak: "bg-zinc-100 text-zinc-500",
+  meeting: { icon: MessageSquare, label: "Meeting" },
 };
 
 const filterTabs = ["All", "Tasks", "People", "Promises", "Facts", "Decisions"] as const;
@@ -103,12 +69,6 @@ const filterToType: Record<string, ItemType | null> = {
   Decisions: "decision",
 };
 
-// --- Mock Data ---
-
-const initialItems: InboxItem[] = [];
-
-// --- Component ---
-
 export function MemoryInboxPage() {
   const [items, setItems] = useState<InboxItem[]>([]);
   const [approved, setApproved] = useState<Set<string>>(new Set());
@@ -118,16 +78,17 @@ export function MemoryInboxPage() {
 
   useEffect(() => {
     setLoading(true);
-    api.tasks.list("inbox")
+    api.tasks
+      .list("inbox")
       .then((data: any) => {
-        const tasks: any[] = data ?? [];
+        const tasks: any[] = Array.isArray(data) ? data : [];
         const mapped: InboxItem[] = tasks.map((t: any) => ({
-          id: t.id,
+          id: String(t.id),
           type: "task" as ItemType,
           content: t.title || t.description || "Untitled",
           source: "journal" as SourceType,
           sourceLabel: "Inbox",
-          confidence: ("Strong" as Confidence),
+          confidence: "Strong" as Confidence,
         }));
         setItems(mapped);
         setApproved(new Set());
@@ -156,18 +117,6 @@ export function MemoryInboxPage() {
     return pendingItems.filter((item) => item.type === typeFilter);
   }, [pendingItems, activeFilter]);
 
-  const stats = useMemo(() => {
-    const counts: Record<ItemType, number> = {
-      task: 0,
-      person: 0,
-      promise: 0,
-      fact: 0,
-      decision: 0,
-    };
-    pendingItems.forEach((item) => counts[item.type]++);
-    return counts;
-  }, [pendingItems]);
-
   const handleApprove = async (id: string) => {
     try {
       await api.tasks.approve(id);
@@ -190,64 +139,23 @@ export function MemoryInboxPage() {
 
   return (
     <div className="flex-1 overflow-y-auto">
-      <div className="max-w-3xl mx-auto px-6 py-8 space-y-8">
+      <div className="max-w-3xl mx-auto px-6 py-8 space-y-6">
         {/* Header */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
-              <Inbox className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-heading font-bold tracking-tight text-foreground">
-                Memory Inbox
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                Review items Debo extracted from your memories
-              </p>
-            </div>
-            {totalCount > 0 && (
-              <Badge
-                variant="default"
-                className="ml-auto h-6 px-2.5 text-xs font-semibold"
-              >
-                {totalCount} pending
-              </Badge>
-            )}
+        <div className="flex items-center gap-3">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground font-[var(--font-nunito)]">
+              Memory Inbox
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Review what Debo extracted from your memories.
+            </p>
           </div>
+          {totalCount > 0 && (
+            <Badge className="ml-auto rounded-full bg-primary text-primary-foreground border-0 text-[11px] px-2.5 h-6">
+              {totalCount} pending
+            </Badge>
+          )}
         </div>
-
-        {/* Stats bar */}
-        {totalCount > 0 && (
-          <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
-            {(["task", "person", "promise", "fact", "decision"] as ItemType[]).map(
-              (type) => {
-                if (stats[type] === 0) return null;
-                const conf = typeConfig[type];
-                return (
-                  <span key={type} className="flex items-center gap-1.5">
-                    <span
-                      className="w-1.5 h-1.5 rounded-full"
-                      style={{
-                        backgroundColor:
-                          type === "task"
-                            ? "#3b82f6"
-                            : type === "person"
-                            ? "#8b5cf6"
-                            : type === "promise"
-                            ? "#f59e0b"
-                            : type === "fact"
-                            ? "#10b981"
-                            : "#f43f5e",
-                      }}
-                    />
-                    {stats[type]} {conf.label}
-                    {stats[type] !== 1 ? "s" : ""}
-                  </span>
-                );
-              }
-            )}
-          </div>
-        )}
 
         {/* Filter tabs */}
         <div className="flex gap-1 p-1 bg-muted rounded-xl">
@@ -258,7 +166,7 @@ export function MemoryInboxPage() {
                 key={tab}
                 onClick={() => setActiveFilter(tab)}
                 className={cn(
-                  "flex-1 px-3 py-1.5 text-sm font-medium rounded-lg transition-all",
+                  "flex-1 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors",
                   isActive
                     ? "bg-card text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
@@ -271,8 +179,13 @@ export function MemoryInboxPage() {
         </div>
 
         {/* Pending items */}
-        {filteredPending.length > 0 ? (
-          <div className="space-y-3">
+        {loading ? (
+          <div className="flex items-center gap-2 text-muted-foreground text-sm py-10">
+            <Loader2 className="size-4 animate-spin" />
+            Loading inbox...
+          </div>
+        ) : filteredPending.length > 0 ? (
+          <div className="space-y-2">
             {filteredPending.map((item) => (
               <InboxItemCard
                 key={item.id}
@@ -283,23 +196,18 @@ export function MemoryInboxPage() {
             ))}
           </div>
         ) : totalCount === 0 ? (
-          /* Empty state - all reviewed */
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-4">
-              <Sparkles className="w-8 h-8 text-primary" />
+          <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
+            <div className="size-10 rounded-xl bg-accent flex items-center justify-center">
+              <Sparkles className="size-5 text-muted-foreground" />
             </div>
-            <h2 className="text-lg font-heading font-semibold text-foreground mb-1">
-              All caught up!
-            </h2>
-            <p className="text-sm text-muted-foreground max-w-sm">
-              Debo has nothing new for you to review. New items will appear here
-              as your memories are processed.
+            <p className="text-xs text-muted-foreground max-w-[24ch]">
+              All caught up. New extractions will appear here as your memories
+              are processed.
             </p>
           </div>
         ) : (
-          /* Filtered to empty but there are pending items */
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <p className="text-sm text-muted-foreground">
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <p className="text-xs text-muted-foreground">
               No {activeFilter.toLowerCase()} to review right now.
             </p>
           </div>
@@ -307,10 +215,10 @@ export function MemoryInboxPage() {
 
         {/* Approved section */}
         {approvedItems.length > 0 && (
-          <div className="space-y-3 pt-4">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Check className="w-4 h-4 text-primary" />
-              <span className="font-medium">
+          <div className="space-y-2 pt-4">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Check className="size-3.5 text-primary" />
+              <span className="font-semibold">
                 {approvedItems.length} approved
               </span>
               <div className="flex-1 h-px bg-border" />
@@ -324,29 +232,22 @@ export function MemoryInboxPage() {
                 return (
                   <div
                     key={item.id}
-                    className="flex items-start gap-3 p-4 rounded-xl bg-card border border-border"
+                    className="flex items-start gap-3 p-3 rounded-2xl bg-card border-2 border-border"
                   >
-                    <div
-                      className={cn(
-                        "flex items-center justify-center w-8 h-8 rounded-lg shrink-0 mt-0.5",
-                        conf.bg
-                      )}
-                    >
-                      <Icon className={cn("w-4 h-4", conf.color)} />
+                    <div className="size-8 rounded-xl bg-accent flex items-center justify-center shrink-0 mt-0.5">
+                      <Icon className="size-4 text-muted-foreground" />
                     </div>
                     <div className="flex-1 min-w-0 space-y-1">
                       <p className="text-sm text-foreground line-through decoration-muted-foreground/40">
                         {item.content}
                       </p>
-                      <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                          <SrcIcon className="w-3 h-3" />
-                          {src.label} &middot; {item.sourceLabel}
-                        </span>
-                      </div>
+                      <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                        <SrcIcon className="size-3" />
+                        {src.label} · {item.sourceLabel}
+                      </span>
                     </div>
-                    <div className="flex items-center gap-1 text-xs text-primary font-medium shrink-0">
-                      <Check className="w-3.5 h-3.5" />
+                    <div className="flex items-center gap-1 text-xs text-primary font-semibold shrink-0">
+                      <Check className="size-3.5" />
                       Approved
                     </div>
                   </div>
@@ -380,37 +281,21 @@ function InboxItemCard({
   const SrcIcon = src.icon;
 
   return (
-    <Card className="p-0 border border-border shadow-sm hover:shadow-md transition-shadow rounded-xl overflow-hidden">
-      <div className="p-4 flex items-start gap-3">
-        {/* Type icon */}
-        <div
-          className={cn(
-            "flex items-center justify-center w-9 h-9 rounded-xl shrink-0",
-            conf.bg
-          )}
-        >
-          <Icon className={cn("w-[18px] h-[18px]", conf.color)} />
+    <div className="rounded-2xl border-2 border-border bg-card p-4 transition-colors hover:border-primary/30">
+      <div className="flex items-start gap-3">
+        <div className="size-9 rounded-xl bg-accent flex items-center justify-center shrink-0">
+          <Icon className="size-4 text-muted-foreground" />
         </div>
 
-        {/* Content */}
         <div className="flex-1 min-w-0 space-y-2">
           <div className="flex items-center gap-2 flex-wrap">
             <Badge
-              variant="secondary"
-              className={cn(
-                "h-5 px-2 text-[10px] font-semibold rounded-md",
-                conf.bg,
-                conf.color
-              )}
+              variant="outline"
+              className="rounded-full text-[10px] px-2 py-0 h-5 font-semibold border-border"
             >
               {conf.label}
             </Badge>
-            <span
-              className={cn(
-                "inline-flex items-center h-5 px-2 rounded-md text-[10px] font-medium",
-                confidenceStyles[item.confidence]
-              )}
-            >
+            <span className="inline-flex items-center text-[10px] font-semibold text-muted-foreground">
               {item.confidence}
             </span>
           </div>
@@ -420,14 +305,14 @@ function InboxItemCard({
               <textarea
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
-                className="w-full text-sm text-foreground bg-muted rounded-lg p-2.5 border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+                className="w-full text-sm text-foreground bg-muted rounded-xl p-2.5 border-2 border-border focus:outline-none focus:border-primary/50 resize-none"
                 rows={2}
                 autoFocus
               />
               <div className="flex gap-2">
                 <Button
-                  size="sm"
-                  className="h-7 text-xs rounded-lg"
+                  size="xs"
+                  className="rounded-lg"
                   onClick={() => {
                     item.content = editValue;
                     setIsEditing(false);
@@ -436,9 +321,9 @@ function InboxItemCard({
                   Save
                 </Button>
                 <Button
-                  size="sm"
+                  size="xs"
                   variant="ghost"
-                  className="h-7 text-xs rounded-lg"
+                  className="rounded-lg"
                   onClick={() => {
                     setEditValue(item.content);
                     setIsEditing(false);
@@ -449,48 +334,49 @@ function InboxItemCard({
               </div>
             </div>
           ) : (
-            <p className="text-sm text-foreground leading-relaxed">
-              {item.content}
-            </p>
+            <p className="text-sm text-foreground leading-snug">{item.content}</p>
           )}
 
-          {/* Source chip */}
-          <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground bg-muted rounded-md px-2 py-1">
-            <SrcIcon className="w-3 h-3" />
-            {src.label} &middot; {item.sourceLabel}
+          <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
+            <SrcIcon className="size-3" />
+            {src.label} · {item.sourceLabel}
           </span>
+
+          {/* Actions */}
+          <div className="flex items-center gap-1.5 pt-1">
+            <Button
+              size="xs"
+              className={cn(
+                "rounded-lg gap-1 bg-primary text-primary-foreground",
+                "shadow-[0_3px_0_#46A302] hover:brightness-105",
+                "active:translate-y-[2px] active:shadow-none transition-all"
+              )}
+              onClick={onApprove}
+            >
+              <Check className="size-3" />
+              Approve
+            </Button>
+            <Button
+              size="xs"
+              variant="ghost"
+              className="rounded-lg gap-1 text-muted-foreground hover:text-foreground hover:bg-accent/60"
+              onClick={() => setIsEditing(true)}
+            >
+              <Pencil className="size-3" />
+              Edit
+            </Button>
+            <Button
+              size="xs"
+              variant="ghost"
+              className="rounded-lg gap-1 text-muted-foreground hover:text-foreground hover:bg-accent/60"
+              onClick={onDismiss}
+            >
+              <X className="size-3" />
+              Dismiss
+            </Button>
+          </div>
         </div>
       </div>
-
-      {/* Actions */}
-      <div className="flex items-center gap-2 px-4 pb-4 pt-0">
-        <Button
-          size="sm"
-          className="h-8 text-xs rounded-lg bg-[#58CC02] hover:bg-[#4cad02] text-white shadow-[0_2px_0_#46a302] font-semibold"
-          onClick={onApprove}
-        >
-          <Check className="w-3.5 h-3.5 mr-1" />
-          Approve
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          className="h-8 text-xs rounded-lg font-medium"
-          onClick={() => setIsEditing(true)}
-        >
-          <Pencil className="w-3.5 h-3.5 mr-1" />
-          Edit
-        </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          className="h-8 text-xs rounded-lg text-muted-foreground hover:text-foreground font-medium"
-          onClick={onDismiss}
-        >
-          <X className="w-3.5 h-3.5 mr-1" />
-          Dismiss
-        </Button>
-      </div>
-    </Card>
+    </div>
   );
 }

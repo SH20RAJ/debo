@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Sparkles, Check, Pencil, X, ChevronDown, Loader2 } from "lucide-react";
+import { Sparkles, Check, Pencil, X, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { api } from "@/lib/api";
@@ -17,13 +16,10 @@ interface ExtractedTask {
   confidence: "strong" | "partial" | "weak";
 }
 
-const confidenceConfig: Record<
-  string,
-  { label: string; variant: "default" | "secondary" | "outline" }
-> = {
-  strong: { label: "Strong", variant: "default" },
-  partial: { label: "Partial", variant: "secondary" },
-  weak: { label: "Weak", variant: "outline" },
+const confidenceLabel: Record<string, string> = {
+  strong: "Strong",
+  partial: "Partial",
+  weak: "Weak",
 };
 
 function ExtractedItem({
@@ -36,68 +32,77 @@ function ExtractedItem({
   onAccept: (id: string) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const conf = confidenceConfig[task.confidence];
 
   return (
-    <Card
-      className="rounded-xl transition-all duration-200 hover:border-primary/20"
-      style={{
-        boxShadow:
-          "0 2px 0 0 hsl(var(--border)), 0 4px 8px -2px hsl(var(--foreground) / 0.06)",
-      }}
-    >
-      <CardContent className="p-4 space-y-3">
-        <div className="flex items-start gap-3">
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold">{task.title}</p>
-            <p className="text-xs text-muted-foreground mt-1">{task.source}</p>
+    <div className="rounded-2xl border-2 border-border bg-card p-4 transition-colors hover:border-primary/30">
+      <div className="flex items-start gap-3">
+        <div className="flex-1 min-w-0 space-y-2">
+          <div className="flex items-start justify-between gap-3">
+            <p className="text-sm font-semibold text-foreground">{task.title}</p>
+            <Badge
+              variant="outline"
+              className="shrink-0 gap-1 rounded-full text-[10px] border-border"
+            >
+              <Sparkles className="size-3 text-primary/70" />
+              {confidenceLabel[task.confidence]}
+            </Badge>
           </div>
-          <Badge variant={conf.variant} className="shrink-0 gap-1">
-            <Sparkles className="w-3 h-3" />
-            {conf.label}
-          </Badge>
-        </div>
 
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ChevronDown
-            className={cn(
-              "w-3 h-3 transition-transform",
-              expanded && "rotate-180"
-            )}
-          />
-          Source excerpt
-        </button>
+          <p className="text-[11px] text-muted-foreground">{task.source}</p>
 
-        {expanded && (
-          <p className="text-xs text-muted-foreground italic pl-4 border-l-2 border-border">
-            {task.sourceExcerpt}
-          </p>
-        )}
-
-        <div className="flex items-center gap-2">
-          <Button size="sm" className="rounded-lg gap-1.5" onClick={() => onAccept(task.id)}>
-            <Check className="w-3 h-3" />
-            Accept
-          </Button>
-          <Button variant="outline" size="sm" className="rounded-lg gap-1.5">
-            <Pencil className="w-3 h-3" />
-            Edit
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="rounded-lg gap-1.5 text-muted-foreground hover:text-destructive"
-            onClick={() => onDismiss(task.id)}
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
           >
-            <X className="w-3 h-3" />
-            Dismiss
-          </Button>
+            <ChevronDown
+              className={cn(
+                "size-3 transition-transform",
+                expanded && "rotate-180"
+              )}
+            />
+            Source excerpt
+          </button>
+
+          {expanded && (
+            <p className="text-xs text-muted-foreground italic pl-3 border-l-2 border-border">
+              {task.sourceExcerpt}
+            </p>
+          )}
+
+          <div className="flex items-center gap-1.5 pt-1">
+            <Button
+              size="xs"
+              className={cn(
+                "rounded-lg gap-1 bg-primary text-primary-foreground",
+                "shadow-[0_3px_0_#46A302] hover:brightness-105",
+                "active:translate-y-[2px] active:shadow-none transition-all"
+              )}
+              onClick={() => onAccept(task.id)}
+            >
+              <Check className="size-3" />
+              Accept
+            </Button>
+            <Button
+              size="xs"
+              variant="ghost"
+              className="rounded-lg gap-1 text-muted-foreground hover:text-foreground hover:bg-accent/60"
+            >
+              <Pencil className="size-3" />
+              Edit
+            </Button>
+            <Button
+              size="xs"
+              variant="ghost"
+              className="rounded-lg gap-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+              onClick={() => onDismiss(task.id)}
+            >
+              <X className="size-3" />
+              Dismiss
+            </Button>
+          </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
@@ -106,14 +111,16 @@ export function ExtractedReview() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.tasks.list("inbox")
+    api.tasks
+      .list("inbox")
       .then((data: any) => {
-        const mapped: ExtractedTask[] = (data ?? []).map((t: any) => ({
-          id: t.id,
+        const arr: any[] = Array.isArray(data) ? data : [];
+        const mapped: ExtractedTask[] = arr.map((t: any) => ({
+          id: String(t.id),
           title: t.title || t.description || "Untitled",
           sourceExcerpt: t.description || t.title || "",
           source: "Tasks · Inbox",
-          confidence: ("partial" as "strong" | "partial" | "weak"),
+          confidence: "partial" as const,
         }));
         setTasks(mapped);
       })
@@ -122,17 +129,23 @@ export function ExtractedReview() {
   }, []);
 
   const dismiss = (id: string) => {
-    api.tasks.dismiss(id).then(() => {
-      setTasks((prev) => prev.filter((t) => t.id !== id));
-      toast.success("Dismissed");
-    }).catch(() => toast.error("Failed to dismiss"));
+    api.tasks
+      .dismiss(id)
+      .then(() => {
+        setTasks((prev) => prev.filter((t) => t.id !== id));
+        toast.success("Dismissed");
+      })
+      .catch(() => toast.error("Failed to dismiss"));
   };
 
   const accept = (id: string) => {
-    api.tasks.approve(id).then(() => {
-      setTasks((prev) => prev.filter((t) => t.id !== id));
-      toast.success("Task approved");
-    }).catch(() => toast.error("Failed to approve"));
+    api.tasks
+      .approve(id)
+      .then(() => {
+        setTasks((prev) => prev.filter((t) => t.id !== id));
+        toast.success("Task approved");
+      })
+      .catch(() => toast.error("Failed to approve"));
   };
 
   if (loading && tasks.length === 0) return null;
@@ -141,15 +154,20 @@ export function ExtractedReview() {
   return (
     <section className="space-y-3">
       <div className="flex items-center gap-2">
-        <Sparkles className="w-4 h-4 text-primary" />
-        <h2 className="text-sm font-bold">
+        <Sparkles className="size-4 text-primary" />
+        <h2 className="text-sm font-semibold text-foreground font-[var(--font-nunito)]">
           Debo found {tasks.length} possible task
           {tasks.length !== 1 ? "s" : ""}
         </h2>
       </div>
       <div className="space-y-2">
         {tasks.map((task) => (
-          <ExtractedItem key={task.id} task={task} onDismiss={dismiss} onAccept={accept} />
+          <ExtractedItem
+            key={task.id}
+            task={task}
+            onDismiss={dismiss}
+            onAccept={accept}
+          />
         ))}
       </div>
     </section>

@@ -2,9 +2,7 @@
 
 import { CheckSquare, Database, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import type { PersonMemory } from "@/lib/types";
 
@@ -28,8 +26,7 @@ function getInitials(name: string) {
 function relativeDate(iso: string) {
   const d = new Date(iso);
   const now = new Date();
-  const diffMs = now.getTime() - d.getTime();
-  const diffDays = Math.floor(diffMs / 86400000);
+  const diffDays = Math.floor((now.getTime() - d.getTime()) / 86400000);
   if (diffDays === 0) return "Today";
   if (diffDays === 1) return "Yesterday";
   if (diffDays < 7) return `${diffDays}d ago`;
@@ -42,53 +39,49 @@ export function PersonCard({ person }: { person: PersonMemory }) {
     avatarColors.length;
 
   return (
-    <Link href={`/dashboard/people/${person.id}`} className="group block">
-      <Card
-        className="rounded-xl transition-all duration-200 hover:border-primary/30 hover:shadow-md cursor-pointer"
-        style={{
-          boxShadow:
-            "0 2px 0 0 hsl(var(--border)), 0 4px 8px -2px hsl(var(--foreground) / 0.06)",
-        }}
+    <Link href={`/dashboard/people/${person.id}`} className="group block h-full">
+      <div
+        className={cn(
+          "rounded-2xl border-2 border-border bg-card p-4 h-full",
+          "transition-colors hover:border-primary/30 cursor-pointer"
+        )}
       >
-        <CardContent className="p-5 space-y-3">
-          <div className="flex items-start gap-3">
-            <Avatar size="lg">
-              <AvatarFallback
-                className={cn(
-                  "text-sm font-bold",
-                  avatarColors[colorIdx]
-                )}
-              >
-                {getInitials(person.name)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold truncate group-hover:text-primary transition-colors">
-                {person.name}
-              </p>
+        <div className="flex items-start gap-3 mb-3">
+          <Avatar size="lg">
+            <AvatarFallback
+              className={cn("text-sm font-bold", avatarColors[colorIdx])}
+            >
+              {getInitials(person.name)}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors font-[var(--font-nunito)]">
+              {person.name}
+            </p>
+            {person.context && (
               <p className="text-xs text-muted-foreground mt-0.5 truncate">
                 {person.context}
               </p>
-            </div>
+            )}
           </div>
+        </div>
 
-          <div className="flex items-center gap-2 flex-wrap">
-            <Badge variant="outline" className="gap-1 text-[11px]">
-              <Clock className="w-3 h-3" />
-              {relativeDate(person.lastMentioned)}
-            </Badge>
-            <Badge variant="secondary" className="gap-1 text-[11px]">
-              <CheckSquare className="w-3 h-3" />
-              {person.openTaskCount} task{person.openTaskCount !== 1 ? "s" : ""}
-            </Badge>
-            <Badge variant="secondary" className="gap-1 text-[11px]">
-              <Database className="w-3 h-3" />
-              {person.memoryCount} memor
-              {person.memoryCount !== 1 ? "ies" : "y"}
-            </Badge>
-          </div>
-        </CardContent>
-      </Card>
+        <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+          <span className="inline-flex items-center gap-1">
+            <Clock className="size-3" />
+            {relativeDate(person.lastMentioned)}
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <CheckSquare className="size-3" />
+            {person.openTaskCount} task{person.openTaskCount !== 1 ? "s" : ""}
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <Database className="size-3" />
+            {person.memoryCount} memor
+            {person.memoryCount !== 1 ? "ies" : "y"}
+          </span>
+        </div>
+      </div>
     </Link>
   );
 }

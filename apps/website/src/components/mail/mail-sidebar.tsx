@@ -44,10 +44,10 @@ export function MailSidebar({ folder, onFolderChange, counts = {} }: MailSidebar
             key={f.id}
             onClick={() => onFolderChange(f.id)}
             className={cn(
-              "flex items-center gap-3 w-full px-3 py-2 rounded-xl text-sm font-medium transition-all",
+              "flex items-center gap-3 w-full px-3 py-2 rounded-xl text-sm font-medium transition-colors",
               folder === f.id
-                ? "bg-primary/10 text-primary shadow-[0_2px_0_var(--border)] font-semibold"
-                : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                ? "bg-primary/10 text-primary font-semibold"
+                : "text-muted-foreground hover:text-foreground hover:bg-accent/60"
             )}
           >
             <f.icon className={cn("w-[18px] h-[18px] shrink-0", folder === f.id && "text-primary")} />

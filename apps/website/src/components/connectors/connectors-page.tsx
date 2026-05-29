@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { ShieldCheck } from "lucide-react";
 import { ConnectorCard } from "./connector-card";
-import { Separator } from "@/components/ui/separator";
 import { api } from "@/lib/api";
 import type { Connector } from "@/lib/types";
 
@@ -59,17 +58,27 @@ export function ConnectorsPage() {
 
   if (loading) {
     return (
-      <div className="p-6 md:p-8 max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold mb-2">Connectors</h1>
-        <div className="flex items-start gap-2 mb-8 p-3 rounded-xl bg-primary/5 border border-primary/10">
-          <ShieldCheck className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-          <p className="text-sm text-muted-foreground">
-            Connectors are optional. You control what Debo remembers. You can disconnect anytime and all imported data will be removed.
+      <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-5">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground font-[var(--font-nunito)]">
+            Connectors
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Bring your existing memory sources into Debo.
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="rounded-2xl border-2 border-primary/15 bg-primary/5 px-3 py-2.5 flex items-start gap-2">
+          <ShieldCheck className="size-4 text-primary mt-0.5 shrink-0" />
+          <p className="text-xs text-muted-foreground">
+            Connectors are optional. Disconnect anytime and imported data will be removed.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="rounded-xl border-2 border-border bg-card p-6 h-48 animate-pulse" />
+            <div
+              key={i}
+              className="rounded-2xl border-2 border-border bg-card p-4 h-44 animate-pulse"
+            />
           ))}
         </div>
       </div>
@@ -78,17 +87,20 @@ export function ConnectorsPage() {
 
   if (error) {
     return (
-      <div className="p-6 md:p-8 max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold mb-2">Connectors</h1>
-        <div className="flex items-start gap-2 mb-8 p-3 rounded-xl bg-primary/5 border border-primary/10">
-          <ShieldCheck className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-          <p className="text-sm text-muted-foreground">
-            Connectors are optional. You control what Debo remembers. You can disconnect anytime and all imported data will be removed.
+      <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-5">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground font-[var(--font-nunito)]">
+            Connectors
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Bring your existing memory sources into Debo.
           </p>
         </div>
-        <div className="text-center py-16">
-          <ShieldCheck className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
-          <p className="text-sm text-muted-foreground">
+        <div className="flex flex-col items-center text-center py-16 gap-3">
+          <div className="size-10 rounded-xl bg-accent flex items-center justify-center">
+            <ShieldCheck className="size-5 text-muted-foreground" />
+          </div>
+          <p className="text-xs text-muted-foreground max-w-[28ch]">
             Could not load connectors. Make sure the API is running.
           </p>
         </div>
@@ -97,24 +109,31 @@ export function ConnectorsPage() {
   }
 
   return (
-    <div className="p-6 md:p-8 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-2">Connectors</h1>
-
-      <div className="flex items-start gap-2 mb-8 p-3 rounded-xl bg-primary/5 border border-primary/10">
-        <ShieldCheck className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-        <p className="text-sm text-muted-foreground">
-          Connectors are optional. You control what Debo remembers. You can disconnect anytime and all imported data will be removed.
+    <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-5">
+      <div>
+        <h1 className="text-2xl font-bold text-foreground font-[var(--font-nunito)]">
+          Connectors
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Bring your existing memory sources into Debo.
         </p>
       </div>
 
-      <div className="space-y-8">
-        {categoryEntries.map(([category, items], idx) => (
-          <div key={category}>
-            {idx > 0 && <Separator className="mb-8" />}
-            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+      <div className="rounded-2xl border-2 border-primary/15 bg-primary/5 px-3 py-2.5 flex items-start gap-2">
+        <ShieldCheck className="size-4 text-primary mt-0.5 shrink-0" />
+        <p className="text-xs text-muted-foreground">
+          Connectors are optional. You control what Debo remembers and can
+          disconnect anytime &mdash; all imported data will be removed.
+        </p>
+      </div>
+
+      <div className="space-y-6">
+        {categoryEntries.map(([category, items]) => (
+          <div key={category} className="space-y-3">
+            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               {category}
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {items.map((connector) => (
                 <ConnectorCard key={connector.id} connector={connector} />
               ))}
