@@ -1,28 +1,44 @@
 /**
- * generate-answer.node.ts — Calls NVIDIA NIM to generate a source-backed answer.
- * Uses OpenAI-compatible streaming API for NVIDIA hosted models.
+ * generate-answer.node.ts — Streams a source-backed answer.
+ * Uses OpenAI-compatible API; auto-detects NVIDIA NIM vs OpenAI by base URL.
  */
 
 import { ChatOpenAI } from "@langchain/openai";
 import type { SourceFound, Citation } from "../schemas/answer.schema";
 
-// NVIDIA NIM — OpenAI-compatible endpoint
-const NVIDIA_BASE_URL = process.env.NVIDIA_BASE_URL || "https://integrate.api.nvidia.com/v1";
-const NVIDIA_API_KEY = process.env.NVIDIA_API_KEY || process.env.OPENAI_API_KEY || "";
-const ANSWER_MODEL = process.env.NVIDIA_ANSWER_MODEL || "nvidia/llama-3.1-nemotron-70b-instruct";
+function pickConfig() {
+  // Prefer explicit overrides; otherwise auto-detect from base URL.
+  const baseURL =
+    process.env.NVIDIA_BASE_URL ||
+    process.env.OPENAI_BASE_URL ||
+    "https://api.openai.com/v1";
+  const apiKey =
+    process.env.NVIDIA_API_KEY ||
+    process.env.OPENAI_API_KEY ||
+    "";
+  const isNvidia = baseURL.includes("nvidia.com");
+  const model =
+    process.env.NVIDIA_ANSWER_MODEL ||
+    process.env.DEBO_ANSWER_MODEL ||
+    (isNvidia
+      ? "meta/llama-3.3-70b-instruct"
+      : "gpt-4o-mini");
+  return { baseURL, apiKey, model };
+}
 
 /**
- * Create a LangChain ChatOpenAI instance configured for NVIDIA NIM.
+ * Create a LangChain ChatOpenAI instance.
  */
 export function createNvidiaLLM(streaming = true) {
+  const { baseURL, apiKey, model } = pickConfig();
   return new ChatOpenAI({
-    model: ANSWER_MODEL,
+    model,
     temperature: 0.3,
     maxTokens: 1024,
     streaming,
     configuration: {
-      baseURL: NVIDIA_BASE_URL,
-      apiKey: NVIDIA_API_KEY,
+      baseURL,
+      apiKey,
     },
   });
 }
