@@ -1,0 +1,2 @@
+- add collapse to the sidebar of the app and also there ar e many little user experience fixes that i want to add , improve the ui ux of the app 
+- specially rethink the ui ux of http://localhost:3000/dashboard/journal and http://localhost:3000/dashboard/voice page reimagine whole dashboard create a detailed plan and think like a user creating a journey for the user to improve the app.

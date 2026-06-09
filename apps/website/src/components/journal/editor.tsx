@@ -5,6 +5,7 @@ import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/mantine";
 import "@blocknote/mantine/style.css";
 import { useTheme } from "next-themes";
+import { Calendar } from "lucide-react";
 import type { JournalEntry } from "./journal-page";
 
 interface JournalEditorProps {
@@ -118,31 +119,34 @@ export function JournalEditor({
   void wordCount;
 
   return (
-    <div className="flex h-full flex-col overflow-hidden">
+    <div className="flex h-full flex-col overflow-hidden bg-background/30 dark:bg-zinc-950/10">
       <div className="flex-1 overflow-y-auto">
         <div
           className={
             focusMode
-              ? "mx-auto max-w-2xl px-6 py-16 sm:px-10"
-              : "mx-auto max-w-2xl px-6 py-10 sm:px-10"
+              ? "mx-auto max-w-2xl px-6 py-16 sm:px-10 transition-all duration-300"
+              : "mx-auto max-w-2xl px-6 py-10 sm:px-10 transition-all duration-300"
           }
         >
-          <p className="mb-3 text-xs uppercase tracking-wider text-muted-foreground">
-            {dateLabel}
-          </p>
+          <div className="flex items-center gap-1.5 mb-4 text-[10px] uppercase font-bold tracking-wider text-muted-foreground/60 select-none">
+            <Calendar className="w-3.5 h-3.5 text-muted-foreground/50" />
+            <span>{dateLabel}</span>
+          </div>
+
           <input
             type="text"
             value={title}
             onChange={(e) => handleTitleChange(e.target.value)}
-            placeholder="Untitled"
-            className="mb-6 w-full border-none bg-transparent text-3xl font-semibold leading-tight tracking-tight text-foreground outline-none placeholder:text-muted-foreground/40 sm:text-4xl"
+            placeholder="Untitled Note"
+            className="mb-8 w-full border-none bg-transparent text-3xl font-bold leading-tight tracking-tight text-foreground outline-none placeholder:text-muted-foreground/35 sm:text-4xl font-[var(--font-nunito)]"
             aria-label="Entry title"
           />
-          <div className="journal-blocknote">
+
+          <div className="journal-blocknote prose prose-stone dark:prose-invert max-w-none">
             <BlockNoteView
               editor={editor}
               theme={resolvedTheme === "dark" ? "dark" : "light"}
-              className="min-h-[60vh]"
+              className="min-h-[60vh] -mx-14"
             />
           </div>
         </div>

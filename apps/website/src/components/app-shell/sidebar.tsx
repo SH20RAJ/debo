@@ -21,6 +21,13 @@ import {
   ChevronsLeft,
   ChevronsRight,
   LogOut,
+  ChevronDown,
+  ChevronRight,
+  HelpCircle,
+  Clock,
+  FileText,
+  Compass,
+  Radio,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -33,23 +40,29 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useSidebarPrefs, ALL_NAV_ITEMS } from "@/lib/sidebar-prefs";
 
-// ── Navigation items ────────────────────────────────────────────────────────
+// ── Icon Mapping ────────────────────────────────────────────────────────────
 
-const NAV_ITEMS = [
-  { id: "home", label: "Home", href: "/dashboard", icon: LayoutDashboard },
-  { id: "ask", label: "Ask Debo", href: "/dashboard/ask", icon: MessageSquare },
-  { id: "journal", label: "Journal", href: "/dashboard/journal", icon: BookOpen },
-  { id: "voice", label: "Voice", href: "/dashboard/voice", icon: Mic },
-  { id: "media", label: "Media", href: "/dashboard/media", icon: Video },
-  { id: "library", label: "Library", href: "/dashboard/library", icon: Library },
-  { id: "tasks", label: "Tasks", href: "/dashboard/tasks", icon: CheckSquare },
-  { id: "people", label: "People", href: "/dashboard/people", icon: Users },
-  { id: "projects", label: "Projects", href: "/dashboard/projects", icon: FolderKanban },
-  { id: "mail", label: "Debo Mail", href: "/dashboard/mail", icon: Inbox },
-  { id: "connectors", label: "Connectors", href: "/dashboard/connectors", icon: Plug },
-  { id: "vault", label: "Vault", href: "/dashboard/vault", icon: Shield },
-];
+const ITEM_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  home: LayoutDashboard,
+  ask: MessageSquare,
+  journal: BookOpen,
+  voice: Mic,
+  media: Video,
+  mail: Inbox,
+  connectors: Plug,
+  vault: Shield,
+  inbox: Inbox,
+  debrief: FileText,
+  timeline: Clock,
+  library: Library,
+  tasks: CheckSquare,
+  projects: FolderKanban,
+  decisions: Compass,
+  people: Users,
+  radar: Radio,
+};
 
 // ── Nav item component ──────────────────────────────────────────────────────
 
@@ -68,7 +81,7 @@ function SidebarItem({
     <Link
       href={item.href}
       className={cn(
-        "flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-colors",
+        "flex items-center gap-3 px-3 py-1.5 rounded-xl text-sm font-medium transition-colors",
         collapsed && "justify-center px-2",
         active
           ? "bg-primary/10 text-primary font-semibold"
@@ -103,6 +116,7 @@ interface SidebarProps {
 
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const pathname = usePathname();
+  const { prefs, toggleSection } = useSidebarPrefs();
 
   const isActive = (href: string) => {
     if (href === "/dashboard") return pathname === "/dashboard";
@@ -132,15 +146,52 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
         {/* Navigation */}
         <ScrollArea className="flex-1">
-          <nav className="py-2 px-2 space-y-0.5">
-            {NAV_ITEMS.map((item) => (
-              <SidebarItem
-                key={item.id}
-                item={item}
-                active={isActive(item.href)}
-                collapsed={collapsed}
-              />
-            ))}
+          <nav className="py-3 px-2 space-y-4">
+            {prefs.sections.map((section, idx) => {
+              const sectionItems = section.itemIds
+                .map((id) => {
+                  const def = ALL_NAV_ITEMS.find((item) => item.id === id);
+                  if (!def) return null;
+                  const icon = ITEM_ICONS[id] || HelpCircle;
+                  return { ...def, icon };
+                })
+                .filter((item): item is NonNullable<typeof item> => item !== null);
+
+              if (sectionItems.length === 0) return null;
+
+              return (
+                <div key={section.id} className="space-y-1">
+                  {!collapsed ? (
+                    <button
+                      onClick={() => toggleSection(section.id)}
+                      className="flex items-center justify-between w-full px-3 py-1 text-[9px] uppercase font-bold tracking-wider text-muted-foreground/60 hover:text-foreground transition-colors"
+                    >
+                      <span>{section.label}</span>
+                      {section.collapsed ? (
+                        <ChevronRight className="w-3 h-3 text-muted-foreground/40" />
+                      ) : (
+                        <ChevronDown className="w-3 h-3 text-muted-foreground/40" />
+                      )}
+                    </button>
+                  ) : idx > 0 ? (
+                    <Separator className="my-2 bg-border/40" />
+                  ) : null}
+
+                  {(!section.collapsed || collapsed) && (
+                    <div className="space-y-0.5 animate-in fade-in slide-in-from-top-1 duration-150">
+                      {sectionItems.map((item) => (
+                        <SidebarItem
+                          key={item.id}
+                          item={item}
+                          active={isActive(item.href)}
+                          collapsed={collapsed}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </nav>
         </ScrollArea>
 

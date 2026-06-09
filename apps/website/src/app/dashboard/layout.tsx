@@ -17,6 +17,16 @@ export default function DashboardLayout({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [commandMenuOpen, setCommandMenuOpen] = useState(false);
 
+  // Load sidebar collapse preference on mount
+  useEffect(() => {
+    if (window.innerWidth >= 768) {
+      const stored = localStorage.getItem("debo-sidebar-collapsed");
+      if (stored !== null) {
+        setSidebarCollapsed(stored === "true");
+      }
+    }
+  }, []);
+
   // Ctrl+K / Cmd+K to open command menu
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -33,8 +43,13 @@ export default function DashboardLayout({
   useEffect(() => {
     const mql = window.matchMedia("(max-width: 768px)");
     const handler = (e: MediaQueryListEvent | MediaQueryList) => {
-      setSidebarCollapsed(e.matches);
-      if (e.matches) setMobileOpen(false);
+      if (e.matches) {
+        setSidebarCollapsed(true);
+        setMobileOpen(false);
+      } else {
+        const stored = localStorage.getItem("debo-sidebar-collapsed");
+        setSidebarCollapsed(stored === "true");
+      }
     };
     handler(mql);
     mql.addEventListener("change", handler);
@@ -70,7 +85,11 @@ export default function DashboardLayout({
                 if (window.innerWidth < 768) {
                   setMobileOpen((prev) => !prev);
                 } else {
-                  setSidebarCollapsed((prev) => !prev);
+                  setSidebarCollapsed((prev) => {
+                    const next = !prev;
+                    localStorage.setItem("debo-sidebar-collapsed", String(next));
+                    return next;
+                  });
                 }
               }}
             />

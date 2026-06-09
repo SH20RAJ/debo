@@ -323,41 +323,48 @@ export function JournalPage() {
         {/* Top bar */}
         <div
           className={cn(
-            "flex items-center gap-2 px-3 py-2",
-            focusMode && "opacity-40 transition-opacity hover:opacity-100",
+            "flex items-center gap-2 px-3 py-2 border-b border-border/20 bg-background/25 backdrop-blur-md z-10",
+            focusMode && "opacity-25 transition-opacity hover:opacity-100",
           )}
         >
           {!focusMode && (
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 md:hidden"
+              className="h-8 w-8 md:hidden rounded-xl"
               onClick={() => setListOpen(true)}
               aria-label="Open entries"
             >
               <Menu className="h-4 w-4" />
             </Button>
           )}
-          <div className="ml-auto flex items-center gap-1">
-            <span
-              className={cn(
-                "mr-2 hidden text-xs text-muted-foreground sm:inline",
-                saveState === "error" && "text-destructive",
-              )}
-              aria-live="polite"
-            >
-              {!activeEntry
-                ? ""
-                : saveState === "saving"
-                  ? "Saving"
-                  : saveState === "error"
-                    ? "Save failed"
-                    : savedLabel || (activeEntry.content || activeEntry.title ? "Saved" : "")}
-            </span>
+          <div className="ml-auto flex items-center gap-2">
+            {activeEntry && (
+              <div className="flex items-center gap-1.5 mr-2 px-2.5 py-1 rounded-full bg-accent/40 border border-border/10">
+                <span
+                  className={cn(
+                    "h-1.5 w-1.5 rounded-full transition-all duration-300",
+                    saveState === "saving" && "bg-amber-500 animate-pulse shadow-[0_0_6px_rgba(245,158,11,0.6)]",
+                    saveState === "error" && "bg-rose-500 animate-bounce",
+                    (saveState === "saved" || saveState === "idle" || savedAt) &&
+                      saveState !== "saving" &&
+                      saveState !== "error" &&
+                      "bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.6)]"
+                  )}
+                />
+                <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground select-none">
+                  {saveState === "saving"
+                    ? "Syncing"
+                    : saveState === "error"
+                      ? "Error"
+                      : "Synced"}
+                </span>
+              </div>
+            )}
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              className="h-8 w-8 text-muted-foreground hover:text-foreground rounded-xl"
               onClick={() => setFocusMode((v) => !v)}
               aria-label={focusMode ? "Exit focus mode" : "Enter focus mode"}
               title={focusMode ? "Exit focus mode" : "Focus mode"}
@@ -372,7 +379,7 @@ export function JournalPage() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                className="h-8 w-8 text-muted-foreground hover:text-destructive rounded-xl hover:bg-destructive/10"
                 onClick={() => setConfirmDelete(true)}
                 aria-label="Delete entry"
                 title="Delete entry"

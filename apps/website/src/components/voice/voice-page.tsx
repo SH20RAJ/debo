@@ -87,41 +87,44 @@ function SessionRow({
   };
 
   return (
-    <Card className="rounded-2xl py-3 hover:shadow-md transition-shadow">
-      <CardContent className="px-4 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+    <Card className="rounded-2xl border-border/30 bg-card/40 hover:bg-card/75 transition-all shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.03)] hover:border-primary/20">
+      <CardContent className="px-4 py-3 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 shadow-[0_2px_10px_rgba(var(--primary-rgb),0.05)]">
           {icon}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-foreground truncate">
+          <p className="text-sm font-semibold text-foreground truncate font-[var(--font-nunito)]">
             {session.roomName}
           </p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-[11px] text-muted-foreground mt-0.5">
             {formatDate(session.createdAt)}
           </p>
         </div>
         <Badge
           variant={session.status === "active" ? "default" : "secondary"}
-          className="shrink-0 capitalize"
+          className={cn(
+            "shrink-0 capitalize px-2 py-0.5 text-[10px] rounded-lg",
+            session.status === "active" && "bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/15"
+          )}
         >
           {session.status}
         </Badge>
-        <span className="text-xs text-muted-foreground shrink-0 tabular-nums w-12 text-right">
+        <span className="text-xs text-muted-foreground shrink-0 tabular-nums w-12 text-right font-medium">
           {formatDuration(session.durationSeconds)}
         </span>
         {session.sourceId ? (
           <Button
             size="icon"
             variant="ghost"
-            className="h-8 w-8 shrink-0"
+            className="h-8 w-8 shrink-0 rounded-xl hover:bg-accent"
             onClick={handleDownload}
             disabled={downloading}
             aria-label="Download audio"
           >
             {downloading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
             ) : (
-              <Download className="w-4 h-4" />
+              <Download className="w-4 h-4 text-muted-foreground hover:text-foreground" />
             )}
           </Button>
         ) : null}
@@ -140,13 +143,23 @@ function Waveform({ analyser }: { analyser: AnalyserNode | null }) {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const bufferLength = analyser.fftSize;
+    const bufferLength = analyser.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
     let raf = 0;
+    let phase = 0;
 
     const draw = () => {
       raf = requestAnimationFrame(draw);
-      analyser.getByteTimeDomainData(dataArray);
+      analyser.getByteFrequencyData(dataArray);
+
+      // Calculate average volume (RMS/average amplitude)
+      let sum = 0;
+      for (let i = 0; i < bufferLength; i++) {
+        sum += dataArray[i];
+      }
+      const average = sum / bufferLength;
+      // Normalize volume to [0, 1] range, with a minimum threshold for noise
+      const volume = Math.max(0.08, average / 128);
 
       const dpr = window.devicePixelRatio || 1;
       const cssWidth = canvas.clientWidth;
@@ -158,29 +171,66 @@ function Waveform({ analyser }: { analyser: AnalyserNode | null }) {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, cssWidth, cssHeight);
 
-      ctx.lineWidth = 2;
       const styles = getComputedStyle(document.documentElement);
-      ctx.strokeStyle = `oklch(${styles.getPropertyValue("--primary").trim() || "0.7 0.18 145"})`;
-      ctx.beginPath();
+      const primaryColor = `oklch(${styles.getPropertyValue("--primary").trim() || "0.7 0.18 145"})`;
 
-      const slice = cssWidth / bufferLength;
-      let x = 0;
-      for (let i = 0; i < bufferLength; i++) {
-        const v = (dataArray[i] ?? 128) / 128.0;
-        const y = (v * cssHeight) / 2;
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-        x += slice;
-      }
-      ctx.lineTo(cssWidth, cssHeight / 2);
-      ctx.stroke();
+      // We will draw 3 overlapping sine-like waves with bezier curves
+      const waveConfigs = [
+        { opacity: 0.85, frequency: 0.05, speed: 0.08, amplitude: 35, lineWidth: 2.5 },
+        { opacity: 0.45, frequency: 0.08, speed: -0.05, amplitude: 22, lineWidth: 1.5 },
+        { opacity: 0.25, frequency: 0.03, speed: 0.03, amplitude: 14, lineWidth: 1.0 },
+      ];
+
+      phase += 0.12;
+
+      waveConfigs.forEach((cfg) => {
+        ctx.strokeStyle = primaryColor;
+        ctx.globalAlpha = cfg.opacity;
+        ctx.lineWidth = cfg.lineWidth;
+        
+        // Add subtle shadow glow
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = primaryColor;
+
+        ctx.beginPath();
+        
+        const points: { x: number; y: number }[] = [];
+        const numPoints = 12; // number of segments for bezier rendering
+        
+        for (let i = 0; i <= numPoints; i++) {
+          const ratio = i / numPoints;
+          const x = ratio * cssWidth;
+          
+          // Sine wave formula: y = center + sin(x * freq + phase * speed) * amp * volume * envelope
+          // Envelope is a bell curve to taper the ends of the wave to 0
+          const envelope = Math.sin(ratio * Math.PI); 
+          const sine = Math.sin(ratio * Math.PI * 2 * (1 / cfg.frequency) + phase * cfg.speed);
+          
+          const y = (cssHeight / 2) + sine * cfg.amplitude * volume * envelope;
+          points.push({ x, y });
+        }
+
+        // Draw smooth curve using quadratic bezier curves
+        ctx.moveTo(points[0].x, points[0].y);
+        for (let i = 0; i < points.length - 1; i++) {
+          const xc = (points[i].x + points[i + 1].x) / 2;
+          const yc = (points[i].y + points[i + 1].y) / 2;
+          ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+        }
+        ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
+        ctx.stroke();
+      });
+
+      // Reset graphics state
+      ctx.globalAlpha = 1.0;
+      ctx.shadowBlur = 0;
     };
 
     draw();
     return () => cancelAnimationFrame(raf);
   }, [analyser]);
 
-  return <canvas ref={canvasRef} className="w-full h-16 rounded-xl" />;
+  return <canvas ref={canvasRef} className="w-full h-20 rounded-2xl bg-muted/20 border border-border/10 shadow-[inner_0_2px_4px_rgba(0,0,0,0.02)]" />;
 }
 
 function CallRoom({
@@ -201,17 +251,33 @@ function CallRoom({
       audio={true}
     >
       <RoomAudioRenderer />
-      <div className="text-center py-8">
-        <div className="w-24 h-24 rounded-full bg-primary flex items-center justify-center mx-auto mb-4 animate-pulse shadow-[0_3px_0_var(--border)]">
-          <Mic className="w-10 h-10 text-primary-foreground" />
+      <div className="text-center py-12 px-6 bg-zinc-950/40 border border-zinc-800/40 rounded-3xl backdrop-blur-md relative overflow-hidden select-none">
+        {/* Background Glowing Orb Effect */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+        
+        {/* Voice Particle Orb */}
+        <div className="relative flex items-center justify-center w-32 h-32 mx-auto mb-6">
+          <span className="absolute inset-0 rounded-full bg-gradient-to-tr from-primary via-indigo-500 to-emerald-400 opacity-20 blur-md animate-pulse" />
+          <span className="absolute inset-2 rounded-full bg-gradient-to-tr from-primary via-indigo-500 to-emerald-400 opacity-40 animate-ping [animation-duration:3s]" />
+          <span className="absolute inset-4 rounded-full bg-gradient-to-tr from-primary via-indigo-500 to-emerald-400 opacity-60 animate-pulse [animation-duration:2s]" />
+          <div className="absolute inset-6 rounded-full bg-gradient-to-tr from-primary via-indigo-500 to-emerald-400 flex items-center justify-center shadow-[0_0_35px_rgba(var(--primary-rgb),0.5)]">
+            <Mic className="w-9 h-9 text-primary-foreground animate-pulse" />
+          </div>
         </div>
-        <Badge variant="outline" className="mb-4">
-          Connected
+
+        <Badge variant="outline" className="mb-4 bg-emerald-500/10 text-emerald-400 border-emerald-500/30 gap-1.5 px-3 py-1 text-xs">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          Voice Session Connected
         </Badge>
-        <p className="text-muted-foreground mb-4">Talking with Debo...</p>
-        <Button onClick={onDisconnect} variant="destructive" className="rounded-xl">
+        
+        <h3 className="text-lg font-bold text-foreground font-[var(--font-nunito)]">Debo Live</h3>
+        <p className="text-xs text-muted-foreground mt-1 mb-8 max-w-xs mx-auto leading-relaxed">
+          Speak naturally. Debo captures details and notes them down in your private memory.
+        </p>
+
+        <Button onClick={onDisconnect} variant="destructive" className="rounded-xl px-8 h-11 hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-md">
           <PhoneOff className="w-4 h-4 mr-2" />
-          End Call
+          End Conversation
         </Button>
       </div>
     </LiveKitRoom>
@@ -220,17 +286,17 @@ function CallRoom({
 
 function LiveKitNotConfigured() {
   return (
-    <div className="rounded-2xl border border-dashed bg-muted/30 p-6 text-sm">
+    <div className="rounded-2xl border border-dashed border-amber-500/30 bg-amber-500/[0.03] p-6 text-sm">
       <div className="flex items-start gap-3">
         <AlertTriangle className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
         <div className="space-y-2">
-          <p className="font-medium text-foreground">
+          <p className="font-semibold text-foreground">
             Voice calls aren&apos;t configured
           </p>
-          <p className="text-muted-foreground">
+          <p className="text-xs text-muted-foreground leading-relaxed">
             Set the following environment variables on the server, then redeploy:
           </p>
-          <ul className="text-xs font-mono bg-background border rounded-lg p-3 space-y-1">
+          <ul className="text-xs font-mono bg-background/50 border border-border/60 rounded-lg p-3 space-y-1">
             <li>LIVEKIT_URL</li>
             <li>LIVEKIT_API_KEY</li>
             <li>LIVEKIT_API_SECRET</li>
@@ -267,7 +333,7 @@ export function VoicePage() {
       const data = (await api.voice.list()) as VoiceSession[] | null;
       setSessions(data ?? []);
     } catch {
-      // Keep last known sessions; don't toast here to avoid noise on poll.
+      // Keep last known sessions
     }
   }, []);
 
@@ -334,7 +400,7 @@ export function VoicePage() {
     }
     mediaRecorderRef.current = recorder;
 
-    // Set up analyser for waveform (best-effort).
+    // Set up analyser for waveform.
     try {
       const AC =
         window.AudioContext ||
@@ -345,12 +411,12 @@ export function VoicePage() {
         audioContextRef.current = ctx;
         const source = ctx.createMediaStreamSource(stream);
         const node = ctx.createAnalyser();
-        node.fftSize = 1024;
+        node.fftSize = 256; // Smaller fft size is smoother for visualization
         source.connect(node);
         setAnalyser(node);
       }
     } catch {
-      // Waveform is non-essential; ignore failures.
+      // Waveform is non-essential
     }
 
     recorder.ondataavailable = (e) => {
@@ -463,7 +529,6 @@ export function VoicePage() {
       try {
         await api.voice.end(conn.sessionId);
       } catch (err) {
-        // Best-effort: server may have already marked it ended via LiveKit webhook.
         const status = (err as { status?: number }).status;
         if (status !== 409 && status !== 404) {
           toast.error(
@@ -480,57 +545,67 @@ export function VoicePage() {
   const recordingLabel = `${Math.floor(recordSeconds / 60)}:${String(recordSeconds % 60).padStart(2, "0")}`;
 
   return (
-    <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-8">
+    <div className="p-6 md:p-8 max-w-2xl mx-auto space-y-8 select-none">
       <div>
-        <h1 className="text-2xl font-bold">Voice</h1>
-        <p className="text-muted-foreground mt-1">
-          Talk to Debo or record voice notes
+        <h1 className="text-2xl font-bold tracking-tight text-foreground font-[var(--font-nunito)]">Voice Control</h1>
+        <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
+          Record voice notes to log your thoughts or initiate an interactive live call with Debo.
         </p>
       </div>
 
       {/* Record button */}
-      <div className="flex flex-col items-center gap-3">
-        <button
-          type="button"
-          onClick={handleRecordToggle}
-          disabled={uploading}
-          aria-pressed={isRecording}
-          aria-label={isRecording ? "Stop recording" : "Start recording"}
-          className={cn(
-            "w-20 h-20 rounded-full flex items-center justify-center transition-all duration-200 shadow-[0_3px_0_var(--border)] disabled:opacity-60 disabled:cursor-not-allowed",
-            isRecording
-              ? "bg-destructive text-destructive-foreground scale-105 ring-4 ring-destructive/20 animate-pulse"
-              : "bg-primary text-primary-foreground hover:scale-105 active:translate-y-[1px] active:shadow-none",
+      <div className="flex flex-col items-center gap-4 py-4">
+        <div className="relative flex items-center justify-center">
+          {isRecording && (
+            <>
+              <span className="absolute inline-flex h-24 w-24 rounded-full bg-destructive/15 animate-ping [animation-duration:1.8s]" />
+              <span className="absolute inline-flex h-28 w-28 rounded-full bg-destructive/5 animate-pulse [animation-duration:1.2s]" />
+            </>
           )}
-        >
-          {uploading ? (
-            <Loader2 className="w-8 h-8 animate-spin" />
-          ) : isRecording ? (
-            <Square className="w-8 h-8 fill-current" />
-          ) : (
-            <Mic className="w-8 h-8" />
-          )}
-        </button>
+          <button
+            type="button"
+            onClick={handleRecordToggle}
+            disabled={uploading}
+            aria-pressed={isRecording}
+            aria-label={isRecording ? "Stop recording" : "Start recording"}
+            className={cn(
+              "relative w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed z-10",
+              isRecording
+                ? "bg-destructive text-destructive-foreground scale-105 shadow-[0_0_25px_rgba(239,68,68,0.4)]"
+                : "bg-primary text-primary-foreground hover:scale-105 active:scale-95 shadow-[0_4px_20px_rgba(var(--primary-rgb),0.25)] hover:shadow-[0_8px_30px_rgba(var(--primary-rgb),0.4)]",
+            )}
+          >
+            {uploading ? (
+              <Loader2 className="w-8 h-8 animate-spin" />
+            ) : isRecording ? (
+              <Square className="w-7 h-7 fill-current" />
+            ) : (
+              <Mic className="w-8 h-8" />
+            )}
+          </button>
+        </div>
 
         {isRecording ? (
-          <div className="w-full max-w-xs space-y-2">
+          <div className="w-full max-w-sm space-y-4 mt-2">
             <Waveform analyser={analyser} />
-            <p className="text-center text-sm text-muted-foreground tabular-nums">
-              Recording {recordingLabel} - tap to stop
+            <p className="text-center text-xs text-muted-foreground font-semibold tracking-wider uppercase tabular-nums">
+              Recording {recordingLabel} • Click button to stop & save
             </p>
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">
-            {uploading ? "Uploading voice note..." : "Tap to record a voice note"}
+          <p className="text-xs text-muted-foreground font-medium">
+            {uploading ? "Saving note to your past..." : "Tap the mic node to record a voice note"}
           </p>
         )}
       </div>
 
       {/* Voice Call Section */}
-      <Card className="rounded-2xl">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Phone className="w-5 h-5 text-primary" />
+      <Card className="rounded-3xl border-border/40 bg-card/60 backdrop-blur-md overflow-hidden relative shadow-sm">
+        {/* Glow accent */}
+        <div className="absolute -top-12 -right-12 w-36 h-36 bg-primary/10 rounded-full blur-2xl pointer-events-none" />
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-base font-bold font-[var(--font-nunito)]">
+            <Phone className="w-4 h-4 text-primary" />
             Voice Call with Debo
           </CardTitle>
         </CardHeader>
@@ -544,17 +619,18 @@ export function VoicePage() {
               onDisconnect={handleEndCall}
             />
           ) : (
-            <div className="text-center py-6">
-              <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                <Phone className="w-8 h-8 text-primary" />
+            <div className="text-center py-10 px-4">
+              <div className="w-20 h-20 rounded-2xl bg-primary/[0.08] border border-primary/10 flex items-center justify-center mx-auto mb-5 shadow-[0_8px_30px_rgb(0,0,0,0.03)]">
+                <Phone className="w-8 h-8 text-primary animate-pulse" />
               </div>
-              <p className="text-muted-foreground mb-4">
-                Start a voice conversation with Debo
+              <h3 className="text-sm font-semibold text-foreground font-[var(--font-nunito)]">Interactive AI Voice</h3>
+              <p className="text-xs text-muted-foreground mt-1.5 mb-6 max-w-sm mx-auto leading-relaxed">
+                Debrief your day, plan tasks, or brainstorm ideas directly with Debo in real-time.
               </p>
               <Button
                 onClick={handleStartCall}
                 disabled={callConnecting}
-                className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-[0_3px_0_var(--border)]"
+                className="rounded-xl bg-primary hover:bg-primary/95 text-primary-foreground font-semibold px-6 hover:scale-[1.02] active:scale-[0.98] transition-all"
               >
                 {callConnecting ? (
                   <>
@@ -574,27 +650,27 @@ export function VoicePage() {
       </Card>
 
       {/* Tabs */}
-      <Tabs defaultValue="voice-notes">
-        <TabsList className="w-full mb-6">
-          <TabsTrigger value="voice-notes" className="flex-1">
+      <Tabs defaultValue="voice-notes" className="w-full">
+        <TabsList className="grid w-full grid-cols-3 rounded-2xl bg-muted/50 p-1">
+          <TabsTrigger value="voice-notes" className="rounded-xl text-xs py-2 font-[var(--font-nunito)]">
             Voice Notes
           </TabsTrigger>
-          <TabsTrigger value="ai-calls" className="flex-1">
+          <TabsTrigger value="ai-calls" className="rounded-xl text-xs py-2 font-[var(--font-nunito)]">
             AI Calls
           </TabsTrigger>
-          <TabsTrigger value="transcripts" className="flex-1">
+          <TabsTrigger value="transcripts" className="rounded-xl text-xs py-2 font-[var(--font-nunito)]">
             Transcripts
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="voice-notes">
+        <TabsContent value="voice-notes" className="mt-4 outline-none">
           {loadingSessions ? (
-            <div className="flex items-center justify-center py-12 text-muted-foreground text-sm">
+            <div className="flex items-center justify-center py-16 text-muted-foreground text-xs font-medium">
               <Loader2 className="w-4 h-4 animate-spin mr-2" />
               Loading voice notes...
             </div>
           ) : voiceNotes.length > 0 ? (
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {voiceNotes.map((session) => (
                 <SessionRow
                   key={session.id}
@@ -604,18 +680,18 @@ export function VoicePage() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">No voice notes yet.</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Tap the record button above to create your first voice note.
+            <div className="text-center py-16 border border-dashed border-border/50 rounded-2xl">
+              <p className="text-xs text-muted-foreground font-medium">No voice notes yet.</p>
+              <p className="text-[10px] text-muted-foreground/60 mt-1">
+                Tap the record button above to capture your first voice note.
               </p>
             </div>
           )}
         </TabsContent>
 
-        <TabsContent value="ai-calls">
+        <TabsContent value="ai-calls" className="mt-4 outline-none">
           {aiCalls.length > 0 ? (
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {aiCalls.map((session) => (
                 <SessionRow
                   key={session.id}
@@ -625,39 +701,41 @@ export function VoicePage() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">No AI calls yet.</p>
-              <p className="text-sm text-muted-foreground mt-1">
+            <div className="text-center py-16 border border-dashed border-border/50 rounded-2xl">
+              <p className="text-xs text-muted-foreground font-medium">No AI calls yet.</p>
+              <p className="text-[10px] text-muted-foreground/60 mt-1">
                 Start a call to debrief your day or plan with Debo.
               </p>
             </div>
           )}
         </TabsContent>
 
-        <TabsContent value="transcripts">
+        <TabsContent value="transcripts" className="mt-4 outline-none">
           {voiceNotes.length > 0 ? (
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {voiceNotes.slice(0, 10).map((session) => (
-                <Card key={session.id} className="rounded-2xl py-3">
-                  <CardContent className="px-4 flex items-center justify-between">
+                <Card key={session.id} className="rounded-2xl border-border/30 bg-card/40 hover:bg-card/75 transition-all shadow-sm">
+                  <CardContent className="px-4 py-3.5 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <FileText className="w-5 h-5 text-muted-foreground" />
+                      <FileText className="w-5 h-5 text-muted-foreground/80" />
                       <div>
-                        <p className="text-sm font-medium">{session.roomName}</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs font-semibold text-foreground font-[var(--font-nunito)]">{session.roomName}</p>
+                        <p className="text-[10px] text-muted-foreground/60 mt-0.5">
                           {formatDate(session.createdAt)}
                         </p>
                       </div>
                     </div>
-                    <Badge variant="secondary">Transcript</Badge>
+                    <Badge variant="secondary" className="px-2 py-0.5 text-[9px] rounded-lg bg-accent border border-border/20 text-muted-foreground font-semibold">
+                      Transcript Ready
+                    </Badge>
                   </CardContent>
                 </Card>
               ))}
             </div>
           ) : (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">Transcripts will appear here.</p>
-              <p className="text-sm text-muted-foreground mt-1">
+            <div className="text-center py-16 border border-dashed border-border/50 rounded-2xl">
+              <p className="text-xs text-muted-foreground font-medium">Transcripts will appear here.</p>
+              <p className="text-[10px] text-muted-foreground/60 mt-1">
                 Completed transcriptions from your voice notes and calls.
               </p>
             </div>
