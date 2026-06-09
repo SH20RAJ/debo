@@ -61,7 +61,7 @@ console.log("Deploying apps/website to Vercel (production)...");
 const proc = Bun.spawn(
   ["vercel", "deploy", "--prod", "--yes", "--token", token, ...args],
   {
-    cwd: websiteDir,
+    cwd: fileURLToPath(new URL("../", import.meta.url)),
     env,
     stdout: "inherit",
     stderr: "inherit",

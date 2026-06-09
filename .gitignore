@@ -53,10 +53,6 @@ apps/*/.open-next/
 !.dev.vars.example
 /scratch
 
-.projects/cache
-.projects/vault
-.env
-.env.local
 prompt.md
 .open-next/
 .openclaude/
@@ -65,3 +61,8 @@ prompt.md
 dist/
 .vercel/
 .netlify/
+
+.projects/cache
+.projects/vault
+.env
+.env.local

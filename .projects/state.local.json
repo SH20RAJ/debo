@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "project": {
+    "initializedAt": "2026-06-09T16:56:30.264Z",
+    "merchantDisplayName": null,
+    "merchantId": "acct_1Qtb6aAnKrLsBDGQ",
+    "projectId": "project_61UpquMsZxPcvIh9h16S2z3w1J8CarDnIIEWauSTg6Ce",
+    "projectName": "debo"
+  },
+  "providers": {
+    "vercel": {
+      "accountRequestId": "facctrq_61UpqvDICulb1QrNM16S2z3w1J8CarDnIIEWauSTg0dE",
+      "configuration": {},
+      "linkedAt": "2026-06-09T16:57:27.868Z",
+      "providerId": "prvdr_61ULUAr4zlQgZkvXY5LsG",
+      "providerName": "Vercel",
+      "redirectUrl": null,
+      "requestedAt": "2026-06-09T16:57:27.868Z",
+      "status": "complete"
+    }
+  },
+  "resources": {
+    "vercel": {
+      "configuration": {
+        "name": "debo"
+      },
+      "createdAt": "2026-06-09T16:57:30.472Z",
+      "lastRevealedAt": "2026-06-09T16:57:31.095Z",
+      "lastStatus": "complete",
+      "name": "vercel",
+      "providerId": "prvdr_61ULUAr4zlQgZkvXY5LsG",
+      "providerName": "Vercel",
+      "resourceId": "fres_61UpqvIWRzjRriU6q16S2z3w1J8CarDnIIEWauSTg8jY",
+      "serviceId": "project"
+    }
+  }
+}
