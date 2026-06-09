@@ -24,7 +24,7 @@ export default function AboutPage() {
               <span className="size-1.5 rounded-full bg-landing-accent animate-pulse" />
               The Intelligence Lab
             </div>
-            <h1 className="font-size-landing-3xl md:text-landing-4xl lg:text-landing-hero font-heading font-semibold tracking-tight leading-[1.05] text-landing-text-primary">
+            <h1 className="text-landing-3xl md:text-landing-4xl lg:text-landing-hero font-heading font-semibold tracking-tight leading-[1.05] text-landing-text-primary">
               Documenting <br />
               <span className="text-landing-accent">Human Growth.</span>
             </h1>
@@ -101,7 +101,7 @@ export default function AboutPage() {
             </div>
             <div className="space-y-6 order-1 lg:order-2">
               <div className="text-landing-xs font-bold uppercase tracking-widest text-landing-accent">Philosophy</div>
-              <h2 className="font-size-landing-3xl font-heading font-semibold tracking-tight text-landing-text-primary">Aesthetics for <br /><span className="text-landing-accent">Cognition.</span></h2>
+              <h2 className="text-landing-3xl font-heading font-semibold tracking-tight text-landing-text-primary">Aesthetics for <br /><span className="text-landing-accent">Cognition.</span></h2>
               <p className="text-landing-base font-medium leading-relaxed text-landing-text-secondary">
                 We believe that the beauty of a system directly impacts the
                 clarity of the thoughts processed within it. Debo is not just
@@ -116,7 +116,7 @@ export default function AboutPage() {
       <section className="px-6 py-24 bg-landing-surface border-t border-landing-border-light">
         <div className="mx-auto max-w-[800px] space-y-12">
           <div className="text-center space-y-4">
-            <h2 className="font-size-landing-3xl font-heading font-semibold tracking-tight text-landing-text-primary">The Data Documentary.</h2>
+            <h2 className="text-landing-3xl font-heading font-semibold tracking-tight text-landing-text-primary">The Data Documentary.</h2>
             <p className="mx-auto max-w-xl text-landing-base font-medium text-landing-text-secondary leading-relaxed">
               How your life data transforms into collaborative intelligence.
             </p>
@@ -145,7 +145,7 @@ export default function AboutPage() {
       {/* Reach Out */}
       <section className="px-6 py-24 bg-landing-bg border-t border-landing-border-light">
         <div className="mx-auto max-w-[800px] text-center space-y-12">
-          <h2 className="font-size-landing-3xl font-heading font-semibold tracking-tight text-landing-text-primary">Reach out.</h2>
+          <h2 className="text-landing-3xl font-heading font-semibold tracking-tight text-landing-text-primary">Reach out.</h2>
           <div className="grid gap-8 md:grid-cols-2">
             <div className="p-10 border border-landing-border bg-landing-surface rounded-[24px] space-y-4 shadow-sm hover:shadow-md transition-shadow">
               <div className="text-landing-xs font-bold uppercase tracking-widest text-landing-accent">Lab Operations</div>
@@ -164,7 +164,7 @@ export default function AboutPage() {
       {/* Join Section */}
       <section className="px-6 py-24 bg-landing-surface border-t border-landing-border-light">
         <div className="mx-auto max-w-2xl text-center space-y-8">
-          <h2 className="font-size-landing-3xl font-heading font-semibold tracking-tight text-landing-text-primary">
+          <h2 className="text-landing-3xl font-heading font-semibold tracking-tight text-landing-text-primary">
             Join the Intelligence Lab.
           </h2>
           <p className="text-landing-base font-medium leading-relaxed text-landing-text-secondary">
@@ -186,7 +186,7 @@ export default function AboutPage() {
 function FlowCard({ step, title, desc }: { step: string, title: string, desc: string }) {
   return (
     <div className="p-8 border border-landing-border bg-landing-surface rounded-[20px] space-y-4 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5">
-      <div className="font-size-landing-3xl font-heading font-bold text-landing-accent/20">{step}</div>
+      <div className="text-landing-3xl font-heading font-bold text-landing-accent/20">{step}</div>
       <h4 className="text-landing-lg font-bold text-landing-text-primary tracking-tight">{title}</h4>
       <p className="text-landing-xs font-medium text-landing-text-secondary leading-relaxed">{desc}</p>
     </div>

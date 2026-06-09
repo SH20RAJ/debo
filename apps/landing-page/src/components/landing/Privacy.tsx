@@ -14,7 +14,7 @@ export function Privacy() {
     <section className="py-24 md:py-32 px-6 border-t border-landing-border-light bg-landing-surface">
       <div className="mx-auto max-w-[1120px] flex flex-col md:flex-row gap-12 md:gap-24 items-start">
         <div className="flex-1 space-y-6">
-          <h2 className="font-heading font-size-landing-3xl md:text-landing-4xl font-semibold tracking-tight text-landing-text-primary">
+          <h2 className="font-heading text-landing-3xl md:text-landing-4xl font-semibold tracking-tight text-landing-text-primary">
             Memory is personal. Debo treats it that way.
           </h2>
           <p className="text-landing-base md:text-landing-lg font-medium leading-relaxed text-landing-text-secondary">

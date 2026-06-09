@@ -17,7 +17,7 @@ export function FounderNote() {
   return (
     <section className="py-24 md:py-32 px-6 bg-landing-bg border-t border-landing-border-light">
       <div className="mx-auto max-w-3xl">
-        <h2 className="font-heading text-landing-2xl md:font-size-landing-3xl font-semibold tracking-tight text-landing-text-primary mb-8">
+        <h2 className="font-heading text-landing-2xl md:text-landing-3xl font-semibold tracking-tight text-landing-text-primary mb-8">
           Why I&apos;m building Debo
         </h2>
         <div className="space-y-6">
