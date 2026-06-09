@@ -1,5 +1,19 @@
 {
 	"files.associations": {
 		"wrangler.json": "jsonc"
+	},
+	"files.exclude": {
+		"**/.git": true,
+		"**/.svn": true,
+		"**/.hg": true,
+		"**/.DS_Store": true,
+		"**/Thumbs.db": true,
+		"**/CVS": true,
+		"**/.ruby-lsp": true,
+		".claude": true,
+		".codex": true,
+		".gemini": true,
+		".venv": true,
+		".superdoc": true
 	}
 }
