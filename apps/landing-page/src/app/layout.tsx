@@ -8,10 +8,10 @@ import "./globals.css";
 export const metadata: Metadata = {
 	metadataBase: new URL("https://debo.life"),
 	title: {
-		default: "Debo | Private AI Memory for Your Life",
+		default: "Debo | Your Life’s MCP",
 		template: "%s | Debo",
 	},
-	description: "Debo turns journals, voice notes, chats, and people into a private searchable memory graph with cited AI answers.",
+	description: "The foundational memory layer for personal intelligence. Build a searchable knowledge graph and give your personal AI the context of your entire life.",
 	keywords: ["Memory Engine", "Life Querying", "Journaling", "Personal Intelligence", "Privacy"],
 	authors: [{ name: "Debo" }],
 	creator: "Debo",

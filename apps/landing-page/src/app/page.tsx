@@ -9,13 +9,13 @@ import { FounderNote } from "@/components/landing/FounderNote";
 import { FinalCTA } from "@/components/landing/FinalCTA";
 
 export const metadata: Metadata = {
-  title: "Debo — Private AI Memory for Notes, Voice, Tasks & Research",
+  title: "Debo | Your Life’s MCP",
   description:
-    "Debo helps you capture voice notes, journals, links, tasks, and conversations, then recall them later with private, source-backed AI memory.",
+    "The foundational memory layer for personal intelligence. Build a searchable knowledge graph and give your personal AI the context of your entire life.",
   openGraph: {
-    title: "Debo — Your Private AI Memory Layer",
+    title: "Debo: The Memory Context Protocol for Humans",
     description:
-      "Capture your thoughts, notes, tasks, and conversations. Ask your past with source-backed answers.",
+      "AI without memory is temporary. Debo provides the permanent context layer that turns your history into a searchable personal intelligence protocol.",
   },
 };
 

@@ -16,12 +16,16 @@ export function Hero() {
       <div className="container relative z-10 mx-auto max-w-[1120px]">
         <div className="flex flex-col items-center text-center space-y-10">
           
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-landing-accent/10 border border-landing-accent/20 text-landing-xs font-bold text-landing-accent uppercase tracking-widest animate-in fade-in slide-in-from-bottom-2 duration-1000">
+            ✦ The Memory Context Protocol
+          </div>
+
           <h1 className="font-heading text-5xl font-semibold tracking-tight text-landing-text-primary md:text-landing-4xl lg:text-landing-hero max-w-4xl leading-[1.05]">
-            Your private memory layer for everything you forget.
+            The memory layer for your life.
           </h1>
 
           <p className="mx-auto max-w-2xl text-landing-base md:text-landing-lg font-medium leading-relaxed text-landing-text-secondary">
-            Debo captures voice notes, journals, links, tasks, and conversations — then lets you ask your past with source-backed answers.
+            Debo is foundational infrastructure for personal context. Capture your history, index your decisions, and build the memory substrate for your future AI.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center gap-4 pt-6">
@@ -31,18 +35,15 @@ export function Hero() {
               rel="noopener noreferrer"
               className="inline-flex h-12 items-center justify-center rounded-xl bg-landing-accent px-8 text-landing-sm font-semibold text-white transition-all hover:bg-landing-accent-hover hover:-translate-y-0.5 shadow-sm hover:shadow-md gap-2"
             >
-              Join private beta
+              Get Started
               <ArrowRight className="h-4 w-4" />
             </Link>
-            <a
-              href="https://github.com/sh20raj/debo"
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href="/foundation"
               className="inline-flex h-12 items-center justify-center rounded-xl border border-landing-border bg-landing-surface px-8 text-landing-sm font-semibold text-landing-text-primary transition-all hover:bg-landing-surface-subtle hover:-translate-y-0.5 gap-2 shadow-sm"
             >
-              <GithubIcon className="h-[18px] w-[18px]" />
-              View GitHub
-            </a>
+              Read the Vision
+            </Link>
           </div>
 
           <p className="text-landing-xs font-medium text-landing-text-tertiary pt-2">
