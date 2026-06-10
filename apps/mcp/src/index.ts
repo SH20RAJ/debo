@@ -2,8 +2,8 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { db } from "@debo/db";
-import { users, workspaces, sources, memoryChunks, tasks, auditLogs } from "@debo/db/schema";
-import { eq, and, desc, ilike } from "drizzle-orm";
+import { users, workspaces, sources, memoryChunks, tasks, connectorAccounts, connectorSyncRuns, auditLogs } from "@debo/db/schema";
+import { eq, and, desc, ilike, inArray } from "drizzle-orm";
 import * as dotenv from "dotenv";
 
 // Load environment variables
@@ -133,7 +133,7 @@ server.tool(
         return { content: [{ type: "text" as const, text: "Query was empty." }] };
       }
 
-      // Search memory chunks via standard text match
+      // Search memory chunks via text matching
       const rows = await db
         .select({
           chunkId: memoryChunks.id,
@@ -218,7 +218,6 @@ server.tool(
         };
       }
 
-      // Fetch all chunks for this source
       const chunks = await db
         .select({
           text: memoryChunks.text,
@@ -268,7 +267,6 @@ server.tool(
       const sourceId = newId("src");
       const cleanContent = content.trim();
 
-      // 1. Insert source record
       const [created] = await db
         .insert(sources)
         .values({
@@ -287,7 +285,6 @@ server.tool(
         throw new Error("Failed to insert source memory record.");
       }
 
-      // 2. Naive chunk and insert chunks to database so it is immediately searchable
       const chunks = chunkText(cleanContent);
       if (chunks.length > 0) {
         const chunkRows = chunks.map((chunk, index) => ({
@@ -302,7 +299,6 @@ server.tool(
         await db.insert(memoryChunks).values(chunkRows);
       }
 
-      // 3. Log audit activity
       await db.insert(auditLogs).values({
         id: newId("audit"),
         userId,
@@ -361,7 +357,6 @@ server.tool(
         throw new Error("Failed to insert task record.");
       }
 
-      // Create a related audit log
       await db.insert(auditLogs).values({
         id: newId("audit"),
         userId,
@@ -383,6 +378,362 @@ server.tool(
         content: [{ type: "text" as const, text: `Create Task Error: ${(err as Error).message}` }],
         isError: true,
       };
+    }
+  }
+);
+
+/* ========================================================================== */
+/*  5. JOURNALS CRUD                                                          */
+/* ========================================================================== */
+
+// LIST JOURNALS
+server.tool(
+  "debo_list_journals",
+  "List all journal entries stored in the Debo Memory graph",
+  {} as any,
+  async () => {
+    try {
+      const { userId } = await getSession();
+      const rows = await db
+        .select()
+        .from(sources)
+        .where(
+          and(
+            eq(sources.userId, userId),
+            eq(sources.type, "journal")
+          )
+        )
+        .orderBy(desc(sources.createdAt));
+
+      if (rows.length === 0) {
+        return { content: [{ type: "text" as const, text: "No journal entries found." }] };
+      }
+
+      const list = rows
+        .map((r) => `*   **[${r.id}]**: ${r.title || "Untitled"} (Created: ${r.createdAt})`)
+        .join("\n");
+      return { content: [{ type: "text" as const, text: `Journal Entries:\n${list}` }] };
+    } catch (err: any) {
+      return { content: [{ type: "text" as const, text: `Error: ${err.message}` }], isError: true };
+    }
+  }
+);
+
+// GET JOURNAL DETAILS
+server.tool(
+  "debo_get_journal",
+  "Get the full text content of a specific journal entry by ID",
+  {
+    journalId: z.string().describe("The source ID of the journal entry"),
+  } as any,
+  async ({ journalId }: any) => {
+    try {
+      const { userId } = await getSession();
+      const [entry] = await db
+        .select()
+        .from(sources)
+        .where(
+          and(
+            eq(sources.id, journalId),
+            eq(sources.userId, userId),
+            eq(sources.type, "journal")
+          )
+        )
+        .limit(1);
+
+      if (!entry) {
+        return { content: [{ type: "text" as const, text: `Journal not found: ${journalId}` }], isError: true };
+      }
+
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: `# ${entry.title || "Untitled"}\nCreated: ${entry.createdAt}\n\n${entry.plainText || "No content."}`,
+          },
+        ],
+      };
+    } catch (err: any) {
+      return { content: [{ type: "text" as const, text: `Error: ${err.message}` }], isError: true };
+    }
+  }
+);
+
+// CREATE JOURNAL
+server.tool(
+  "debo_create_journal",
+  "Write a new journal entry into Debo's memory graph",
+  {
+    title: z.string().describe("Title of the journal entry"),
+    content: z.string().describe("Content of the journal entry"),
+  } as any,
+  async ({ title, content }: any) => {
+    try {
+      const { userId, workspaceId } = await getSession();
+      const sourceId = newId("src");
+      const cleanContent = content.trim();
+
+      const [created] = await db
+        .insert(sources)
+        .values({
+          id: sourceId,
+          userId,
+          workspaceId,
+          type: "journal",
+          title: title.trim(),
+          plainText: cleanContent,
+          status: "ready",
+          origin: "manual",
+        })
+        .returning();
+
+      const chunks = chunkText(cleanContent);
+      if (chunks.length > 0) {
+        const chunkRows = chunks.map((chunk, index) => ({
+          id: newId("chk"),
+          userId,
+          workspaceId,
+          sourceId,
+          chunkIndex: index,
+          text: chunk,
+          tokenCount: Math.ceil(chunk.length / 4),
+        }));
+        await db.insert(memoryChunks).values(chunkRows);
+      }
+
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: `Journal entry created successfully:\n*   **ID**: \`${created.id}\`\n*   **Title**: ${created.title}\n*   **Chunks Indexed**: ${chunks.length}`,
+          },
+        ],
+      };
+    } catch (err: any) {
+      return { content: [{ type: "text" as const, text: `Error: ${err.message}` }], isError: true };
+    }
+  }
+);
+
+// UPDATE JOURNAL
+server.tool(
+  "debo_update_journal",
+  "Update the title and content of an existing journal entry",
+  {
+    journalId: z.string().describe("The source ID of the journal entry"),
+    title: z.string().optional().describe("Optional new title"),
+    content: z.string().optional().describe("Optional new content"),
+  } as any,
+  async ({ journalId, title, content }: any) => {
+    try {
+      const { userId, workspaceId } = await getSession();
+      const [entry] = await db
+        .select()
+        .from(sources)
+        .where(
+          and(
+            eq(sources.id, journalId),
+            eq(sources.userId, userId),
+            eq(sources.type, "journal")
+          )
+        )
+        .limit(1);
+
+      if (!entry) {
+        return { content: [{ type: "text" as const, text: `Journal not found: ${journalId}` }], isError: true };
+      }
+
+      const updatedTitle = title?.trim() || entry.title;
+      const updatedContent = content?.trim() || entry.plainText;
+
+      await db
+        .update(sources)
+        .set({
+          title: updatedTitle,
+          plainText: updatedContent,
+          updatedAt: new Date().toISOString(),
+        })
+        .where(eq(sources.id, journalId));
+
+      if (content) {
+        await db.delete(memoryChunks).where(eq(memoryChunks.sourceId, journalId));
+        const chunks = chunkText(updatedContent);
+        if (chunks.length > 0) {
+          const chunkRows = chunks.map((chunk, index) => ({
+            id: newId("chk"),
+            userId,
+            workspaceId,
+            sourceId: journalId,
+            chunkIndex: index,
+            text: chunk,
+            tokenCount: Math.ceil(chunk.length / 4),
+          }));
+          await db.insert(memoryChunks).values(chunkRows);
+        }
+      }
+
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: `Journal entry [${journalId}] updated successfully.`,
+          },
+        ],
+      };
+    } catch (err: any) {
+      return { content: [{ type: "text" as const, text: `Error: ${err.message}` }], isError: true };
+    }
+  }
+);
+
+// DELETE JOURNAL
+server.tool(
+  "debo_delete_journal",
+  "Delete a journal entry from Debo's memory graph",
+  {
+    journalId: z.string().describe("The source ID of the journal entry"),
+  } as any,
+  async ({ journalId }: any) => {
+    try {
+      const { userId } = await getSession();
+      await db.delete(memoryChunks).where(eq(memoryChunks.sourceId, journalId));
+      await db
+        .delete(sources)
+        .where(
+          and(
+            eq(sources.id, journalId),
+            eq(sources.userId, userId),
+            eq(sources.type, "journal")
+          )
+        );
+
+      return { content: [{ type: "text" as const, text: `Journal entry [${journalId}] deleted successfully.` }] };
+    } catch (err: any) {
+      return { content: [{ type: "text" as const, text: `Error: ${err.message}` }], isError: true };
+    }
+  }
+);
+
+/* ========================================================================== */
+/*  6. MEDIA MANAGEMENT                                                       */
+/* ========================================================================== */
+
+// LIST MEDIA FILES
+server.tool(
+  "debo_list_media",
+  "List uploaded media items (files, images, audio, video) in Debo",
+  {
+    limit: z.number().optional().default(10).describe("Maximum items to return"),
+  } as any,
+  async ({ limit }: any) => {
+    try {
+      const { userId } = await getSession();
+      const mediaTypes = ["file", "image", "audio", "video", "pdf"];
+      
+      const rows = await db
+        .select()
+        .from(sources)
+        .where(
+          and(
+            eq(sources.userId, userId),
+            inArray(sources.type, mediaTypes as any)
+          )
+        )
+        .orderBy(desc(sources.createdAt))
+        .limit(limit);
+
+      if (rows.length === 0) {
+        return { content: [{ type: "text" as const, text: "No media items found." }] };
+      }
+
+      const list = rows
+        .map((r) => `*   **[${r.id}]** (${r.type}): ${r.title || "Untitled File"} (Uploaded: ${r.createdAt})`)
+        .join("\n");
+      return { content: [{ type: "text" as const, text: `Media Items:\n${list}` }] };
+    } catch (err: any) {
+      return { content: [{ type: "text" as const, text: `Error: ${err.message}` }], isError: true };
+    }
+  }
+);
+
+/* ========================================================================== */
+/*  7. CONNECTORS                                                             */
+/* ========================================================================== */
+
+// LIST CONNECTORS
+server.tool(
+  "debo_list_connectors",
+  "List status of external accounts and connectors (Slack, Gmail, GitHub, Notion)",
+  {} as any,
+  async () => {
+    try {
+      const { userId } = await getSession();
+      const rows = await db
+        .select()
+        .from(connectorAccounts)
+        .where(eq(connectorAccounts.userId, userId));
+
+      if (rows.length === 0) {
+        return { content: [{ type: "text" as const, text: "No connectors configured." }] };
+      }
+
+      const list = rows
+        .map((r) => `*   **${r.provider.toUpperCase()}**: Status: ${r.status.toUpperCase()} (Last Synced: ${r.lastSyncedAt || "Never"})`)
+        .join("\n");
+      return { content: [{ type: "text" as const, text: `Configured Connectors:\n${list}` }] };
+    } catch (err: any) {
+      return { content: [{ type: "text" as const, text: `Error: ${err.message}` }], isError: true };
+    }
+  }
+);
+
+// TRIGGER CONNECTOR SYNC
+server.tool(
+  "debo_trigger_connector_sync",
+  "Queue a synchronization run for a specific connector account ID",
+  {
+    connectorAccountId: z.string().describe("The ID of the connector account"),
+  } as any,
+  async ({ connectorAccountId }: any) => {
+    try {
+      const { userId, workspaceId } = await getSession();
+      
+      const [connector] = await db
+        .select()
+        .from(connectorAccounts)
+        .where(
+          and(
+            eq(connectorAccounts.id, connectorAccountId),
+            eq(connectorAccounts.userId, userId)
+          )
+        )
+        .limit(1);
+
+      if (!connector) {
+        return { content: [{ type: "text" as const, text: `Connector account not found for ID: ${connectorAccountId}` }], isError: true };
+      }
+
+      const syncRunId = newId("sync");
+      await db
+        .insert(connectorSyncRuns)
+        .values({
+          id: syncRunId,
+          userId,
+          workspaceId,
+          connectorAccountId,
+          status: "pending",
+        });
+
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: `Success! Sync job queued. Sync Run ID: \`${syncRunId}\`. Status is currently PENDING.`,
+          },
+        ],
+      };
+    } catch (err: any) {
+      return { content: [{ type: "text" as const, text: `Error: ${err.message}` }], isError: true };
     }
   }
 );
