@@ -46,6 +46,23 @@
         "wrangler": "^4.87.0",
       },
     },
+    "apps/mcp": {
+      "name": "@debo/mcp",
+      "version": "0.1.0",
+      "dependencies": {
+        "@debo/db": "workspace:*",
+        "@debo/memory": "workspace:*",
+        "@modelcontextprotocol/sdk": "^1.4.1",
+        "@neondatabase/serverless": "^0.10.4",
+        "dotenv": "^17.4.2",
+        "drizzle-orm": "^0.39.3",
+        "zod": "^4.4.3",
+      },
+      "devDependencies": {
+        "@types/node": "^25.6.0",
+        "typescript": "^5.7.4",
+      },
+    },
     "apps/website": {
       "name": "@debo/website",
       "version": "0.1.0",
@@ -500,6 +517,8 @@
     "@debo/db": ["@debo/db@workspace:packages/db"],
 
     "@debo/landing-page": ["@debo/landing-page@workspace:apps/landing-page"],
+
+    "@debo/mcp": ["@debo/mcp@workspace:apps/mcp"],
 
     "@debo/memory": ["@debo/memory@workspace:packages/memory"],
 
@@ -3646,6 +3665,8 @@
     "@copilotkit/shared/zod": ["zod@3.25.76", "", {}, "sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ=="],
 
     "@debo/landing-page/dotenv": ["dotenv@17.4.2", "", {}, "sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw=="],
+
+    "@debo/mcp/dotenv": ["dotenv@17.4.2", "", {}, "sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw=="],
 
     "@debo/website/@aws-sdk/client-s3": ["@aws-sdk/client-s3@3.1055.0", "", { "dependencies": { "@aws-crypto/sha1-browser": "5.2.0", "@aws-crypto/sha256-browser": "5.2.0", "@aws-crypto/sha256-js": "5.2.0", "@aws-sdk/core": "^3.974.14", "@aws-sdk/credential-provider-node": "^3.972.45", "@aws-sdk/middleware-bucket-endpoint": "^3.972.16", "@aws-sdk/middleware-expect-continue": "^3.972.13", "@aws-sdk/middleware-flexible-checksums": "^3.974.22", "@aws-sdk/middleware-location-constraint": "^3.972.11", "@aws-sdk/middleware-sdk-s3": "^3.972.43", "@aws-sdk/middleware-ssec": "^3.972.11", "@aws-sdk/signature-v4-multi-region": "^3.996.29", "@aws-sdk/types": "^3.973.9", "@smithy/core": "^3.24.3", "@smithy/fetch-http-handler": "^5.4.3", "@smithy/node-http-handler": "^4.7.3", "@smithy/types": "^4.14.2", "tslib": "^2.6.2" } }, "sha512-FxVwuw86c2Mw4p+0tOtoE+1sDTk+eOBZD/NwwK+wwx1gHkdO/EYSv231O9A1YM8HPjUrI0vZ/hP/szckBxHW0A=="],
 
