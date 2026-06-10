@@ -3,13 +3,13 @@
 import {
   Mic,
   FileText,
-  MessageSquare,
   CheckSquare,
-  Brain,
-  ArrowRight,
+  Calendar,
   BookOpen,
   Link2,
-  Calendar,
+  Brain,
+  ArrowRight,
+  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SourceCitation, type SourceData } from "./source-citation";
+import { motion } from "framer-motion";
 
 export interface RelatedMemory {
   id: string;
@@ -53,82 +54,124 @@ export function SourceRail({
   return (
     <aside
       className={cn(
-        "w-80 border-l border-border bg-card/50 shrink-0 transition-all duration-200",
+        "w-80 border-l border-white/5 bg-[#0d120a]/35 backdrop-blur-2xl shrink-0 transition-all duration-300 ease-in-out relative z-10",
         "hidden lg:flex lg:flex-col",
         !visible && "lg:hidden"
       )}
     >
       <ScrollArea className="flex-1">
-        <div className="p-4 space-y-6">
+        <div className="p-4.5 space-y-6">
+          {/* Header */}
+          <div className="flex items-center gap-2 px-1 py-1.5 select-none">
+            <Sparkles className="w-4 h-4 text-emerald-500" />
+            <h2 className="text-xs font-extrabold text-foreground/80 uppercase tracking-widest font-[var(--font-nunito)]">
+              Intelligence Rail
+            </h2>
+          </div>
+
+          <Separator className="bg-white/5" />
+
           {/* Sources used */}
           {sources.length > 0 && (
-            <section>
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                Sources used
+            <section className="space-y-3">
+              <h3 className="text-[10px] font-extrabold text-muted-foreground/60 uppercase tracking-widest px-1 select-none">
+                Sources Used
               </h3>
-              <div className="space-y-1.5">
-                {sources.map((source) => (
-                  <SourceCitation key={source.id} source={source} compact />
+              <div className="space-y-2">
+                {sources.map((source, idx) => (
+                  <motion.div
+                    key={source.id}
+                    initial={{ y: 6, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: idx * 0.05, duration: 0.2 }}
+                  >
+                    <SourceCitation source={source} compact />
+                  </motion.div>
                 ))}
               </div>
             </section>
           )}
 
-          {sources.length > 0 && <Separator />}
+          {sources.length > 0 && (related.length > 0 || followUps.length > 0) && (
+            <Separator className="bg-white/5" />
+          )}
 
           {/* Related memories */}
           {related.length > 0 && (
-            <section>
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                Related memories
+            <section className="space-y-3">
+              <h3 className="text-[10px] font-extrabold text-muted-foreground/60 uppercase tracking-widest px-1 select-none">
+                Related Memories
               </h3>
-              <div className="space-y-1">
-                {related.map((mem) => {
+              <div className="space-y-1.5">
+                {related.map((mem, idx) => {
                   const Icon = TYPE_ICON[mem.type] || FileText;
                   return (
-                    <Button
+                    <motion.div
                       key={mem.id}
-                      variant="ghost"
-                      className="w-full justify-start gap-2.5 h-auto px-2.5 py-2.5 rounded-xl text-left group"
+                      initial={{ y: 6, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: idx * 0.05, duration: 0.2 }}
                     >
-                      <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-muted shrink-0">
-                        <Icon className="w-3.5 h-3.5 text-muted-foreground" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium text-foreground truncate">
-                          {mem.title}
-                        </p>
-                        <p className="text-[11px] text-muted-foreground">
-                          {mem.meta}
-                        </p>
-                      </div>
-                      <ArrowRight className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                    </Button>
+                      <Button
+                        variant="ghost"
+                        className={cn(
+                          "w-full justify-start gap-3 h-auto px-3 py-3 rounded-xl text-left border border-transparent transition-all duration-200 group",
+                          "bg-[#131911]/30 hover:bg-[#131911]/60 hover:border-white/5"
+                        )}
+                      >
+                        <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-500/5 border border-emerald-500/10 shrink-0 group-hover:bg-emerald-500/10 group-hover:border-emerald-500/20 transition-all">
+                          <Icon className="w-3.5 h-3.5 text-emerald-500/80" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold text-foreground/95 truncate">
+                            {mem.title}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
+                            {mem.meta}
+                          </p>
+                        </div>
+                        <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/0 group-hover:text-emerald-500/60 -translate-x-1 group-hover:translate-x-0 transition-all duration-200 shrink-0" />
+                      </Button>
+                    </motion.div>
                   );
                 })}
               </div>
             </section>
           )}
 
-          {related.length > 0 && <Separator />}
+          {related.length > 0 && followUps.length > 0 && (
+            <Separator className="bg-white/5" />
+          )}
 
           {/* Suggested follow-ups */}
           {followUps.length > 0 && (
-            <section>
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                Suggested follow-ups
+            <section className="space-y-3">
+              <h3 className="text-[10px] font-extrabold text-muted-foreground/60 uppercase tracking-widest px-1 select-none">
+                Suggested Follow-Ups
               </h3>
-              <div className="space-y-1.5">
-                {followUps.map((q, i) => (
-                  <Button
-                    key={i}
-                    variant="ghost"
-                    onClick={() => onFollowUpClick?.(q)}
-                    className="w-full justify-start gap-2 h-auto px-3 py-2 rounded-xl text-xs text-muted-foreground hover:text-foreground"
+              <div className="space-y-2">
+                {followUps.map((q, idx) => (
+                  <motion.div
+                    key={idx}
+                    initial={{ y: 6, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: idx * 0.05, duration: 0.2 }}
                   >
-                    <Brain className="w-3 h-3 shrink-0 text-primary/60" />
-                    <span className="line-clamp-2 text-left">{q}</span>
-                  </Button>
+                    <Button
+                      variant="ghost"
+                      onClick={() => onFollowUpClick?.(q)}
+                      className={cn(
+                        "w-full justify-between gap-3 h-auto px-3.5 py-3 rounded-xl text-xs font-semibold text-muted-foreground transition-all duration-200 text-left border border-white/5",
+                        "bg-[#131911]/25 hover:bg-[#131911]/50 hover:text-foreground hover:border-emerald-500/20 group cursor-pointer"
+                      )}
+                    >
+                      <div className="flex gap-2.5 items-start min-w-0">
+                        <Brain className="w-3.5 h-3.5 shrink-0 text-emerald-500/60 group-hover:text-emerald-500 transition-colors mt-0.5" />
+                        <span className="line-clamp-2 leading-relaxed">{q}</span>
+                      </div>
+                      <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/0 group-hover:text-emerald-500/60 -translate-x-1 group-hover:translate-x-0 transition-all duration-200 shrink-0 self-center" />
+                    </Button>
+                  </motion.div>
                 ))}
               </div>
             </section>
@@ -136,10 +179,12 @@ export function SourceRail({
 
           {/* Empty state when no sources yet */}
           {sources.length === 0 && related.length === 0 && followUps.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <Brain className="w-8 h-8 text-muted-foreground/30 mb-3" />
-              <p className="text-xs text-muted-foreground">
-                Sources and citations will appear here after you ask a question.
+            <div className="flex flex-col items-center justify-center py-20 text-center select-none">
+              <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center border border-white/5 mb-4">
+                <Brain className="w-5 h-5 text-muted-foreground/40" />
+              </div>
+              <p className="text-xs font-semibold text-muted-foreground/65 max-w-[200px] leading-relaxed">
+                Sources, citations, and related memories will appear here as you ask questions.
               </p>
             </div>
           )}

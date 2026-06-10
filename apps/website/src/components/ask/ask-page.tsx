@@ -51,11 +51,11 @@ function createSSEParser() {
 function mapSource(raw: Record<string, unknown>): SourceData {
   return {
     id: String(raw.id ?? crypto.randomUUID()),
-    type: (raw.type as SourceData["type"]) ?? "file",
+    type: (raw.type as SourceData["type"]) ?? (raw.sourceType as SourceData["type"]) ?? "file",
     label: String(raw.label ?? raw.title ?? "Source"),
-    detail: String(raw.detail ?? raw.meta ?? ""),
+    detail: String(raw.detail ?? raw.meta ?? raw.snippet ?? ""),
     confidence: (raw.confidence as SourceData["confidence"]) ?? "partial",
-    excerpt: raw.excerpt ? String(raw.excerpt) : undefined,
+    excerpt: raw.excerpt ? String(raw.excerpt) : (raw.snippet ? String(raw.snippet) : undefined),
     timestamp: raw.timestamp ? String(raw.timestamp) : undefined,
     people: raw.people as string[] | undefined,
     relatedTasks: raw.relatedTasks as string[] | undefined,
@@ -147,6 +147,13 @@ export function AskPage() {
               const src = mapSource(event as Record<string, unknown>);
               sources.push(src);
               setActiveSources([...sources]);
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === assistantId
+                    ? { ...m, sources: [...sources] }
+                    : m
+                )
+              );
               break;
             }
 
@@ -169,6 +176,13 @@ export function AskPage() {
               if (!sources.find((s) => s.id === citation.id)) {
                 sources.push(citation);
                 setActiveSources([...sources]);
+                setMessages((prev) =>
+                  prev.map((m) =>
+                    m.id === assistantId
+                      ? { ...m, sources: [...sources] }
+                      : m
+                  )
+                );
               }
               break;
             }
@@ -193,8 +207,9 @@ export function AskPage() {
 
             case "done": {
               // Extract any final metadata the server sends
+              let finalSources = sources;
               if (event.sources) {
-                const finalSources = (event.sources as Record<string, unknown>[]).map(mapSource);
+                finalSources = (event.sources as Record<string, unknown>[]).map(mapSource);
                 setActiveSources(finalSources);
               }
               if (event.followUps || event.follow_ups) {
@@ -204,6 +219,30 @@ export function AskPage() {
               if (event.related) {
                 setRelatedMemories(event.related as RelatedMemory[]);
               }
+
+              // Map suggestions to ActionItems
+              let finalActions: any[] = [];
+              if (event.actionSuggestions) {
+                finalActions = (event.actionSuggestions as any[]).map(a => ({
+                  id: String(a.id ?? crypto.randomUUID()),
+                  label: String(a.label ?? a.text ?? ""),
+                  kind: a.kind || "ask"
+                }));
+              }
+
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === assistantId
+                    ? {
+                        ...m,
+                        content: answer || m.content,
+                        sources: finalSources,
+                        suggestedActions: finalActions.length > 0 ? finalActions : undefined,
+                        retrievalActive: false
+                      }
+                    : m
+                )
+              );
               break;
             }
 
@@ -220,7 +259,7 @@ export function AskPage() {
       console.error("Ask stream error:", err);
       toast.error(msg);
 
-      // If we got no answer content, replace with an error message
+      // Replace with a clean helper message if stream failed
       if (!answer) {
         setMessages((prev) =>
           prev.map((m) =>
@@ -256,9 +295,13 @@ export function AskPage() {
   );
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full bg-gradient-to-b from-[#090d08] via-[#0b100a] to-[#080b07] relative overflow-hidden">
+      {/* Decorative premium backdrop blur elements */}
+      <div className="absolute bottom-0 left-1/4 right-1/4 h-[160px] bg-emerald-500/5 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-emerald-500/[0.02] blur-[150px] rounded-full pointer-events-none" />
+
       {/* Main chat column */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 relative z-10">
         <ChatArea messages={messages} isResponding={isResponding} onPromptClick={handlePromptClick} />
         <Composer onSend={handleSend} isResponding={isResponding} />
       </div>

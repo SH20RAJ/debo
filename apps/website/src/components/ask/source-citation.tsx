@@ -3,18 +3,18 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Drawer } from "@/components/ui/drawer";
 import {
   Mic,
   FileText,
   CheckSquare,
   Calendar,
-  ChevronDown,
-  ChevronUp,
   Clock,
   Users,
   BookOpen,
   Link2,
+  Sparkles,
+  Layers,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -46,23 +46,27 @@ const SOURCE_ICONS: Record<
 const CONFIDENCE_CONFIG = {
   strong: {
     label: "Strong match",
-    variant: "default" as const,
-    dotClass: "bg-emerald-500",
-    badgeClass:
-      "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/20",
+    percent: 92,
+    gradient: "from-emerald-500 to-teal-500",
+    dotClass: "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]",
+    cardBorder: "hover:border-emerald-500/30 hover:shadow-[0_0_12px_rgba(16,185,129,0.08)]",
+    badgeClass: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
   },
   partial: {
     label: "Partial match",
-    variant: "secondary" as const,
-    dotClass: "bg-amber-500",
-    badgeClass:
-      "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/20",
+    percent: 64,
+    gradient: "from-amber-500 to-orange-500",
+    dotClass: "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]",
+    cardBorder: "hover:border-amber-500/30 hover:shadow-[0_0_12px_rgba(245,158,11,0.08)]",
+    badgeClass: "bg-amber-500/10 text-amber-500 border-amber-500/20",
   },
   weak: {
-    label: "Needs context",
-    variant: "outline" as const,
-    dotClass: "bg-muted-foreground/50",
-    badgeClass: "text-muted-foreground",
+    label: "Weak match",
+    percent: 32,
+    gradient: "from-zinc-500 to-slate-500",
+    dotClass: "bg-zinc-400",
+    cardBorder: "hover:border-zinc-500/25",
+    badgeClass: "bg-zinc-500/10 text-zinc-400 border-zinc-500/20",
   },
 };
 
@@ -72,107 +76,198 @@ interface SourceCitationProps {
 }
 
 export function SourceCitation({ source, compact = false }: SourceCitationProps) {
-  const [expanded, setExpanded] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const Icon = SOURCE_ICONS[source.type] || FileText;
-  const confidence = CONFIDENCE_CONFIG[source.confidence];
+  const confidence = CONFIDENCE_CONFIG[source.confidence || "partial"];
 
+  const handleOpenDrawer = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsOpen(true);
+  };
+
+  // Compact layout (for the right sidebar rail)
   if (compact) {
     return (
-      <Card className="flex items-center gap-2.5 px-3 py-2 border-border/60 bg-card/80 hover:bg-muted/40 transition-colors cursor-pointer">
-        <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-muted shrink-0">
-          <Icon className="w-3.5 h-3.5 text-muted-foreground" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold text-foreground truncate">
-            {source.label}
-          </p>
-          <p className="text-[11px] text-muted-foreground truncate">
-            {source.detail}
-          </p>
-        </div>
-        <span className={cn("w-2 h-2 rounded-full shrink-0", confidence.dotClass)} />
-      </Card>
+      <>
+        <Card
+          onClick={handleOpenDrawer}
+          className={cn(
+            "flex items-center gap-2.5 px-3 py-2.5 border border-white/5 bg-[#131911]/30 hover:bg-[#131911]/60 transition-all duration-200 cursor-pointer select-none rounded-xl",
+            confidence.cardBorder
+          )}
+        >
+          <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-500/5 border border-emerald-500/10 shrink-0">
+            <Icon className="w-3.5 h-3.5 text-emerald-500/80" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold text-foreground/90 truncate leading-snug">
+              {source.label}
+            </p>
+            <p className="text-[10px] text-muted-foreground truncate leading-normal">
+              {source.detail}
+            </p>
+          </div>
+          <span className={cn("w-2 h-2 rounded-full shrink-0", confidence.dotClass)} />
+        </Card>
+
+        <CitationDrawer isOpen={isOpen} onClose={() => setIsOpen(false)} source={source} Icon={Icon} />
+      </>
     );
   }
 
+  // Standard Inline Layout (inside the chat bubble area)
   return (
-    <div className="group">
-      <Button
-        variant="ghost"
-        onClick={() => setExpanded(!expanded)}
-        className="w-full justify-start gap-2 h-auto px-3 py-2 rounded-xl hover:bg-muted/50 text-left"
+    <>
+      <button
+        onClick={handleOpenDrawer}
+        className={cn(
+          "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-white/5 bg-[#172115]/30 hover:bg-[#172115]/70 text-left transition-all duration-150 cursor-pointer select-none text-xs font-medium mr-1.5 mb-1.5 group",
+          confidence.cardBorder
+        )}
       >
-        <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-muted shrink-0">
-          <Icon className="w-3.5 h-3.5 text-muted-foreground" />
-        </div>
-        <span className="text-xs font-medium text-foreground/80 truncate flex-1">
+        <Icon className="w-3.5 h-3.5 text-emerald-500/70 group-hover:text-emerald-500 transition-colors" />
+        <span className="text-foreground/85 group-hover:text-foreground truncate max-w-[120px] transition-colors">
           {source.label}
         </span>
-        <span className="text-[11px] text-muted-foreground shrink-0">
-          {source.detail}
-        </span>
-        {expanded ? (
-          <ChevronUp className="w-3 h-3 text-muted-foreground shrink-0" />
-        ) : (
-          <ChevronDown className="w-3 h-3 text-muted-foreground shrink-0" />
-        )}
-      </Button>
+        <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", confidence.dotClass)} />
+      </button>
 
-      {/* Expanded details */}
-      <div
-        className={cn(
-          "overflow-hidden transition-all duration-200 ease-out",
-          expanded ? "max-h-60 opacity-100 mt-1.5" : "max-h-0 opacity-0"
-        )}
-      >
-        <div className="ml-2 pl-4 border-l-2 border-border space-y-2 pb-2">
-          {/* Confidence badge */}
-          <div className="flex items-center gap-1.5">
-            <span
-              className={cn("w-1.5 h-1.5 rounded-full", confidence.dotClass)}
-            />
-            <Badge variant={confidence.variant} className={cn("text-[11px] px-1.5 py-0", confidence.badgeClass)}>
-              {confidence.label}
-            </Badge>
+      <CitationDrawer isOpen={isOpen} onClose={() => setIsOpen(false)} source={source} Icon={Icon} />
+    </>
+  );
+}
+
+interface CitationDrawerProps {
+  isOpen: boolean;
+  onClose: () => void;
+  source: SourceData;
+  Icon: React.ComponentType<{ className?: string }>;
+}
+
+function CitationDrawer({ isOpen, onClose, source, Icon }: CitationDrawerProps) {
+  const confidence = CONFIDENCE_CONFIG[source.confidence || "partial"];
+
+  return (
+    <Drawer
+      isOpen={isOpen}
+      onClose={onClose}
+      title={source.label}
+      description={source.detail}
+    >
+      <div className="space-y-6 pb-6">
+        {/* Source Type & Confidence Stats */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-white/5 border border-white/5 rounded-xl p-3 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 shrink-0">
+              <Icon className="w-4 h-4 text-emerald-500" />
+            </div>
+            <div>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Source Type</p>
+              <p className="text-xs font-bold capitalize text-foreground/90 mt-0.5">{source.type}</p>
+            </div>
           </div>
 
-          {source.excerpt && (
-            <p className="text-xs text-muted-foreground leading-relaxed italic">
-              &ldquo;{source.excerpt}&rdquo;
-            </p>
+          <div className="bg-white/5 border border-white/5 rounded-xl p-3 flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Match Score</p>
+              <Badge variant="outline" className={cn("text-[9px] font-semibold px-1.5 py-0.5 rounded-full border", confidence.badgeClass)}>
+                {confidence.label}
+              </Badge>
+            </div>
+            <div className="mt-2.5">
+              <div className="w-full h-1.5 rounded-full bg-white/5 overflow-hidden">
+                <div
+                  className={cn("h-full rounded-full bg-gradient-to-r", confidence.gradient)}
+                  style={{ width: `${confidence.percent}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Excerpt Section */}
+        <div className="space-y-2">
+          <h4 className="text-xs font-bold text-foreground/80 tracking-wide flex items-center gap-1.5 select-none">
+            <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
+            Matching Excerpt
+          </h4>
+          {source.excerpt ? (
+            <div className="relative border border-emerald-500/10 bg-[#121810]/40 rounded-xl px-4 py-3 text-xs leading-relaxed text-foreground/90 italic">
+              <span className="absolute -top-3.5 left-2 text-3xl font-serif text-emerald-500/15 leading-none select-none">“</span>
+              <p className="relative z-10">{source.excerpt}</p>
+            </div>
+          ) : (
+            <div className="border border-white/5 bg-[#121810]/20 rounded-xl px-4 py-3 text-xs leading-relaxed text-muted-foreground/80 italic text-center">
+              No direct quotation extracted. Matching determined via overall document vector context.
+            </div>
           )}
+        </div>
 
-          <div className="flex flex-wrap gap-3 text-[11px] text-muted-foreground">
+        {/* Metadata Details */}
+        <div className="space-y-3 pt-2">
+          <h4 className="text-xs font-bold text-foreground/80 tracking-wide flex items-center gap-1.5 select-none">
+            <Layers className="w-3.5 h-3.5 text-emerald-500" />
+            Memory Details
+          </h4>
+          <div className="border border-white/5 bg-white/5 rounded-xl divide-y divide-white/5">
             {source.timestamp && (
-              <span className="flex items-center gap-1">
-                <Clock className="w-3 h-3" />
-                {source.timestamp}
-              </span>
+              <div className="flex items-center justify-between px-3.5 py-3 text-xs">
+                <span className="text-muted-foreground flex items-center gap-2">
+                  <Calendar className="w-3.5 h-3.5 text-emerald-500/60" />
+                  Captured At
+                </span>
+                <span className="font-medium text-foreground/95">{source.timestamp}</span>
+              </div>
             )}
+            
             {source.people && source.people.length > 0 && (
-              <span className="flex items-center gap-1">
-                <Users className="w-3 h-3" />
-                {source.people.join(", ")}
-              </span>
+              <div className="flex items-start justify-between px-3.5 py-3 text-xs gap-4">
+                <span className="text-muted-foreground flex items-center gap-2 shrink-0 mt-0.5">
+                  <Users className="w-3.5 h-3.5 text-emerald-500/60" />
+                  People Tagged
+                </span>
+                <span className="font-medium text-foreground/95 text-right flex flex-wrap gap-1 justify-end">
+                  {source.people.map(person => (
+                    <Badge key={person} variant="secondary" className="text-[10px] px-2 py-0 bg-white/5 border border-white/5 text-foreground/90">
+                      {person}
+                    </Badge>
+                  ))}
+                </span>
+              </div>
             )}
-          </div>
 
-          {source.relatedTasks && source.relatedTasks.length > 0 && (
-            <div className="flex flex-wrap gap-1">
+            <div className="flex items-center justify-between px-3.5 py-3 text-xs">
+              <span className="text-muted-foreground flex items-center gap-2">
+                <Clock className="w-3.5 h-3.5 text-emerald-500/60" />
+                Capture ID
+              </span>
+              <span className="font-mono text-[10px] text-muted-foreground">{source.id}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Related Tasks */}
+        {source.relatedTasks && source.relatedTasks.length > 0 && (
+          <div className="space-y-2">
+            <h4 className="text-xs font-bold text-foreground/80 tracking-wide flex items-center gap-1.5 select-none">
+              <CheckSquare className="w-3.5 h-3.5 text-emerald-500" />
+              Related Tasks
+            </h4>
+            <div className="flex flex-wrap gap-1.5">
               {source.relatedTasks.map((task) => (
                 <Badge
                   key={task}
                   variant="outline"
-                  className="text-[11px] gap-1 px-2 py-0 font-normal"
+                  className="text-[11px] gap-1 px-2.5 py-1 font-normal bg-emerald-500/5 border border-emerald-500/10 text-foreground/90 rounded-lg"
                 >
-                  <CheckSquare className="w-2.5 h-2.5" />
+                  <CheckSquare className="w-3 h-3 text-emerald-500" />
                   {task}
                 </Badge>
               ))}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
-    </div>
+    </Drawer>
   );
 }
