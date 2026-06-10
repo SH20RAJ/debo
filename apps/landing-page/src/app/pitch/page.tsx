@@ -12,8 +12,12 @@ import {
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Debo — The Vision",
-  description: "A personal intelligence layer for your life documentary.",
+  title: "Debo | Your Life’s MCP",
+  description: "The foundational memory layer for personal intelligence. Build a searchable knowledge graph and give your personal AI the context of your entire life.",
+  openGraph: {
+    title: "Debo: The Memory Context Protocol for Humans",
+    description: "AI without memory is temporary. Debo provides the permanent context layer that turns your history into a searchable personal intelligence protocol.",
+  },
 };
 
 export default function PitchPage() {
@@ -26,18 +30,18 @@ export default function PitchPage() {
             <div className="space-y-8">
               <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-landing-border bg-landing-surface text-landing-accent font-semibold tracking-wider text-landing-xs uppercase mx-auto lg:mx-0 shadow-sm">
                 <Sparkles className="h-3.5 w-3.5" />
-                Project Intelligence
+                The Memory Context Protocol
               </div>
               <h1 className="text-5xl md:text-7xl font-heading font-semibold tracking-tight leading-[1.05] text-landing-text-primary">
-                Collaborative <br />
-                <span className="text-landing-accent">Intelligence.</span>
+                Your life&apos;s <br />
+                <span className="text-landing-accent">MCP.</span>
               </h1>
               <p className="max-w-xl text-landing-base md:text-landing-lg font-medium leading-relaxed text-landing-text-secondary mx-auto lg:mx-0">
-                Debo is a multimodal intelligence lab. We build systems that don&apos;t just store data, but think with you — turning raw research into a private, connected memory graph.
+                AI without memory is temporary. Debo is the permanent infrastructure that turns your journals, voice recordings, and documents into a searchable context layer for personal intelligence.
               </p>
               <div className="flex flex-col gap-4 sm:flex-row justify-center lg:justify-start">
                 <Link href="/#waitlist" className="inline-flex h-12 items-center justify-center rounded-xl bg-landing-accent px-8 text-landing-sm font-semibold text-white transition-all hover:bg-landing-accent-hover hover:-translate-y-0.5 shadow-sm hover:shadow-md">
-                  Join the Lab
+                  Join Private Beta
                 </Link>
                 <a href="/pitch.pdf" download className="inline-flex h-12 items-center justify-center rounded-xl border border-landing-border bg-landing-surface px-8 text-landing-sm font-semibold text-landing-text-primary transition-all hover:bg-landing-surface-subtle hover:-translate-y-0.5 shadow-sm gap-2">
                   <FileDown className="h-4 w-4 text-landing-accent" />
@@ -50,7 +54,7 @@ export default function PitchPage() {
               <div className="p-10 border border-landing-border bg-landing-surface rounded-[24px] space-y-8 shadow-sm">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between text-landing-xs font-bold uppercase tracking-widest text-landing-text-tertiary">
-                    <span>Active Stream</span>
+                    <span>Memory Stream</span>
                     <div className="flex items-center gap-1.5">
                       <div className="size-1.5 rounded-full bg-landing-accent animate-pulse" />
                       Live
@@ -58,16 +62,16 @@ export default function PitchPage() {
                   </div>
                   <div className="p-5 bg-landing-bg rounded-2xl border border-landing-border">
                     <p className="text-landing-sm font-medium text-landing-text-secondary italic leading-relaxed">
-                      &ldquo;Remember to follow up on the memory engine proposal.&rdquo;
+                      &ldquo;What startup ideas have I discussed in the last month?&rdquo;
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="px-4 py-2.5 rounded-xl border border-landing-border bg-landing-bg text-landing-xs font-semibold text-landing-text-primary uppercase tracking-wider">
-                    Fact Extracted
+                    Context Extracted
                   </div>
                   <div className="px-4 py-2.5 rounded-xl border border-landing-border bg-landing-bg text-landing-xs font-semibold text-landing-text-primary uppercase tracking-wider">
-                    Pattern Logged
+                    Graph Updated
                   </div>
                 </div>
               </div>
@@ -81,20 +85,20 @@ export default function PitchPage() {
         <div className="mx-auto max-w-[1120px] text-center space-y-12">
           <div className="space-y-4">
             <h2 className="text-4xl md:text-5xl font-heading font-semibold text-landing-text-primary tracking-tight">
-              Information <span className="text-landing-accent">without meaning.</span>
+              Information is abundant. <br /><span className="text-landing-accent">Context is extinct.</span>
             </h2>
             <p className="text-landing-base md:text-landing-lg font-medium text-landing-text-secondary max-w-2xl mx-auto leading-relaxed">
-              We capture everything but remember nothing. Our journals are graveyards of thoughts, and our memories are fading silos.
+              We capture everything but remember nothing. Our journals are graveyards of thoughts, and our memories are fading silos. AI without personal context is just a clever toy.
             </p>
           </div>
           <div className="grid gap-5 md:grid-cols-3">
              {[
-               { label: "Fading Memory", desc: "Context lost over time." },
-               { label: "Fragmented Data", desc: "Scattered across apps." },
-               { label: "Lost Insights", desc: "No way to find patterns." }
+               { label: "Fading Context", desc: "Great ideas lost to the noise of daily life." },
+               { label: "Fragmented Silos", desc: "Your knowledge is scattered across 10+ apps." },
+               { label: "Static Intelligence", desc: "AI that doesn't know who you are or what you've done." }
              ].map((item, i) => (
                <div key={i} className="p-8 border border-landing-border bg-landing-bg rounded-[20px] text-center space-y-4 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5">
-                  <div className="text-landing-xs font-bold uppercase tracking-widest text-landing-accent mb-2">Issue {i + 1}</div>
+                  <div className="text-landing-xs font-bold uppercase tracking-widest text-landing-accent mb-2">Problem {i + 1}</div>
                   <div className="font-bold text-landing-base text-landing-text-primary">{item.label}</div>
                   <div className="text-landing-xs font-medium text-landing-text-secondary leading-relaxed">{item.desc}</div>
                </div>
@@ -116,33 +120,33 @@ export default function PitchPage() {
            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               <FeatureCard
                 icon={Zap}
-                title="Multimodal Engine"
-                desc="Process research papers, images, and voice into a unified context."
+                title="Omniscient Capture"
+                desc="Ingest journals, voice notes, PDFs, and conversations into one unified stream."
               />
               <FeatureCard
                 icon={Terminal}
-                title="Tinker API"
-                desc="Researcher-grade controls for personal model fine-tuning (LoRA)."
+                title="Searchable History"
+                desc="Every goal set, promise made, and decision logged—instantly accessible forever."
               />
               <FeatureCard
                 icon={Brain}
-                title="Connectionism"
-                desc="Identify hidden relationship manifolds across your knowledge base."
+                title="Context Synthesis"
+                desc="Automatically extract people, projects, and decisions to build your knowledge graph."
               />
               <FeatureCard
                 icon={Shield}
-                title="Private Core"
-                desc="End-to-end private intelligence. No ads. No public training."
+                title="Private Infrastructure"
+                desc="Local-first, end-to-end encrypted, and sovereign. Your memory belongs to you."
               />
               <FeatureCard
                 icon={Bot}
-                title="Jarvis Voice"
-                desc="Real-time multimodal voice interactions with sub-second response."
+                title="Memory Retrieval"
+                desc="Ask questions like 'What startup ideas have I discussed?' and get source-backed answers."
               />
               <FeatureCard
                 icon={Database}
-                title="Memory Graph"
-                desc="Connect people, facts, and emotions into a permanent graph."
+                title="Agentic Foundation"
+                desc="The foundational API that allows future AI agents to understand your life's context."
               />
            </div>
         </div>
@@ -155,13 +159,13 @@ export default function PitchPage() {
                <div className="space-y-10">
                   <div className="space-y-4">
                     <div className="text-landing-xs font-bold uppercase tracking-widest text-landing-accent">Philosophy</div>
-                    <h3 className="text-4xl md:text-5xl font-heading font-semibold text-landing-text-primary tracking-tight">The property of mind.</h3>
+                    <h3 className="text-4xl md:text-5xl font-heading font-semibold text-landing-text-primary tracking-tight">Memory → Context → Intelligence.</h3>
                   </div>
                   <div className="space-y-8">
-                     <Pillar title="Expressive" text="Simple, direct, and active language." />
-                     <Pillar title="Playful" text="Light interaction, serious utility." />
-                     <Pillar title="Embracing" text="Designed for human growth." />
-                     <Pillar title="Private" text="No tracking. No ads. No training." />
+                     <Pillar title="Permanent" text="Built for decades, not sessions." />
+                     <Pillar title="Private" text="Your data is never used for training." />
+                     <Pillar title="Connected" text="Automated relationship mapping across your life." />
+                     <Pillar title="Sovereign" text="You own the protocol and the data." />
                   </div>
                </div>
                <div className="p-10 border border-landing-border bg-landing-bg rounded-[24px] flex flex-col justify-between space-y-10 shadow-sm">
@@ -171,7 +175,7 @@ export default function PitchPage() {
                      </div>
                      <h4 className="text-landing-2xl font-bold text-landing-text-primary tracking-tight leading-tight">Your data is yours.</h4>
                      <p className="text-landing-base font-semibold text-landing-text-secondary leading-relaxed">
-                        We don&apos;t sell insights. We don&apos;t train on your life. Debo is a private instance, grounded only in what you tell it.
+                        We don&apos;t sell insights. We don&apos;t train on your life. Debo is a private instance, grounded only in what you tell it. It is the context layer for you, and no one else.
                      </p>
                      <div className="pt-4">
                        <div className="text-landing-xs font-bold uppercase tracking-widest text-landing-accent mb-1">Strategic Contact</div>
@@ -179,7 +183,7 @@ export default function PitchPage() {
                      </div>
                   </div>
                   <Link href="/#waitlist" className="inline-flex h-12 items-center justify-center rounded-xl bg-landing-accent px-8 text-landing-sm font-semibold text-white transition-all hover:bg-landing-accent-hover hover:-translate-y-0.5 shadow-sm hover:shadow-md">
-                     Join Waitlist
+                     Join Private Beta
                   </Link>
                </div>
             </div>
