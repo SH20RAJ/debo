@@ -76,16 +76,23 @@ function normalizeConnector(raw: any): Connector & { provider: string } {
     permission: "Required scopes for read access",
   };
 
+  const name = raw.name ?? meta.name;
+  const description = raw.description ?? meta.description;
+  const icon = raw.icon ?? meta.icon;
+  const color = raw.color ?? meta.color;
+  const category = raw.category ?? meta.category;
+  const permission = raw.permission ?? meta.permission;
+
   return {
     id: raw.id ?? crypto.randomUUID(),
-    name: meta.name,
-    description: meta.description,
-    icon: meta.icon,
-    color: meta.color,
+    name,
+    description,
+    icon,
+    color,
     status: raw.status === "disconnected" ? "not_connected" : raw.status ?? "not_connected",
-    permissions: [meta.permission],
-    permission: meta.permission,
-    category: meta.category,
+    permissions: [permission],
+    permission,
+    category,
     provider,
   } as any;
 }

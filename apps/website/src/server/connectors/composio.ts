@@ -1,20 +1,5 @@
 import { Composio } from "@composio/core";
 
-/**
- * Composio integration helpers.
- *
- * Required env:
- *   - COMPOSIO_API_KEY
- *
- * Strategy:
- *   - We map our internal connector provider slugs (e.g. "gmail") to Composio
- *     toolkit slugs and use composio.toolkits.authorize(userId, slug) to begin
- *     OAuth. The redirect URL is what the frontend opens in a popup.
- *   - We track `connector_accounts` rows in our DB; the Composio connection
- *     ID is stored in `external_account_id` so we can later target a specific
- *     account when executing tools.
- */
-
 export const SUPPORTED_PROVIDERS = [
   "gmail",
   "google_calendar",
@@ -22,17 +7,31 @@ export const SUPPORTED_PROVIDERS = [
   "github",
   "slack",
   "drive",
+  "jira",
+  "hubspot",
+  "discord",
+  "trello",
+  "zoom",
+  "salesforce",
 ] as const;
 
-export type ConnectorProvider = (typeof SUPPORTED_PROVIDERS)[number];
+export type ConnectorProvider = string;
 
-const PROVIDER_TO_TOOLKIT: Record<ConnectorProvider, string> = {
+const PROVIDER_TO_TOOLKIT: Record<string, string> = {
   gmail: "gmail",
   google_calendar: "googlecalendar",
+  googlecalendar: "googlecalendar",
   notion: "notion",
   github: "github",
   slack: "slack",
   drive: "googledrive",
+  googledrive: "googledrive",
+  jira: "jira",
+  hubspot: "hubspot",
+  discord: "discord",
+  trello: "trello",
+  zoom: "zoom",
+  salesforce: "salesforce",
 };
 
 let cached: Composio | null = null;
@@ -49,10 +48,10 @@ export function isComposioConfigured(): boolean {
   return Boolean(process.env.COMPOSIO_API_KEY);
 }
 
-export function isSupportedProvider(p: string): p is ConnectorProvider {
-  return (SUPPORTED_PROVIDERS as readonly string[]).includes(p);
+export function isSupportedProvider(p: string): boolean {
+  return true;
 }
 
-export function getToolkitSlug(p: ConnectorProvider): string {
-  return PROVIDER_TO_TOOLKIT[p];
+export function getToolkitSlug(p: string): string {
+  return PROVIDER_TO_TOOLKIT[p.toLowerCase()] || p;
 }

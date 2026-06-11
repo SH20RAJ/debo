@@ -725,9 +725,7 @@ export const connectorAccounts = pgTable(
     workspaceId: text("workspace_id")
       .notNull()
       .references(() => workspaces.id),
-    provider: text("provider", {
-      enum: ["gmail", "google_calendar", "notion", "github", "slack", "drive", "custom"],
-    }).notNull(),
+    provider: text("provider").notNull(),
     status: text("status", {
       enum: ["connected", "disconnected", "expired", "error", "paused"],
     })

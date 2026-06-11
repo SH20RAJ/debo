@@ -116,14 +116,7 @@ export type ChatThreadMode =
 export type ChatMessageRole = "user" | "assistant" | "tool" | "system";
 
 /** Supported connector providers */
-export type ConnectorProvider =
-  | "gmail"
-  | "google_calendar"
-  | "notion"
-  | "github"
-  | "slack"
-  | "drive"
-  | "custom";
+export type ConnectorProvider = string;
 
 /** Connector account status */
 export type ConnectorAccountStatus =

@@ -62,10 +62,14 @@ export function ConnectorCard({
     <div className="rounded-2xl border border-border bg-card p-4 transition-colors hover:border-primary/30 flex flex-col gap-3">
       <div className="flex items-start justify-between">
         <div
-          className="size-10 rounded-xl flex items-center justify-center text-base font-bold text-white"
+          className="size-10 rounded-xl flex items-center justify-center overflow-hidden bg-muted border border-border/10"
           style={{ backgroundColor: connector.color }}
         >
-          {connector.icon}
+          {connector.icon && (connector.icon.startsWith("http") || connector.icon.startsWith("/") || connector.icon.includes(".svg")) ? (
+            <img src={connector.icon} alt={connector.name} className="size-6 object-contain" />
+          ) : (
+            <span className="text-base font-bold text-white">{connector.icon}</span>
+          )}
         </div>
         <Badge
           variant={config.variant}

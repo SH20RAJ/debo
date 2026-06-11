@@ -39,24 +39,41 @@ export async function POST(req: Request) {
     if (!parsed.success) return apiError("invalid_body", 400);
 
     const { provider } = parsed.data;
-    if (!isSupportedProvider(provider)) {
-      return apiError("unsupported_provider", 400, { provider });
+    if (!provider || typeof provider !== "string") {
+      return apiError("provider_required", 400);
     }
 
     if (!isComposioConfigured()) {
-      return apiError("service_not_configured", 503, { service: "composio" });
+      return apiError("Composio is not configured. Please set COMPOSIO_API_KEY environment variable.", 503);
     }
 
     const composio = getComposio();
     if (!composio) {
-      return apiError("service_not_configured", 503, { service: "composio" });
+      return apiError("Composio is not configured. Please set COMPOSIO_API_KEY environment variable.", 503);
     }
 
     const toolkitSlug = getToolkitSlug(provider);
-    const connectionRequest = await composio.toolkits.authorize(
-      user.id,
-      toolkitSlug,
-    );
+    let connectionRequest;
+    try {
+      connectionRequest = await composio.toolkits.authorize(
+        user.id,
+        toolkitSlug,
+      );
+    } catch (err: any) {
+      console.error("[connectors/connect] Composio authorization failed:", err);
+      const errMsg = err.message || "";
+      if (
+        errMsg.toLowerCase().includes("invalid api key") ||
+        errMsg.toLowerCase().includes("unauthorized") ||
+        errMsg.toLowerCase().includes("couldn't fetch toolkit") ||
+        err.status === 401 ||
+        err.cause?.status === 401 ||
+        err.cause?.error?.error?.status === 401
+      ) {
+        return apiError("Your Composio API Key is invalid or expired. Please verify COMPOSIO_API_KEY environment variable.", 401);
+      }
+      return apiError(errMsg || "Failed to initiate connection authorization.", 500);
+    }
 
     const externalAccountId = connectionRequest.id;
     const redirectUrl = connectionRequest.redirectUrl ?? null;

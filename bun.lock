@@ -4,6 +4,9 @@
   "workspaces": {
     "": {
       "name": "debo",
+      "dependencies": {
+        "zod": "^4.4.3",
+      },
       "devDependencies": {
         "@opennextjs/aws": "^3.10.4",
         "@opennextjs/cloudflare": "1.19.6",
@@ -15,7 +18,7 @@
     },
     "apps/cli": {
       "name": "@debo.life/cli",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "bin": {
         "debo": "./bin/debo.js",
       },

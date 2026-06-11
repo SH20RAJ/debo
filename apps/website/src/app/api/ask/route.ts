@@ -14,7 +14,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { HumanMessage, SystemMessage } from "@langchain/core/messages";
+import { HumanMessage, SystemMessage, ToolMessage } from "@langchain/core/messages";
 import { requireSession, apiError } from "@/lib/api-helpers";
 import { classifyIntent, isChitchat, classifyRetrievalIntent } from "@/server/langgraph/nodes/classify-intent.node";
 import { retrieveMemory } from "@/server/langgraph/nodes/retrieve-memory.node";
@@ -28,6 +28,53 @@ import { isLlmConfigured } from "@/server/llm/provider";
 import { suggestActionsNode } from "@/server/langgraph/nodes/suggest-actions.node";
 import { validateCitationsNode } from "@/server/langgraph/nodes/validate-citations.node";
 import { db } from "@debo/db";
+import { tool } from "@langchain/core/tools";
+import { z } from "zod";
+
+const webFetchSchema = z.object({
+  url: z.string().url().describe("The absolute HTTP or HTTPS URL of the webpage to fetch."),
+});
+
+const webFetchTool = tool(
+  async (input: any) => {
+    const { url } = input;
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 seconds timeout
+
+      const response = await fetch(url, {
+        signal: controller.signal,
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        }
+      });
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        return `Failed to fetch webpage. Status code: ${response.status}`;
+      }
+
+      const html = await response.text();
+
+      // Basic text extraction: strip scripts, styles, and tags
+      let bodyText = html
+        .replace(/<script[^>]*>([\s\S]*?)<\/script>/gi, "")
+        .replace(/<style[^>]*>([\s\S]*?)<\/style>/gi, "")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+
+      return bodyText.slice(0, 15000); // return first 15k characters
+    } catch (err: any) {
+      return `Error fetching webpage: ${err.message || err}`;
+    }
+  },
+  {
+    name: "web_fetch",
+    description: "Fetch the text content of a public URL to answer questions about live web pages, news articles, or documentation.",
+    schema: webFetchSchema,
+  }
+);
 import {
   chatThreads,
   chatMessages,
@@ -154,16 +201,91 @@ export async function POST(req: Request) {
         } else {
           const llm = createNvidiaLLM(true);
           if (!llm) throw new Error("llm_unavailable");
+          
           const systemPrompt = buildSystemPrompt(contextText, mode, intent);
-          const tokenStream = await llm.stream([
+          
+          const initialMessages = [
             new SystemMessage(systemPrompt),
             new HumanMessage(question),
-          ]);
-          for await (const chunk of tokenStream) {
-            const token = typeof chunk.content === "string" ? chunk.content : "";
-            if (token) {
-              finalAnswer += token;
-              send({ type: "answer_delta", token });
+          ];
+
+          const hasUrl = /https?:\/\/[^\s]+/i.test(question);
+
+          if (hasUrl) {
+            const llmWithTools = llm.bindTools([webFetchTool]);
+            
+            // Check for tool calls first
+            const firstResponse = await llmWithTools.invoke(initialMessages);
+            let messagesForFinalStream = initialMessages;
+            let executedTool = false;
+
+            if (firstResponse.tool_calls && firstResponse.tool_calls.length > 0) {
+              const toolCall = firstResponse.tool_calls[0]!;
+              if (toolCall.name === "web_fetch") {
+                const url = (toolCall.args as any).url;
+                send({ 
+                  type: "retrieval_started",
+                  detail: `Fetching live web page content from: ${url}...`
+                });
+
+                // Run the tool execution
+                const toolResult = await webFetchTool.invoke({
+                  name: "web_fetch",
+                  args: { url },
+                  id: toolCall.id,
+                  type: "tool_call"
+                });
+
+                // Send source found notification to the frontend
+                send({
+                  type: "source_found",
+                  id: `web_fetch_${Date.now()}`,
+                  sourceType: "link",
+                  title: `Fetched URL: ${url}`,
+                  snippet: typeof toolResult === "string" ? toolResult.slice(0, 300) : "Webpage content",
+                  confidence: "strong"
+                });
+
+                // Append tool response to the history
+                messagesForFinalStream = [
+                  new SystemMessage(systemPrompt),
+                  new HumanMessage(question),
+                  firstResponse,
+                  new ToolMessage({
+                    content: typeof toolResult === "string" ? toolResult : String(toolResult),
+                    tool_call_id: toolCall.id || "",
+                    name: "web_fetch"
+                  })
+                ];
+                executedTool = true;
+              }
+            }
+
+            if (executedTool) {
+              // Stream the final output based on live webpage data
+              const tokenStream = await llm.stream(messagesForFinalStream);
+              for await (const chunk of tokenStream) {
+                const token = typeof chunk.content === "string" ? chunk.content : "";
+                if (token) {
+                  finalAnswer += token;
+                  send({ type: "answer_delta", token });
+                }
+              }
+            } else {
+              // No tool was executed, stream the content of firstResponse
+              const content = typeof firstResponse.content === "string" ? firstResponse.content : "";
+              finalAnswer = content;
+              send({ type: "answer_delta", token: content });
+            }
+          } else {
+            // Stream the final output directly (no double invocation!)
+            const tokenStream = await llm.stream(initialMessages);
+            for await (const chunk of tokenStream) {
+              const token = typeof chunk.content === "string" ? chunk.content : "";
+              if (token) {
+                finalAnswer += token;
+                send({ type: "answer_delta", token });
+              }
             }
           }
         }
