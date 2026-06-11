@@ -99,6 +99,14 @@ export default function DashboardLayout({
             <Topbar
               onCommandMenuOpen={() => setCommandMenuOpen(true)}
               onMobileMenuToggle={() => setMobileOpen((prev) => !prev)}
+              onSidebarToggle={() => {
+                setSidebarCollapsed((prev) => {
+                  const next = !prev;
+                  localStorage.setItem("debo-sidebar-collapsed", String(next));
+                  return next;
+                });
+              }}
+              sidebarCollapsed={sidebarCollapsed}
             />
             <main className="flex-1 overflow-auto">
               <Suspense fallback={null}>{children}</Suspense>

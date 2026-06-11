@@ -124,13 +124,36 @@ export function useSidebarPrefs() {
   useEffect(() => {
     const stored = loadPrefs();
     if (stored) {
+      // Deduplicate sections by id to fix existing corrupt localStorage state
+      const seenSectionIds = new Set<string>();
+      const deduplicatedSections: SidebarSectionDef[] = [];
+      
+      for (const section of stored.sections) {
+        if (!seenSectionIds.has(section.id)) {
+          seenSectionIds.add(section.id);
+          deduplicatedSections.push({ ...section, itemIds: [...section.itemIds] });
+        } else {
+          // Merge items into the existing section with the same ID
+          const existing = deduplicatedSections.find((s) => s.id === section.id);
+          if (existing) {
+            existing.itemIds = [...new Set([...existing.itemIds, ...section.itemIds])];
+          }
+        }
+      }
+      stored.sections = deduplicatedSections;
+
       // Validate: ensure all known items are present somewhere
       const allAssigned = new Set(stored.sections.flatMap((s) => s.itemIds));
       const allKnown = new Set(ALL_NAV_ITEMS.map((i) => i.id));
       const missing = [...allKnown].filter((id) => !allAssigned.has(id) && !stored.hiddenItemIds.includes(id));
       if (missing.length > 0) {
         // Orphaned items → add to a catch-all section
-        stored.sections.push({ id: "other", label: "Other", collapsed: false, itemIds: missing });
+        const otherSection = stored.sections.find((s) => s.id === "other");
+        if (otherSection) {
+          otherSection.itemIds = [...new Set([...otherSection.itemIds, ...missing])];
+        } else {
+          stored.sections.push({ id: "other", label: "Other", collapsed: false, itemIds: missing });
+        }
       }
       setPrefs(stored);
     }

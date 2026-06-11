@@ -12,6 +12,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 interface TopbarProps {
   onCommandMenuOpen: () => void;
   onMobileMenuToggle?: () => void;
+  onSidebarToggle?: () => void;
+  sidebarCollapsed?: boolean;
 }
 
 const TITLES: Record<string, string> = {
@@ -45,7 +47,12 @@ function deriveTitle(pathname: string): string {
   return candidates[0] ? TITLES[candidates[0]] : "Debo";
 }
 
-export function Topbar({ onCommandMenuOpen, onMobileMenuToggle }: TopbarProps) {
+export function Topbar({
+  onCommandMenuOpen,
+  onMobileMenuToggle,
+  onSidebarToggle,
+  sidebarCollapsed,
+}: TopbarProps) {
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
   const title = deriveTitle(pathname);
@@ -59,6 +66,18 @@ export function Topbar({ onCommandMenuOpen, onMobileMenuToggle }: TopbarProps) {
           onClick={onMobileMenuToggle}
           className="md:hidden text-muted-foreground hover:text-foreground rounded-xl shrink-0 hover:bg-accent/60"
           aria-label="Toggle menu"
+        >
+          <Menu className="w-5 h-5" />
+        </Button>
+      )}
+
+      {onSidebarToggle && (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onSidebarToggle}
+          className="hidden md:flex text-muted-foreground hover:text-foreground rounded-xl shrink-0 hover:bg-accent/60 h-9 w-9"
+          aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           <Menu className="w-5 h-5" />
         </Button>
