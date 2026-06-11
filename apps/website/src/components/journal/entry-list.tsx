@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Plus, Search, X, Book } from "lucide-react";
+import { Plus, Search, X, BookOpen, Clock, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,7 +31,13 @@ function getDateGroup(dateStr: string): string {
 
 function formatRelative(dateStr: string): string {
   const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return "Draft";
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+function getWordCount(text: string): number {
+  if (!text) return 0;
+  return text.trim().split(/\s+/).filter(Boolean).length;
 }
 
 export function JournalEntryList({
@@ -49,7 +55,7 @@ export function JournalEntryList({
       ? entries.filter(
           (e) =>
             e.title.toLowerCase().includes(q) ||
-            e.preview.toLowerCase().includes(q),
+            e.content.toLowerCase().includes(q),
         )
       : entries;
 
@@ -73,20 +79,22 @@ export function JournalEntryList({
   }, [entries, search]);
 
   return (
-    <div className="flex h-full flex-col bg-card/40 backdrop-blur-sm">
+    <div className="flex h-full flex-col bg-zinc-950/45 backdrop-blur-md select-none border-zinc-800/10">
       {/* Header */}
-      <div className="flex items-center justify-between gap-2 px-4 pt-4 pb-3">
+      <div className="flex items-center justify-between gap-2 px-4.5 pt-5 pb-3">
         <div className="flex items-center gap-2">
-          <Book className="h-4 w-4 text-primary" />
-          <h2 className="text-sm font-semibold tracking-tight text-foreground font-[var(--font-nunito)]">
+          <div className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800/80">
+            <BookOpen className="h-4 w-4 text-zinc-350" />
+          </div>
+          <h2 className="text-sm font-bold tracking-wider uppercase text-zinc-300 font-[var(--font-nunito)]">
             Journal
           </h2>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
           <Button
             onClick={onNewEntry}
             size="sm"
-            className="h-8 gap-1.5 px-3 text-xs rounded-xl shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-transform"
+            className="h-8 gap-1 px-3 text-[11px] font-bold rounded-xl bg-zinc-100 hover:bg-zinc-200 text-black shadow-lg shadow-white/5 active:scale-[0.97] transition-all"
           >
             <Plus className="h-3.5 w-3.5" />
             New
@@ -95,7 +103,7 @@ export function JournalEntryList({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 md:hidden rounded-xl"
+              className="h-8 w-8 md:hidden rounded-xl border border-zinc-800/40 bg-zinc-900/30 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100"
               onClick={onClose}
               aria-label="Close list"
             >
@@ -106,81 +114,103 @@ export function JournalEntryList({
       </div>
 
       {/* Search Input */}
-      <div className="px-4 pb-3">
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+      <div className="px-4.5 pb-4">
+        <div className="relative group">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-500 group-focus-within:text-zinc-300 transition-colors" />
           <Input
             type="text"
             placeholder="Search entries..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="h-9 pl-9 pr-8 text-xs rounded-xl border-border/50 bg-muted/40 focus-visible:ring-primary/20 focus-visible:border-primary/50"
+            className="h-9.5 pl-9.5 pr-8 text-xs rounded-xl border-zinc-900 bg-zinc-900/40 focus:bg-zinc-900/60 text-zinc-200 placeholder:text-zinc-600 focus-visible:ring-1 focus-visible:ring-zinc-800 focus-visible:border-zinc-750 transition-all"
           />
           {search && (
             <button
               onClick={() => setSearch("")}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground rounded-full p-0.5 hover:bg-accent transition-colors"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-305 rounded-full p-0.5 hover:bg-zinc-800 transition-colors"
             >
-              <X className="h-3 w-3" />
+              <X className="h-3.5 w-3.5" />
             </button>
           )}
         </div>
       </div>
 
       {/* Entry Feed List */}
-      <ScrollArea className="flex-1">
-        <div className="px-2 pb-4 space-y-4">
+      <ScrollArea className="flex-1 px-2.5 pb-4">
+        <div className="space-y-4 pr-1">
           {grouped.length === 0 ? (
-            <div className="px-3 py-12 text-center text-xs text-muted-foreground">
-              {search ? "No matching entries" : "No entries yet"}
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <BookOpen className="h-7 w-7 text-zinc-700 stroke-[1.5] mb-2" />
+              <p className="text-[11px] text-zinc-500 font-medium max-w-[150px] leading-relaxed">
+                {search ? "No matching entries found." : "Your journal is empty."}
+              </p>
             </div>
           ) : (
             grouped.map((group) => (
-              <div key={group.label} className="space-y-1">
-                <p className="px-3 pb-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60">
+              <div key={group.label} className="space-y-1.5">
+                <p className="px-2 pb-0.5 text-[9px] font-extrabold uppercase tracking-wider text-zinc-500/80">
                   {group.label}
                 </p>
                 <div className="space-y-1">
                   {group.entries.map((entry) => {
                     const active = entry.id === activeEntryId;
+                    const wordCount = getWordCount(entry.content);
+                    const isTemp = entry.id.startsWith("temp_");
+
                     return (
                       <button
                         key={entry.id}
                         type="button"
                         onClick={() => onSelect(entry.id)}
+                        disabled={isTemp}
                         className={cn(
-                          "group relative w-full rounded-xl px-3 py-2.5 text-left transition-all border border-transparent",
+                          "group relative w-full rounded-xl p-3 text-left transition-all duration-200 border text-zinc-300",
                           active
-                            ? "bg-primary/[0.07] border-primary/10 shadow-sm"
-                            : "hover:bg-accent/40 hover:border-accent-foreground/5 text-foreground",
+                            ? "bg-zinc-900/80 border-zinc-800/80 shadow-[0_4px_16px_rgba(0,0,0,0.5)] text-white hover:translate-x-0"
+                            : "bg-transparent border-transparent hover:bg-zinc-900/30 hover:border-zinc-900/50 hover:translate-x-0.5 active:translate-x-0",
+                          isTemp && "opacity-60 cursor-not-allowed"
                         )}
                       >
-                        {/* Active Left Indicator Bar */}
+                        {/* Left Active Glow Indicator */}
                         {active && (
-                          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.75 h-3/5 bg-primary rounded-r-full" />
+                          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-1/2 bg-white rounded-r-full shadow-[0_0_8px_white]" />
                         )}
 
-                        <p
-                          className={cn(
-                            "truncate text-xs font-semibold font-[var(--font-nunito)]",
-                            active ? "text-primary" : "text-foreground",
-                            !entry.title && "text-muted-foreground italic",
-                          )}
-                        >
-                          {entry.title || "Untitled"}
+                        <div className="flex items-start justify-between gap-2">
+                          <p
+                            className={cn(
+                              "truncate text-xs font-bold font-[var(--font-nunito)] tracking-tight leading-snug",
+                              active ? "text-zinc-100" : "text-zinc-300 group-hover:text-zinc-200",
+                              !entry.title && "text-zinc-550 italic font-normal",
+                            )}
+                          >
+                            {entry.title || (isTemp ? "Drafting..." : "Untitled Note")}
+                          </p>
+                          
+                          {/* Top-Right relative date indicator */}
+                          <span className="shrink-0 text-[10px] text-zinc-550 group-hover:text-zinc-400 transition-colors font-medium">
+                            {formatRelative(entry.updatedAt ?? entry.createdAt)}
+                          </span>
+                        </div>
+                        
+                        <p className={cn(
+                          "mt-1.5 line-clamp-2 text-[11px] leading-relaxed transition-colors",
+                          active ? "text-zinc-400" : "text-zinc-500 group-hover:text-zinc-400"
+                        )}>
+                          {entry.preview || (isTemp ? "Starting draft..." : "Write your thoughts...")}
                         </p>
                         
-                        <p className="mt-1 line-clamp-2 text-[11px] text-muted-foreground/80 leading-normal">
-                          {entry.preview || "No content..."}
-                        </p>
-                        
-                        <div className="mt-2 flex items-center justify-between text-[9px] text-muted-foreground/60 font-medium">
-                          <span>{formatRelative(entry.updatedAt ?? entry.createdAt)}</span>
-                          {entry.content && (
-                            <span className="opacity-0 group-hover:opacity-100 transition-opacity">
-                              {entry.content.split(/\s+/).filter(Boolean).length} words
-                            </span>
-                          )}
+                        {/* Footer details (hover-revealed word count) */}
+                        <div className="mt-2.5 flex items-center justify-between text-[9px] font-medium text-zinc-550 transition-colors">
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-2.5 h-2.5" />
+                            {Math.max(1, Math.ceil(wordCount / 200))} min
+                          </span>
+                          
+                          <span className="flex items-center gap-1">
+                            <FileText className="w-2.5 h-2.5" />
+                            {wordCount} {wordCount === 1 ? "word" : "words"}
+                          </span>
                         </div>
                       </button>
                     );

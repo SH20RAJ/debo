@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import useSWR from "swr";
 import {
   Loader2,
   Maximize2,
@@ -9,6 +10,9 @@ import {
   Minimize2,
   PenLine,
   Trash2,
+  CheckCircle2,
+  AlertCircle,
+  CloudLightning,
 } from "lucide-react";
 import { JournalEntryList } from "@/components/journal/entry-list";
 import { Button } from "@/components/ui/button";
@@ -28,9 +32,9 @@ const JournalEditor = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-        Loading editor
+      <div className="flex h-full items-center justify-center text-sm text-zinc-400">
+        <Loader2 className="mr-2 h-4 w-4 animate-spin text-primary" />
+        Loading editor...
       </div>
     ),
   },
@@ -83,10 +87,29 @@ function useRelativeSavedLabel(savedAt: number | null) {
   return `Saved ${hours}h ago`;
 }
 
-export function JournalPage() {
-  const [entries, setEntries] = useState<JournalEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [activeEntryId, setActiveEntryId] = useState<string>("");
+interface JournalPageProps {
+  fallbackData?: JournalEntry[];
+}
+
+export function JournalPage({ fallbackData = [] }: JournalPageProps) {
+  // SWR Hook with initial server fallback data
+  const { data: entries = [], mutate } = useSWR<JournalEntry[]>(
+    "/api/sources?type=journal",
+    async () => {
+      const data = await api.journal.list();
+      return (Array.isArray(data) ? data : []).map(mapSourceToEntry);
+    },
+    {
+      fallbackData,
+      revalidateOnMount: false,
+      revalidateOnFocus: false,
+    }
+  );
+
+  const [activeEntryId, setActiveEntryId] = useState<string>(() => {
+    return fallbackData[0]?.id ?? "";
+  });
+
   const [creating, setCreating] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
   const [listOpen, setListOpen] = useState(false);
@@ -104,25 +127,12 @@ export function JournalPage() {
   } | null>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const fetchEntries = useCallback(async () => {
-    try {
-      const data = await api.journal.list();
-      const mapped = (Array.isArray(data) ? data : []).map(mapSourceToEntry);
-      setEntries(mapped);
-      setActiveEntryId((prev) => {
-        if (prev && mapped.some((e) => e.id === prev)) return prev;
-        return mapped[0]?.id ?? "";
-      });
-    } catch (err) {
-      console.error("[journal] failed to fetch entries", err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
+  // Auto-select first entry if active selection is invalid/empty
   useEffect(() => {
-    fetchEntries();
-  }, [fetchEntries]);
+    if (entries.length > 0 && (!activeEntryId || !entries.some(e => e.id === activeEntryId))) {
+      setActiveEntryId(entries[0].id);
+    }
+  }, [entries, activeEntryId]);
 
   const activeEntry = useMemo(
     () => entries.find((e) => e.id === activeEntryId),
@@ -149,7 +159,7 @@ export function JournalPage() {
     };
     setSaveState("idle");
     setSavedAt(activeEntry.updatedAt ? Date.parse(activeEntry.updatedAt) : null);
-  }, [activeEntry?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [activeEntryId]);
 
   const flushSave = useCallback(async () => {
     const draft = draftRef.current;
@@ -162,51 +172,49 @@ export function JournalPage() {
       return;
     }
     const targetId = last.id;
+    if (targetId.startsWith("temp_")) {
+      return; // Skip saving until real ID is resolved from server
+    }
+
     setSaveState("saving");
     try {
       const updated = await api.journal.update(targetId, {
         title: draft.title,
         content: draft.content,
       });
+      
+      const mapped = mapSourceToEntry(updated);
       lastSavedRef.current = {
         id: targetId,
         title: draft.title,
         content: draft.content,
       };
-      setEntries((prev) =>
-        prev.map((e) =>
-          e.id === targetId
-            ? {
-                ...e,
-                title: draft.title,
-                content: draft.content,
-                preview: makePreview(draft.content),
-                updatedAt:
-                  updated?.updatedAt ?? new Date().toISOString(),
-              }
-            : e,
-        ),
+
+      // Update local SWR cache with the newly updated entry
+      mutate(
+        (prev) => prev?.map((e) => (e.id === targetId ? mapped : e)) ?? [],
+        false
       );
+
       setSavedAt(Date.now());
       setSaveState("saved");
     } catch (err) {
       console.error("[journal] save failed", err);
       setSaveState("error");
     }
-  }, []);
+  }, [mutate]);
 
   const scheduleSave = useCallback(() => {
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(() => {
       flushSave();
-    }, 800);
+    }, 1200);
   }, [flushSave]);
 
   // Flush on unmount or before tab close.
   useEffect(() => {
     const onBeforeUnload = () => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-      // best-effort fire-and-forget
       flushSave();
     };
     window.addEventListener("beforeunload", onBeforeUnload);
@@ -220,47 +228,93 @@ export function JournalPage() {
   const handleEditorChange = useCallback(
     ({ title, content }: { title: string; content: string }) => {
       draftRef.current = { title, content };
+
+      // Optimistic cache update for fast UI response
+      mutate(
+        (prev) =>
+          prev?.map((e) =>
+            e.id === activeEntryId
+              ? {
+                  ...e,
+                  title,
+                  content,
+                  preview: makePreview(content),
+                  updatedAt: new Date().toISOString(),
+                }
+              : e
+          ) ?? [],
+        false
+      );
+
       scheduleSave();
     },
-    [scheduleSave],
+    [activeEntryId, mutate, scheduleSave],
   );
 
   const handleNewEntry = useCallback(async () => {
     if (creating) return;
-    // flush any pending changes for current entry first
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     await flushSave();
+    
     setCreating(true);
+    const tempId = "temp_" + Date.now();
+    const tempEntry: JournalEntry = {
+      id: tempId,
+      title: "",
+      preview: "",
+      content: "",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    // Optimistically prepend the temp entry to list and focus it
+    mutate([tempEntry, ...entries], false);
+    setActiveEntryId(tempId);
+    setListOpen(false);
+
     try {
       const created = await api.journal.create({ title: "", content: "" });
-      const entry = mapSourceToEntry(created);
-      setEntries((prev) => [entry, ...prev]);
-      setActiveEntryId(entry.id);
-      setListOpen(false);
+      const mapped = mapSourceToEntry(created);
+      
+      // Replace temp entry with the real entry
+      mutate(
+        (prev) => prev?.map((e) => (e.id === tempId ? mapped : e)) ?? [mapped],
+        false
+      );
+      setActiveEntryId(mapped.id);
     } catch (err) {
       console.error("[journal] create failed", err);
+      // Remove temp entry from list
+      mutate((prev) => prev?.filter((e) => e.id !== tempId) ?? [], false);
+      setActiveEntryId(entries[0]?.id ?? "");
     } finally {
       setCreating(false);
     }
-  }, [creating, flushSave]);
+  }, [creating, flushSave, mutate, entries]);
 
   const handleDelete = useCallback(async () => {
     if (!activeEntry) return;
     const id = activeEntry.id;
     setConfirmDelete(false);
+
+    const oldEntries = [...entries];
+    const nextActiveId = entries.find((e) => e.id !== id)?.id ?? "";
+
+    // Optimistic UI delete
+    mutate(entries.filter((e) => e.id !== id), false);
+    setActiveEntryId(nextActiveId);
+
     try {
       await api.sources.delete(id);
-      setEntries((prev) => {
-        const next = prev.filter((e) => e.id !== id);
-        setActiveEntryId(next[0]?.id ?? "");
-        return next;
-      });
     } catch (err) {
       console.error("[journal] delete failed", err);
+      // Rollback to original list
+      mutate(oldEntries, false);
+      setActiveEntryId(id);
     }
-  }, [activeEntry]);
+  }, [activeEntry, entries, mutate]);
 
-  // Keyboard: "n" creates a new entry (ignore if focus is on input/editor).
+  // Keyboard: "n" creates a new entry
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key !== "n" || e.metaKey || e.ctrlKey || e.altKey) return;
@@ -283,10 +337,10 @@ export function JournalPage() {
   const readingTime = Math.max(1, Math.ceil(wordCount / 200));
 
   return (
-    <div className="flex h-full overflow-hidden bg-background">
+    <div className="flex h-full overflow-hidden bg-zinc-950 text-zinc-100 font-sans">
       {/* Sidebar — desktop */}
       {!focusMode && (
-        <aside className="hidden w-[260px] shrink-0 border-r border-border bg-card md:flex md:flex-col">
+        <aside className="hidden w-[280px] shrink-0 border-r border-zinc-800/60 bg-zinc-900/40 backdrop-blur-xl md:flex md:flex-col transition-all duration-300">
           <JournalEntryList
             entries={entries}
             activeEntryId={activeEntryId}
@@ -298,12 +352,12 @@ export function JournalPage() {
 
       {/* Sidebar — mobile sheet */}
       {listOpen && !focusMode && (
-        <div className="fixed inset-0 z-40 md:hidden">
+        <div className="fixed inset-0 z-40 md:hidden transition-all duration-300">
           <div
-            className="absolute inset-0 bg-foreground/30 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/60 backdrop-blur-md"
             onClick={() => setListOpen(false)}
           />
-          <div className="absolute inset-y-0 left-0 w-[80vw] max-w-[320px] border-r border-border bg-card shadow-lg">
+          <div className="absolute inset-y-0 left-0 w-[80vw] max-w-[320px] border-r border-zinc-800 bg-zinc-900 shadow-2xl">
             <JournalEntryList
               entries={entries}
               activeEntryId={activeEntryId}
@@ -318,56 +372,80 @@ export function JournalPage() {
         </div>
       )}
 
-      {/* Main */}
-      <main className="relative flex min-w-0 flex-1 flex-col">
+      {/* Main Container */}
+      <main className="relative flex min-w-0 flex-1 flex-col bg-gradient-to-b from-zinc-950 via-zinc-950 to-zinc-900">
         {/* Top bar */}
         <div
           className={cn(
-            "flex items-center gap-2 px-3 py-2 border-b border-border/20 bg-background/25 backdrop-blur-md z-10",
-            focusMode && "opacity-25 transition-opacity hover:opacity-100",
+            "flex items-center gap-2 px-6 py-3 border-b border-zinc-800/30 bg-zinc-950/40 backdrop-blur-xl z-10 select-none transition-all duration-300",
+            focusMode && "opacity-20 hover:opacity-100",
           )}
         >
           {!focusMode && (
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 md:hidden rounded-xl"
+              className="h-9 w-9 md:hidden rounded-xl border border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800 text-zinc-300"
               onClick={() => setListOpen(true)}
               aria-label="Open entries"
             >
-              <Menu className="h-4 w-4" />
+              <Menu className="h-4.5 w-4.5" />
             </Button>
           )}
-          <div className="ml-auto flex items-center gap-2">
+
+          <div className="flex items-center gap-3">
             {activeEntry && (
-              <div className="flex items-center gap-1.5 mr-2 px-2.5 py-1 rounded-full bg-accent/40 border border-border/10">
-                <span
-                  className={cn(
-                    "h-1.5 w-1.5 rounded-full transition-all duration-300",
-                    saveState === "saving" && "bg-amber-500 animate-pulse shadow-[0_0_6px_rgba(245,158,11,0.6)]",
-                    saveState === "error" && "bg-rose-500 animate-bounce",
-                    (saveState === "saved" || saveState === "idle" || savedAt) &&
-                      saveState !== "saving" &&
-                      saveState !== "error" &&
-                      "bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.6)]"
-                  )}
-                />
-                <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground select-none">
-                  {saveState === "saving"
-                    ? "Syncing"
-                    : saveState === "error"
-                      ? "Error"
-                      : "Synced"}
+              <div className="hidden sm:flex items-center gap-2 text-xs text-zinc-400">
+                <span className="font-semibold text-zinc-300 max-w-[150px] truncate">
+                  {activeEntry.title || "Untitled Entry"}
                 </span>
               </div>
             )}
+          </div>
+
+          <div className="ml-auto flex items-center gap-2">
+            {activeEntry && (
+              <div className={cn(
+                "flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-medium transition-all duration-300",
+                saveState === "saving" && "bg-amber-950/20 border-amber-800/50 text-amber-300 shadow-[0_0_8px_rgba(245,158,11,0.1)]",
+                saveState === "error" && "bg-rose-950/20 border-rose-800/50 text-rose-300 animate-pulse",
+                saveState === "saved" && "bg-emerald-950/20 border-emerald-800/50 text-emerald-300 shadow-[0_0_8px_rgba(16,185,129,0.1)]",
+                saveState === "idle" && "bg-zinc-900/40 border-zinc-800/80 text-zinc-400"
+              )}>
+                {saveState === "saving" && (
+                  <>
+                    <Loader2 className="h-3 w-3 animate-spin text-amber-400" />
+                    <span>Saving...</span>
+                  </>
+                )}
+                {saveState === "error" && (
+                  <>
+                    <AlertCircle className="h-3 w-3 text-rose-400" />
+                    <span>Failed to save</span>
+                  </>
+                )}
+                {saveState === "saved" && (
+                  <>
+                    <CheckCircle2 className="h-3 w-3 text-emerald-400" />
+                    <span>Saved to Cloud</span>
+                  </>
+                )}
+                {saveState === "idle" && (
+                  <>
+                    <CloudLightning className="h-3 w-3 text-zinc-500" />
+                    <span>{savedLabel || "Draft"}</span>
+                  </>
+                )}
+              </div>
+            )}
+
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-foreground rounded-xl"
+              className="h-9 w-9 border border-zinc-850 hover:border-zinc-700/60 bg-zinc-900/30 hover:bg-zinc-800/50 text-zinc-450 hover:text-zinc-100 rounded-xl transition-all"
               onClick={() => setFocusMode((v) => !v)}
               aria-label={focusMode ? "Exit focus mode" : "Enter focus mode"}
-              title={focusMode ? "Exit focus mode" : "Focus mode"}
+              title={focusMode ? "Exit focus" : "Focus mode"}
             >
               {focusMode ? (
                 <Minimize2 className="h-4 w-4" />
@@ -375,11 +453,12 @@ export function JournalPage() {
                 <Maximize2 className="h-4 w-4" />
               )}
             </Button>
+
             {activeEntry && (
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-muted-foreground hover:text-destructive rounded-xl hover:bg-destructive/10"
+                className="h-9 w-9 border border-transparent hover:border-rose-900/40 hover:bg-rose-950/20 text-zinc-450 hover:text-rose-400 rounded-xl transition-all"
                 onClick={() => setConfirmDelete(true)}
                 aria-label="Delete entry"
                 title="Delete entry"
@@ -390,59 +469,65 @@ export function JournalPage() {
           </div>
         </div>
 
-        {/* Body */}
-        {loading ? (
-          <div className="flex flex-1 items-center justify-center text-muted-foreground">
-            <Loader2 className="h-5 w-5 animate-spin" />
-          </div>
-        ) : activeEntry ? (
-          <JournalEditor
-            key={activeEntry.id}
-            entry={activeEntry}
-            onChange={handleEditorChange}
-            onWordCountChange={setWordCount}
-            focusMode={focusMode}
-          />
-        ) : (
-          <EmptyState onCreate={handleNewEntry} creating={creating} />
-        )}
+        {/* Content area */}
+        <div className="flex-1 overflow-hidden">
+          {activeEntry ? (
+            <JournalEditor
+              key={activeEntry.id}
+              entry={activeEntry}
+              onChange={handleEditorChange}
+              onWordCountChange={setWordCount}
+              focusMode={focusMode}
+            />
+          ) : (
+            <EmptyState onCreate={handleNewEntry} creating={creating} />
+          )}
+        </div>
 
         {/* Status bar */}
         {activeEntry && (
           <div
             className={cn(
-              "flex items-center gap-4 border-t border-border bg-card/50 px-4 py-1.5 text-[11px] text-muted-foreground",
-              focusMode && "opacity-40 transition-opacity hover:opacity-100",
+              "flex items-center gap-4 border-t border-zinc-900 bg-zinc-950/80 backdrop-blur-md px-6 py-2 text-[10px] text-zinc-500 tracking-wide select-none transition-all duration-300",
+              focusMode && "opacity-20 hover:opacity-100",
             )}
           >
             <span>{wordCount} {wordCount === 1 ? "word" : "words"}</span>
+            <span>•</span>
             <span>{readingTime} min read</span>
-            <span className="ml-auto sm:hidden">
+            <span className="ml-auto">
               {saveState === "saving"
-                ? "Saving"
+                ? "Saving in background..."
                 : saveState === "error"
-                  ? "Save failed"
-                  : savedLabel}
+                  ? "Unsaved changes detected"
+                  : savedLabel ? `Last synced ${savedLabel.toLowerCase()}` : "Not saved yet"}
             </span>
           </div>
         )}
       </main>
 
       <Dialog open={confirmDelete} onOpenChange={setConfirmDelete}>
-        <DialogContent>
+        <DialogContent className="border border-zinc-800 bg-zinc-950 text-zinc-150 rounded-2xl max-w-sm">
           <DialogHeader>
-            <DialogTitle>Delete this entry</DialogTitle>
-            <DialogDescription>
-              This will permanently remove the entry from your journal. This
-              action can't be undone.
+            <DialogTitle className="text-zinc-100 text-base font-bold font-[var(--font-nunito)]">Delete journal entry</DialogTitle>
+            <DialogDescription className="text-zinc-400 text-xs mt-1.5 leading-relaxed">
+              This will permanently remove this entry from your private memory graph. This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setConfirmDelete(false)}>
+          <DialogFooter className="mt-4 gap-2">
+            <Button
+              variant="ghost"
+              className="rounded-xl border border-zinc-800 hover:bg-zinc-900 text-zinc-300 text-xs h-9 px-4"
+              onClick={() => setConfirmDelete(false)}
+            >
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDelete}>
-              Delete
+            <Button
+              variant="destructive"
+              className="rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs h-9 px-4"
+              onClick={handleDelete}
+            >
+              Delete Permanently
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -459,28 +544,37 @@ function EmptyState({
   creating: boolean;
 }) {
   return (
-    <div className="flex flex-1 items-center justify-center px-6">
-      <div className="max-w-sm text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-accent text-primary">
-          <PenLine className="h-5 w-5" />
+    <div className="flex h-full items-center justify-center px-6">
+      <div className="max-w-md text-center">
+        <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-900 border border-zinc-800 text-primary shadow-lg shadow-black/50">
+          <PenLine className="h-6 w-6 text-zinc-200" />
         </div>
-        <h2 className="text-lg font-semibold text-foreground">
+        <h2 className="text-xl font-bold text-zinc-100 tracking-tight font-[var(--font-nunito)]">
           A blank page is waiting
         </h2>
-        <p className="mt-1.5 text-sm text-muted-foreground">
-          Capture a thought, log the day, or work through a decision. Press{" "}
-          <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-medium">
+        <p className="mt-2 text-sm text-zinc-450 leading-relaxed max-w-xs mx-auto">
+          Capture a thought, log the day, or reflect on a decision. Press{" "}
+          <kbd className="rounded border border-zinc-800 bg-zinc-900/80 px-2 py-0.5 text-[10px] text-zinc-300 font-mono shadow-sm">
             n
           </kbd>{" "}
-          anytime to start a new entry.
+          anytime to start.
         </p>
-        <Button onClick={onCreate} className="mt-5" disabled={creating}>
+        <Button
+          onClick={onCreate}
+          className="mt-6 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-xs px-5 h-10 shadow-md shadow-white/5 active:scale-[0.98] transition-all"
+          disabled={creating}
+        >
           {creating ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin text-black" />
+              Opening journal...
+            </>
           ) : (
-            <PenLine className="mr-2 h-4 w-4" />
+            <>
+              <PenLine className="mr-2 h-4 w-4" />
+              Start Writing
+            </>
           )}
-          Start writing
         </Button>
       </div>
     </div>

@@ -94,11 +94,9 @@ export function JournalEditor({
     // initial measurement
     recomputeWordCount();
     return () => {
-      // BlockNote returns unsubscribe in newer versions; older returns void
       if (typeof unsubscribe === "function") unsubscribe();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editor, title]);
+  }, [editor, title, onChange, recomputeWordCount]);
 
   const handleTitleChange = (value: string) => {
     setTitle(value);
@@ -107,6 +105,7 @@ export function JournalEditor({
 
   const dateLabel = useMemo(() => {
     const d = new Date(entry.createdAt);
+    if (isNaN(d.getTime())) return "Draft";
     return d.toLocaleDateString("en-US", {
       weekday: "long",
       month: "long",
@@ -115,38 +114,41 @@ export function JournalEditor({
     });
   }, [entry.createdAt]);
 
-  // suppress unused-warning when wordCount only feeds the parent
+  // suppress unused-warning
   void wordCount;
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-background/30 dark:bg-zinc-950/10">
-      <div className="flex-1 overflow-y-auto">
+    <div className="flex h-full flex-col overflow-hidden bg-transparent">
+      <div className="flex-1 overflow-y-auto custom-scrollbar">
         <div
           className={
             focusMode
-              ? "mx-auto max-w-2xl px-6 py-16 sm:px-10 transition-all duration-300"
-              : "mx-auto max-w-2xl px-6 py-10 sm:px-10 transition-all duration-300"
+              ? "mx-auto max-w-2xl px-6 py-16 sm:px-10 transition-all duration-500 ease-in-out"
+              : "mx-auto max-w-2xl px-6 py-10 sm:px-10 transition-all duration-500 ease-in-out"
           }
         >
-          <div className="flex items-center gap-1.5 mb-4 text-[10px] uppercase font-bold tracking-wider text-muted-foreground/60 select-none">
-            <Calendar className="w-3.5 h-3.5 text-muted-foreground/50" />
+          {/* Calendar Badge */}
+          <div className="inline-flex items-center gap-2 mb-6 px-3 py-1.5 rounded-xl border border-zinc-800/40 bg-zinc-900/10 text-[10px] font-bold uppercase tracking-wider text-zinc-450 select-none">
+            <Calendar className="w-3.5 h-3.5 text-zinc-500" />
             <span>{dateLabel}</span>
           </div>
 
+          {/* Title Input */}
           <input
             type="text"
             value={title}
             onChange={(e) => handleTitleChange(e.target.value)}
             placeholder="Untitled Note"
-            className="mb-8 w-full border-none bg-transparent text-3xl font-bold leading-tight tracking-tight text-foreground outline-none placeholder:text-muted-foreground/35 sm:text-4xl font-[var(--font-nunito)]"
+            className="mb-8 w-full border-none bg-transparent text-3xl font-extrabold leading-tight tracking-tight text-zinc-100 outline-none placeholder:text-zinc-800 sm:text-4xl font-[var(--font-nunito)] transition-all focus:placeholder:text-zinc-700"
             aria-label="Entry title"
           />
 
-          <div className="journal-blocknote prose prose-stone dark:prose-invert max-w-none">
+          {/* BlockNote Editor Wrapper */}
+          <div className="journal-blocknote prose prose-zinc dark:prose-invert max-w-none font-sans text-zinc-300">
             <BlockNoteView
               editor={editor}
               theme={resolvedTheme === "dark" ? "dark" : "light"}
-              className="min-h-[60vh] -mx-14"
+              className="min-h-[55vh] -mx-[46px]" // Align the text perfectly with the title input
             />
           </div>
         </div>
