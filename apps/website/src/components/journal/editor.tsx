@@ -5,7 +5,7 @@ import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/mantine";
 import "@blocknote/mantine/style.css";
 import { useTheme } from "next-themes";
-import { Calendar } from "lucide-react";
+import { Calendar, Tag, Plus, X } from "lucide-react";
 import type { JournalEntry } from "./journal-page";
 
 interface JournalEditorProps {
@@ -13,6 +13,9 @@ interface JournalEditorProps {
   onChange: (data: { title: string; content: string }) => void;
   onWordCountChange?: (count: number) => void;
   focusMode?: boolean;
+  tags: string[];
+  onTagsChange: (tags: string[]) => void;
+  emotion: { label: string; color: string };
 }
 
 function plainTextToBlocks(text: string) {
@@ -53,21 +56,28 @@ export function JournalEditor({
   onChange,
   onWordCountChange,
   focusMode,
+  tags = [],
+  onTagsChange,
+  emotion,
 }: JournalEditorProps) {
   const { resolvedTheme } = useTheme();
   const [title, setTitle] = useState(entry.title);
   const [wordCount, setWordCount] = useState(0);
+  const [tagInput, setTagInput] = useState("");
+  const [isAddingTag, setIsAddingTag] = useState(false);
+  const tagInputRef = useRef<HTMLInputElement>(null);
   const lastEntryIdRef = useRef(entry.id);
 
   const editor = useCreateBlockNote({
     initialContent: plainTextToBlocks(entry.content),
   });
 
-  // When the active entry switches, replace editor content and reset title.
   useEffect(() => {
     if (lastEntryIdRef.current === entry.id) return;
     lastEntryIdRef.current = entry.id;
     setTitle(entry.title);
+    setIsAddingTag(false);
+    setTagInput("");
     try {
       editor.replaceBlocks(editor.document, plainTextToBlocks(entry.content));
     } catch {
@@ -84,14 +94,12 @@ export function JournalEditor({
     onWordCountChange?.(words);
   }, [editor, onWordCountChange]);
 
-  // Subscribe to editor changes -> propagate up.
   useEffect(() => {
     const unsubscribe = editor.onChange(() => {
       const content = blocksToPlainText(editor.document);
       onChange({ title, content });
       recomputeWordCount();
     });
-    // initial measurement
     recomputeWordCount();
     return () => {
       if (typeof unsubscribe === "function") unsubscribe();
@@ -101,6 +109,19 @@ export function JournalEditor({
   const handleTitleChange = (value: string) => {
     setTitle(value);
     onChange({ title: value, content: blocksToPlainText(editor.document) });
+  };
+
+  const handleAddTag = () => {
+    const cleaned = tagInput.trim().toLowerCase().replace(/#/g, "");
+    if (cleaned && !tags.includes(cleaned)) {
+      onTagsChange([...tags, cleaned]);
+    }
+    setTagInput("");
+    setIsAddingTag(false);
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    onTagsChange(tags.filter((t) => t !== tagToRemove));
   };
 
   const dateLabel = useMemo(() => {
@@ -114,12 +135,9 @@ export function JournalEditor({
     });
   }, [entry.createdAt]);
 
-  // suppress unused-warning
-  void wordCount;
-
   return (
     <div className="flex h-full flex-col overflow-hidden bg-transparent">
-      <div className="flex-1 overflow-y-auto custom-scrollbar">
+      <div className="flex-1 overflow-y-auto">
         <div
           className={
             focusMode
@@ -127,10 +145,16 @@ export function JournalEditor({
               : "mx-auto max-w-2xl px-6 py-10 sm:px-10 transition-all duration-500 ease-in-out"
           }
         >
-          {/* Calendar Badge */}
-          <div className="inline-flex items-center gap-2 mb-6 px-3 py-1.5 rounded-xl border border-zinc-800/40 bg-zinc-900/10 text-[10px] font-bold uppercase tracking-wider text-zinc-450 select-none">
-            <Calendar className="w-3.5 h-3.5 text-zinc-500" />
-            <span>{dateLabel}</span>
+          {/* Metadata Row: Date & Emotion */}
+          <div className="flex flex-wrap items-center gap-3 mb-6 select-none">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border bg-card text-xs text-muted-foreground">
+              <Calendar className="w-3.5 h-3.5" />
+              <span>{dateLabel}</span>
+            </div>
+
+            <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold ${emotion.color}`}>
+              <span>Emotion: {emotion.label}</span>
+            </div>
           </div>
 
           {/* Title Input */}
@@ -139,16 +163,67 @@ export function JournalEditor({
             value={title}
             onChange={(e) => handleTitleChange(e.target.value)}
             placeholder="Untitled Note"
-            className="mb-8 w-full border-none bg-transparent text-3xl font-extrabold leading-tight tracking-tight text-zinc-100 outline-none placeholder:text-zinc-800 sm:text-4xl font-[var(--font-nunito)] transition-all focus:placeholder:text-zinc-700"
+            className="mb-4 w-full border-none bg-transparent text-3xl font-extrabold leading-tight tracking-tight text-foreground outline-none placeholder:text-muted-foreground/40 sm:text-4xl font-[var(--font-nunito)] transition-all focus:placeholder:text-muted-foreground/25"
             aria-label="Entry title"
           />
 
-          {/* BlockNote Editor Wrapper */}
-          <div className="journal-blocknote prose prose-zinc dark:prose-invert max-w-none font-sans text-zinc-300">
+          {/* Tags Editor Row */}
+          <div className="flex flex-wrap items-center gap-2 mb-8 select-none">
+            <Tag className="w-3.5 h-3.5 text-muted-foreground/60 mr-1" />
+            {tags.map((tag) => (
+              <span
+                key={tag}
+                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground border border-border"
+              >
+                #{tag}
+                <button
+                  type="button"
+                  onClick={() => handleRemoveTag(tag)}
+                  className="hover:text-destructive focus:outline-none"
+                  aria-label={`Remove tag ${tag}`}
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            ))}
+
+            {isAddingTag ? (
+              <input
+                ref={tagInputRef}
+                type="text"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onBlur={handleAddTag}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === ",") {
+                    e.preventDefault();
+                    handleAddTag();
+                  } else if (e.key === "Escape") {
+                    setIsAddingTag(false);
+                  }
+                }}
+                placeholder="new-tag..."
+                className="h-6 w-20 px-2 text-xs rounded-full border border-border bg-background outline-none text-foreground"
+                autoFocus
+              />
+            ) : (
+              <button
+                type="button"
+                onClick={() => setIsAddingTag(true)}
+                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border border-dashed border-border text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+              >
+                <Plus className="w-3 h-3" />
+                Add tag
+              </button>
+            )}
+          </div>
+
+          {/* BlockNote Editor */}
+          <div className="journal-blocknote prose prose-stone dark:prose-invert max-w-none text-foreground">
             <BlockNoteView
               editor={editor}
               theme={resolvedTheme === "dark" ? "dark" : "light"}
-              className="min-h-[55vh] -mx-[46px]" // Align the text perfectly with the title input
+              className="min-h-[50vh] -mx-[46px]"
             />
           </div>
         </div>

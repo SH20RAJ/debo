@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Plus, Search, X, BookOpen, Clock, FileText } from "lucide-react";
+import { Plus, Search, X, BookOpen, Clock, FileText, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,11 @@ interface JournalEntryListProps {
   onSelect: (id: string) => void;
   onNewEntry: () => void;
   onClose?: () => void;
+}
+
+interface JournalMetadata {
+  tags?: string[];
+  emotion?: string;
 }
 
 function getDateGroup(dateStr: string): string {
@@ -38,6 +43,73 @@ function formatRelative(dateStr: string): string {
 function getWordCount(text: string): number {
   if (!text) return 0;
   return text.trim().split(/\s+/).filter(Boolean).length;
+}
+
+function getEntryEmotion(entry: JournalEntry): { label: string; dotColor: string } {
+  if (entry.metadataJson) {
+    try {
+      const parsed = JSON.parse(entry.metadataJson) as JournalMetadata;
+      if (parsed.emotion) {
+        const dotColors: Record<string, string> = {
+          excited: "bg-amber-500 shadow-[0_0_6px_rgba(245,158,11,0.5)]",
+          calm: "bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]",
+          anxious: "bg-rose-500 shadow-[0_0_6px_rgba(244,63,94,0.5)]",
+          homesick: "bg-indigo-500 shadow-[0_0_6px_rgba(99,102,241,0.5)]",
+          motivated: "bg-cyan-500 shadow-[0_0_6px_rgba(6,182,212,0.5)]",
+          reflective: "bg-purple-500 shadow-[0_0_6px_rgba(168,85,247,0.5)]",
+        };
+        const key = parsed.emotion.toLowerCase();
+        return {
+          label: parsed.emotion,
+          dotColor: dotColors[key] || "bg-zinc-500",
+        };
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  // Fallback keyword-based emotion classifier
+  const t = (entry.content ?? "").toLowerCase();
+  let excited = (t.match(/(excited|happy|great|laugh|celebrate|samosa|joy|wonderful|love|thrill)/g) || []).length;
+  let calm = (t.match(/(calm|peace|silent|soothing|still|breeze|relaxed|rest|nature|pond)/g) || []).length;
+  let anxious = (t.match(/(doubt|anxious|stress|struggle|shake|fear|worry|shaking|defeat|frustrated)/g) || []).length;
+  let homesick = (t.match(/(homesick|miss|sad|lonely|mother|father|home|peeling|homesickness)/g) || []).length;
+  let motivated = (t.match(/(motivated|focus|perseverance|study|read|work|determined|syllab|learn|class)/g) || []).length;
+  let reflective = (t.match(/(reflect|think|thought|memories|tunnel|blessing|realized|mind)/g) || []).length + 1;
+
+  const scores = { excited, calm, anxious, homesick, motivated, reflective };
+  const maxKey = Object.keys(scores).reduce((a, b) => scores[a as keyof typeof scores] >= scores[b as keyof typeof scores] ? a : b);
+
+  const dotColors = {
+    excited: "bg-amber-500 shadow-[0_0_6px_rgba(245,158,11,0.5)]",
+    calm: "bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]",
+    anxious: "bg-rose-500 shadow-[0_0_6px_rgba(244,63,94,0.5)]",
+    homesick: "bg-indigo-500 shadow-[0_0_6px_rgba(99,102,241,0.5)]",
+    motivated: "bg-cyan-500 shadow-[0_0_6px_rgba(6,182,212,0.5)]",
+    reflective: "bg-purple-500 shadow-[0_0_6px_rgba(168,85,247,0.5)]",
+  };
+
+  return {
+    label: maxKey.charAt(0).toUpperCase() + maxKey.slice(1),
+    dotColor: dotColors[maxKey as keyof typeof dotColors] || "bg-zinc-500",
+  };
+}
+
+function getEntryTags(entry: JournalEntry): string[] {
+  if (entry.metadataJson) {
+    try {
+      const parsed = JSON.parse(entry.metadataJson) as JournalMetadata;
+      if (Array.isArray(parsed.tags)) return parsed.tags;
+    } catch {
+      // ignore
+    }
+  }
+  const hashtags = entry.content.match(/#\w+/g);
+  if (hashtags) {
+    return Array.from(new Set(hashtags.map((tag) => tag.slice(1))));
+  }
+  return [];
 }
 
 export function JournalEntryList({
@@ -79,14 +151,14 @@ export function JournalEntryList({
   }, [entries, search]);
 
   return (
-    <div className="flex h-full flex-col bg-zinc-950/45 backdrop-blur-md select-none border-zinc-800/10">
+    <div className="flex h-full flex-col bg-card select-none border-r border-border">
       {/* Header */}
       <div className="flex items-center justify-between gap-2 px-4.5 pt-5 pb-3">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800/80">
-            <BookOpen className="h-4 w-4 text-zinc-350" />
+          <div className="p-1.5 rounded-lg bg-background border border-border">
+            <BookOpen className="h-4 w-4 text-foreground/80" />
           </div>
-          <h2 className="text-sm font-bold tracking-wider uppercase text-zinc-300 font-[var(--font-nunito)]">
+          <h2 className="text-xs font-bold tracking-wider uppercase text-foreground/85 font-[var(--font-nunito)]">
             Journal
           </h2>
         </div>
@@ -94,7 +166,7 @@ export function JournalEntryList({
           <Button
             onClick={onNewEntry}
             size="sm"
-            className="h-8 gap-1 px-3 text-[11px] font-bold rounded-xl bg-zinc-100 hover:bg-zinc-200 text-black shadow-lg shadow-white/5 active:scale-[0.97] transition-all"
+            className="h-8 gap-1 px-3 text-[11px] font-bold rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm active:scale-[0.97] transition-all"
           >
             <Plus className="h-3.5 w-3.5" />
             New
@@ -103,7 +175,7 @@ export function JournalEntryList({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 md:hidden rounded-xl border border-zinc-800/40 bg-zinc-900/30 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100"
+              className="h-8 w-8 md:hidden rounded-xl border border-border bg-background text-muted-foreground hover:text-foreground"
               onClick={onClose}
               aria-label="Close list"
             >
@@ -116,18 +188,18 @@ export function JournalEntryList({
       {/* Search Input */}
       <div className="px-4.5 pb-4">
         <div className="relative group">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-500 group-focus-within:text-zinc-300 transition-colors" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground group-focus-within:text-foreground transition-colors" />
           <Input
             type="text"
             placeholder="Search entries..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="h-9.5 pl-9.5 pr-8 text-xs rounded-xl border-zinc-900 bg-zinc-900/40 focus:bg-zinc-900/60 text-zinc-200 placeholder:text-zinc-600 focus-visible:ring-1 focus-visible:ring-zinc-800 focus-visible:border-zinc-750 transition-all"
+            className="h-9.5 pl-9.5 pr-8 text-xs rounded-xl border-2 border-border bg-background focus:bg-background text-foreground placeholder:text-muted-foreground/50 focus-visible:ring-1 focus-visible:ring-primary/20 focus-visible:border-primary/40 transition-all"
           />
           {search && (
             <button
               onClick={() => setSearch("")}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-305 rounded-full p-0.5 hover:bg-zinc-800 transition-colors"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground rounded-full p-0.5 hover:bg-accent transition-colors"
             >
               <X className="h-3.5 w-3.5" />
             </button>
@@ -140,15 +212,15 @@ export function JournalEntryList({
         <div className="space-y-4 pr-1">
           {grouped.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <BookOpen className="h-7 w-7 text-zinc-700 stroke-[1.5] mb-2" />
-              <p className="text-[11px] text-zinc-500 font-medium max-w-[150px] leading-relaxed">
+              <BookOpen className="h-7 w-7 text-muted-foreground/40 stroke-[1.5] mb-2" />
+              <p className="text-[11px] text-muted-foreground font-medium max-w-[150px] leading-relaxed">
                 {search ? "No matching entries found." : "Your journal is empty."}
               </p>
             </div>
           ) : (
             grouped.map((group) => (
               <div key={group.label} className="space-y-1.5">
-                <p className="px-2 pb-0.5 text-[9px] font-extrabold uppercase tracking-wider text-zinc-500/80">
+                <p className="px-2 pb-0.5 text-[9px] font-extrabold uppercase tracking-wider text-muted-foreground/60">
                   {group.label}
                 </p>
                 <div className="space-y-1">
@@ -156,6 +228,8 @@ export function JournalEntryList({
                     const active = entry.id === activeEntryId;
                     const wordCount = getWordCount(entry.content);
                     const isTemp = entry.id.startsWith("temp_");
+                    const emotion = getEntryEmotion(entry);
+                    const tags = getEntryTags(entry);
 
                     return (
                       <button
@@ -164,52 +238,56 @@ export function JournalEntryList({
                         onClick={() => onSelect(entry.id)}
                         disabled={isTemp}
                         className={cn(
-                          "group relative w-full rounded-xl p-3 text-left transition-all duration-200 border text-zinc-300",
+                          "group relative w-full rounded-xl p-3 text-left transition-all duration-200 border-2",
                           active
-                            ? "bg-zinc-900/80 border-zinc-800/80 shadow-[0_4px_16px_rgba(0,0,0,0.5)] text-white hover:translate-x-0"
-                            : "bg-transparent border-transparent hover:bg-zinc-900/30 hover:border-zinc-900/50 hover:translate-x-0.5 active:translate-x-0",
+                            ? "bg-accent border-border shadow-sm text-foreground hover:translate-x-0"
+                            : "bg-transparent border-transparent hover:bg-accent/40 hover:border-border/40 hover:translate-x-0.5 active:translate-x-0",
                           isTemp && "opacity-60 cursor-not-allowed"
                         )}
                       >
-                        {/* Left Active Glow Indicator */}
+                        {/* Active Indicator Line */}
                         {active && (
-                          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-1/2 bg-white rounded-r-full shadow-[0_0_8px_white]" />
+                          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-1/2 bg-primary rounded-r-full shadow-[0_0_8px_rgba(var(--primary),0.5)]" />
                         )}
 
                         <div className="flex items-start justify-between gap-2">
                           <p
                             className={cn(
                               "truncate text-xs font-bold font-[var(--font-nunito)] tracking-tight leading-snug",
-                              active ? "text-zinc-100" : "text-zinc-300 group-hover:text-zinc-200",
-                              !entry.title && "text-zinc-550 italic font-normal",
+                              active ? "text-foreground" : "text-foreground/90 group-hover:text-foreground",
+                              !entry.title && "text-muted-foreground italic font-normal",
                             )}
                           >
                             {entry.title || (isTemp ? "Drafting..." : "Untitled Note")}
                           </p>
                           
-                          {/* Top-Right relative date indicator */}
-                          <span className="shrink-0 text-[10px] text-zinc-550 group-hover:text-zinc-400 transition-colors font-medium">
+                          <span className="shrink-0 text-[10px] text-muted-foreground/70 group-hover:text-muted-foreground transition-colors font-medium">
                             {formatRelative(entry.updatedAt ?? entry.createdAt)}
                           </span>
                         </div>
                         
                         <p className={cn(
                           "mt-1.5 line-clamp-2 text-[11px] leading-relaxed transition-colors",
-                          active ? "text-zinc-400" : "text-zinc-500 group-hover:text-zinc-400"
+                          active ? "text-muted-foreground" : "text-muted-foreground/80 group-hover:text-muted-foreground"
                         )}>
                           {entry.preview || (isTemp ? "Starting draft..." : "Write your thoughts...")}
                         </p>
                         
-                        {/* Footer details (hover-revealed word count) */}
-                        <div className="mt-2.5 flex items-center justify-between text-[9px] font-medium text-zinc-550 transition-colors">
+                        {/* Emotion & Tags indicators in default view */}
+                        <div className="mt-2.5 flex flex-wrap items-center gap-1.5 text-[9px] font-semibold">
                           <span className="flex items-center gap-1">
-                            <Clock className="w-2.5 h-2.5" />
-                            {Math.max(1, Math.ceil(wordCount / 200))} min
+                            <span className={cn("w-1.5 h-1.5 rounded-full", emotion.dotColor)} />
+                            <span className="text-muted-foreground/80 font-bold uppercase tracking-wide text-[8px]">{emotion.label}</span>
                           </span>
                           
-                          <span className="flex items-center gap-1">
-                            <FileText className="w-2.5 h-2.5" />
-                            {wordCount} {wordCount === 1 ? "word" : "words"}
+                          {tags.slice(0, 2).map((tag) => (
+                            <span key={tag} className="px-1 py-0.2 rounded bg-muted text-muted-foreground text-[8px] font-bold border border-border">
+                              #{tag}
+                            </span>
+                          ))}
+
+                          <span className="ml-auto text-muted-foreground/60 font-medium group-hover:text-muted-foreground/80 transition-colors">
+                            {wordCount} words
                           </span>
                         </div>
                       </button>

@@ -14,16 +14,24 @@ make voice livekit work livekit skills
 voice/debo-ai talk and recording voice ui are different keep them diff pages. also find the gaps if you need anything else to be added do it. and make a proper plan and deep dive on this. and make the voice working.
 
 
----
+<!-- ---
 
 add thinking to /chat and scroll not working, also thread history not visible , also create a way to load long threads
 
+--- -->
+
+<!-- fix ux ui of http://localhost:3000/dashboard/journal  -->
+
+
 ---
-
-fix ux ui of http://localhost:3000/dashboard/journal 
-
-
----
-make cli and move the mcp to nextjs api temporaririly easy to create.
+<!-- make cli and move the mcp to nextjs api temporaririly easy to create. -->
 
 use mcp-remote npx @modelcontextprotocol/server-http @modelcontextprotocol/server-stdio
+
+<!-- can you seed account shaswatraj3@gmail.com with all sample data of a normal human especially of our target deboai users so when I will demonstrate 
+
+ -->
+in jounals writing the editor isnt in full screen also hide the topbar.
+
+do reseach how will I add http://localhost:3000/dashboard/connectors
+ list of all possible connectors that I should add on debo. and very easy way to integrate all at once, ig we can use any opensourse library for fast integration or something else like composio. create a deep research plan on it and start working on it.

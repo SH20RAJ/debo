@@ -19,6 +19,7 @@ const PatchSourceSchema = z.object({
   status: z
     .enum(["draft", "uploaded", "processing", "ready", "needs_review", "failed"])
     .optional(),
+  metadataJson: z.string().optional().nullable(),
 });
 
 /**
@@ -82,6 +83,7 @@ export async function PATCH(
       contentChanged = true;
     }
     if (parsed.data.status !== undefined) updates.status = parsed.data.status;
+    if (parsed.data.metadataJson !== undefined) updates.metadataJson = parsed.data.metadataJson;
 
     const [updated] = await db
       .update(sources)

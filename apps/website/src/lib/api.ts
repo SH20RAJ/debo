@@ -51,7 +51,7 @@ export const api = {
     get: (id: string) => fetchApi(`/api/sources/${id}`),
     create: (data: { type?: string; title?: string; content?: string; description?: string; status?: string; origin?: string }) =>
       fetchApi("/api/sources", { method: "POST", body: JSON.stringify(data) }),
-    update: (id: string, data: { title?: string; content?: string; description?: string; status?: string }) =>
+    update: (id: string, data: { title?: string; content?: string; description?: string; status?: string; metadataJson?: string }) =>
       fetchApi(`/api/sources/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
     delete: (id: string) => fetchApi(`/api/sources/${id}`, { method: "DELETE" }),
     getFileUrl: (id: string) => fetchApi(`/api/sources/${id}/file`),
@@ -66,7 +66,7 @@ export const api = {
         method: "POST",
         body: JSON.stringify({ ...data, type: "journal" }),
       }),
-    update: (id: string, data: { title?: string; content?: string }) =>
+    update: (id: string, data: { title?: string; content?: string; metadataJson?: string }) =>
       fetchApi(`/api/sources/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
   },
   tasks: {
