@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
+import useSWR from "swr";
 import {
   CheckSquare,
   Users,
@@ -14,9 +15,9 @@ import {
   Check,
   X,
   Pencil,
-  Inbox,
   Sparkles,
   Loader2,
+  Calendar,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -27,15 +28,17 @@ import { api } from "@/lib/api";
 
 type ItemType = "task" | "person" | "promise" | "fact" | "decision";
 type Confidence = "Strong" | "Partial" | "Weak";
-type SourceType = "voice" | "journal" | "email" | "chat" | "meeting";
+type SourceType = "voice" | "journal" | "email" | "chat" | "meeting" | "debo_mail";
 
 interface InboxItem {
   id: string;
+  table: "tasks" | "memory_items";
   type: ItemType;
   content: string;
   source: SourceType;
   sourceLabel: string;
   confidence: Confidence;
+  createdAt: string;
 }
 
 const typeConfig: Record<
@@ -53,6 +56,7 @@ const sourceConfig: Record<SourceType, { icon: typeof FileText; label: string }>
   voice: { icon: Mic, label: "Voice note" },
   journal: { icon: FileText, label: "Journal" },
   email: { icon: Mail, label: "Email" },
+  debo_mail: { icon: Mail, label: "Debo Mail" },
   chat: { icon: MessageSquare, label: "Chat" },
   meeting: { icon: MessageSquare, label: "Meeting" },
 };
@@ -70,33 +74,11 @@ const filterToType: Record<string, ItemType | null> = {
 };
 
 export function MemoryInboxPage() {
-  const [items, setItems] = useState<InboxItem[]>([]);
   const [approved, setApproved] = useState<Set<string>>(new Set());
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
   const [activeFilter, setActiveFilter] = useState<FilterTab>("All");
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    setLoading(true);
-    api.tasks
-      .list({ status: "inbox" })
-      .then((data: any) => {
-        const tasks: any[] = Array.isArray(data) ? data : [];
-        const mapped: InboxItem[] = tasks.map((t: any) => ({
-          id: String(t.id),
-          type: "task" as ItemType,
-          content: t.title || t.description || "Untitled",
-          source: "journal" as SourceType,
-          sourceLabel: "Inbox",
-          confidence: "Strong" as Confidence,
-        }));
-        setItems(mapped);
-        setApproved(new Set());
-        setDismissed(new Set());
-      })
-      .catch(() => setItems([]))
-      .finally(() => setLoading(false));
-  }, []);
+  const { data: items = [], error, mutate, isLoading } = useSWR<InboxItem[]>("/api/inbox", () => api.inbox.list());
 
   const pendingItems = useMemo(
     () =>
@@ -117,21 +99,32 @@ export function MemoryInboxPage() {
     return pendingItems.filter((item) => item.type === typeFilter);
   }, [pendingItems, activeFilter]);
 
-  const handleApprove = async (id: string) => {
+  const handleApprove = async (id: string, table: "tasks" | "memory_items") => {
     try {
-      await api.tasks.approve(id);
+      await api.inbox.approve(id, table);
       setApproved((prev) => new Set(prev).add(id));
-    } catch {
-      // ignore
+      mutate();
+    } catch (err) {
+      console.error("Approve failed", err);
     }
   };
 
-  const handleDismiss = async (id: string) => {
+  const handleDismiss = async (id: string, table: "tasks" | "memory_items") => {
     try {
-      await api.tasks.dismiss(id);
+      await api.inbox.dismiss(id, table);
       setDismissed((prev) => new Set(prev).add(id));
-    } catch {
-      // ignore
+      mutate();
+    } catch (err) {
+      console.error("Dismiss failed", err);
+    }
+  };
+
+  const handleUpdateContent = async (id: string, table: "tasks" | "memory_items", newContent: string) => {
+    try {
+      await api.inbox.update(id, table, newContent);
+      mutate();
+    } catch (err) {
+      console.error("Edit failed", err);
     }
   };
 
@@ -179,9 +172,9 @@ export function MemoryInboxPage() {
         </div>
 
         {/* Pending items */}
-        {loading ? (
+        {isLoading ? (
           <div className="flex items-center gap-2 text-muted-foreground text-sm py-10">
-            <Loader2 className="size-4 animate-spin" />
+            <Loader2 className="size-4 animate-spin text-primary" />
             Loading inbox...
           </div>
         ) : filteredPending.length > 0 ? (
@@ -190,8 +183,9 @@ export function MemoryInboxPage() {
               <InboxItemCard
                 key={item.id}
                 item={item}
-                onApprove={() => handleApprove(item.id)}
-                onDismiss={() => handleDismiss(item.id)}
+                onApprove={() => handleApprove(item.id, item.table)}
+                onDismiss={() => handleDismiss(item.id, item.table)}
+                onUpdate={(newContent) => handleUpdateContent(item.id, item.table, newContent)}
               />
             ))}
           </div>
@@ -226,8 +220,8 @@ export function MemoryInboxPage() {
             <div className="space-y-2 opacity-60">
               {approvedItems.map((item) => {
                 const conf = typeConfig[item.type];
-                const Icon = conf.icon;
-                const src = sourceConfig[item.source];
+                const Icon = conf?.icon || CheckSquare;
+                const src = sourceConfig[item.source] || { icon: FileText, label: "Source" };
                 const SrcIcon = src.icon;
                 return (
                   <div
@@ -267,17 +261,19 @@ function InboxItemCard({
   item,
   onApprove,
   onDismiss,
+  onUpdate,
 }: {
   item: InboxItem;
   onApprove: () => void;
   onDismiss: () => void;
+  onUpdate: (newContent: string) => void;
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(item.content);
 
-  const conf = typeConfig[item.type];
+  const conf = typeConfig[item.type] || { icon: CheckSquare, label: "Extraction" };
   const Icon = conf.icon;
-  const src = sourceConfig[item.source];
+  const src = sourceConfig[item.source] || { icon: FileText, label: "Source" };
   const SrcIcon = src.icon;
 
   return (
@@ -305,16 +301,16 @@ function InboxItemCard({
               <textarea
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
-                className="w-full text-sm text-foreground bg-muted rounded-xl p-2.5 border-2 border-border focus:outline-none focus:border-primary/50 resize-none"
+                className="w-full text-sm text-foreground bg-muted rounded-xl p-2.5 border-2 border-border focus:outline-none focus:border-primary/50 resize-none animate-in fade-in duration-250"
                 rows={2}
                 autoFocus
               />
-              <div className="flex gap-2">
+              <div className="flex gap-2 animate-in fade-in duration-200">
                 <Button
                   size="xs"
-                  className="rounded-lg"
-                  onClick={() => {
-                    item.content = editValue;
+                  className="rounded-lg bg-primary hover:bg-primary/95 text-primary-foreground font-semibold px-3 py-1"
+                  onClick={async () => {
+                    await onUpdate(editValue);
                     setIsEditing(false);
                   }}
                 >
@@ -323,7 +319,7 @@ function InboxItemCard({
                 <Button
                   size="xs"
                   variant="ghost"
-                  className="rounded-lg"
+                  className="rounded-lg border border-white/5 font-semibold px-3 py-1 hover:bg-white/5"
                   onClick={() => {
                     setEditValue(item.content);
                     setIsEditing(false);
@@ -337,17 +333,23 @@ function InboxItemCard({
             <p className="text-sm text-foreground leading-snug">{item.content}</p>
           )}
 
-          <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
-            <SrcIcon className="size-3" />
-            {src.label} · {item.sourceLabel}
-          </span>
+          <div className="flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5">
+              <SrcIcon className="size-3" />
+              {src.label} · {item.sourceLabel}
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <Calendar className="size-3 text-zinc-600" />
+              {new Date(item.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+            </span>
+          </div>
 
           {/* Actions */}
           <div className="flex items-center gap-1.5 pt-1">
             <Button
               size="xs"
               className={cn(
-                "rounded-lg gap-1 bg-primary text-primary-foreground",
+                "rounded-lg gap-1 bg-primary text-primary-foreground font-semibold px-3 h-7",
                 "shadow-[0_3px_0_#46A302] hover:brightness-105",
                 "active:translate-y-[2px] active:shadow-none transition-all"
               )}
@@ -359,7 +361,7 @@ function InboxItemCard({
             <Button
               size="xs"
               variant="ghost"
-              className="rounded-lg gap-1 text-muted-foreground hover:text-foreground hover:bg-accent/60"
+              className="rounded-lg gap-1 text-muted-foreground hover:text-foreground hover:bg-accent/60 h-7"
               onClick={() => setIsEditing(true)}
             >
               <Pencil className="size-3" />
@@ -368,7 +370,7 @@ function InboxItemCard({
             <Button
               size="xs"
               variant="ghost"
-              className="rounded-lg gap-1 text-muted-foreground hover:text-foreground hover:bg-accent/60"
+              className="rounded-lg gap-1 text-muted-foreground hover:text-foreground hover:bg-accent/60 h-7"
               onClick={onDismiss}
             >
               <X className="size-3" />

@@ -253,4 +253,13 @@ export const api = {
       return res.json();
     },
   },
+  inbox: {
+    list: () => fetchApi("/api/inbox"),
+    approve: (id: string, table: "tasks" | "memory_items") =>
+      fetchApi(`/api/inbox/${id}/approve`, { method: "POST", body: JSON.stringify({ table }) }),
+    dismiss: (id: string, table: "tasks" | "memory_items") =>
+      fetchApi(`/api/inbox/${id}/dismiss`, { method: "POST", body: JSON.stringify({ table }) }),
+    update: (id: string, table: "tasks" | "memory_items", content: string) =>
+      fetchApi(`/api/inbox/${id}`, { method: "PATCH", body: JSON.stringify({ table, content }) }),
+  },
 };
