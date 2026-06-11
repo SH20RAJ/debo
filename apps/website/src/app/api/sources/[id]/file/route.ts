@@ -62,6 +62,17 @@ export async function GET(
 
     if (!file) return apiError("not_found", 404);
 
+    if (file.r2Bucket === "local-dev-fallback") {
+      const expiresAt = new Date(Date.now() + URL_TTL_SECONDS * 1000).toISOString();
+      return NextResponse.json({
+        url: file.r2Key,
+        mimeType: file.mimeType,
+        sizeBytes: file.sizeBytes,
+        filename: file.filename,
+        expiresAt,
+      });
+    }
+
     const r2 = getR2Config();
     if (!r2) {
       return apiError("r2_not_configured", 503, { service: "r2" });
