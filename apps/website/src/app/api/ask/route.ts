@@ -16,7 +16,7 @@
 import { NextResponse } from "next/server";
 import { HumanMessage, SystemMessage, ToolMessage } from "@langchain/core/messages";
 import { requireSession, apiError } from "@/lib/api-helpers";
-import { classifyIntent, isChitchat, classifyRetrievalIntent } from "@/server/langgraph/nodes/classify-intent.node";
+import { classifyIntent, classifyRetrievalIntent } from "@/server/langgraph/nodes/classify-intent.node";
 import { retrieveMemory } from "@/server/langgraph/nodes/retrieve-memory.node";
 import {
   buildSystemPrompt,
@@ -30,6 +30,20 @@ import { validateCitationsNode } from "@/server/langgraph/nodes/validate-citatio
 import { db } from "@debo/db";
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
+import {
+  chatThreads,
+  chatMessages,
+  answerCitations,
+  auditLogs,
+  tasks,
+  sources,
+  deboMailMessages,
+  connectorAccounts,
+} from "@debo/db/schema";
+import { eq, and, or, ilike, ne } from "drizzle-orm";
+import { newId } from "@/lib/api-helpers";
+
+export const runtime = "nodejs";
 
 const webFetchSchema = z.object({
   url: z.string().url().describe("The absolute HTTP or HTTPS URL of the webpage to fetch."),
@@ -75,16 +89,123 @@ const webFetchTool = tool(
     schema: webFetchSchema,
   }
 );
-import {
-  chatThreads,
-  chatMessages,
-  answerCitations,
-  auditLogs,
-} from "@debo/db/schema";
-import { eq, and } from "drizzle-orm";
-import { newId } from "@/lib/api-helpers";
 
-export const runtime = "nodejs";
+// Specialized search tools for Debo apps
+const queryTasksTool = (userId: string, workspaceId: string) => tool(
+  async (input: { query?: string }) => {
+    try {
+      const conditions = [
+        eq(tasks.userId, userId),
+        eq(tasks.workspaceId, workspaceId),
+        ne(tasks.status, "dismissed")
+      ];
+      if (input.query) {
+        conditions.push(or(ilike(tasks.title, `%${input.query}%`), ilike(tasks.description, `%${input.query}%`)) as any);
+      }
+      const results = await db.select().from(tasks).where(and(...conditions)).limit(20);
+      return JSON.stringify(results);
+    } catch (err: any) {
+      return `Error querying tasks: ${err.message || err}`;
+    }
+  },
+  {
+    name: "query_tasks",
+    description: "Search and query tasks assigned to you or in your inbox.",
+    schema: z.object({ query: z.string().optional() }),
+  }
+);
+
+const queryJournalsTool = (userId: string, workspaceId: string) => tool(
+  async (input: { query?: string }) => {
+    try {
+      const conditions = [
+        eq(sources.userId, userId),
+        eq(sources.workspaceId, workspaceId),
+        eq(sources.type, "journal"),
+        ne(sources.status, "deleted")
+      ];
+      if (input.query) {
+        conditions.push(or(ilike(sources.title, `%${input.query}%`), ilike(sources.plainText, `%${input.query}%`)) as any);
+      }
+      const results = await db.select().from(sources).where(and(...conditions)).limit(10);
+      return JSON.stringify(results);
+    } catch (err: any) {
+      return `Error querying journals: ${err.message || err}`;
+    }
+  },
+  {
+    name: "query_journals",
+    description: "Search and query your private and public journal logs.",
+    schema: z.object({ query: z.string().optional() }),
+  }
+);
+
+const queryVoiceNotesTool = (userId: string, workspaceId: string) => tool(
+  async (input: { query?: string }) => {
+    try {
+      const conditions = [
+        eq(sources.userId, userId),
+        eq(sources.workspaceId, workspaceId),
+        or(eq(sources.type, "voice"), eq(sources.type, "audio")),
+        ne(sources.status, "deleted")
+      ];
+      if (input.query) {
+        conditions.push(or(ilike(sources.title, `%${input.query}%`), ilike(sources.plainText, `%${input.query}%`)) as any);
+      }
+      const results = await db.select().from(sources).where(and(...conditions)).limit(10);
+      return JSON.stringify(results);
+    } catch (err: any) {
+      return `Error querying voice notes: ${err.message || err}`;
+    }
+  },
+  {
+    name: "query_voice_notes",
+    description: "Search and retrieve transcribed voice notes or recorded phone conversations with Debo.",
+    schema: z.object({ query: z.string().optional() }),
+  }
+);
+
+const queryMailTool = (userId: string, workspaceId: string) => tool(
+  async (input: { query?: string }) => {
+    try {
+      const conditions = [
+        or(eq(deboMailMessages.senderUserId, userId), eq(deboMailMessages.recipientUserId, userId)),
+        ne(deboMailMessages.status, "deleted")
+      ];
+      if (input.query) {
+        conditions.push(or(ilike(deboMailMessages.subject, `%${input.query}%`), ilike(deboMailMessages.body, `%${input.query}%`)) as any);
+      }
+      const results = await db.select().from(deboMailMessages).where(and(...conditions)).limit(15);
+      return JSON.stringify(results);
+    } catch (err: any) {
+      return `Error querying mail: ${err.message || err}`;
+    }
+  },
+  {
+    name: "query_mail",
+    description: "Search and retrieve your transactional emails from Debo Mail.",
+    schema: z.object({ query: z.string().optional() }),
+  }
+);
+
+const queryConnectorsTool = (userId: string, workspaceId: string) => tool(
+  async (input: {}) => {
+    try {
+      const results = await db
+        .select()
+        .from(connectorAccounts)
+        .where(and(eq(connectorAccounts.userId, userId), eq(connectorAccounts.workspaceId, workspaceId)));
+      return JSON.stringify(results);
+    } catch (err: any) {
+      return `Error querying connectors: ${err.message || err}`;
+    }
+  },
+  {
+    name: "query_connectors",
+    description: "List currently connected third-party integrations (e.g. Google, GitHub, Notion).",
+    schema: z.object({}),
+  }
+);
 
 export async function POST(req: Request) {
   const session = await requireSession(req);
@@ -106,8 +227,6 @@ export async function POST(req: Request) {
   const shouldSearchMemory = await classifyRetrievalIntent(question);
   const chitchat = !shouldSearchMemory;
 
-  // Resolve or create the chat thread we attribute this turn to. We don't
-  // require it client-side; create-on-demand is fine for now.
   let threadId = body.threadId;
   if (!threadId) {
     threadId = newId("thr");
@@ -121,7 +240,6 @@ export async function POST(req: Request) {
       title: question.slice(0, 80),
     });
   } else {
-    // Confirm ownership; if not found, create-on-demand instead of leaking
     const [existing] = await db
       .select({ id: chatThreads.id })
       .from(chatThreads)
@@ -164,8 +282,6 @@ export async function POST(req: Request) {
       try {
         const intent = shouldSearchMemory ? classifyIntent(question) : "chitchat";
 
-        // Chitchat ("hey", "thanks") skips memory retrieval entirely so Debo
-        // can just talk. Only real questions trigger a memory search.
         let sourcesFound: Awaited<ReturnType<typeof retrieveMemory>>["sourcesFound"] = [];
         let contextText = "";
         if (!chitchat) {
@@ -189,7 +305,6 @@ export async function POST(req: Request) {
         let finalAnswer = "";
 
         if (!llmReady) {
-          // Service degraded but transparent.
           finalAnswer = chitchat
             ? "Hey! I'm Debo, your private memory companion. I can capture notes, voice, and answer questions about your past — though my AI brain needs an API key (NVIDIA_API_KEY or OPENAI_API_KEY) configured to chat fully."
             : sourcesFound.length > 0
@@ -209,77 +324,71 @@ export async function POST(req: Request) {
             new HumanMessage(question),
           ];
 
-          const hasUrl = /https?:\/\/[^\s]+/i.test(question);
+          // Define all available tools
+          const allTools = [
+            webFetchTool,
+            queryTasksTool(user.id, workspaceId),
+            queryJournalsTool(user.id, workspaceId),
+            queryVoiceNotesTool(user.id, workspaceId),
+            queryMailTool(user.id, workspaceId),
+            queryConnectorsTool(user.id, workspaceId),
+          ];
 
-          if (hasUrl) {
-            const llmWithTools = llm.bindTools([webFetchTool]);
-            
-            // Check for tool calls first
-            const firstResponse = await llmWithTools.invoke(initialMessages);
-            let messagesForFinalStream = initialMessages;
-            let executedTool = false;
+          const llmWithTools = llm.bindTools(allTools);
+          
+          // Invoke once to check if model wants to call any tool
+          const firstResponse = await llmWithTools.invoke(initialMessages);
+          let messagesForFinalStream = initialMessages;
+          let executedTool = false;
 
-            if (firstResponse.tool_calls && firstResponse.tool_calls.length > 0) {
-              const toolCall = firstResponse.tool_calls[0]!;
-              if (toolCall.name === "web_fetch") {
-                const url = (toolCall.args as any).url;
+          if (firstResponse.tool_calls && firstResponse.tool_calls.length > 0) {
+            const toolCalls = firstResponse.tool_calls;
+            const toolMessages: ToolMessage[] = [];
+
+            for (const toolCall of toolCalls) {
+              const toolToRun = allTools.find((t) => t.name === toolCall.name);
+              if (toolToRun) {
                 send({ 
                   type: "retrieval_started",
-                  detail: `Fetching live web page content from: ${url}...`
+                  detail: `Executing tool ${toolCall.name}...`
                 });
 
-                // Run the tool execution
-                const toolResult = await webFetchTool.invoke({
-                  name: "web_fetch",
-                  args: { url },
+                const toolResult = await toolToRun.invoke({
+                  name: toolCall.name,
+                  args: toolCall.args,
                   id: toolCall.id,
                   type: "tool_call"
                 });
 
-                // Send source found notification to the frontend
                 send({
                   type: "source_found",
-                  id: `web_fetch_${Date.now()}`,
-                  sourceType: "link",
-                  title: `Fetched URL: ${url}`,
-                  snippet: typeof toolResult === "string" ? toolResult.slice(0, 300) : "Webpage content",
+                  id: `${toolCall.name}_${Date.now()}`,
+                  sourceType: toolCall.name === "web_fetch" ? "link" : "task",
+                  title: `Tool output: ${toolCall.name}`,
+                  snippet: typeof toolResult === "string" ? toolResult.slice(0, 300) : JSON.stringify(toolResult).slice(0, 300),
                   confidence: "strong"
                 });
 
-                // Append tool response to the history
-                messagesForFinalStream = [
-                  new SystemMessage(systemPrompt),
-                  new HumanMessage(question),
-                  firstResponse,
-                  new ToolMessage({
-                    content: typeof toolResult === "string" ? toolResult : String(toolResult),
-                    tool_call_id: toolCall.id || "",
-                    name: "web_fetch"
-                  })
-                ];
-                executedTool = true;
+                toolMessages.push(new ToolMessage({
+                  content: typeof toolResult === "string" ? toolResult : JSON.stringify(toolResult),
+                  tool_call_id: toolCall.id || "",
+                  name: toolCall.name
+                }));
               }
             }
 
-            if (executedTool) {
-              // Stream the final output based on live webpage data
-              const tokenStream = await llm.stream(messagesForFinalStream);
-              for await (const chunk of tokenStream) {
-                const token = typeof chunk.content === "string" ? chunk.content : "";
-                if (token) {
-                  finalAnswer += token;
-                  send({ type: "answer_delta", token });
-                }
-              }
-            } else {
-              // No tool was executed, stream the content of firstResponse
-              const content = typeof firstResponse.content === "string" ? firstResponse.content : "";
-              finalAnswer = content;
-              send({ type: "answer_delta", token: content });
-            }
-          } else {
-            // Stream the final output directly (no double invocation!)
-            const tokenStream = await llm.stream(initialMessages);
+            messagesForFinalStream = [
+              new SystemMessage(systemPrompt),
+              new HumanMessage(question),
+              firstResponse,
+              ...toolMessages
+            ];
+            executedTool = true;
+          }
+
+          if (executedTool) {
+            // Stream based on tool output
+            const tokenStream = await llm.stream(messagesForFinalStream);
             for await (const chunk of tokenStream) {
               const token = typeof chunk.content === "string" ? chunk.content : "";
               if (token) {
@@ -287,14 +396,17 @@ export async function POST(req: Request) {
                 send({ type: "answer_delta", token });
               }
             }
+          } else {
+            // No tool was executed, return firstResponse content instantly
+            const content = typeof firstResponse.content === "string" ? firstResponse.content : "";
+            finalAnswer = content;
+            send({ type: "answer_delta", token: content });
           }
         }
 
         const citations = buildCitations(sourcesFound);
         const confidence = computeConfidenceLabel(sourcesFound, finalAnswer);
 
-        // Run the post-answer LangGraph nodes. They are pure synchronous
-        // helpers; we call them inline here for streaming control.
         const validation = validateCitationsNode({
           citations,
           sourcesFound,
