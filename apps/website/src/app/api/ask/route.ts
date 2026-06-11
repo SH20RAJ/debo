@@ -16,7 +16,7 @@
 import { NextResponse } from "next/server";
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { requireSession, apiError } from "@/lib/api-helpers";
-import { classifyIntent, isChitchat } from "@/server/langgraph/nodes/classify-intent.node";
+import { classifyIntent, isChitchat, classifyRetrievalIntent } from "@/server/langgraph/nodes/classify-intent.node";
 import { retrieveMemory } from "@/server/langgraph/nodes/retrieve-memory.node";
 import {
   buildSystemPrompt,
@@ -56,7 +56,8 @@ export async function POST(req: Request) {
 
   const mode = body.mode ?? "recall";
   const llmReady = isLlmConfigured();
-  const chitchat = isChitchat(question);
+  const shouldSearchMemory = await classifyRetrievalIntent(question);
+  const chitchat = !shouldSearchMemory;
 
   // Resolve or create the chat thread we attribute this turn to. We don't
   // require it client-side; create-on-demand is fine for now.
@@ -114,7 +115,7 @@ export async function POST(req: Request) {
       };
 
       try {
-        const intent = classifyIntent(question);
+        const intent = shouldSearchMemory ? classifyIntent(question) : "chitchat";
 
         // Chitchat ("hey", "thanks") skips memory retrieval entirely so Debo
         // can just talk. Only real questions trigger a memory search.

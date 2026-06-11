@@ -57,6 +57,8 @@ export default async function JournalRoute() {
       content,
       createdAt: String(s.createdAt),
       updatedAt: String(s.updatedAt),
+      slug: s.slug ?? "",
+      privacyLevel: s.privacyLevel ?? "normal",
     };
   });
 

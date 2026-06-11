@@ -113,7 +113,7 @@ export const sources = pgTable(
     sourceDate: timestamp("source_date", { mode: "string" }),
     language: text("language"),
     privacyLevel: text("privacy_level", {
-      enum: ["normal", "private", "sensitive"],
+      enum: ["normal", "private", "sensitive", "public", "unlisted"],
     })
       .notNull()
       .default("normal"),
@@ -121,6 +121,7 @@ export const sources = pgTable(
     summary: text("summary"),
     metadataJson: text("metadata_json"),
     processingError: text("processing_error"),
+    slug: text("slug"),
     createdAt: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { mode: "string" }).notNull().defaultNow(),
     deletedAt: timestamp("deleted_at", { mode: "string" }),

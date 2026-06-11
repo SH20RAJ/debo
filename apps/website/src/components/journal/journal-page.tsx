@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import {
   Loader2,
@@ -22,6 +23,10 @@ import {
   Tag,
   Clock,
   FileText,
+  Share2,
+  Globe,
+  Lock as LockIcon,
+  Link2,
 } from "lucide-react";
 import { JournalEntryList } from "@/components/journal/entry-list";
 import { Button } from "@/components/ui/button";
@@ -37,11 +42,30 @@ import {
 } from "@/components/ui/dialog";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 function formatRelative(dateStr: string): string {
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return "Draft";
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+function slugify(text: string): string {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-") // Replace spaces with -
+    .replace(/[^\w\-]+/g, "") // Remove all non-word chars
+    .replace(/\-\-+/g, "-") // Replace multiple - with single -
+    .replace(/^-+/, "") // Trim - from start of text
+    .replace(/-+$/, ""); // Trim - from end of text
+}
+
+function generateJournalSlug(title: string): string {
+  const base = title ? slugify(title) : "journal";
+  const suffix = Math.random().toString(36).substring(2, 8);
+  return `${base}-${suffix}`;
 }
 
 const JournalEditor = dynamic(
@@ -65,6 +89,8 @@ export interface JournalEntry {
   createdAt: string;
   updatedAt: string;
   metadataJson?: string;
+  slug?: string;
+  privacyLevel?: string;
 }
 
 interface JournalMetadata {
@@ -91,6 +117,8 @@ function mapSourceToEntry(s: any): JournalEntry {
     createdAt: s.createdAt ?? new Date().toISOString(),
     updatedAt: s.updatedAt ?? s.createdAt ?? new Date().toISOString(),
     metadataJson: s.metadataJson ?? null,
+    slug: s.slug ?? "",
+    privacyLevel: s.privacyLevel ?? "normal",
   };
 }
 
@@ -206,12 +234,35 @@ export function JournalPage({ fallbackData = [] }: JournalPageProps) {
     return fallbackData[0]?.id ?? "";
   });
 
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const focusMode = searchParams.get("focus") === "true";
+  const setFocusMode = useCallback(
+    (val: boolean | ((prev: boolean) => boolean)) => {
+      const nextVal = typeof val === "function" ? val(focusMode) : val;
+      const params = new URLSearchParams(searchParams.toString());
+      if (nextVal) {
+        params.set("focus", "true");
+      } else {
+        params.delete("focus");
+      }
+      router.replace(`${pathname}?${params.toString()}`);
+    },
+    [router, pathname, searchParams, focusMode],
+  );
+
   // UI Modes
   const [viewMode, setViewMode] = useState<"split" | "gallery">("split");
   const [creating, setCreating] = useState(false);
-  const [focusMode, setFocusMode] = useState(false);
   const [listOpen, setListOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+
+  // Sharing States
+  const [shareOpen, setShareOpen] = useState(false);
+  const [sharePrivacy, setSharePrivacy] = useState("normal");
+  const [shareSlug, setShareSlug] = useState("");
 
   // Search, Filtering & Sorting States
   const [search, setSearch] = useState("");
@@ -246,6 +297,36 @@ export function JournalPage({ fallbackData = [] }: JournalPageProps) {
   const activeEntry = useMemo(
     () => entries.find((e) => e.id === activeEntryId),
     [entries, activeEntryId],
+  );
+
+  // Sync share preferences on active entry change
+  useEffect(() => {
+    if (!activeEntry) return;
+    setSharePrivacy(activeEntry.privacyLevel ?? "normal");
+    setShareSlug(activeEntry.slug ?? "");
+  }, [activeEntryId, activeEntry]);
+
+  const handleShareSave = useCallback(
+    async (newPrivacy: string, newSlug: string) => {
+      if (!activeEntry) return;
+      const finalSlug = newSlug.trim() || generateJournalSlug(activeEntry.title);
+      try {
+        const updated = await api.sources.update(activeEntry.id, {
+          privacyLevel: newPrivacy,
+          slug: finalSlug,
+        });
+        const mapped = mapSourceToEntry(updated);
+
+        const nextEntries = entries.map((e) => (e.id === activeEntry.id ? mapped : e));
+        mutate(nextEntries, false);
+        toast.success("Sharing preferences saved successfully!");
+        setShareOpen(false);
+      } catch (err) {
+        console.error("[journal] share save failed", err);
+        toast.error("Failed to update sharing preferences");
+      }
+    },
+    [activeEntry, entries, mutate],
   );
 
   // Reset draft refs on active entry change
@@ -302,10 +383,8 @@ export function JournalPage({ fallbackData = [] }: JournalPageProps) {
         metadataJson: draft.metadataJson,
       };
 
-      mutate(
-        (prev) => prev?.map((e) => (e.id === targetId ? mapped : e)) ?? [],
-        false
-      );
+      const nextEntries = entries.map((e) => (e.id === targetId ? mapped : e));
+      mutate(nextEntries, false);
 
       setSavedAt(Date.now());
       setSaveState("saved");
@@ -344,22 +423,18 @@ export function JournalPage({ fallbackData = [] }: JournalPageProps) {
         metadataJson: draftRef.current?.metadataJson ?? activeEntry.metadataJson,
       };
 
-      // Optimistic list preview sync
-      mutate(
-        (prev) =>
-          prev?.map((e) =>
-            e.id === activeEntryId
-              ? {
-                  ...e,
-                  title,
-                  content,
-                  preview: makePreview(content),
-                  updatedAt: new Date().toISOString(),
-                }
-              : e
-          ) ?? [],
-        false
+      const nextEntries = entries.map((e) =>
+        e.id === activeEntryId
+          ? {
+              ...e,
+              title,
+              content,
+              preview: makePreview(content),
+              updatedAt: new Date().toISOString(),
+            }
+          : e
       );
+      mutate(nextEntries, false);
 
       scheduleSave();
     },
@@ -386,19 +461,16 @@ export function JournalPage({ fallbackData = [] }: JournalPageProps) {
         metadataJson: metadataStr,
       };
 
-      mutate(
-        (prev) =>
-          prev?.map((e) =>
-            e.id === activeEntryId
-              ? {
-                  ...e,
-                  metadataJson: metadataStr,
-                  updatedAt: new Date().toISOString(),
-                }
-              : e
-          ) ?? [],
-        false
+      const nextEntries = entries.map((e) =>
+        e.id === activeEntryId
+          ? {
+              ...e,
+              metadataJson: metadataStr,
+              updatedAt: new Date().toISOString(),
+            }
+          : e
       );
+      mutate(nextEntries, false);
 
       scheduleSave();
     },
@@ -430,14 +502,15 @@ export function JournalPage({ fallbackData = [] }: JournalPageProps) {
       const created = await api.journal.create({ title: "", content: "" });
       const mapped = mapSourceToEntry(created);
       
-      mutate(
-        (prev) => prev?.map((e) => (e.id === tempId ? mapped : e)) ?? [mapped],
-        false
-      );
+      const nextEntries = entries.map((e) => (e.id === tempId ? mapped : e));
+      if (!nextEntries.some((e) => e.id === mapped.id)) {
+        nextEntries.unshift(mapped);
+      }
+      mutate(nextEntries, false);
       setActiveEntryId(mapped.id);
     } catch (err) {
       console.error("[journal] create failed", err);
-      mutate((prev) => prev?.filter((e) => e.id !== tempId) ?? [], false);
+      mutate(entries.filter((e) => e.id !== tempId), false);
       setActiveEntryId(entries[0]?.id ?? "");
     } finally {
       setCreating(false);
@@ -688,6 +761,18 @@ export function JournalPage({ fallbackData = [] }: JournalPageProps) {
                   </>
                 )}
               </div>
+            )}
+
+            {viewMode === "split" && activeEntry && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 border border-border bg-background text-muted-foreground hover:text-foreground rounded-xl"
+                onClick={() => setShareOpen(true)}
+                title="Share entry"
+              >
+                <Share2 className="h-4 w-4" />
+              </Button>
             )}
 
             {viewMode === "split" && (
@@ -971,6 +1056,136 @@ export function JournalPage({ fallbackData = [] }: JournalPageProps) {
               onClick={handleDelete}
             >
               Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={shareOpen} onOpenChange={setShareOpen}>
+        <DialogContent className="border border-border bg-card text-foreground rounded-2xl max-w-md shadow-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold font-[var(--font-nunito)] flex items-center gap-2">
+              <Share2 className="w-4.5 h-4.5 text-primary" />
+              <span>Share Journal Entry</span>
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground text-xs leading-relaxed mt-1">
+              Configure visibility settings and sharing links for your private thoughts.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-3">
+            {/* Visibility Mode Selector */}
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide">
+                Visibility
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  {
+                    value: "normal",
+                    label: "Private",
+                    icon: LockIcon,
+                    desc: "Only you can see this",
+                  },
+                  {
+                    value: "unlisted",
+                    label: "Unlisted",
+                    icon: Link2,
+                    desc: "Anyone with link",
+                  },
+                  {
+                    value: "public",
+                    label: "Public",
+                    icon: Globe,
+                    desc: "Public to search engines",
+                  },
+                ].map((option) => {
+                  const selected = sharePrivacy === option.value;
+                  const IconComp = option.icon;
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setSharePrivacy(option.value)}
+                      className={cn(
+                        "flex flex-col items-center justify-center p-3 rounded-xl border-2 text-center transition-all active:scale-[0.98]",
+                        selected
+                          ? "bg-primary/5 border-primary text-foreground"
+                          : "bg-background border-border text-muted-foreground hover:border-border-hover"
+                      )}
+                    >
+                      <IconComp className={cn("w-4 h-4 mb-1.5", selected ? "text-primary" : "text-muted-foreground")} />
+                      <span className="text-xs font-bold font-[var(--font-nunito)]">{option.label}</span>
+                      <span className="text-[9px] text-muted-foreground/80 mt-0.5 leading-snug line-clamp-1">{option.desc}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Custom URL Slug Editor */}
+            {sharePrivacy !== "normal" && (
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide">
+                  Custom Link Slug
+                </label>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs text-muted-foreground font-mono select-none">
+                    /j/
+                  </span>
+                  <Input
+                    type="text"
+                    value={shareSlug}
+                    onChange={(e) => setShareSlug(slugify(e.target.value))}
+                    placeholder="custom-slug-here"
+                    className="h-9 rounded-lg border border-border bg-background focus:ring-1 focus:ring-primary/20 text-xs"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Share Link Preview & Copy */}
+            {sharePrivacy !== "normal" && (
+              <div className="p-3.5 rounded-xl border border-border bg-muted/40 space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
+                    Share Link
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-[10px] font-bold gap-1 rounded-lg border border-border hover:bg-background"
+                    onClick={() => {
+                      const origin = typeof window !== "undefined" ? window.location.origin : "";
+                      const url = `${origin}/j/${shareSlug || activeEntry?.slug}`;
+                      navigator.clipboard.writeText(url);
+                      toast.success("Link copied to clipboard!");
+                    }}
+                  >
+                    <Link2 className="w-3.5 h-3.5 text-muted-foreground" />
+                    Copy URL
+                  </Button>
+                </div>
+                <p className="text-xs text-primary font-mono select-all truncate">
+                  {typeof window !== "undefined" ? window.location.origin : ""}/j/{shareSlug || activeEntry?.slug}
+                </p>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="mt-2 gap-2">
+            <Button
+              variant="ghost"
+              className="rounded-xl border border-border hover:bg-accent text-foreground text-xs h-9 px-4"
+              onClick={() => setShareOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="rounded-xl bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-bold h-9 px-4 shadow-[0_3px_0_#46A302] active:translate-y-[2px] active:shadow-none transition-all"
+              onClick={() => handleShareSave(sharePrivacy, shareSlug)}
+            >
+              Save changes
             </Button>
           </DialogFooter>
         </DialogContent>

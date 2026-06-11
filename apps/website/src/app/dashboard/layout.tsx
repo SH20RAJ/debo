@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Sidebar } from "@/components/app-shell/sidebar";
@@ -13,7 +13,6 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [commandMenuOpen, setCommandMenuOpen] = useState(false);
@@ -57,67 +56,123 @@ export default function DashboardLayout({
     return () => mql.removeEventListener("change", handler);
   }, []);
 
-  // Close mobile sidebar on navigation
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
-
   return (
     <TooltipProvider>
       <Suspense fallback={null}>
-        <div className="flex h-screen overflow-hidden bg-background">
-          {mobileOpen && (
-            <div
-              className="fixed inset-0 z-30 bg-black/40 backdrop-blur-[2px] md:hidden"
-              onClick={() => setMobileOpen(false)}
-            />
+        <DashboardLayoutContent
+          sidebarCollapsed={sidebarCollapsed}
+          setSidebarCollapsed={setSidebarCollapsed}
+          mobileOpen={mobileOpen}
+          setMobileOpen={setMobileOpen}
+          commandMenuOpen={commandMenuOpen}
+          setCommandMenuOpen={setCommandMenuOpen}
+        >
+          {children}
+        </DashboardLayoutContent>
+      </Suspense>
+    </TooltipProvider>
+  );
+}
+
+function DashboardLayoutContent({
+  children,
+  sidebarCollapsed,
+  setSidebarCollapsed,
+  mobileOpen,
+  setMobileOpen,
+  commandMenuOpen,
+  setCommandMenuOpen,
+}: {
+  children: React.ReactNode;
+  sidebarCollapsed: boolean;
+  setSidebarCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
+  mobileOpen: boolean;
+  setMobileOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  commandMenuOpen: boolean;
+  setCommandMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const isFocused = searchParams.get("focus") === "true" && pathname === "/dashboard/journal";
+
+  const noGlobalScroll = [
+    "/dashboard/journal",
+    "/dashboard/chat",
+    "/dashboard/mail",
+    "/dashboard/inbox",
+    "/dashboard/voice",
+    "/dashboard/library",
+    "/dashboard/projects",
+    "/dashboard/tasks",
+    "/dashboard/mcp",
+  ].some(p => pathname.startsWith(p)) || isFocused;
+
+  // Close mobile sidebar on navigation
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname, setMobileOpen]);
+
+  return (
+    <div className="flex h-screen overflow-hidden bg-background">
+      {mobileOpen && !isFocused && (
+        <div
+          className="fixed inset-0 z-30 bg-black/40 backdrop-blur-[2px] md:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      {!isFocused && (
+        <div
+          className={cn(
+            "h-full",
+            mobileOpen
+              ? "fixed inset-y-0 left-0 z-40"
+              : "hidden md:block"
           )}
-
-          <div
-            className={cn(
-              "h-full",
-              mobileOpen
-                ? "fixed inset-y-0 left-0 z-40"
-                : "hidden md:block"
-            )}
-          >
-            <Sidebar
-              collapsed={sidebarCollapsed}
-              onToggle={() => {
-                if (window.innerWidth < 768) {
-                  setMobileOpen((prev) => !prev);
-                } else {
-                  setSidebarCollapsed((prev) => {
-                    const next = !prev;
-                    localStorage.setItem("debo-sidebar-collapsed", String(next));
-                    return next;
-                  });
-                }
-              }}
-            />
-          </div>
-
-          <div className="flex flex-col flex-1 min-w-0">
-            <Topbar
-              onCommandMenuOpen={() => setCommandMenuOpen(true)}
-              onMobileMenuToggle={() => setMobileOpen((prev) => !prev)}
-              onSidebarToggle={() => {
+        >
+          <Sidebar
+            collapsed={sidebarCollapsed}
+            onToggle={() => {
+              if (window.innerWidth < 768) {
+                setMobileOpen((prev) => !prev);
+              } else {
                 setSidebarCollapsed((prev) => {
                   const next = !prev;
                   localStorage.setItem("debo-sidebar-collapsed", String(next));
                   return next;
                 });
-              }}
-              sidebarCollapsed={sidebarCollapsed}
-            />
-            <main className="flex-1 overflow-y-auto min-h-0">
-              <Suspense fallback={null}>{children}</Suspense>
-            </main>
-          </div>
-
-          <CommandMenu open={commandMenuOpen} onClose={() => setCommandMenuOpen(false)} />
+              }
+            }}
+          />
         </div>
-      </Suspense>
-    </TooltipProvider>
+      )}
+
+      <div className="flex flex-col flex-1 min-w-0">
+        {!isFocused && (
+          <Topbar
+            onCommandMenuOpen={() => setCommandMenuOpen(true)}
+            onMobileMenuToggle={() => setMobileOpen((prev) => !prev)}
+            onSidebarToggle={() => {
+              setSidebarCollapsed((prev) => {
+                const next = !prev;
+                localStorage.setItem("debo-sidebar-collapsed", String(next));
+                return next;
+              });
+            }}
+            sidebarCollapsed={sidebarCollapsed}
+          />
+        )}
+        <main
+          className={cn(
+            "flex-1 min-h-0",
+            noGlobalScroll ? "overflow-hidden flex flex-col" : "overflow-y-auto"
+          )}
+        >
+          <Suspense fallback={null}>{children}</Suspense>
+        </main>
+      </div>
+
+      <CommandMenu open={commandMenuOpen} onClose={() => setCommandMenuOpen(false)} />
+    </div>
   );
 }

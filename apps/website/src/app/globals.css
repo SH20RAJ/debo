@@ -328,6 +328,7 @@
 .blocknote-editor [data-mantine-color-scheme] {
   font-family: inherit;
   line-height: inherit;
+  --bn-colors-editor-background: transparent;
 }
 /* Prevent Mantine resets from bleeding into global elements */
 .blocknote-editor *,

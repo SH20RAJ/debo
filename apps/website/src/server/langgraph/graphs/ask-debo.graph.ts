@@ -14,7 +14,7 @@ import {
   END,
 } from "@langchain/langgraph";
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
-import { classifyIntent } from "../nodes/classify-intent.node";
+import { classifyIntent, classifyRetrievalIntent } from "../nodes/classify-intent.node";
 import { buildContextNode } from "../nodes/build-context.node";
 import {
   createNvidiaLLM,
@@ -57,7 +57,8 @@ const AskDeboState = Annotation.Root({
 async function classifyNode(
   state: { question: string }
 ) {
-  const intent = classifyIntent(state.question);
+  const shouldSearch = await classifyRetrievalIntent(state.question);
+  const intent = shouldSearch ? classifyIntent(state.question) : "chitchat";
   return { intent };
 }
 

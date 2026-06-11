@@ -20,6 +20,10 @@ const PatchSourceSchema = z.object({
     .enum(["draft", "uploaded", "processing", "ready", "needs_review", "failed"])
     .optional(),
   metadataJson: z.string().optional().nullable(),
+  slug: z.string().optional().nullable(),
+  privacyLevel: z
+    .enum(["normal", "private", "sensitive", "public", "unlisted"])
+    .optional(),
 });
 
 /**
@@ -84,6 +88,8 @@ export async function PATCH(
     }
     if (parsed.data.status !== undefined) updates.status = parsed.data.status;
     if (parsed.data.metadataJson !== undefined) updates.metadataJson = parsed.data.metadataJson;
+    if (parsed.data.slug !== undefined) updates.slug = parsed.data.slug;
+    if (parsed.data.privacyLevel !== undefined) updates.privacyLevel = parsed.data.privacyLevel;
 
     const [updated] = await db
       .update(sources)

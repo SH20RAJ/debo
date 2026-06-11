@@ -16,7 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
+
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { ChatArea, type Message } from "@/components/ask/chat-area";
@@ -486,7 +486,7 @@ export function ChatPage() {
           </div>
         </div>
 
-        <ScrollArea className="flex-1 py-2">
+        <div className="flex-1 overflow-y-auto py-2 scrollbar-thin scrollbar-thumb-emerald-500/25 scrollbar-track-transparent">
           {loadingThreads ? (
             <div className="flex items-center justify-center py-12 text-xs text-muted-foreground/75 font-medium">
               <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
@@ -529,7 +529,7 @@ export function ChatPage() {
               })}
             </div>
           )}
-        </ScrollArea>
+        </div>
       </div>
 
       {/* Sidebar Toggle Handle */}

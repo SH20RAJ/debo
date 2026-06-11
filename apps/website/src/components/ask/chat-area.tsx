@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
+
 import { cn } from "@/lib/utils";
 import { SourceCitation, type SourceData } from "./source-citation";
 import { SuggestedActions, type ActionItem } from "./suggested-actions";
@@ -101,46 +101,44 @@ export function ChatArea({ messages, isResponding, onPromptClick }: ChatAreaProp
 
   return (
     <div className="flex-1 min-h-0 relative">
-      <ScrollArea className="h-full w-full absolute inset-0">
-        <div className="px-4 py-6 space-y-6">
-          {messages.map((msg, idx) => (
-            <div
-              key={msg.id}
-              className={cn(
-                "flex w-full",
-                msg.role === "user" ? "justify-end" : "justify-start"
+      <div className="h-full w-full absolute inset-0 overflow-y-auto px-4 py-6 space-y-6 scrollbar-thin scrollbar-thumb-emerald-500/25 scrollbar-track-transparent">
+        {messages.map((msg, idx) => (
+          <div
+            key={msg.id}
+            className={cn(
+              "flex w-full",
+              msg.role === "user" ? "justify-end" : "justify-start"
+            )}
+          >
+            <div className="max-w-[90%] md:max-w-[80%] lg:max-w-[70%]">
+              {msg.role === "user" ? (
+                // User Message
+                <motion.div
+                  initial={{ scale: 0.98, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Card className={cn(
+                    "rounded-2xl rounded-tr-sm border border-emerald-500/10",
+                    "bg-gradient-to-br from-emerald-500 to-green-600 text-white px-4 py-3 shadow-lg select-text",
+                    "shadow-[0_3px_0_#388E02]"
+                  )}>
+                    <p className="text-sm font-semibold leading-relaxed tracking-wide">{msg.content}</p>
+                  </Card>
+                </motion.div>
+              ) : (
+                // Assistant Message Bubble
+                <AssistantMessageBubble
+                  message={msg}
+                  isResponding={isResponding}
+                  isLast={idx === messages.length - 1}
+                />
               )}
-            >
-              <div className="max-w-[90%] md:max-w-[80%] lg:max-w-[70%]">
-                {msg.role === "user" ? (
-                  // User Message
-                  <motion.div
-                    initial={{ scale: 0.98, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Card className={cn(
-                      "rounded-2xl rounded-tr-sm border border-emerald-500/10",
-                      "bg-gradient-to-br from-emerald-500 to-green-600 text-white px-4 py-3 shadow-lg select-text",
-                      "shadow-[0_3px_0_#388E02]"
-                    )}>
-                      <p className="text-sm font-semibold leading-relaxed tracking-wide">{msg.content}</p>
-                    </Card>
-                  </motion.div>
-                ) : (
-                  // Assistant Message Bubble
-                  <AssistantMessageBubble
-                    message={msg}
-                    isResponding={isResponding}
-                    isLast={idx === messages.length - 1}
-                  />
-                )}
-              </div>
             </div>
-          ))}
-          <div ref={bottomRef} />
-        </div>
-      </ScrollArea>
+          </div>
+        ))}
+        <div ref={bottomRef} />
+      </div>
     </div>
   );
 }

@@ -31,13 +31,13 @@ use mcp-remote npx @modelcontextprotocol/server-http @modelcontextprotocol/serve
 <!-- can you seed account shaswatraj3@gmail.com with all sample data of a normal human especially of our target deboai users so when I will demonstrate 
 
  -->
-in jounals writing the editor isnt in full screen also hide the topbar.
+<!-- in jounals writing the editor isnt in full screen also hide the topbar.
 
 do reseach how will I add http://localhost:3000/dashboard/connectors
  list of all possible connectors that I should add on debo. and very easy way to integrate all at once, ig we can use any opensourse library for fast integration or something else like composio. create a deep research plan on it and start working on it.
 
 
- also give slug to each journal , and they can make any perticular journal public/unlisted. also scroll isnt working in the app and there are soo many ui ux flaws init. fix all.
+ also give slug to each journal , and they can make any perticular journal public/unlisted. also scroll isnt working in the app and there are soo many ui ux flaws init. fix all. -->
 
 
  ---
