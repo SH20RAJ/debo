@@ -106,6 +106,7 @@ apps/website/src/
 - Never bypass auth in API routes
 - Never let AI decide permissions
 - Never expose private R2 URLs permanently
+- "use client" very less, and never use it on page.tsx or layout.tsx because you have to export metadata, if its needed anywhere create the client wrapper in components.
 
 ## Resources
 - [LangGraph JS](https://docs.langchain.com/oss/javascript/langgraph)

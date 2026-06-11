@@ -28,6 +28,8 @@ import {
   FileText,
   Compass,
   Radio,
+  Cpu,
+  Phone,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -49,6 +51,8 @@ const ITEM_ICONS: Record<string, React.ComponentType<{ className?: string }>> = 
   ask: MessageSquare,
   journal: BookOpen,
   voice: Mic,
+  "voice-notes": Mic,
+  "voice-talk": Phone,
   media: Video,
   mail: Inbox,
   connectors: Plug,
@@ -62,6 +66,7 @@ const ITEM_ICONS: Record<string, React.ComponentType<{ className?: string }>> = 
   decisions: Compass,
   people: Users,
   radar: Radio,
+  mcp: Cpu,
 };
 
 // ── Nav item component ──────────────────────────────────────────────────────

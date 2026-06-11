@@ -1,5 +1,5 @@
-import { VoicePage } from "@/components/voice/voice-page";
+import { VoiceNotesPage } from "@/components/voice/voice-notes-page";
 
 export default function VoiceRoute() {
-  return <VoicePage />;
+  return <VoiceNotesPage />;
 }

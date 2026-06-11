@@ -721,14 +721,14 @@ server.tool(
           userId,
           workspaceId,
           connectorAccountId,
-          status: "pending",
+          status: "queued",
         });
 
       return {
         content: [
           {
             type: "text" as const,
-            text: `Success! Sync job queued. Sync Run ID: \`${syncRunId}\`. Status is currently PENDING.`,
+            text: `Success! Sync job queued. Sync Run ID: \`${syncRunId}\`. Status is currently QUEUED.`,
           },
         ],
       };

@@ -287,7 +287,7 @@ export function McpPage() {
                         <span className="w-4 h-4 rounded-full bg-emerald-500/10 text-emerald-400 font-bold flex items-center justify-center shrink-0 text-[10px]">1</span>
                         Navigate to Cursor Settings
                       </p>
-                      <p className="pl-6 text-[11px] leading-relaxed">Open settings via **Cursor Settings** -> **Models** -> **MCP**.</p>
+                      <p className="pl-6 text-[11px] leading-relaxed">Open settings via Cursor Settings &rarr; Models &rarr; MCP.</p>
                     </div>
 
                     <div className="space-y-1">
@@ -300,7 +300,7 @@ export function McpPage() {
                         <div className="border border-white/5 bg-[#0a0f08] rounded-lg p-2.5 font-mono text-[10px] space-y-1 select-all">
                           <p><span className="text-emerald-500/70">Name:</span> debo</p>
                           <p><span className="text-emerald-500/70">Type:</span> command</p>
-                          <p><span className="text-emerald-500/70">Command:</span> bun run {path.resolve(__dirname, "../../mcp/src/index.ts")}</p>
+                          <p><span className="text-emerald-500/70">Command:</span> bun run /absolute/path/to/debo/apps/mcp/src/index.ts</p>
                         </div>
                       </div>
                     </div>

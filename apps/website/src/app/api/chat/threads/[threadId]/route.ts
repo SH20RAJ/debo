@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@debo/db";
-import { chatThreads, chatMessages, answerCitations } from "@debo/db/schema";
+import { chatThreads, chatMessages, answerCitations, sources } from "@debo/db/schema";
 import { and, asc, eq } from "drizzle-orm";
 import {
   apiError,
@@ -49,8 +49,17 @@ export async function GET(
       .orderBy(asc(chatMessages.createdAt));
 
     const citations = await db
-      .select()
+      .select({
+        id: answerCitations.id,
+        messageId: answerCitations.messageId,
+        sourceId: answerCitations.sourceId,
+        quoteText: answerCitations.quoteText,
+        confidence: answerCitations.confidence,
+        sourceType: sources.type,
+        sourceTitle: sources.title,
+      })
       .from(answerCitations)
+      .innerJoin(sources, eq(answerCitations.sourceId, sources.id))
       .where(
         and(
           eq(answerCitations.workspaceId, workspaceId),
@@ -58,7 +67,7 @@ export async function GET(
         ),
       );
 
-    const citationsByMessage = new Map<string, typeof citations>();
+    const citationsByMessage = new Map<string, any[]>();
     for (const c of citations) {
       const list = citationsByMessage.get(c.messageId) ?? [];
       list.push(c);

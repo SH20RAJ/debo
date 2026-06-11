@@ -30,7 +30,8 @@ export const ALL_NAV_ITEMS: SidebarItemDef[] = [
   { id: "home",       label: "Home",           href: "/dashboard" },
   { id: "ask",        label: "Ask Debo",       href: "/dashboard/ask" },
   { id: "journal",    label: "Journal",        href: "/dashboard/journal" },
-  { id: "voice",      label: "Voice",          href: "/dashboard/voice" },
+  { id: "voice-notes", label: "Voice Notes",    href: "/dashboard/voice" },
+  { id: "voice-talk",  label: "Talk to Debo",   href: "/dashboard/voice/talk" },
   { id: "media",      label: "Media",          href: "/dashboard/media" },
   { id: "mail",       label: "Debo Mail",      href: "/dashboard/mail" },
   { id: "connectors", label: "Connectors",     href: "/dashboard/connectors" },
@@ -44,6 +45,7 @@ export const ALL_NAV_ITEMS: SidebarItemDef[] = [
   { id: "decisions",  label: "Decisions",       href: "/dashboard/decisions" },
   { id: "people",     label: "People",          href: "/dashboard/people" },
   { id: "radar",      label: "Follow-Up Radar", href: "/dashboard/radar" },
+  { id: "mcp",        label: "MCP Server",      href: "/dashboard/mcp" },
 ];
 
 const DEFAULT_SECTIONS: SidebarSectionDef[] = [
@@ -57,7 +59,7 @@ const DEFAULT_SECTIONS: SidebarSectionDef[] = [
     id: "tools",
     label: "Tools",
     collapsed: false,
-    itemIds: ["voice", "media", "mail", "connectors", "vault"],
+    itemIds: ["voice-notes", "voice-talk", "media", "mail", "connectors", "vault", "mcp"],
   },
   {
     id: "memory",

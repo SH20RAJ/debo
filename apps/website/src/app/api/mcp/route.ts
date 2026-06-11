@@ -525,7 +525,7 @@ export async function POST(req: Request) {
                 userId: user.id,
                 workspaceId,
                 connectorAccountId,
-                status: "pending",
+                status: "queued",
               });
             textOutput = `Success! Sync job queued. Sync Run ID: ${syncRunId}`;
           }
