@@ -92,7 +92,7 @@ const webFetchTool = tool(
 
 // Specialized search tools for Debo apps
 const queryTasksTool = (userId: string, workspaceId: string) => tool(
-  async (input: { query?: string }) => {
+  async (input: any) => {
     try {
       const conditions = [
         eq(tasks.userId, userId),
@@ -116,7 +116,7 @@ const queryTasksTool = (userId: string, workspaceId: string) => tool(
 );
 
 const queryJournalsTool = (userId: string, workspaceId: string) => tool(
-  async (input: { query?: string }) => {
+  async (input: any) => {
     try {
       const conditions = [
         eq(sources.userId, userId),
@@ -141,7 +141,7 @@ const queryJournalsTool = (userId: string, workspaceId: string) => tool(
 );
 
 const queryVoiceNotesTool = (userId: string, workspaceId: string) => tool(
-  async (input: { query?: string }) => {
+  async (input: any) => {
     try {
       const conditions = [
         eq(sources.userId, userId),
@@ -166,7 +166,7 @@ const queryVoiceNotesTool = (userId: string, workspaceId: string) => tool(
 );
 
 const queryMailTool = (userId: string, workspaceId: string) => tool(
-  async (input: { query?: string }) => {
+  async (input: any) => {
     try {
       const conditions = [
         or(eq(deboMailMessages.senderUserId, userId), eq(deboMailMessages.recipientUserId, userId)),
@@ -189,7 +189,7 @@ const queryMailTool = (userId: string, workspaceId: string) => tool(
 );
 
 const queryConnectorsTool = (userId: string, workspaceId: string) => tool(
-  async (input: {}) => {
+  async (input: any) => {
     try {
       const results = await db
         .select()
@@ -353,12 +353,7 @@ export async function POST(req: Request) {
                   detail: `Executing tool ${toolCall.name}...`
                 });
 
-                const toolResult = await toolToRun.invoke({
-                  name: toolCall.name,
-                  args: toolCall.args,
-                  id: toolCall.id,
-                  type: "tool_call"
-                });
+                const toolResult = await (toolToRun as any).invoke(toolCall.args);
 
                 send({
                   type: "source_found",

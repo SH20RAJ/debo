@@ -4,10 +4,10 @@
 <!-- create deep plan for debo mcp that will help turning any ai harness to debo and create a deep plan that will look premium - create best plan the waht things should be added and what new features can be there and how  -->
 <!-- ---
 improve ui ux and calling tool ux ui of /chat also its showing markdown create a plan that how will you make the chat page more premium and addictiove with best possible results and quality of the response in the best optimised way  -->
-
+<!-- 
 ---
 
-http://localhost:3000/dashboard/connectors
+http://localhost:3000/dashboard/connectors -->
 
 
 make voice livekit work livekit skills
@@ -22,11 +22,9 @@ add thinking to /chat and scroll not working, also thread history not visible , 
 
 <!-- fix ux ui of http://localhost:3000/dashboard/journal  -->
 
-
----
 <!-- make cli and move the mcp to nextjs api temporaririly easy to create. -->
 
-use mcp-remote npx @modelcontextprotocol/server-http @modelcontextprotocol/server-stdio
+<!-- use mcp-remote npx @modelcontextprotocol/server-http @modelcontextprotocol/server-stdio -->
 
 <!-- can you seed account shaswatraj3@gmail.com with all sample data of a normal human especially of our target deboai users so when I will demonstrate 
 

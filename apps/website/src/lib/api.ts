@@ -236,10 +236,11 @@ export const api = {
       }),
   },
   media: {
-    upload: async (file: File) => {
+    upload: async (file: File, type?: string) => {
       const token = await getAccessToken();
       const fd = new FormData();
       fd.append("file", file);
+      if (type) fd.append("type", type);
       const headers: Record<string, string> = {};
       if (token) headers["x-stack-access-token"] = token;
       const res = await fetch("/api/media/upload", { method: "POST", body: fd, headers });

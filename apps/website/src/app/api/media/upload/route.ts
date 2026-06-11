@@ -71,7 +71,7 @@ async function processVoiceOrAudio(opts: {
           Authorization: `Token ${process.env.DEEPGRAM_API_KEY}`,
           "Content-Type": mimeType || "application/octet-stream",
         },
-        body: fileBuffer,
+        body: fileBuffer as any,
       });
       if (response.ok) {
         const data = await response.json();
