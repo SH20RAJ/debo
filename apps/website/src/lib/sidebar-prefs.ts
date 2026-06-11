@@ -46,6 +46,7 @@ export const ALL_NAV_ITEMS: SidebarItemDef[] = [
   { id: "people",     label: "People",          href: "/dashboard/people" },
   { id: "radar",      label: "Follow-Up Radar", href: "/dashboard/radar" },
   { id: "mcp",        label: "MCP Server",      href: "/dashboard/mcp" },
+  { id: "apps",       label: "Debo Apps",      href: "/dashboard/apps" },
 ];
 
 const DEFAULT_SECTIONS: SidebarSectionDef[] = [
@@ -59,7 +60,7 @@ const DEFAULT_SECTIONS: SidebarSectionDef[] = [
     id: "tools",
     label: "Tools",
     collapsed: false,
-    itemIds: ["voice-notes", "voice-talk", "media", "mail", "connectors", "vault", "mcp"],
+    itemIds: ["voice-notes", "voice-talk", "media", "mail", "connectors", "vault", "mcp", "apps"],
   },
   {
     id: "memory",

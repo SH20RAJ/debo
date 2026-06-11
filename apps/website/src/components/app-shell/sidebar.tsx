@@ -30,6 +30,7 @@ import {
   Radio,
   Cpu,
   Phone,
+  LayoutGrid,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -67,6 +68,7 @@ const ITEM_ICONS: Record<string, React.ComponentType<{ className?: string }>> = 
   people: Users,
   radar: Radio,
   mcp: Cpu,
+  apps: LayoutGrid,
 };
 
 // ── Nav item component ──────────────────────────────────────────────────────
