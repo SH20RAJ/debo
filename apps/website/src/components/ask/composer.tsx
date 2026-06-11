@@ -40,7 +40,7 @@ export function Composer({ onSend, isResponding }: ComposerProps) {
   const hasText = value.trim().length > 0;
 
   return (
-    <div className="border-t border-white/5 bg-[#090d08]/80 backdrop-blur-xl px-4 pb-5 pt-3 relative select-none">
+    <div className="border-t border-border bg-background/80 backdrop-blur-xl px-4 pb-5 pt-3 relative select-none">
       {/* Mode selector accordion with framer-motion */}
       <AnimatePresence>
         {showModes && (
@@ -61,7 +61,7 @@ export function Composer({ onSend, isResponding }: ComposerProps) {
                     "cursor-pointer px-3.5 py-1 text-xs font-bold transition-all duration-200 select-none rounded-lg border",
                     activeMode === mode
                       ? "bg-emerald-500 text-white border-emerald-500 shadow-[0_2px_0_#388E02] hover:bg-emerald-600"
-                      : "bg-[#131911]/30 text-muted-foreground border-white/5 hover:text-foreground hover:bg-[#131911]/60"
+                      : "bg-muted/30 text-muted-foreground border-border hover:text-foreground hover:bg-muted/60"
                   )}
                 >
                   {mode}
@@ -83,7 +83,7 @@ export function Composer({ onSend, isResponding }: ComposerProps) {
             "shrink-0 rounded-xl text-xs font-bold h-10 px-3 border transition-all duration-200 cursor-pointer",
             showModes 
               ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.05)]" 
-              : "text-muted-foreground bg-[#131911]/30 border-white/5 hover:text-foreground hover:bg-[#131911]/50"
+              : "text-muted-foreground bg-muted/30 border-border hover:text-foreground hover:bg-muted/50"
           )}
           title="Toggle search mode"
         >
@@ -93,10 +93,10 @@ export function Composer({ onSend, isResponding }: ComposerProps) {
 
         {/* Floating pill input */}
         <div className={cn(
-          "flex-1 flex items-center relative rounded-2xl border bg-[#11170f]/50 transition-all duration-200 px-3 py-1",
+          "flex-1 flex items-center relative rounded-2xl border bg-muted/35 transition-all duration-200 px-3 py-1",
           hasText 
             ? "border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.05)] focus-within:border-emerald-500/35 focus-within:shadow-[0_0_18px_rgba(16,185,129,0.08)]"
-            : "border-white/5 focus-within:border-emerald-500/25 focus-within:shadow-[0_0_15px_rgba(16,185,129,0.06)]"
+            : "border-border focus-within:border-emerald-500/25 focus-within:shadow-[0_0_15px_rgba(16,185,129,0.06)]"
         )}>
           <Input
             ref={inputRef}
@@ -128,7 +128,7 @@ export function Composer({ onSend, isResponding }: ComposerProps) {
           variant="ghost"
           size="icon"
           onClick={() => router.push("/dashboard/voice")}
-          className="shrink-0 w-10 h-10 rounded-xl bg-[#131911]/30 border border-white/5 text-muted-foreground hover:text-emerald-500 hover:bg-emerald-500/5 hover:border-emerald-500/15 transition-all duration-200 cursor-pointer group"
+          className="shrink-0 w-10 h-10 rounded-xl bg-muted/30 border border-border text-muted-foreground hover:text-emerald-500 hover:bg-emerald-500/5 hover:border-emerald-500/15 transition-all duration-200 cursor-pointer group"
           title="Open voice note recorder"
         >
           <Mic className="w-4 h-4 group-hover:scale-110 transition-transform" />

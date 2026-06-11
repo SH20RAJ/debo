@@ -54,7 +54,7 @@ export function SourceRail({
   return (
     <aside
       className={cn(
-        "w-80 border-l border-white/5 bg-[#0d120a]/35 backdrop-blur-2xl shrink-0 transition-all duration-300 ease-in-out relative z-10",
+        "w-80 border-l border-border bg-card/45 backdrop-blur-2xl shrink-0 transition-all duration-300 ease-in-out relative z-10",
         "hidden lg:flex lg:flex-col",
         !visible && "lg:hidden"
       )}
@@ -69,7 +69,7 @@ export function SourceRail({
             </h2>
           </div>
 
-          <Separator className="bg-white/5" />
+          <Separator className="bg-border" />
 
           {/* Sources used */}
           {sources.length > 0 && (
@@ -93,7 +93,7 @@ export function SourceRail({
           )}
 
           {sources.length > 0 && (related.length > 0 || followUps.length > 0) && (
-            <Separator className="bg-white/5" />
+            <Separator className="bg-border" />
           )}
 
           {/* Related memories */}
@@ -116,11 +116,11 @@ export function SourceRail({
                         variant="ghost"
                         className={cn(
                           "w-full justify-start gap-3 h-auto px-3 py-3 rounded-xl text-left border border-transparent transition-all duration-200 group",
-                          "bg-[#131911]/30 hover:bg-[#131911]/60 hover:border-white/5"
+                          "bg-muted/30 hover:bg-muted/60 hover:border-border"
                         )}
                       >
                         <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-500/5 border border-emerald-500/10 shrink-0 group-hover:bg-emerald-500/10 group-hover:border-emerald-500/20 transition-all">
-                          <Icon className="w-3.5 h-3.5 text-emerald-500/80" />
+                           <Icon className="w-3.5 h-3.5 text-emerald-500/80" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-semibold text-foreground/95 truncate">
@@ -140,7 +140,7 @@ export function SourceRail({
           )}
 
           {related.length > 0 && followUps.length > 0 && (
-            <Separator className="bg-white/5" />
+            <Separator className="bg-border" />
           )}
 
           {/* Suggested follow-ups */}
@@ -161,8 +161,8 @@ export function SourceRail({
                       variant="ghost"
                       onClick={() => onFollowUpClick?.(q)}
                       className={cn(
-                        "w-full justify-between gap-3 h-auto px-3.5 py-3 rounded-xl text-xs font-semibold text-muted-foreground transition-all duration-200 text-left border border-white/5",
-                        "bg-[#131911]/25 hover:bg-[#131911]/50 hover:text-foreground hover:border-emerald-500/20 group cursor-pointer"
+                        "w-full justify-between gap-3 h-auto px-3.5 py-3 rounded-xl text-xs font-semibold text-muted-foreground transition-all duration-200 text-left border border-border",
+                        "bg-muted/25 hover:bg-muted/50 hover:text-foreground hover:border-emerald-500/20 group cursor-pointer"
                       )}
                     >
                       <div className="flex gap-2.5 items-start min-w-0">

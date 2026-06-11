@@ -28,7 +28,7 @@ export interface SidebarPrefs {
 
 export const ALL_NAV_ITEMS: SidebarItemDef[] = [
   { id: "home",       label: "Home",           href: "/dashboard" },
-  { id: "ask",        label: "Ask Debo",       href: "/dashboard/ask" },
+  { id: "ask",        label: "Ask Debo",       href: "/dashboard/chat" },
   { id: "journal",    label: "Journal",        href: "/dashboard/journal" },
   { id: "voice-notes", label: "Voice Notes",    href: "/dashboard/voice" },
   { id: "voice-talk",  label: "Talk to Debo",   href: "/dashboard/voice/talk" },

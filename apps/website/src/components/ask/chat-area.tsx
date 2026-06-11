@@ -83,7 +83,7 @@ export function ChatArea({ messages, isResponding, onPromptClick }: ChatAreaProp
               variant="outline"
               onClick={() => onPromptClick?.(prompt)}
               className={cn(
-                "justify-between gap-3 h-auto px-4 py-3.5 rounded-2xl border border-white/5 bg-[#131911]/30 hover:bg-[#131911]/60",
+                "justify-between gap-3 h-auto px-4 py-3.5 rounded-2xl border border-border bg-card hover:bg-accent/40",
                 "hover:border-emerald-500/20 hover:shadow-[0_0_12px_rgba(16,185,129,0.05)] text-sm font-semibold text-foreground/80 hover:text-foreground transition-all duration-200 group"
               )}
             >
@@ -100,46 +100,48 @@ export function ChatArea({ messages, isResponding, onPromptClick }: ChatAreaProp
   }
 
   return (
-    <ScrollArea className="flex-1">
-      <div className="px-4 py-6 space-y-6">
-        {messages.map((msg, idx) => (
-          <div
-            key={msg.id}
-            className={cn(
-              "flex w-full",
-              msg.role === "user" ? "justify-end" : "justify-start"
-            )}
-          >
-            <div className="max-w-[90%] md:max-w-[80%] lg:max-w-[70%]">
-              {msg.role === "user" ? (
-                // User Message
-                <motion.div
-                  initial={{ scale: 0.98, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Card className={cn(
-                    "rounded-2xl rounded-tr-sm border border-emerald-500/10",
-                    "bg-gradient-to-br from-emerald-500 to-green-600 text-white px-4 py-3 shadow-lg select-text",
-                    "shadow-[0_3px_0_#388E02]"
-                  )}>
-                    <p className="text-sm font-semibold leading-relaxed tracking-wide">{msg.content}</p>
-                  </Card>
-                </motion.div>
-              ) : (
-                // Assistant Message Bubble
-                <AssistantMessageBubble
-                  message={msg}
-                  isResponding={isResponding}
-                  isLast={idx === messages.length - 1}
-                />
+    <div className="flex-1 min-h-0 relative">
+      <ScrollArea className="h-full w-full absolute inset-0">
+        <div className="px-4 py-6 space-y-6">
+          {messages.map((msg, idx) => (
+            <div
+              key={msg.id}
+              className={cn(
+                "flex w-full",
+                msg.role === "user" ? "justify-end" : "justify-start"
               )}
+            >
+              <div className="max-w-[90%] md:max-w-[80%] lg:max-w-[70%]">
+                {msg.role === "user" ? (
+                  // User Message
+                  <motion.div
+                    initial={{ scale: 0.98, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Card className={cn(
+                      "rounded-2xl rounded-tr-sm border border-emerald-500/10",
+                      "bg-gradient-to-br from-emerald-500 to-green-600 text-white px-4 py-3 shadow-lg select-text",
+                      "shadow-[0_3px_0_#388E02]"
+                    )}>
+                      <p className="text-sm font-semibold leading-relaxed tracking-wide">{msg.content}</p>
+                    </Card>
+                  </motion.div>
+                ) : (
+                  // Assistant Message Bubble
+                  <AssistantMessageBubble
+                    message={msg}
+                    isResponding={isResponding}
+                    isLast={idx === messages.length - 1}
+                  />
+                )}
+              </div>
             </div>
-          </div>
-        ))}
-        <div ref={bottomRef} />
-      </div>
-    </ScrollArea>
+          ))}
+          <div ref={bottomRef} />
+        </div>
+      </ScrollArea>
+    </div>
   );
 }
 
@@ -173,14 +175,14 @@ function AssistantMessageBubble({ message, isResponding, isLast }: AssistantBubb
       className="space-y-2"
     >
       <Card className={cn(
-        "rounded-2xl rounded-bl-sm border border-white/5 bg-[#131911]/35 backdrop-blur-xl px-5 py-4 shadow-xl select-text"
+        "rounded-2xl rounded-bl-sm border border-border bg-card/85 backdrop-blur-xl px-5 py-4 shadow-xl select-text"
       )}>
         {/* Thinking Accordion (Tool call visualizer) */}
         {(isSearching || hasSources) && (
-          <div className="mb-3.5 border border-white/5 bg-[#172115]/30 rounded-xl overflow-hidden shadow-inner">
+          <div className="mb-3.5 border border-border bg-muted/40 rounded-xl overflow-hidden shadow-inner">
             <button
               onClick={() => setShowThinking(!showThinking)}
-              className="w-full flex items-center justify-between px-3 py-2.5 text-xs font-semibold text-muted-foreground/80 hover:text-foreground hover:bg-[#1a2518]/25 transition-all select-none cursor-pointer"
+              className="w-full flex items-center justify-between px-3 py-2.5 text-xs font-semibold text-muted-foreground/80 hover:text-foreground hover:bg-accent/50 transition-all select-none cursor-pointer"
             >
               <div className="flex items-center gap-2">
                 <Brain className={cn(
@@ -212,7 +214,7 @@ function AssistantMessageBubble({ message, isResponding, isLast }: AssistantBubb
                   animate={{ height: "auto" }}
                   exit={{ height: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="overflow-hidden border-t border-white/5"
+                  className="overflow-hidden border-t border-border"
                 >
                   <div className="px-3 pb-3 pt-2 space-y-2.5 text-xs">
                     {/* Intent classification stage */}
@@ -233,7 +235,7 @@ function AssistantMessageBubble({ message, isResponding, isLast }: AssistantBubb
                         
                         {/* List processed sources dynamically */}
                         {message.sources && message.sources.length > 0 && (
-                          <div className="grid grid-cols-1 gap-1.5 pl-1.5 pt-1 border-l border-white/5">
+                          <div className="grid grid-cols-1 gap-1.5 pl-1.5 pt-1 border-l border-border">
                             {message.sources.map((src, i) => (
                               <motion.div
                                 key={src.id}
@@ -255,7 +257,7 @@ function AssistantMessageBubble({ message, isResponding, isLast }: AssistantBubb
                     {/* Answer synthesis state */}
                     <div className="flex items-center gap-2">
                       {isSearching ? (
-                        <span className="w-3.5 h-3.5 rounded-full border border-white/10 shrink-0" />
+                        <span className="w-3.5 h-3.5 rounded-full border border-border shrink-0" />
                       ) : (
                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                       )}
