@@ -132,7 +132,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
     <TooltipProvider>
       <aside
         className={cn(
-          "flex flex-col h-full bg-card border-r border-border transition-all duration-200 ease-in-out select-none overflow-hidden",
+          "flex flex-col h-full bg-card border-r border-border transition-all duration-200 ease-in-out overflow-hidden",
           collapsed ? "w-[68px]" : "w-[220px]"
         )}
       >
@@ -150,7 +150,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
         </div>
 
         {/* Navigation */}
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1 min-h-0">
           <nav className="py-3 px-2 space-y-4">
             {prefs.sections.map((section, idx) => {
               const sectionItems = section.itemIds
@@ -201,7 +201,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
         </ScrollArea>
 
         {/* Bottom: Settings + User + Logout */}
-        <div className="border-t border-border py-2 px-2 space-y-1">
+        <div className="border-t border-border py-2 px-2 space-y-1 shrink-0 bg-card">
           <SidebarItem
             item={{ label: "Settings", href: "/dashboard/settings", icon: Settings }}
             active={isActive("/dashboard/settings")}

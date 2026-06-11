@@ -40,7 +40,7 @@ export function Composer({ onSend, isResponding }: ComposerProps) {
   const hasText = value.trim().length > 0;
 
   return (
-    <div className="border-t border-border bg-background/80 backdrop-blur-xl px-4 pb-5 pt-3 relative select-none">
+    <div className="border-t border-border bg-background/80 backdrop-blur-xl px-4 pb-5 pt-3 relative">
       {/* Mode selector accordion with framer-motion */}
       <AnimatePresence>
         {showModes && (

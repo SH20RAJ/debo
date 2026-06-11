@@ -29,7 +29,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <StackProvider app={stackClientApp}>
-      <StackTheme>{inner}</StackTheme>
+      {inner}
     </StackProvider>
   );
 }

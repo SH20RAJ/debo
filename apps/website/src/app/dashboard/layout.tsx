@@ -2,6 +2,7 @@
 
 import { Suspense, useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Sidebar } from "@/components/app-shell/sidebar";
 import { Topbar } from "@/components/app-shell/topbar";
@@ -73,11 +74,12 @@ export default function DashboardLayout({
           )}
 
           <div
-            className={
+            className={cn(
+              "h-full",
               mobileOpen
                 ? "fixed inset-y-0 left-0 z-40"
                 : "hidden md:block"
-            }
+            )}
           >
             <Sidebar
               collapsed={sidebarCollapsed}
@@ -108,7 +110,7 @@ export default function DashboardLayout({
               }}
               sidebarCollapsed={sidebarCollapsed}
             />
-            <main className="flex-1 overflow-auto">
+            <main className="flex-1 overflow-y-auto min-h-0">
               <Suspense fallback={null}>{children}</Suspense>
             </main>
           </div>

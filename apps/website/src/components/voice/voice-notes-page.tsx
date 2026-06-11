@@ -388,7 +388,7 @@ export function VoiceNotesPage() {
   const recordingLabel = `${Math.floor(recordSeconds / 60)}:${String(recordSeconds % 60).padStart(2, "0")}`;
 
   return (
-    <div className="p-6 md:p-8 max-w-2xl mx-auto space-y-8 select-none h-full overflow-y-auto scrollbar-none">
+    <div className="p-6 md:p-8 max-w-2xl mx-auto space-y-8 h-full overflow-y-auto scrollbar-none">
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-foreground font-[var(--font-nunito)]">Voice Notes</h1>
         <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
