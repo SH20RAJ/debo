@@ -4,6 +4,7 @@ import { Problem } from "@/components/landing/Problem";
 import { Product } from "@/components/landing/Product";
 import { UseCases } from "@/components/landing/UseCases";
 import { HowItWorks } from "@/components/landing/HowItWorks";
+import { McpCliSection } from "@/components/landing/McpCliSection";
 import { Privacy } from "@/components/landing/Privacy";
 import { FounderNote } from "@/components/landing/FounderNote";
 import { FinalCTA } from "@/components/landing/FinalCTA";
@@ -27,6 +28,7 @@ export default function LandingPage() {
       <Product />
       <UseCases />
       <HowItWorks />
+      <McpCliSection />
       <Privacy />
       <FounderNote />
       <FinalCTA />

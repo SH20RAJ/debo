@@ -1,12 +1,13 @@
 {
   "name": "@debo.life/cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publishConfig": {
     "access": "public"
   },
   "type": "module",
   "bin": {
-    "debo": "./bin/debo.js"
+    "debo": "./bin/debo.js",
+    "cli": "./bin/debo.js"
   },
   "scripts": {
     "start": "bun run src/cli.ts",

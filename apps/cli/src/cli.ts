@@ -7,8 +7,55 @@ import { eq, and, desc, ilike } from "drizzle-orm";
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
+import { DEFAULT_RULES } from "./utils/default-rules";
 
 const program = new Command();
+
+async function installRules() {
+  console.log(pc.blue("ℹ Installing developer rules (.cursorrules and .clinerules)..."));
+  const cwd = process.cwd();
+  const cursorrulesPath = path.join(cwd, ".cursorrules");
+  const clinerulesPath = path.join(cwd, ".clinerules");
+
+  // 1. Write the initial bundled version
+  try {
+    fs.writeFileSync(cursorrulesPath, DEFAULT_RULES, "utf-8");
+    fs.writeFileSync(clinerulesPath, DEFAULT_RULES, "utf-8");
+    console.log(pc.green("✔ Bundled rules installed locally."));
+  } catch (err: any) {
+    console.error(pc.red(`✖ Failed to write initial rules to files: ${err.message}`));
+    return;
+  }
+
+  // 2. Try to fetch the latest version from URL
+  const url = "https://debo.life/debo-skill.md";
+  console.log(pc.blue(`ℹ Fetching latest rules from ${url}...`));
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+    }, 3000); // 3 seconds timeout
+
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
+
+    if (res.ok) {
+      const text = await res.text();
+      if (text && text.trim().length > 0) {
+        fs.writeFileSync(cursorrulesPath, text, "utf-8");
+        fs.writeFileSync(clinerulesPath, text, "utf-8");
+        console.log(pc.green("✔ Successfully fetched and updated latest developer rules from remote URL."));
+      } else {
+        console.log(pc.yellow("⚠ Remote rules file is empty. Keeping bundled rules."));
+      }
+    } else {
+      console.log(pc.yellow(`⚠ Remote fetch returned status ${res.status}. Keeping bundled rules.`));
+    }
+  } catch (err: any) {
+    console.log(pc.yellow(`⚠ Remote fetch failed or timed out: ${err.message || err}. Keeping bundled rules.`));
+  }
+}
 
 // ID Generator Helper
 function newId(prefix: string): string {
@@ -75,16 +122,24 @@ program
   .description("Authenticate local CLI profile with Debo User Session ID")
   .argument("<userId>", "Your Stack Auth User ID")
   .option("-w, --workspace <workspaceId>", "Optional specific Debo Workspace ID")
-  .action((userId, options) => {
+  .action(async (userId, options) => {
     try {
       saveConfig({
         userId,
         workspaceId: options.workspace,
       });
       console.log(pc.green(`✔ Successfully authenticated CLI for user profile: ${userId}`));
+      await installRules();
     } catch (err: any) {
       console.error(pc.red(`✖ Login failed: ${err.message}`));
     }
+  });
+
+program
+  .command("init")
+  .description("Initialize or update debo developer rules (.cursorrules & .clinerules) in the current directory")
+  .action(async () => {
+    await installRules();
   });
 
 /* ========================================================================== */

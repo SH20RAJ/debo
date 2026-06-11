@@ -46,7 +46,7 @@ var __export = (target, all) => {
 };
 var __require = import.meta.require;
 
-// node_modules/.bun/commander@13.1.0/node_modules/commander/lib/error.js
+// ../../node_modules/.bun/commander@13.1.0/node_modules/commander/lib/error.js
 var require_error = __commonJS((exports) => {
   class CommanderError extends Error {
     constructor(exitCode, code, message) {
@@ -70,7 +70,7 @@ var require_error = __commonJS((exports) => {
   exports.InvalidArgumentError = InvalidArgumentError;
 });
 
-// node_modules/.bun/commander@13.1.0/node_modules/commander/lib/argument.js
+// ../../node_modules/.bun/commander@13.1.0/node_modules/commander/lib/argument.js
 var require_argument = __commonJS((exports) => {
   var { InvalidArgumentError } = require_error();
 
@@ -149,7 +149,7 @@ var require_argument = __commonJS((exports) => {
   exports.humanReadableArgName = humanReadableArgName;
 });
 
-// node_modules/.bun/commander@13.1.0/node_modules/commander/lib/help.js
+// ../../node_modules/.bun/commander@13.1.0/node_modules/commander/lib/help.js
 var require_help = __commonJS((exports) => {
   var { humanReadableArgName } = require_argument();
 
@@ -499,7 +499,7 @@ ${itemIndentStr}`);
   exports.stripColor = stripColor;
 });
 
-// node_modules/.bun/commander@13.1.0/node_modules/commander/lib/option.js
+// ../../node_modules/.bun/commander@13.1.0/node_modules/commander/lib/option.js
 var require_option = __commonJS((exports) => {
   var { InvalidArgumentError } = require_error();
 
@@ -677,7 +677,7 @@ var require_option = __commonJS((exports) => {
   exports.DualOptions = DualOptions;
 });
 
-// node_modules/.bun/commander@13.1.0/node_modules/commander/lib/suggestSimilar.js
+// ../../node_modules/.bun/commander@13.1.0/node_modules/commander/lib/suggestSimilar.js
 var require_suggestSimilar = __commonJS((exports) => {
   var maxDistance = 3;
   function editDistance(a, b) {
@@ -750,7 +750,7 @@ var require_suggestSimilar = __commonJS((exports) => {
   exports.suggestSimilar = suggestSimilar;
 });
 
-// node_modules/.bun/commander@13.1.0/node_modules/commander/lib/command.js
+// ../../node_modules/.bun/commander@13.1.0/node_modules/commander/lib/command.js
 var require_command = __commonJS((exports) => {
   var EventEmitter = __require("events").EventEmitter;
   var childProcess = __require("child_process");
@@ -2060,7 +2060,7 @@ Expecting one of '${allowedValues.join("', '")}'`);
   exports.useColor = useColor;
 });
 
-// node_modules/.bun/commander@13.1.0/node_modules/commander/index.js
+// ../../node_modules/.bun/commander@13.1.0/node_modules/commander/index.js
 var require_commander = __commonJS((exports) => {
   var { Argument } = require_argument();
   var { Command } = require_command();
@@ -2080,7 +2080,7 @@ var require_commander = __commonJS((exports) => {
   exports.InvalidOptionArgumentError = InvalidArgumentError;
 });
 
-// node_modules/.bun/picocolors@1.1.1/node_modules/picocolors/picocolors.js
+// ../../node_modules/.bun/picocolors@1.1.1/node_modules/picocolors/picocolors.js
 var require_picocolors = __commonJS((exports, module) => {
   var p = process || {};
   var argv = p.argv || [];
@@ -2150,7 +2150,7 @@ var require_picocolors = __commonJS((exports, module) => {
   module.exports.createColors = createColors;
 });
 
-// node_modules/.bun/dotenv@17.4.2/node_modules/dotenv/lib/main.js
+// ../../node_modules/.bun/dotenv@17.4.2/node_modules/dotenv/lib/main.js
 var require_main = __commonJS((exports, module) => {
   var fs = __require("fs");
   var path = __require("path");
@@ -2469,7 +2469,7 @@ var require_main = __commonJS((exports, module) => {
   module.exports = DotenvModule;
 });
 
-// node_modules/.bun/commander@13.1.0/node_modules/commander/esm.mjs
+// ../../node_modules/.bun/commander@13.1.0/node_modules/commander/esm.mjs
 var import__ = __toESM(require_commander(), 1);
 var {
   program,
@@ -2485,15 +2485,15 @@ var {
   Help
 } = import__.default;
 
-// apps/cli/src/cli.ts
+// src/cli.ts
 var import_picocolors = __toESM(require_picocolors(), 1);
 
-// apps/cli/src/utils/config.ts
+// src/utils/config.ts
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
 
-// node_modules/.bun/@neondatabase+serverless@0.10.4/node_modules/@neondatabase/serverless/index.mjs
+// ../../node_modules/.bun/@neondatabase+serverless@0.10.4/node_modules/@neondatabase/serverless/index.mjs
 var io = Object.create;
 var Ce = Object.defineProperty;
 var so = Object.getOwnPropertyDescriptor;
@@ -7290,7 +7290,7 @@ buffer/index.js:
    *)
 */
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/entity.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/entity.js
 var entityKind = Symbol.for("drizzle:entityKind");
 var hasOwnEntityKind = Symbol.for("drizzle:hasOwnEntityKind");
 function is(value, type) {
@@ -7315,7 +7315,7 @@ function is(value, type) {
   return false;
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/logger.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/logger.js
 class ConsoleLogWriter {
   static [entityKind] = "ConsoleLogWriter";
   write(message) {
@@ -7347,7 +7347,7 @@ class NoopLogger {
   logQuery() {}
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/query-promise.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/query-promise.js
 class QueryPromise {
   static [entityKind] = "QueryPromise";
   [Symbol.toStringTag] = "QueryPromise";
@@ -7368,7 +7368,7 @@ class QueryPromise {
   }
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/column.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/column.js
 class Column {
   constructor(table, config) {
     this.table = table;
@@ -7418,7 +7418,7 @@ class Column {
   }
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/column-builder.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/column-builder.js
 class ColumnBuilder {
   static [entityKind] = "ColumnBuilder";
   config;
@@ -7474,10 +7474,10 @@ class ColumnBuilder {
   }
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/table.utils.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/table.utils.js
 var TableName = Symbol.for("drizzle:Name");
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/foreign-keys.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/foreign-keys.js
 class ForeignKeyBuilder {
   static [entityKind] = "PgForeignKeyBuilder";
   reference;
@@ -7531,17 +7531,17 @@ class ForeignKey {
   }
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/tracing-utils.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/tracing-utils.js
 function iife(fn, ...args) {
   return fn(...args);
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/unique-constraint.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/unique-constraint.js
 function uniqueKeyName(table, columns) {
   return `${table[TableName]}_${columns.join("_")}_unique`;
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/utils/array.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/utils/array.js
 function parsePgArrayValue(arrayString, startFrom, inQuotes) {
   for (let i = startFrom;i < arrayString.length; i++) {
     const char = arrayString[i];
@@ -7617,7 +7617,7 @@ function makePgArray(array) {
   }).join(",")}}`;
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/common.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/common.js
 class PgColumnBuilder extends ColumnBuilder {
   foreignKeyConfigs = [];
   static [entityKind] = "PgColumnBuilder";
@@ -7765,7 +7765,7 @@ class PgArray extends PgColumn {
   }
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/enum.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/enum.js
 var isPgEnumSym = Symbol.for("drizzle:isPgEnum");
 function isPgEnum(obj) {
   return !!obj && typeof obj === "function" && isPgEnumSym in obj && obj[isPgEnumSym] === true;
@@ -7783,7 +7783,7 @@ class PgEnumColumn extends PgColumn {
   }
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/subquery.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/subquery.js
 class Subquery {
   static [entityKind] = "Subquery";
   constructor(sql, selection, alias, isWith = false) {
@@ -7801,10 +7801,10 @@ class WithSubquery extends Subquery {
   static [entityKind] = "WithSubquery";
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/version.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/version.js
 var version = "0.39.3";
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/tracing.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/tracing.js
 var otel;
 var rawTracer;
 var tracer = {
@@ -7831,10 +7831,10 @@ var tracer = {
   }
 };
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/view-common.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/view-common.js
 var ViewBaseConfig = Symbol.for("drizzle:ViewBaseConfig");
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/table.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/table.js
 var Schema = Symbol.for("drizzle:Schema");
 var Columns = Symbol.for("drizzle:Columns");
 var ExtraConfigColumns = Symbol.for("drizzle:ExtraConfigColumns");
@@ -7878,7 +7878,7 @@ function getTableUniqueName(table) {
   return `${table[Schema] ?? "public"}.${table[TableName]}`;
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/sql/sql.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/sql/sql.js
 function isSQLWrapper(value) {
   return value !== null && value !== undefined && typeof value.getSQL === "function";
 }
@@ -8251,7 +8251,7 @@ Subquery.prototype.getSQL = function() {
   return new SQL([this]);
 };
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/alias.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/alias.js
 class ColumnAliasProxyHandler {
   constructor(table) {
     this.table = table;
@@ -8330,7 +8330,7 @@ function mapColumnsInSQLToAlias(query, alias) {
   }));
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/selection-proxy.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/selection-proxy.js
 class SelectionProxyHandler {
   static [entityKind] = "SelectionProxyHandler";
   config;
@@ -8382,7 +8382,7 @@ class SelectionProxyHandler {
   }
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/utils.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/utils.js
 function mapResultRow(columns, row, joinsNotNullableMap) {
   const nullifyMap = {};
   const result = columns.reduce((result2, { path, field }, columnIndex) => {
@@ -8533,7 +8533,7 @@ function isConfig(data) {
   return false;
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/query-builders/delete.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/query-builders/delete.js
 class PgDeleteBase extends QueryPromise {
   constructor(table, session, dialect, withList) {
     super();
@@ -8589,7 +8589,7 @@ class PgDeleteBase extends QueryPromise {
   }
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/casing.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/casing.js
 function toSnakeCase(input) {
   const words = input.replace(/['\u2019]/g, "").match(/[\da-z]+|[A-Z]+(?![a-z])|[A-Z][\da-z]+/g) ?? [];
   return words.map((word) => word.toLowerCase()).join("_");
@@ -8642,7 +8642,7 @@ class CasingCache {
   }
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/errors.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/errors.js
 class DrizzleError extends Error {
   static [entityKind] = "DrizzleError";
   constructor({ message, cause }) {
@@ -8652,7 +8652,7 @@ class DrizzleError extends Error {
   }
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/int.common.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/int.common.js
 class PgIntColumnBaseBuilder extends PgColumnBuilder {
   static [entityKind] = "PgIntColumnBaseBuilder";
   generatedAlwaysAsIdentity(sequence) {
@@ -8691,7 +8691,7 @@ class PgIntColumnBaseBuilder extends PgColumnBuilder {
   }
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/bigint.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/bigint.js
 class PgBigInt53Builder extends PgIntColumnBaseBuilder {
   static [entityKind] = "PgBigInt53Builder";
   constructor(name) {
@@ -8742,7 +8742,7 @@ function bigint(a2, b) {
   return new PgBigInt64Builder(name);
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/bigserial.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/bigserial.js
 class PgBigSerial53Builder extends PgColumnBuilder {
   static [entityKind] = "PgBigSerial53Builder";
   constructor(name) {
@@ -8796,7 +8796,7 @@ function bigserial(a2, b) {
   return new PgBigSerial64Builder(name);
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/boolean.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/boolean.js
 class PgBooleanBuilder extends PgColumnBuilder {
   static [entityKind] = "PgBooleanBuilder";
   constructor(name) {
@@ -8817,7 +8817,7 @@ function boolean(name) {
   return new PgBooleanBuilder(name ?? "");
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/char.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/char.js
 class PgCharBuilder extends PgColumnBuilder {
   static [entityKind] = "PgCharBuilder";
   constructor(name, config) {
@@ -8843,7 +8843,7 @@ function char(a2, b = {}) {
   return new PgCharBuilder(name, config);
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/cidr.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/cidr.js
 class PgCidrBuilder extends PgColumnBuilder {
   static [entityKind] = "PgCidrBuilder";
   constructor(name) {
@@ -8864,7 +8864,7 @@ function cidr(name) {
   return new PgCidrBuilder(name ?? "");
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/custom.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/custom.js
 class PgCustomColumnBuilder extends PgColumnBuilder {
   static [entityKind] = "PgCustomColumnBuilder";
   constructor(name, fieldConfig, customTypeParams) {
@@ -8905,7 +8905,7 @@ function customType(customTypeParams) {
   };
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/date.common.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/date.common.js
 class PgDateColumnBaseBuilder extends PgColumnBuilder {
   static [entityKind] = "PgDateColumnBaseBuilder";
   defaultNow() {
@@ -8913,7 +8913,7 @@ class PgDateColumnBaseBuilder extends PgColumnBuilder {
   }
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/date.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/date.js
 class PgDateBuilder extends PgDateColumnBaseBuilder {
   static [entityKind] = "PgDateBuilder";
   constructor(name) {
@@ -8961,7 +8961,7 @@ function date(a2, b) {
   return new PgDateStringBuilder(name);
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/double-precision.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/double-precision.js
 class PgDoublePrecisionBuilder extends PgColumnBuilder {
   static [entityKind] = "PgDoublePrecisionBuilder";
   constructor(name) {
@@ -8988,7 +8988,7 @@ function doublePrecision(name) {
   return new PgDoublePrecisionBuilder(name ?? "");
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/inet.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/inet.js
 class PgInetBuilder extends PgColumnBuilder {
   static [entityKind] = "PgInetBuilder";
   constructor(name) {
@@ -9009,7 +9009,7 @@ function inet(name) {
   return new PgInetBuilder(name ?? "");
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/integer.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/integer.js
 class PgIntegerBuilder extends PgIntColumnBaseBuilder {
   static [entityKind] = "PgIntegerBuilder";
   constructor(name) {
@@ -9036,7 +9036,7 @@ function integer(name) {
   return new PgIntegerBuilder(name ?? "");
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/interval.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/interval.js
 class PgIntervalBuilder extends PgColumnBuilder {
   static [entityKind] = "PgIntervalBuilder";
   constructor(name, intervalConfig) {
@@ -9063,7 +9063,7 @@ function interval(a2, b = {}) {
   return new PgIntervalBuilder(name, config);
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/json.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/json.js
 class PgJsonBuilder extends PgColumnBuilder {
   static [entityKind] = "PgJsonBuilder";
   constructor(name) {
@@ -9100,7 +9100,7 @@ function json(name) {
   return new PgJsonBuilder(name ?? "");
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/jsonb.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/jsonb.js
 class PgJsonbBuilder extends PgColumnBuilder {
   static [entityKind] = "PgJsonbBuilder";
   constructor(name) {
@@ -9137,7 +9137,7 @@ function jsonb(name) {
   return new PgJsonbBuilder(name ?? "");
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/line.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/line.js
 class PgLineBuilder extends PgColumnBuilder {
   static [entityKind] = "PgLineBuilder";
   constructor(name) {
@@ -9193,7 +9193,7 @@ function line(a2, b) {
   return new PgLineABCBuilder(name);
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/macaddr.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/macaddr.js
 class PgMacaddrBuilder extends PgColumnBuilder {
   static [entityKind] = "PgMacaddrBuilder";
   constructor(name) {
@@ -9214,7 +9214,7 @@ function macaddr(name) {
   return new PgMacaddrBuilder(name ?? "");
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/macaddr8.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/macaddr8.js
 class PgMacaddr8Builder extends PgColumnBuilder {
   static [entityKind] = "PgMacaddr8Builder";
   constructor(name) {
@@ -9235,7 +9235,7 @@ function macaddr8(name) {
   return new PgMacaddr8Builder(name ?? "");
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/numeric.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/numeric.js
 class PgNumericBuilder extends PgColumnBuilder {
   static [entityKind] = "PgNumericBuilder";
   constructor(name, precision, scale) {
@@ -9272,7 +9272,7 @@ function numeric(a2, b) {
   return new PgNumericBuilder(name, config?.precision, config?.scale);
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/point.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/point.js
 class PgPointTupleBuilder extends PgColumnBuilder {
   static [entityKind] = "PgPointTupleBuilder";
   constructor(name) {
@@ -9334,7 +9334,7 @@ function point(a2, b) {
   return new PgPointObjectBuilder(name);
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/postgis_extension/utils.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/postgis_extension/utils.js
 function hexToBytes(hex) {
   const bytes = [];
   for (let c = 0;c < hex.length; c += 2) {
@@ -9373,7 +9373,7 @@ function parseEWKB(hex) {
   throw new Error("Unsupported geometry type");
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/postgis_extension/geometry.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/postgis_extension/geometry.js
 class PgGeometryBuilder extends PgColumnBuilder {
   static [entityKind] = "PgGeometryBuilder";
   constructor(name) {
@@ -9428,7 +9428,7 @@ function geometry(a2, b) {
   return new PgGeometryObjectBuilder(name);
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/real.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/real.js
 class PgRealBuilder extends PgColumnBuilder {
   static [entityKind] = "PgRealBuilder";
   constructor(name, length) {
@@ -9459,7 +9459,7 @@ function real(name) {
   return new PgRealBuilder(name ?? "");
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/serial.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/serial.js
 class PgSerialBuilder extends PgColumnBuilder {
   static [entityKind] = "PgSerialBuilder";
   constructor(name) {
@@ -9482,7 +9482,7 @@ function serial(name) {
   return new PgSerialBuilder(name ?? "");
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/smallint.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/smallint.js
 class PgSmallIntBuilder extends PgIntColumnBaseBuilder {
   static [entityKind] = "PgSmallIntBuilder";
   constructor(name) {
@@ -9509,7 +9509,7 @@ function smallint(name) {
   return new PgSmallIntBuilder(name ?? "");
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/smallserial.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/smallserial.js
 class PgSmallSerialBuilder extends PgColumnBuilder {
   static [entityKind] = "PgSmallSerialBuilder";
   constructor(name) {
@@ -9532,7 +9532,7 @@ function smallserial(name) {
   return new PgSmallSerialBuilder(name ?? "");
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/text.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/text.js
 class PgTextBuilder extends PgColumnBuilder {
   static [entityKind] = "PgTextBuilder";
   constructor(name, config) {
@@ -9556,7 +9556,7 @@ function text(a2, b = {}) {
   return new PgTextBuilder(name, config);
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/time.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/time.js
 class PgTimeBuilder extends PgDateColumnBaseBuilder {
   constructor(name, withTimezone, precision) {
     super(name, "string", "PgTime");
@@ -9590,7 +9590,7 @@ function time(a2, b = {}) {
   return new PgTimeBuilder(name, config.withTimezone ?? false, config.precision);
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/timestamp.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/timestamp.js
 class PgTimestampBuilder extends PgDateColumnBaseBuilder {
   static [entityKind] = "PgTimestampBuilder";
   constructor(name, withTimezone, precision) {
@@ -9658,7 +9658,7 @@ function timestamp(a2, b = {}) {
   return new PgTimestampBuilder(name, config?.withTimezone ?? false, config?.precision);
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/uuid.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/uuid.js
 class PgUUIDBuilder extends PgColumnBuilder {
   static [entityKind] = "PgUUIDBuilder";
   constructor(name) {
@@ -9682,7 +9682,7 @@ function uuid(name) {
   return new PgUUIDBuilder(name ?? "");
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/varchar.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/varchar.js
 class PgVarcharBuilder extends PgColumnBuilder {
   static [entityKind] = "PgVarcharBuilder";
   constructor(name, config) {
@@ -9708,7 +9708,7 @@ function varchar(a2, b = {}) {
   return new PgVarcharBuilder(name, config);
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/vector_extension/bit.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/vector_extension/bit.js
 class PgBinaryVectorBuilder extends PgColumnBuilder {
   static [entityKind] = "PgBinaryVectorBuilder";
   constructor(name, config) {
@@ -9732,7 +9732,7 @@ function bit(a2, b) {
   return new PgBinaryVectorBuilder(name, config);
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/vector_extension/halfvec.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/vector_extension/halfvec.js
 class PgHalfVectorBuilder extends PgColumnBuilder {
   static [entityKind] = "PgHalfVectorBuilder";
   constructor(name, config) {
@@ -9762,7 +9762,7 @@ function halfvec(a2, b) {
   return new PgHalfVectorBuilder(name, config);
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/vector_extension/sparsevec.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/vector_extension/sparsevec.js
 class PgSparseVectorBuilder extends PgColumnBuilder {
   static [entityKind] = "PgSparseVectorBuilder";
   constructor(name, config) {
@@ -9786,7 +9786,7 @@ function sparsevec(a2, b) {
   return new PgSparseVectorBuilder(name, config);
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/vector_extension/vector.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/vector_extension/vector.js
 class PgVectorBuilder extends PgColumnBuilder {
   static [entityKind] = "PgVectorBuilder";
   constructor(name, config) {
@@ -9816,7 +9816,7 @@ function vector(a2, b) {
   return new PgVectorBuilder(name, config);
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/all.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/columns/all.js
 function getPgColumnBuilders() {
   return {
     bigint,
@@ -9854,7 +9854,7 @@ function getPgColumnBuilders() {
   };
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/table.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/table.js
 var InlineForeignKeys = Symbol.for("drizzle:PgInlineForeignKeys");
 var EnableRLS = Symbol.for("drizzle:EnableRLS");
 
@@ -9901,7 +9901,7 @@ var pgTable = (name, columns, extraConfig) => {
   return pgTableWithSchema(name, columns, extraConfig, undefined);
 };
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/primary-keys.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/primary-keys.js
 class PrimaryKeyBuilder {
   static [entityKind] = "PgPrimaryKeyBuilder";
   columns;
@@ -9929,7 +9929,7 @@ class PrimaryKey {
   }
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/sql/expressions/conditions.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/sql/expressions/conditions.js
 function bindIfParam(value, column) {
   if (isDriverValueEncoder(column) && !isSQLWrapper(value) && !is(value, Param) && !is(value, Placeholder) && !is(value, Column) && !is(value, Table) && !is(value, View)) {
     return new Param(value, column);
@@ -10034,7 +10034,7 @@ function notIlike(column, value) {
   return sql`${column} not ilike ${value}`;
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/sql/expressions/select.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/sql/expressions/select.js
 function asc(column) {
   return sql`${column} asc`;
 }
@@ -10042,7 +10042,7 @@ function desc(column) {
   return sql`${column} desc`;
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/relations.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/relations.js
 class Relation {
   constructor(sourceTable, referencedTable, relationName) {
     this.sourceTable = sourceTable;
@@ -10262,12 +10262,12 @@ function mapRelationalRow(tablesConfig, tableConfig, row, buildQueryResultSelect
   return result;
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/view-base.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/view-base.js
 class PgViewBase extends View {
   static [entityKind] = "PgViewBase";
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/dialect.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/dialect.js
 class PgDialect {
   static [entityKind] = "PgDialect";
   casing;
@@ -10824,7 +10824,7 @@ class PgDialect {
   }
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/query-builders/query-builder.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/query-builders/query-builder.js
 class TypedQueryBuilder {
   static [entityKind] = "TypedQueryBuilder";
   getSelectedFields() {
@@ -10832,7 +10832,7 @@ class TypedQueryBuilder {
   }
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/query-builders/select.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/query-builders/select.js
 class PgSelectBuilder {
   static [entityKind] = "PgSelectBuilder";
   fields;
@@ -11121,7 +11121,7 @@ var intersectAll = createSetOperator("intersect", true);
 var except = createSetOperator("except", false);
 var exceptAll = createSetOperator("except", true);
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/query-builders/query-builder.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/query-builders/query-builder.js
 class QueryBuilder {
   static [entityKind] = "PgQueryBuilder";
   dialect;
@@ -11199,7 +11199,7 @@ class QueryBuilder {
   }
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/query-builders/insert.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/query-builders/insert.js
 class PgInsertBuilder {
   constructor(table, session, dialect, withList, overridingSystemValue_) {
     this.table = table;
@@ -11318,7 +11318,7 @@ class PgInsertBase extends QueryPromise {
   }
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/query-builders/refresh-materialized-view.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/query-builders/refresh-materialized-view.js
 class PgRefreshMaterializedView extends QueryPromise {
   constructor(view, session, dialect) {
     super();
@@ -11369,7 +11369,7 @@ class PgRefreshMaterializedView extends QueryPromise {
   };
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/query-builders/update.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/query-builders/update.js
 class PgUpdateBuilder {
   constructor(table, session, dialect, withList) {
     this.table = table;
@@ -11519,7 +11519,7 @@ class PgUpdateBase extends QueryPromise {
   }
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/query-builders/count.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/query-builders/count.js
 class PgCountBuilder extends SQL {
   constructor(params) {
     super(PgCountBuilder.buildEmbeddedCount(params.source, params.filters).queryChunks);
@@ -11560,7 +11560,7 @@ class PgCountBuilder extends SQL {
   }
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/query-builders/query.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/query-builders/query.js
 class RelationalQueryBuilder {
   constructor(fullSchema, schema, tableNamesMap, table, tableConfig, dialect, session) {
     this.fullSchema = fullSchema;
@@ -11643,7 +11643,7 @@ class PgRelationalQuery extends QueryPromise {
   }
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/query-builders/raw.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/query-builders/raw.js
 class PgRaw extends QueryPromise {
   constructor(execute, sql2, query, mapBatchResult) {
     super();
@@ -11670,7 +11670,7 @@ class PgRaw extends QueryPromise {
   }
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/db.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/db.js
 class PgDatabase {
   constructor(dialect, session, schema) {
     this.dialect = dialect;
@@ -11794,7 +11794,7 @@ class PgDatabase {
   }
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/indexes.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/indexes.js
 class IndexBuilderOn {
   constructor(unique, name) {
     this.unique = unique;
@@ -11879,7 +11879,7 @@ function uniqueIndex(name) {
   return new IndexBuilderOn(true, name);
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/session.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/pg-core/session.js
 class PgPreparedQuery {
   constructor(query) {
     this.query = query;
@@ -11921,7 +11921,7 @@ class PgSession {
   }
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/neon-http/session.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/neon-http/session.js
 var rawQueryConfig = {
   arrayMode: false,
   fullResults: true
@@ -12030,7 +12030,7 @@ class NeonHttpSession extends PgSession {
   }
 }
 
-// node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/neon-http/driver.js
+// ../../node_modules/.bun/drizzle-orm@0.39.3+8a25d6652b709269/node_modules/drizzle-orm/neon-http/driver.js
 class NeonHttpDriver {
   constructor(client, dialect, options = {}) {
     this.client = client;
@@ -12136,7 +12136,7 @@ function drizzle(...params) {
   drizzle2.mock = mock;
 })(drizzle || (drizzle = {}));
 
-// packages/db/src/schema.ts
+// ../../packages/db/src/schema.ts
 var exports_schema = {};
 __export(exports_schema, {
   workspaces: () => workspaces,
@@ -12779,7 +12779,7 @@ var deboMailParticipants = pgTable("debo_mail_participants", {
   uniqueIndex("debo_mail_participants_unique_idx").on(t.threadId, t.userId)
 ]);
 
-// packages/db/src/index.ts
+// ../../packages/db/src/index.ts
 var databaseUrl = process.env.DATABASE_URL;
 var defaultTimeout = 3000;
 var neonFetchTimeoutMs = Number(process.env.NEON_FETCH_TIMEOUT_MS || defaultTimeout);
@@ -12810,7 +12810,7 @@ if (!databaseUrl) {
 var sql2 = Xs(databaseUrl || "postgresql://placeholder:placeholder@placeholder.neon.tech/placeholder");
 var db = drizzle(sql2, { schema: exports_schema });
 
-// apps/cli/src/utils/config.ts
+// src/utils/config.ts
 var dotenv = __toESM(require_main(), 1);
 dotenv.config();
 var CONFIG_PATH = path.join(os.homedir(), ".deboconfig");
@@ -12849,12 +12849,140 @@ async function resolveSession() {
   return { userId, workspaceId };
 }
 
-// apps/cli/src/cli.ts
+// src/cli.ts
 import * as fs2 from "fs";
 import * as path2 from "path";
 import * as os2 from "os";
+
+// src/utils/default-rules.ts
+var DEFAULT_RULES = `# Debo life and AI rules
+
+This file specifies developer rules, codebase architecture, and system capabilities for Debo\u2014the private AI memory OS.
+
+---
+
+## 1. IDENTITY & MOTTO
+- **Motto:** "Capture anything. Ask your past. Trust every answer."
+- **Core Identity:** Debo is a private AI memory OS that captures voice recordings, written journals, files, and third-party connector updates (Gmail, Notion, Slack, GitHub, Calendar, Google Drive) into a unified, source-backed semantic memory graph.
+
+---
+
+## 2. MONOREPO ARCHITECTURE
+
+Debo is a TypeScript monorepo with the following deployable applications:
+
+| App Path | Domain | Platform | Description |
+|---|---|---|---|
+| apps/landing-page | debo.life | Cloudflare Workers | Public landing page / product pitch. |
+| apps/website | app.debo.life | Vercel | Full Next.js product (Dashboard, Chat, API, Voice, Connectors, AI). |
+
+*Note: apps/website is NOT a Cloudflare worker. It runs on standard Vercel Node runtime because LangChain/LangGraph dependencies exceed Cloudflare bundle limits.*
+
+### Deprecated Stack (Do NOT Use)
+- Mastra (replaced by LangChain/LangGraph)
+- CopilotKit (replaced by custom chat UI)
+- apps/api (merged into apps/website API routes)
+- apps/agents (merged into apps/website/src/server/langgraph/)
+- apps/voice-worker (merged into Next.js routes)
+
+---
+
+## 3. DEBO COMMAND LINE INTERFACE (CLI)
+
+The CLI is published as @debo.life/cli on npm and maps the binary commands debo and cli.
+
+### Commands Reference
+\`\`\`bash
+# Authenticate CLI with your user account
+debo login <userId> [--workspace <workspaceId>]
+
+# Re-generate/update developer rule files (.cursorrules and .clinerules)
+debo init
+
+# Run vector semantic queries across your memories and files
+debo search "what was my plan for the next version?"
+
+# Manage personal journal entries (chunked and indexed automatically)
+debo journal list
+debo journal show <journalId>
+debo journal create -t "Title" -c "Content body"
+debo journal update <journalId> [-t "New Title"] [-c "New Content"]
+debo journal delete <journalId>
+
+# Manage tasks & checklists
+debo task list
+debo task create "Build landing page section" [-d "Description details"]
+debo task complete <taskId>
+
+# Monitor third-party connector synchronizations
+debo connector
+\`\`\`
+
+---
+
+## 4. MODEL CONTEXT PROTOCOL (MCP)
+
+Debo implements the Model Context Protocol (MCP) to bridge local AI clients with the remote memory graph.
+
+### Core Protocol Approach
+Debo favors HTTP Remote MCP over local stdio to simplify authentication and eliminate local database setup for external IDEs/clients.
+
+### Integration Command
+Use the mcp-remote wrapper to expose the remote HTTP endpoint to your local AI harness:
+\`\`\`bash
+npx -y mcp-remote https://app.debo.life/api/mcp -h x-stack-access-token:YOUR_STACK_ACCESS_TOKEN
+\`\`\`
+
+---
+
+## 5. DEVELOPER RULES & BOUNDARIES
+- **Authentication**: Never bypass authentication in any website API routes.
+- **Scoping**: ALWAYS scope all database queries, vectors, and connector syncs by the active userId.
+- **Frontend Components**: Minimize the use of "use client". Never use it on page.tsx or layout.tsx files. Export metadata from Server Components instead.
+- **Typechecks**: Always verify your changes before pushing by running \`bun run typecheck\`.
+`;
+
+// src/cli.ts
 var __dirname = "/Users/shaswatraj/Desktop/debo/apps/cli/src";
 var program2 = new Command;
+async function installRules() {
+  console.log(import_picocolors.default.blue("\u2139 Installing developer rules (.cursorrules and .clinerules)..."));
+  const cwd = process.cwd();
+  const cursorrulesPath = path2.join(cwd, ".cursorrules");
+  const clinerulesPath = path2.join(cwd, ".clinerules");
+  try {
+    fs2.writeFileSync(cursorrulesPath, DEFAULT_RULES, "utf-8");
+    fs2.writeFileSync(clinerulesPath, DEFAULT_RULES, "utf-8");
+    console.log(import_picocolors.default.green("\u2714 Bundled rules installed locally."));
+  } catch (err) {
+    console.error(import_picocolors.default.red(`\u2716 Failed to write initial rules to files: ${err.message}`));
+    return;
+  }
+  const url = "https://debo.life/debo-skill.md";
+  console.log(import_picocolors.default.blue(`\u2139 Fetching latest rules from ${url}...`));
+  try {
+    const controller = new AbortController;
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+    }, 3000);
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    if (res.ok) {
+      const text2 = await res.text();
+      if (text2 && text2.trim().length > 0) {
+        fs2.writeFileSync(cursorrulesPath, text2, "utf-8");
+        fs2.writeFileSync(clinerulesPath, text2, "utf-8");
+        console.log(import_picocolors.default.green("\u2714 Successfully fetched and updated latest developer rules from remote URL."));
+      } else {
+        console.log(import_picocolors.default.yellow("\u26A0 Remote rules file is empty. Keeping bundled rules."));
+      }
+    } else {
+      console.log(import_picocolors.default.yellow(`\u26A0 Remote fetch returned status ${res.status}. Keeping bundled rules.`));
+    }
+  } catch (err) {
+    console.log(import_picocolors.default.yellow(`\u26A0 Remote fetch failed or timed out: ${err.message || err}. Keeping bundled rules.`));
+  }
+}
 function newId(prefix) {
   const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
   let suffix = "";
@@ -12898,16 +13026,20 @@ ${p2}`;
   return final.filter((c) => c.length >= MIN_CHUNK_CHARS || final.length === 1);
 }
 program2.name("debo").description("Debo Memory OS Command Line Interface").version("1.0.0");
-program2.command("login").description("Authenticate local CLI profile with Debo User Session ID").argument("<userId>", "Your Stack Auth User ID").option("-w, --workspace <workspaceId>", "Optional specific Debo Workspace ID").action((userId, options) => {
+program2.command("login").description("Authenticate local CLI profile with Debo User Session ID").argument("<userId>", "Your Stack Auth User ID").option("-w, --workspace <workspaceId>", "Optional specific Debo Workspace ID").action(async (userId, options) => {
   try {
     saveConfig({
       userId,
       workspaceId: options.workspace
     });
     console.log(import_picocolors.default.green(`\u2714 Successfully authenticated CLI for user profile: ${userId}`));
+    await installRules();
   } catch (err) {
     console.error(import_picocolors.default.red(`\u2716 Login failed: ${err.message}`));
   }
+});
+program2.command("init").description("Initialize or update debo developer rules (.cursorrules & .clinerules) in the current directory").action(async () => {
+  await installRules();
 });
 program2.command("search").description("Semantic vector query search across private memories and files").argument("<query>", "Semantic search text").option("-l, --limit <number>", "Maximum result results to return", "5").action(async (query, options) => {
   try {
