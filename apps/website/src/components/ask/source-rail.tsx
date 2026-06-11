@@ -54,12 +54,12 @@ export function SourceRail({
   return (
     <aside
       className={cn(
-        "w-80 border-l border-border bg-card/45 backdrop-blur-2xl shrink-0 transition-all duration-300 ease-in-out relative z-10",
+        "w-80 border-l border-border bg-card/45 backdrop-blur-2xl shrink-0 transition-all duration-300 ease-in-out relative z-10 min-h-0",
         "hidden lg:flex lg:flex-col",
         !visible && "lg:hidden"
       )}
     >
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 min-h-0">
         <div className="p-4.5 space-y-6">
           {/* Header */}
           <div className="flex items-center gap-2 px-1 py-1.5 select-none">
