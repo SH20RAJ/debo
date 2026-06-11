@@ -37,14 +37,14 @@ export function LibraryPage() {
   }, [rawSources]);
 
   const filtered = useMemo(() => {
-    return sources.filter((s) => {
+    return sources.filter((s: MemorySource) => {
       const matchesType = activeType === "all" || s.type === activeType;
       const matchesSearch =
         search === "" ||
         s.title.toLowerCase().includes(search.toLowerCase()) ||
         s.summary.toLowerCase().includes(search.toLowerCase());
       return matchesType && matchesSearch;
-    }).sort((a, b) => {
+    }).sort((a: MemorySource, b: MemorySource) => {
       if (sortMode === "title") return a.title.localeCompare(b.title);
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
@@ -140,13 +140,13 @@ export function LibraryPage() {
           </div>
         ) : viewMode === "grid" ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {filtered.map((source) => (
+            {filtered.map((source: MemorySource) => (
               <SourceCard key={source.id} source={source} variant="grid" />
             ))}
           </div>
         ) : (
           <div className="space-y-2">
-            {filtered.map((source) => (
+            {filtered.map((source: MemorySource) => (
               <SourceCard key={source.id} source={source} variant="list" />
             ))}
           </div>
