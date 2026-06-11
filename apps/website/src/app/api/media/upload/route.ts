@@ -12,7 +12,7 @@ import { extractMemories } from "@/server/langgraph/graphs/extraction.graph";
 import { indexSource } from "@/server/ingestion";
 import path from "path";
 import fs from "fs";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 const MAX_BYTES = 25 * 1024 * 1024; // 25 MB
 const ALLOWED_PREFIXES = ["image/", "audio/", "video/"];
@@ -175,6 +175,7 @@ export async function POST(req: Request) {
 
     const customType = formData.get("type") as string | null;
     const sourceType = customType || inferSourceType(mimeType);
+    const voiceSessionId = formData.get("voiceSessionId") as string | null;
 
     const r2 = getR2Config();
     let r2BucketValue: string;
@@ -247,17 +248,28 @@ export async function POST(req: Request) {
     // Trigger background process for voice & audio transcriptions
     if (sourceType === "audio" || sourceType === "voice") {
       const nowStr = new Date().toISOString();
-      await db.insert(voiceSessions).values({
-        id: newId("vs"),
-        userId: user.id,
-        workspaceId,
-        sourceId,
-        roomName: file.name,
-        status: "completed",
-        startedAt: nowStr,
-        endedAt: nowStr,
-        durationSeconds: 0,
-      }).catch((err) => console.error("[media-upload] voiceSessions insert failed:", err));
+      if (voiceSessionId) {
+        await db.update(voiceSessions)
+          .set({
+            sourceId,
+            status: "completed",
+            endedAt: nowStr,
+          })
+          .where(and(eq(voiceSessions.id, voiceSessionId), eq(voiceSessions.userId, user.id)))
+          .catch((err) => console.error("[media-upload] voiceSessions update failed:", err));
+      } else {
+        await db.insert(voiceSessions).values({
+          id: newId("vs"),
+          userId: user.id,
+          workspaceId,
+          sourceId,
+          roomName: file.name,
+          status: "completed",
+          startedAt: nowStr,
+          endedAt: nowStr,
+          durationSeconds: 0,
+        }).catch((err) => console.error("[media-upload] voiceSessions insert failed:", err));
+      }
 
       processVoiceOrAudio({
         sourceId,

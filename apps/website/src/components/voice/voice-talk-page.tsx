@@ -219,7 +219,7 @@ function CallRecorder({
             );
 
             try {
-              const res = await api.media.upload(file, "voice");
+              const res = await api.media.upload(file, "voice", sessionId);
               if (res && res.id) {
                 sourceId = res.id;
               }

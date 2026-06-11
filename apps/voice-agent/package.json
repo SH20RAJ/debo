@@ -1,0 +1,24 @@
+{
+  "name": "@debo/voice-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun run src/agent.ts dev",
+    "start": "bun run src/agent.ts start",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@livekit/agents": "^1.4.0",
+    "@livekit/agents-plugin-cartesia": "^1.4.0",
+    "@livekit/agents-plugin-deepgram": "^1.4.0",
+    "@livekit/agents-plugin-openai": "^1.4.0",
+    "@livekit/agents-plugin-silero": "^1.4.0",
+    "dotenv": "^16.4.5",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.9",
+    "typescript": "^5.5.2"
+  }
+}

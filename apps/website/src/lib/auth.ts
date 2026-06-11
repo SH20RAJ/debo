@@ -1,4 +1,7 @@
 import { NextResponse } from "next/server";
+import { db } from "@debo/db";
+import { users } from "@debo/db/schema";
+import { eq } from "drizzle-orm";
 
 /**
  * Authenticated user type returned by verifyAuth().
@@ -73,6 +76,21 @@ async function verifyStackToken(accessToken: string): Promise<AuthUser | null> {
  */
 export async function verifyAuth(req: Request): Promise<AuthUser | null> {
   const headers = new Headers(req.headers);
+
+  // 1. Service-to-Service: Voice Agent authentication via internal secret
+  const agentSecret = headers.get("x-agents-secret");
+  const userId = headers.get("x-user-id");
+  if (agentSecret && userId && process.env.AGENTS_INTERNAL_SECRET && agentSecret === process.env.AGENTS_INTERNAL_SECRET) {
+    const [dbUser] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    if (dbUser) {
+      return {
+        id: dbUser.id,
+        email: dbUser.email,
+        name: dbUser.name,
+        imageUrl: dbUser.avatarUrl ?? undefined,
+      };
+    }
+  }
 
   // Primary: x-stack-access-token (sent by the frontend api.ts)
   const stackToken = headers.get("x-stack-access-token");
