@@ -12,3 +12,18 @@ improve ui ux and calling tool ux ui of /chat also its showing markdown create a
 
 make voice livekit work livekit skills
 voice/debo-ai talk and recording voice ui are different keep them diff pages.
+
+
+---
+
+add thinking to /chat and scroll not working, also thread history not visible , also create a way to load long threads
+
+---
+
+fix ux ui of http://localhost:3000/dashboard/journal 
+
+
+---
+make cli and move the mcp to nextjs api temporaririly easy to create.
+
+use mcp-remote npx @modelcontextprotocol/server-http @modelcontextprotocol/server-stdio

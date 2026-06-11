@@ -4,23 +4,23 @@ export function Product() {
   const features = [
     {
       icon: <Mic className="w-5 h-5 text-landing-text-primary" />,
-      title: "Voice + journal capture",
-      text: "Record thoughts, meetings, reflections, or quick notes without changing your workflow.",
+      title: "Omniscient capture",
+      text: "Ingest journals, voice notes, PDFs, and conversations into one unified stream. Debo takes any input you throw at it.",
     },
     {
       icon: <BrainCircuit className="w-5 h-5 text-landing-text-primary" />,
-      title: "Automatic memory extraction",
-      text: "Debo detects people, dates, decisions, tasks, promises, topics, and useful facts from your saved context.",
+      title: "Context synthesis",
+      text: "Debo automatically extracts people, projects, and decisions to build your personal knowledge graph.",
     },
     {
       icon: <SearchCheck className="w-5 h-5 text-landing-text-primary" />,
-      title: "Source-backed recall",
-      text: "Ask questions and get answers with references to the original note, chat, file, or voice transcript.",
+      title: "Semantic retrieval",
+      text: "Ask questions in plain English. Every answer is grounded in your own history and cites the exact source.",
     },
     {
       icon: <ShieldCheck className="w-5 h-5 text-landing-text-primary" />,
-      title: "Private by default",
-      text: "Your memories stay under your control. Export, delete, or disconnect sources anytime.",
+      title: "Sovereign intelligence",
+      text: "Your memory is local-first, end-to-end encrypted, and yours to keep. No ads. No public training. No data selling.",
     },
   ];
 
@@ -28,7 +28,7 @@ export function Product() {
     <section className="py-24 md:py-32 px-6 border-t border-landing-border-light bg-landing-bg">
       <div className="mx-auto max-w-[1120px] space-y-16">
         <h2 className="text-center font-heading text-landing-3xl md:text-landing-4xl font-semibold tracking-tight text-landing-text-primary">
-          Capture once. Recall anytime.
+          Infrastructure for your past.
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
           {features.map((f, i) => (

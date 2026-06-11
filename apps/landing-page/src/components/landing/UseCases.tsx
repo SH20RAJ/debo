@@ -2,15 +2,15 @@ export function UseCases() {
   const scenarios = [
     {
       title: "Founders",
-      text: "Remember investor notes, customer calls, product decisions, and follow-ups.",
+      text: "Index investor logic, customer feedback loops, and product decisions. Build your memory graph before you scale.",
     },
     {
-      title: "Students & researchers",
-      text: "Turn lectures, papers, bookmarks, and notes into a searchable knowledge base.",
+      title: "Researchers",
+      text: "Turn papers, lectures, and data streams into a queryable intelligence protocol. Never start from zero again.",
     },
     {
-      title: "Creators & builders",
-      text: "Save ideas, scripts, references, and experiments so nothing useful gets lost.",
+      title: "Developers",
+      text: "The foundational context layer for your personal AI agents. Sovereign data, agent-ready infrastructure.",
     },
   ];
 
@@ -18,7 +18,7 @@ export function UseCases() {
     <section className="py-24 md:py-32 px-6 bg-landing-surface border-t border-landing-border-light">
       <div className="mx-auto max-w-[1120px] space-y-20">
         <h2 className="text-center font-heading text-landing-3xl md:text-landing-4xl font-semibold tracking-tight text-landing-text-primary max-w-3xl mx-auto">
-          Built for people who think across too many places.
+          Built for the era of personal intelligence.
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {scenarios.map((s, i) => (

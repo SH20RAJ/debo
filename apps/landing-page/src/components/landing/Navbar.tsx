@@ -19,6 +19,12 @@ export function Navbar() {
             Product
           </Link>
           <Link
+            href="/foundation"
+            className="text-landing-sm font-medium text-landing-text-secondary transition-colors hover:text-landing-text-primary"
+          >
+            Vision
+          </Link>
+          <Link
             href="/privacy"
             className="text-landing-sm font-medium text-landing-text-secondary transition-colors hover:text-landing-text-primary"
           >
@@ -32,14 +38,6 @@ export function Navbar() {
           >
             GitHub
           </a>
-          <Link
-            href={waitlistUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-landing-sm font-medium text-landing-text-secondary transition-colors hover:text-landing-text-primary"
-          >
-            Waitlist
-          </Link>
         </nav>
         
         <div className="flex items-center gap-4">
@@ -49,7 +47,7 @@ export function Navbar() {
             rel="noopener noreferrer"
             className="inline-flex h-9 items-center justify-center rounded-lg bg-landing-text-primary px-4 text-landing-xs font-medium text-landing-surface transition-all hover:bg-black hover:-translate-y-[1px] shadow-sm"
           >
-            Join waitlist
+            Get Started
           </Link>
         </div>
       </div>

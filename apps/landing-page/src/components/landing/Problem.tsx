@@ -1,24 +1,24 @@
 export function Problem() {
   const problems = [
     {
-      title: "Notes disappear",
-      text: "Voice notes, ideas, and screenshots pile up but rarely become useful later.",
+      title: "Scattered context",
+      text: "Your intelligence is fragmented across 10+ apps. Voice notes, journals, and meetings are silos where data goes to die.",
     },
     {
-      title: "AI forgets context",
-      text: "Every new chat starts from zero unless you explain everything again.",
+      title: "Static AI",
+      text: "ChatGPT doesn't know you. Every session starts from zero because your AI lacks a permanent memory layer.",
     },
     {
-      title: "Search is broken",
-      text: "You remember the idea, but not where you saved it.",
+      title: "Loss of logic",
+      text: "You remember the 'what', but forget the 'why'. The reasoning behind your past decisions vanishes over time.",
     },
   ];
 
   const unfinished = [
     "You promised Raj the Q4 budget by Friday.",
-    "You saved 5 product ideas but never picked one.",
-    'You mentioned "landing page revamp" three times.',
-    "You have 2 voice notes waiting for review.",
+    "The reasoning behind your Q3 pivot is missing.",
+    'You mentioned "landing page revamp" in three different voice notes.',
+    "You have a recurring goal with no logged progress.",
   ];
 
   return (
@@ -26,10 +26,10 @@ export function Problem() {
       <div className="mx-auto max-w-[1120px] space-y-20">
         <div className="text-center space-y-6">
           <h2 className="font-heading text-landing-3xl md:text-landing-4xl font-semibold tracking-tight text-landing-text-primary">
-            Your context is scattered everywhere.
+            Information is abundant. Context is extinct.
           </h2>
           <p className="mx-auto max-w-2xl text-landing-base md:text-landing-lg font-medium text-landing-text-secondary leading-relaxed">
-            Important thoughts live across voice notes, screenshots, meetings, browser tabs, journals, chats, and tasks. Normal AI tools only know the current conversation. Debo remembers the context you choose to save.
+            We generate thousands of notes, emails, and ideas every month. But without context, they are just digital noise. Debo provides the permanent memory layer that turns scattered data into sovereign intelligence.
           </p>
         </div>
 
@@ -45,7 +45,7 @@ export function Problem() {
         {/* Open Loops Section */}
         <div className="text-center space-y-8">
           <h2 className="font-heading text-landing-3xl md:text-landing-4xl font-semibold tracking-tight text-landing-text-primary">
-            Debo finds what you left unfinished.
+            Search your life. Close the loops.
           </h2>
           <div className="mx-auto max-w-2xl space-y-4">
             {unfinished.map((item, i) => (

@@ -20,36 +20,36 @@ const STEPS: Step[] = [
     num: "01",
     title: "Capture",
     icon: Mic,
-    text: "Drop in voice notes, journals, links, files, chats, and meetings. Debo takes any input you throw at it.",
-    examples: ["Voice", "Journal", "Files", "Links", "Email"],
+    text: "Forward an email, record a voice note, or write a journal entry. Debo ingests the raw data into your private stream.",
+    examples: ["Voice", "Email", "Docs", "Chat"],
   },
   {
     num: "02",
-    title: "Extract",
+    title: "Synthesize",
     icon: Sparkles,
-    text: "Debo pulls people, dates, tasks, promises, decisions, and topics from each capture, automatically.",
-    examples: ["People", "Tasks", "Decisions", "Dates"],
+    text: "Debo's MCP engine automatically extracts people, events, and logic to build your personal knowledge graph.",
+    examples: ["Entities", "Events", "Logic"],
   },
   {
     num: "03",
-    title: "Ask",
+    title: "Connect",
     icon: Search,
-    text: "Search your past in plain English. Every answer cites the exact note, file, or transcript it came from.",
-    examples: ["Cited answers", "Semantic recall"],
+    text: "New information is woven into your existing knowledge, connecting today's ideas with your goals from 2022.",
+    examples: ["Context", "Relationships"],
   },
   {
     num: "04",
-    title: "Act",
+    title: "Query",
     icon: CheckSquare,
-    text: "Approve extracted tasks, follow up on promises, and close loops Debo surfaces from your memory.",
-    examples: ["Tasks", "Follow-ups", "Reminders"],
+    text: "Ask your life anything. Get source-backed answers that explain the 'why' behind every past moment.",
+    examples: ["Answers", "Citations"],
   },
   {
     num: "05",
-    title: "Control",
+    title: "Empower",
     icon: ShieldCheck,
-    text: "Review, edit, export, or delete anything. Your memory, your rules — no training, no sharing.",
-    examples: ["Export", "Delete", "Audit log"],
+    text: "Give your personal AI agents the context they need to truly understand you. The foundation for personal AI.",
+    examples: ["Agents", "APIs"],
   },
 ];
 
@@ -78,16 +78,15 @@ export function HowItWorks() {
         <div className="text-center mb-16 md:mb-24 space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-landing-border bg-landing-surface text-landing-xs font-medium text-landing-text-secondary">
             <span className="w-1.5 h-1.5 rounded-full bg-landing-text-primary" />
-            How it works
+            The Protocol
           </div>
           <h2 className="font-heading text-landing-3xl md:text-landing-4xl font-semibold tracking-tight text-landing-text-primary">
-            Capture once.
+            From memory
             <br className="md:hidden" />
-            <span className="text-landing-text-tertiary"> Recall forever.</span>
+            <span className="text-landing-text-tertiary"> to intelligence.</span>
           </h2>
           <p className="text-landing-base md:text-landing-lg text-landing-text-secondary max-w-2xl mx-auto leading-relaxed">
-            Five steps from raw thought to source-backed answer — every one of
-            them under your control.
+            Five steps from raw thought to permanent context—building the foundational memory layer for your life.
           </p>
         </div>
 
