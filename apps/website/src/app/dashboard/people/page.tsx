@@ -1,7 +1,7 @@
 import { PeoplePage } from "@/components/people/people-page";
 
 export const metadata = {
-  title: "People | Debo",
+  title: "People",
   description: "People mentioned in your memories.",
 };
 

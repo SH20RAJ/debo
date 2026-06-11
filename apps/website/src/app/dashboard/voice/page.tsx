@@ -2,7 +2,7 @@ import { VoiceNotesPage } from "@/components/voice/voice-notes-page";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Voice Notes | Debo",
+  title: "Voice Notes",
   description: "Record and capture thoughts with voice transcripts",
 };
 

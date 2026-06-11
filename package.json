@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "dev": "bun run dev:website",
-    "cli": "bun run --filter @debo/cli start",
+    "cli": "bun run --filter @debo.life/cli start",
     "dev:landing": "bun run --filter '@debo/landing-page' dev",
     "dev:website": "bun run --filter '@debo/website' dev",
     "dev:web": "bun run dev:landing",

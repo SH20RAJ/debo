@@ -1,7 +1,7 @@
 import { MediaGallery } from "@/components/media/media-gallery";
 
 export const metadata = {
-  title: "Media | Debo",
+  title: "Media",
   description: "Your video recordings, voice notes, and photos.",
 };
 

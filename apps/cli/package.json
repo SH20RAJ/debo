@@ -1,7 +1,9 @@
 {
-  "name": "@debo/cli",
+  "name": "@debo.life/cli",
   "version": "0.1.0",
-  "private": true,
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "bin": {
     "debo": "./bin/debo.js"
@@ -11,7 +13,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@debo/db": "workspace:*",
     "commander": "^13.1.0",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.39.3",
@@ -19,6 +20,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@debo/db": "workspace:*",
     "@types/node": "^25.6.0",
     "typescript": "^5.7.4"
   }

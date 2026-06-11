@@ -1,7 +1,7 @@
 import { PersonDetail } from "@/components/people/person-detail";
 
 export const metadata = {
-  title: "Person | Debo",
+  title: "Person",
 };
 
 export default async function PersonDetailRoute({

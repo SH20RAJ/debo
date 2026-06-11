@@ -1,7 +1,7 @@
 import { RadarPage } from "@/components/radar/radar-page";
 
 export const metadata = {
-  title: "Follow-Up Radar | Debo",
+  title: "Follow-Up Radar",
   description: "People and tasks that need your attention.",
 };
 

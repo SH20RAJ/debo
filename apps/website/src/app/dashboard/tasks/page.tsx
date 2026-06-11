@@ -1,7 +1,7 @@
 import { TasksPage } from "@/components/tasks/tasks-page";
 
 export const metadata = {
-  title: "Tasks | Debo",
+  title: "Tasks",
   description: "Your tasks extracted from memory.",
 };
 

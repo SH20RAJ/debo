@@ -2,7 +2,7 @@ import { McpPage } from "@/components/mcp/mcp-page";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "MCP | Debo",
+  title: "MCP",
   description: "Model Context Protocol Configuration",
 };
 

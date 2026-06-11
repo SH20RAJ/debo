@@ -1,7 +1,7 @@
 import { ProjectsPage } from "@/components/projects/projects-page";
 
 export const metadata = {
-  title: "Projects | Debo",
+  title: "Projects",
   description: "Your projects grouped by ongoing work.",
 };
 

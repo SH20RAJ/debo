@@ -1,7 +1,7 @@
 import { MailShell } from "@/components/mail/mail-shell";
 
 export const metadata = {
-  title: "Debo Mail | Debo",
+  title: "Debo Mail",
   description: "Your private Debo identity and internal memory-aware inbox.",
 };
 

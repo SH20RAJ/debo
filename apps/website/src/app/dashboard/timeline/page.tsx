@@ -1,7 +1,7 @@
 import { TimelinePage } from "@/components/timeline/timeline-page";
 
 export const metadata = {
-  title: "Timeline | Debo",
+  title: "Timeline",
   description: "Your memory timeline across time.",
 };
 

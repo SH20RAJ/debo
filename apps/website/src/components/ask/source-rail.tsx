@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   Mic,
   FileText,
@@ -114,23 +115,26 @@ export function SourceRail({
                     >
                       <Button
                         variant="ghost"
+                        asChild
                         className={cn(
                           "w-full justify-start gap-3 h-auto px-3 py-3 rounded-xl text-left border border-transparent transition-all duration-200 group",
                           "bg-muted/30 hover:bg-muted/60 hover:border-border"
                         )}
                       >
-                        <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-500/5 border border-emerald-500/10 shrink-0 group-hover:bg-emerald-500/10 group-hover:border-emerald-500/20 transition-all">
-                           <Icon className="w-3.5 h-3.5 text-emerald-500/80" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-semibold text-foreground/95 truncate">
-                            {mem.title}
-                          </p>
-                          <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
-                            {mem.meta}
-                          </p>
-                        </div>
-                        <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/0 group-hover:text-emerald-500/60 -translate-x-1 group-hover:translate-x-0 transition-all duration-200 shrink-0" />
+                        <Link href={`/dashboard/library/${mem.id}`}>
+                          <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-500/5 border border-emerald-500/10 shrink-0 group-hover:bg-emerald-500/10 group-hover:border-emerald-500/20 transition-all">
+                             <Icon className="w-3.5 h-3.5 text-emerald-500/80" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-semibold text-foreground/95 truncate">
+                              {mem.title}
+                            </p>
+                            <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
+                              {mem.meta}
+                            </p>
+                          </div>
+                          <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/0 group-hover:text-emerald-500/60 -translate-x-1 group-hover:translate-x-0 transition-all duration-200 shrink-0" />
+                        </Link>
                       </Button>
                     </motion.div>
                   );

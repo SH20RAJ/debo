@@ -1,7 +1,7 @@
 import { DecisionsPage } from "@/components/decisions/decisions-page";
 
 export const metadata = {
-  title: "Decisions | Debo",
+  title: "Decisions",
   description: "Your decision log extracted from memory.",
 };
 

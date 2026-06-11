@@ -37,14 +37,14 @@ export async function generateMetadata({
 
   if (!entry) {
     return {
-      title: "Entry Not Found | Debo",
+      title: "Entry Not Found",
     };
   }
 
   const isUnlisted = entry.privacyLevel === "unlisted";
 
   return {
-    title: `${entry.title || "Untitled Entry"} | Debo Shared`,
+    title: `${entry.title || "Untitled Entry"} Shared`,
     description: entry.summary || "A shared thought from Debo.",
     robots: isUnlisted ? "noindex, nofollow" : "index, follow",
   };
@@ -60,11 +60,11 @@ export default async function PublicJournalPage({ params }: PublicJournalPagePro
 
   const dateLabel = entry.createdAt
     ? new Date(entry.createdAt).toLocaleDateString("en-US", {
-        weekday: "long",
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-      })
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    })
     : "";
 
   const words = entry.plainText
@@ -74,7 +74,7 @@ export default async function PublicJournalPage({ params }: PublicJournalPagePro
 
   return (
     <div className="min-h-screen bg-[#FBFCFA] dark:bg-[#0C0F0A] text-[#222222] dark:text-[#ECEEEC] antialiased font-sans">
-      
+
       {/* Premium subtle glow background in dark mode */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,rgba(88,204,2,0.08),transparent_70%)] pointer-events-none" />
 
@@ -101,7 +101,7 @@ export default async function PublicJournalPage({ params }: PublicJournalPagePro
       {/* Main content area */}
       <main className="max-w-2xl mx-auto px-6 py-16 sm:py-24 relative">
         <article className="space-y-8">
-          
+
           {/* Metadata Row */}
           <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground select-none">
             {dateLabel && (

@@ -14,12 +14,7 @@ import {
   Cpu,
   Sparkles,
   Info,
-  AlertTriangle,
   Globe,
-  FileCode,
-  Code,
-  ShieldCheck,
-  CheckCircle2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -28,16 +23,10 @@ export function McpPage() {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [copiedToken, setCopiedToken] = useState(false);
-  const [copiedConfig, setCopiedConfig] = useState(false);
-  const [copiedCmd, setCopiedCmd] = useState(false);
-  
-  // Custom Copy States
   const [copiedHttpUrl, setCopiedHttpUrl] = useState(false);
-  const [copiedPayloadList, setCopiedPayloadList] = useState(false);
-  const [copiedPayloadCall, setCopiedPayloadCall] = useState(false);
-  const [copiedSkillFile, setCopiedSkillFile] = useState(false);
-  const [copiedCmdWorkspace, setCopiedCmdWorkspace] = useState(false);
-  const [copiedCmdLink, setCopiedCmdLink] = useState(false);
+  const [copiedClaude, setCopiedClaude] = useState(false);
+  const [copiedCursor, setCopiedCursor] = useState(false);
+  const [copiedCline, setCopiedCline] = useState(false);
 
   // Dynamic origin for HTTP MCP Server URL
   const [mcpUrl, setMcpUrl] = useState("http://localhost:3000/api/mcp");
@@ -82,17 +71,20 @@ export function McpPage() {
     }
   };
 
+  const activeToken = token || "YOUR_ACCESS_TOKEN";
+
   const claudeConfig = JSON.stringify(
     {
       mcpServers: {
         debo: {
-          command: "bun",
-          args: ["run", "src/index.ts"],
-          cwd: "/absolute/path/to/debo/apps/mcp",
-          env: {
-            DATABASE_URL: "YOUR_DATABASE_URL",
-            DEBO_USER_ID: user?.id || "your_user_id",
-          },
+          command: "npx",
+          args: [
+            "-y",
+            "mcp-remote",
+            mcpUrl,
+            "-h",
+            `x-stack-access-token:${activeToken}`
+          ],
         },
       },
     },
@@ -100,59 +92,22 @@ export function McpPage() {
     2
   );
 
-  const cliCommand = `bun run cli login ${user?.id || "user_id"}`;
-  const workspaceCmd = `bun run cli login ${user?.id || "user_id"}`;
-  const linkCmd = `cd apps/cli && bun link`;
-  const runGlobalCmd = `debo login ${user?.id || "user_id"}`;
+  const cursorCommand = `npx -y mcp-remote ${mcpUrl} -h x-stack-access-token:${activeToken}`;
 
-  const jsonRpcList = JSON.stringify(
+  const clineConfig = JSON.stringify(
     {
-      jsonrpc: "2.0",
-      method: "tools/list",
-      params: {},
-      id: 1
+      command: "npx",
+      args: [
+        "-y",
+        "mcp-remote",
+        mcpUrl,
+        "-h",
+        `x-stack-access-token:${activeToken}`
+      ]
     },
     null,
     2
   );
-
-  const jsonRpcCall = JSON.stringify(
-    {
-      jsonrpc: "2.0",
-      method: "tools/call",
-      params: {
-        name: "debo_search_memory",
-        arguments: {
-          query: "What is my journal entry about Apify?"
-        }
-      },
-      id: 2
-    },
-    null,
-    2
-  );
-
-  const skillFileContent = `## Debo Memory OS API Integration Instructions
-
-You have access to the user's private memory graph via the Debo Model Context Protocol (MCP) server. Always prioritize searching their past thoughts and memory graph to answer contextual questions accurately.
-
-### Available Debo MCP Tools
-- \`debo_search_memory\`: Semantic text query to search notes, journals, and files. (args: \`query\`, \`limit\`)
-- \`debo_get_citations\`: Retrieve full document transcripts by source ID. (args: \`sourceId\`)
-- \`debo_capture_thought\`: Save raw thoughts, notes, and links. (args: \`content\`, \`title\`, \`type\`)
-- \`debo_create_task\`: Create tasks/todos linked to repositories or notes. (args: \`title\`, \`description\`, \`status\`, \`dueAt\`)
-- \`debo_list_journals\`: List active journal entries.
-- \`debo_get_journal\`: Get full journal text content. (args: \`journalId\`)
-- \`debo_create_journal\`: Add a new journal entry. (args: \`title\`, \`content\`)
-- \`debo_list_media\`: Show catalog of uploaded media files.
-- \`debo_list_connectors\`: Check connected data integrations (Slack, Notion, Github, etc.).
-- \`debo_trigger_connector_sync\`: Force sync for a connector account. (args: \`connectorAccountId\`)
-
-### Client Best Practices & Memory Retrieval Rules
-1. Whenever the user mentions any past event, person, meeting, idea, or document, you MUST invoke \`debo_search_memory\` first.
-2. If results are found, cite them using markdown linking: \`[Source Title](debo://source/<id>)\`.
-3. Format output visually using visual match categories ("🟢 Strong Match", "🟡 Partial Match") to match the user's memory relevance gauge.
-`;
 
   return (
     <div className="h-full flex flex-col bg-[#090d08] text-foreground p-6 overflow-y-auto scrollbar-none">
@@ -164,12 +119,12 @@ You have access to the user's private memory graph via the Debo Model Context Pr
             Model Context Protocol (MCP)
           </h1>
           <p className="text-sm text-muted-foreground mt-1 font-medium">
-            Connect external AI clients directly to your Debo memory graph.
+            Connect external AI clients directly to your remote Debo memory graph.
           </p>
         </div>
         <div className="mt-4 md:mt-0 flex gap-2">
           <Badge variant="outline" className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 font-bold px-2.5 py-1">
-            Status: Active
+            Status: HTTP Active
           </Badge>
         </div>
       </div>
@@ -180,10 +135,10 @@ You have access to the user's private memory graph via the Debo Model Context Pr
           <Card className="p-5 bg-[#131911]/35 backdrop-blur-xl border-white/5 space-y-4">
             <div className="flex items-center gap-2.5 select-none">
               <Sparkles className="w-4 h-4 text-emerald-500" />
-              <h2 className="text-sm font-bold text-foreground/90 font-[var(--font-nunito)]">How it works</h2>
+              <h2 className="text-sm font-bold text-foreground/90 font-[var(--font-nunito)]">HTTP / Remote MCP</h2>
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              MCP is an open standard that lets clients like **Claude Desktop**, **Cursor**, and **Cline** run queries against Debo's database. It gives the AI access to your journals, tasks, and file excerpts to answer questions with full contextual citations.
+              Your Debo memory graph is served remotely over HTTP. Rather than configuring databases and code repositories locally, clients use the <code className="text-emerald-400 font-mono bg-white/5 px-1 rounded">mcp-remote</code> wrapper to bridge the connection securely.
             </p>
           </Card>
 
@@ -194,7 +149,7 @@ You have access to the user's private memory graph via the Debo Model Context Pr
               <h2 className="text-sm font-bold text-foreground/90 font-[var(--font-nunito)]">API Credentials</h2>
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Use your secure Stack Auth Access Token to authenticate remote CLI or HTTP MCP connections.
+              Authenticate your client requests using your secure Stack Auth Access Token.
             </p>
 
             <div className="space-y-2.5">
@@ -238,246 +193,68 @@ You have access to the user's private memory graph via the Debo Model Context Pr
         </div>
 
         {/* Right Side: Setup Guides Tabs */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 space-y-6">
+          {/* Endpoint display */}
+          <Card className="p-5 bg-[#131911]/35 backdrop-blur-xl border-white/5 space-y-3">
+            <div className="flex items-center gap-2.5 select-none">
+              <Globe className="w-4 h-4 text-emerald-500" />
+              <h2 className="text-sm font-bold text-foreground/90 font-[var(--font-nunito)]">Remote Endpoint URL</h2>
+            </div>
+            <div className="flex items-center justify-between border border-white/5 bg-[#0a0f08] rounded-xl px-4 py-3">
+              <code className="font-mono text-xs text-emerald-400 select-all truncate">{mcpUrl}</code>
+              <button
+                onClick={() => handleCopy(mcpUrl, setCopiedHttpUrl)}
+                className="p-1 rounded hover:bg-white/5 text-muted-foreground hover:text-foreground transition-all cursor-pointer shrink-0 ml-4"
+              >
+                {copiedHttpUrl ? (
+                  <Check className="w-4 h-4 text-emerald-500" />
+                ) : (
+                  <Copy className="w-4 h-4" />
+                )}
+              </button>
+            </div>
+          </Card>
+
+          {/* Client Setup Guide */}
           <Card className="bg-[#131911]/35 backdrop-blur-xl border-white/5 overflow-hidden">
-            <Tabs defaultValue="cli" className="w-full">
+            <Tabs defaultValue="claude" className="w-full">
               <TabsList className="w-full flex border-b border-white/5 bg-[#172115]/30 p-0 rounded-none h-12">
-                <TabsTrigger
-                  value="cli"
-                  className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-emerald-500 data-[state=active]:bg-transparent data-[state=active]:text-foreground text-xs font-bold text-muted-foreground/80 h-full cursor-pointer transition-all select-none"
-                >
-                  CLI Client
-                </TabsTrigger>
-                <TabsTrigger
-                  value="http-mcp"
-                  className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-emerald-500 data-[state=active]:bg-transparent data-[state=active]:text-foreground text-xs font-bold text-muted-foreground/80 h-full cursor-pointer transition-all select-none"
-                >
-                  HTTP MCP
-                </TabsTrigger>
                 <TabsTrigger
                   value="claude"
                   className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-emerald-500 data-[state=active]:bg-transparent data-[state=active]:text-foreground text-xs font-bold text-muted-foreground/80 h-full cursor-pointer transition-all select-none"
                 >
-                  Claude
+                  Claude Desktop
                 </TabsTrigger>
                 <TabsTrigger
                   value="cursor"
                   className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-emerald-500 data-[state=active]:bg-transparent data-[state=active]:text-foreground text-xs font-bold text-muted-foreground/80 h-full cursor-pointer transition-all select-none"
                 >
-                  Cursor
+                  Cursor Editor
                 </TabsTrigger>
                 <TabsTrigger
-                  value="skills"
+                  value="cline"
                   className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-emerald-500 data-[state=active]:bg-transparent data-[state=active]:text-foreground text-xs font-bold text-muted-foreground/80 h-full cursor-pointer transition-all select-none"
                 >
-                  Skill File
+                  Cline VS Code
                 </TabsTrigger>
               </TabsList>
 
               <div className="p-6">
-                {/* 1. CLI GUIDE */}
-                <TabsContent value="cli" className="space-y-5 focus-visible:outline-none focus-visible:ring-0 m-0">
-                  {/* Warning message for bunx 404 */}
-                  <div className="flex items-start gap-3 border border-amber-500/20 bg-amber-500/5 rounded-xl p-4 text-xs text-amber-300">
-                    <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5 text-amber-400" />
-                    <div>
-                      <p className="font-bold text-amber-200">Avoid "npm ERR! 404 Not Found" for @debo/cli</p>
-                      <p className="mt-1 leading-relaxed text-amber-300/80">
-                        Because <code className="bg-amber-950/40 px-1 py-0.5 rounded font-mono text-amber-200">@debo/cli</code> is a local workspace package inside this monorepo (not published to the public npm registry), running <code className="bg-amber-950/40 px-1 py-0.5 rounded font-mono text-amber-200">bunx @debo/cli</code> will fail. Use the local monorepo path or link the binary globally.
-                      </p>
-                    </div>
-                  </div>
-
-                  <h3 className="text-sm font-bold text-foreground/90 font-[var(--font-nunito)]">Onboard using Debo CLI</h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    Authenticate your local command line client using one of these two methods:
-                  </p>
-                  
-                  <div className="space-y-4 pt-2">
-                    {/* Method A */}
-                    <div className="space-y-2">
-                      <p className="text-xs font-semibold text-foreground/80">Method A: Run directly in Monorepo Workspace (Recommended)</p>
-                      <div className="flex items-center justify-between border border-white/5 bg-[#0a0f08] rounded-xl px-4 py-3">
-                        <code className="font-mono text-xs text-emerald-400 select-all truncate">{workspaceCmd}</code>
-                        <button
-                          onClick={() => handleCopy(workspaceCmd, setCopiedCmdWorkspace)}
-                          className="p-1 rounded hover:bg-white/5 text-muted-foreground hover:text-foreground transition-all cursor-pointer shrink-0 ml-4"
-                        >
-                          {copiedCmdWorkspace ? (
-                            <Check className="w-4 h-4 text-emerald-500" />
-                          ) : (
-                            <Copy className="w-4 h-4" />
-                          )}
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Method B */}
-                    <div className="space-y-2">
-                      <p className="text-xs font-semibold text-foreground/80">Method B: Link CLI Globally (Use "debo" command from anywhere)</p>
-                      <div className="border border-white/5 bg-[#0a0f08] rounded-xl p-4 space-y-3 font-mono text-xs">
-                        <div>
-                          <p className="text-muted-foreground/60 select-none"># 1. Navigate to client and link globally</p>
-                          <div className="flex items-center justify-between mt-1">
-                            <code className="text-emerald-400 select-all">{linkCmd}</code>
-                            <button
-                              onClick={() => handleCopy(linkCmd, setCopiedCmdLink)}
-                              className="p-1 rounded hover:bg-white/5 text-muted-foreground hover:text-foreground transition-all cursor-pointer"
-                            >
-                              {copiedCmdLink ? (
-                                <Check className="w-4 h-4 text-emerald-500" />
-                              ) : (
-                                <Copy className="w-4 h-4" />
-                              )}
-                            </button>
-                          </div>
-                        </div>
-                        <div className="pt-2 border-t border-white/5">
-                          <p className="text-muted-foreground/60 select-none"># 2. Login from any directory</p>
-                          <div className="flex items-center justify-between mt-1">
-                            <code className="text-emerald-400 select-all">{runGlobalCmd}</code>
-                            <button
-                              onClick={() => handleCopy(runGlobalCmd, setCopiedCmd)}
-                              className="p-1 rounded hover:bg-white/5 text-muted-foreground hover:text-foreground transition-all cursor-pointer"
-                            >
-                              {copiedCmd ? (
-                                <Check className="w-4 h-4 text-emerald-500" />
-                              ) : (
-                                <Copy className="w-4 h-4" />
-                              )}
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="border border-white/5 bg-[#172115]/10 rounded-xl p-4 space-y-3.5 text-xs text-muted-foreground">
-                      <div className="flex items-start gap-2.5">
-                        <span className="w-5 h-5 rounded-full bg-emerald-500/10 text-emerald-400 font-bold flex items-center justify-center shrink-0">1</span>
-                        <p className="leading-relaxed">Run the login command above in your terminal to authenticating your identity.</p>
-                      </div>
-                      <div className="flex items-start gap-2.5">
-                        <span className="w-5 h-5 rounded-full bg-emerald-500/10 text-emerald-400 font-bold flex items-center justify-center shrink-0">2</span>
-                        <p className="leading-relaxed">Register MCP inside Claude Desktop automatically by running <code className="bg-white/5 px-1 py-0.5 rounded text-foreground font-mono">bun run cli mcp install</code>.</p>
-                      </div>
-                      <div className="flex items-start gap-2.5">
-                        <span className="w-5 h-5 rounded-full bg-emerald-500/10 text-emerald-400 font-bold flex items-center justify-center shrink-0">3</span>
-                        <p className="leading-relaxed">Run semantic memory queries directly in the shell using <code className="bg-white/5 px-1 py-0.5 rounded text-foreground font-mono">bun run cli search "query"</code>.</p>
-                      </div>
-                    </div>
-                  </div>
-                </TabsContent>
-
-                {/* 2. HTTP MCP API GUIDE */}
-                <TabsContent value="http-mcp" className="space-y-4 focus-visible:outline-none focus-visible:ring-0 m-0">
-                  <h3 className="text-sm font-bold text-foreground/90 font-[var(--font-nunito)]">HTTP JSON-RPC MCP Server API</h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    Connect remote AI client extensions, Cline, or web integrations directly to the Debo MCP Server via HTTP POST requests.
-                  </p>
-
-                  <div className="space-y-4 pt-2">
-                    {/* Endpoint URL */}
-                    <div className="space-y-2">
-                      <p className="text-xs font-semibold text-foreground/80">API Endpoint URL</p>
-                      <div className="flex items-center justify-between border border-white/5 bg-[#0a0f08] rounded-xl px-4 py-3">
-                        <code className="font-mono text-xs text-emerald-400 select-all truncate">{mcpUrl}</code>
-                        <button
-                          onClick={() => handleCopy(mcpUrl, setCopiedHttpUrl)}
-                          className="p-1 rounded hover:bg-white/5 text-muted-foreground hover:text-foreground transition-all cursor-pointer shrink-0 ml-4"
-                        >
-                          {copiedHttpUrl ? (
-                            <Check className="w-4 h-4 text-emerald-500" />
-                          ) : (
-                            <Copy className="w-4 h-4" />
-                          )}
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Request Headers */}
-                    <div className="space-y-2">
-                      <p className="text-xs font-semibold text-foreground/80">Required Headers</p>
-                      <div className="border border-white/5 bg-[#0a0f08] rounded-xl p-4 font-mono text-xs text-emerald-400 space-y-1">
-                        <p><span className="text-muted-foreground/60 select-none">Content-Type:</span> application/json</p>
-                        <p><span className="text-muted-foreground/60 select-none">x-stack-access-token:</span> {token ? <span className="text-emerald-500 select-all truncate">{token}</span> : <span className="text-amber-500 select-none">&lt;Retrieve Access Token from left panel&gt;</span>}</p>
-                      </div>
-                    </div>
-
-                    {/* Payload Example 1 */}
-                    <div className="space-y-2">
-                      <p className="text-xs font-semibold text-foreground/80">List Tools Payload (POST)</p>
-                      <div className="relative border border-white/5 bg-[#0a0f08] rounded-xl overflow-hidden group">
-                        <div className="flex items-center justify-between px-4 py-2 border-b border-white/5 bg-[#090d08] text-[10px] text-muted-foreground select-none">
-                          <span className="font-mono text-[9px] uppercase tracking-wider text-emerald-500/60 font-semibold">tools/list</span>
-                          <button
-                            onClick={() => handleCopy(jsonRpcList, setCopiedPayloadList)}
-                            className="p-1 rounded hover:bg-white/5 text-muted-foreground hover:text-foreground transition-all flex items-center gap-1 cursor-pointer"
-                          >
-                            {copiedPayloadList ? (
-                              <>
-                                <Check className="w-3.5 h-3.5 text-emerald-500" />
-                                <span className="text-emerald-500">Copied!</span>
-                              </>
-                            ) : (
-                              <>
-                                <Copy className="w-3.5 h-3.5" />
-                                <span>Copy Payload</span>
-                              </>
-                            )}
-                          </button>
-                        </div>
-                        <pre className="p-4 font-mono text-xs overflow-x-auto leading-relaxed text-foreground/80 scrollbar-none whitespace-pre">
-                          {jsonRpcList}
-                        </pre>
-                      </div>
-                    </div>
-
-                    {/* Payload Example 2 */}
-                    <div className="space-y-2">
-                      <p className="text-xs font-semibold text-foreground/80">Call Tool Payload (POST)</p>
-                      <div className="relative border border-white/5 bg-[#0a0f08] rounded-xl overflow-hidden group">
-                        <div className="flex items-center justify-between px-4 py-2 border-b border-white/5 bg-[#090d08] text-[10px] text-muted-foreground select-none">
-                          <span className="font-mono text-[9px] uppercase tracking-wider text-emerald-500/60 font-semibold">tools/call</span>
-                          <button
-                            onClick={() => handleCopy(jsonRpcCall, setCopiedPayloadCall)}
-                            className="p-1 rounded hover:bg-white/5 text-muted-foreground hover:text-foreground transition-all flex items-center gap-1 cursor-pointer"
-                          >
-                            {copiedPayloadCall ? (
-                              <>
-                                <Check className="w-3.5 h-3.5 text-emerald-500" />
-                                <span className="text-emerald-500">Copied!</span>
-                              </>
-                            ) : (
-                              <>
-                                <Copy className="w-3.5 h-3.5" />
-                                <span>Copy Payload</span>
-                              </>
-                            )}
-                          </button>
-                        </div>
-                        <pre className="p-4 font-mono text-xs overflow-x-auto leading-relaxed text-foreground/80 scrollbar-none whitespace-pre">
-                          {jsonRpcCall}
-                        </pre>
-                      </div>
-                    </div>
-                  </div>
-                </TabsContent>
-
-                {/* 3. CLAUDE DESKTOP GUIDE */}
+                {/* 1. CLAUDE DESKTOP GUIDE */}
                 <TabsContent value="claude" className="space-y-4 focus-visible:outline-none focus-visible:ring-0 m-0">
                   <h3 className="text-sm font-bold text-foreground/90 font-[var(--font-nunito)]">Claude Desktop Configuration</h3>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    Append this block to your local Claude Desktop config file to connect:
+                    Append the following block to your local Claude Desktop config file to establish the bridge connection:
                   </p>
 
                   <div className="relative border border-white/5 bg-[#0a0f08] rounded-xl overflow-hidden group">
                     <div className="flex items-center justify-between px-4 py-2 border-b border-white/5 bg-[#090d08] text-[10px] text-muted-foreground select-none">
                       <span className="font-mono text-[9px] uppercase tracking-wider text-emerald-500/60 font-semibold">claude_desktop_config.json</span>
                       <button
-                        onClick={() => handleCopy(claudeConfig, setCopiedConfig)}
+                        onClick={() => handleCopy(claudeConfig, setCopiedClaude)}
                         className="p-1 rounded hover:bg-white/5 text-muted-foreground hover:text-foreground transition-all flex items-center gap-1 cursor-pointer"
                       >
-                        {copiedConfig ? (
+                        {copiedClaude ? (
                           <>
                             <Check className="w-3.5 h-3.5 text-emerald-500" />
                             <span className="text-emerald-500">Copied!</span>
@@ -506,11 +283,11 @@ You have access to the user's private memory graph via the Debo Model Context Pr
                   </div>
                 </TabsContent>
 
-                {/* 4. CURSOR EDITOR GUIDE */}
+                {/* 2. CURSOR EDITOR GUIDE */}
                 <TabsContent value="cursor" className="space-y-4 focus-visible:outline-none focus-visible:ring-0 m-0">
                   <h3 className="text-sm font-bold text-foreground/90 font-[var(--font-nunito)]">Cursor Model Context Protocol Integration</h3>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    Set up a local Stdio connection inside Cursor to make your personal history searchable directly from Cursor Composer.
+                    Add the remote bridge command directly to Cursor settings to enable memory search in Cursor Composer:
                   </p>
 
                   <div className="border border-white/5 bg-[#172115]/10 rounded-xl p-4 space-y-4 text-xs text-muted-foreground">
@@ -529,39 +306,43 @@ You have access to the user's private memory graph via the Debo Model Context Pr
                       </p>
                       <div className="pl-6 space-y-2 mt-1">
                         <p className="text-[11px] leading-relaxed">Click **+ Add New MCP Server** and set:</p>
-                        <div className="border border-white/5 bg-[#0a0f08] rounded-lg p-2.5 font-mono text-[10px] space-y-1 select-all">
+                        <div className="border border-white/5 bg-[#0a0f08] rounded-lg p-3.5 font-mono text-[10px] space-y-2 select-all">
                           <p><span className="text-emerald-500/70">Name:</span> debo</p>
                           <p><span className="text-emerald-500/70">Type:</span> command</p>
-                          <p><span className="text-emerald-500/70">Command:</span> bun run /absolute/path/to/debo/apps/mcp/src/index.ts</p>
+                          <div className="flex items-start justify-between bg-black/30 p-2 rounded border border-white/5">
+                            <span className="text-emerald-400 break-all select-all">{cursorCommand}</span>
+                            <button
+                              onClick={() => handleCopy(cursorCommand, setCopiedCursor)}
+                              className="p-1 rounded hover:bg-white/5 text-muted-foreground hover:text-foreground transition-all cursor-pointer shrink-0 ml-3"
+                            >
+                              {copiedCursor ? (
+                                <Check className="w-3.5 h-3.5 text-emerald-500" />
+                              ) : (
+                                <Copy className="w-3.5 h-3.5" />
+                              )}
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-
-                    <div className="space-y-1">
-                      <p className="font-semibold text-foreground/95 flex items-center gap-2">
-                        <span className="w-4 h-4 rounded-full bg-emerald-500/10 text-emerald-400 font-bold flex items-center justify-center shrink-0 text-[10px]">3</span>
-                        Environment Variables
-                      </p>
-                      <p className="pl-6 text-[11px] leading-relaxed">Ensure Cursor has access to your local environmental variables (`DATABASE_URL`, `DEBO_USER_ID`).</p>
                     </div>
                   </div>
                 </TabsContent>
 
-                {/* 5. SKILL FILE / CUSTOM INSTRUCTIONS */}
-                <TabsContent value="skills" className="space-y-4 focus-visible:outline-none focus-visible:ring-0 m-0">
-                  <h3 className="text-sm font-bold text-foreground/90 font-[var(--font-nunito)]">AI Client custom Rules & Skill File (.cursorrules / .clinerules)</h3>
+                {/* 3. CLINE EXTENSION GUIDE */}
+                <TabsContent value="cline" className="space-y-4 focus-visible:outline-none focus-visible:ring-0 m-0">
+                  <h3 className="text-sm font-bold text-foreground/90 font-[var(--font-nunito)]">Cline VS Code Extension</h3>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    Paste this instruction profile into your AI client rules settings or project rule files (<code className="bg-white/5 px-1 py-0.5 rounded font-mono">.cursorrules</code> or <code className="bg-white/5 px-1 py-0.5 rounded font-mono">.clinerules</code>) to ground the AI in using your memory graph correctly.
+                    Insert the following configuration into your Cline extension settings file:
                   </p>
 
                   <div className="relative border border-white/5 bg-[#0a0f08] rounded-xl overflow-hidden group">
                     <div className="flex items-center justify-between px-4 py-2 border-b border-white/5 bg-[#090d08] text-[10px] text-muted-foreground select-none">
-                      <span className="font-mono text-[9px] uppercase tracking-wider text-emerald-500/60 font-semibold">.cursorrules / .clinerules</span>
+                      <span className="font-mono text-[9px] uppercase tracking-wider text-emerald-500/60 font-semibold">cline_mcp_settings.json</span>
                       <button
-                        onClick={() => handleCopy(skillFileContent, setCopiedSkillFile)}
+                        onClick={() => handleCopy(clineConfig, setCopiedCline)}
                         className="p-1 rounded hover:bg-white/5 text-muted-foreground hover:text-foreground transition-all flex items-center gap-1 cursor-pointer"
                       >
-                        {copiedSkillFile ? (
+                        {copiedCline ? (
                           <>
                             <Check className="w-3.5 h-3.5 text-emerald-500" />
                             <span className="text-emerald-500">Copied!</span>
@@ -569,13 +350,13 @@ You have access to the user's private memory graph via the Debo Model Context Pr
                         ) : (
                           <>
                             <Copy className="w-3.5 h-3.5" />
-                            <span>Copy Skill Instructions</span>
+                            <span>Copy Settings</span>
                           </>
                         )}
                       </button>
                     </div>
-                    <pre className="p-4 font-mono text-xs overflow-x-auto leading-relaxed text-foreground/80 scrollbar-none whitespace-pre max-h-[300px] overflow-y-auto">
-                      {skillFileContent}
+                    <pre className="p-4 font-mono text-xs overflow-x-auto leading-relaxed text-foreground/80 scrollbar-none whitespace-pre">
+                      {clineConfig}
                     </pre>
                   </div>
                 </TabsContent>

@@ -1,7 +1,7 @@
 import { DebriefPage } from "@/components/debrief/debrief-page";
 
 export const metadata = {
-  title: "Daily Debrief | Debo",
+  title: "Daily Debrief",
   description: "Your daily memory debrief.",
 };
 
