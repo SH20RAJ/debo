@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
+import useSWR from "swr";
 import {
   ArrowLeft,
   BookOpen,
@@ -46,6 +47,7 @@ function normalizeSource(raw: any): MemorySource {
     projects: raw.projects ?? [],
     taskCount: raw.taskCount ?? raw.task_count ?? 0,
     sourceLabel: raw.sourceLabel ?? raw.source_label ?? "",
+    plainText: raw.plainText ?? raw.plain_text ?? "",
   };
 }
 
@@ -82,31 +84,24 @@ const STATUS_CONFIG: Record<
 };
 
 export function SourceDetailPage({ sourceId }: SourceDetailPageProps) {
-  const [source, setSource] = useState<MemorySource | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const { data: rawSource, error, isLoading, mutate } = useSWR(`/api/sources/${sourceId}`, () => api.sources.get(sourceId));
 
-  useEffect(() => {
-    let cancelled = false;
-    async function fetchSource() {
-      try {
-        const data = await api.sources.get(sourceId);
-        if (!cancelled) {
-          setSource(normalizeSource(data));
-          setLoading(false);
-        }
-      } catch {
-        if (!cancelled) {
-          setError(true);
-          setLoading(false);
-        }
-      }
+  const source = useMemo(() => {
+    return rawSource ? normalizeSource(rawSource) : null;
+  }, [rawSource]);
+
+  const handleDelete = async () => {
+    if (!source) return;
+    if (!confirm("Are you sure you want to delete this source?")) return;
+    try {
+      await api.sources.delete(source.id);
+      window.location.href = "/dashboard/library";
+    } catch (err) {
+      console.error("Delete failed", err);
     }
-    fetchSource();
-    return () => { cancelled = true; };
-  }, [sourceId]);
+  };
 
-  if (loading) {
+  if (isLoading && !source) {
     return (
       <div className="flex flex-col h-full">
         <div className="px-6 py-4 border-b border-border flex items-center gap-4">
@@ -216,7 +211,7 @@ export function SourceDetailPage({ sourceId }: SourceDetailPageProps) {
                 <Plus className="size-3.5" />
                 Create task
               </Button>
-              <Button variant="destructive" size="sm" className="gap-1.5 ml-auto">
+              <Button onClick={handleDelete} variant="destructive" size="sm" className="gap-1.5 ml-auto">
                 <Trash2 className="size-3.5" />
                 Delete
               </Button>
@@ -226,17 +221,27 @@ export function SourceDetailPage({ sourceId }: SourceDetailPageProps) {
           <Separator className="mb-8" />
 
           {/* Summary */}
-          <Section title="Summary">
-            <p className="text-sm text-foreground leading-relaxed">
-              {source.summary}
-            </p>
-          </Section>
+          {source.summary && (
+            <Section title="Summary">
+              <p className="text-sm text-foreground leading-relaxed bg-zinc-900/10 border border-white/5 rounded-2xl p-5">
+                {source.summary}
+              </p>
+            </Section>
+          )}
+
+          {/* Content / Transcript */}
+          {source.plainText && (
+            <Section title={source.type === "journal" ? "Journal Entry" : "Content / Transcript"}>
+              <div className="text-sm text-zinc-300 leading-relaxed bg-zinc-900/40 border border-white/5 rounded-2xl p-5 whitespace-pre-wrap max-h-[400px] overflow-y-auto scrollbar-thin">
+                {source.plainText}
+              </div>
+            </Section>
+          )}
 
           {/* Extracted Memories */}
-          <Section title="Extracted memories">
-            <div className="space-y-6">
-              {/* People */}
-              {source.people.length > 0 && (
+          {source.people.length > 0 && (
+            <Section title="Extracted memories">
+              <div className="space-y-6">
                 <div>
                   <div className="flex items-center gap-2 mb-3">
                     <User className="size-3.5 text-muted-foreground" />
@@ -255,9 +260,9 @@ export function SourceDetailPage({ sourceId }: SourceDetailPageProps) {
                     ))}
                   </div>
                 </div>
-              )}
-            </div>
-          </Section>
+              </div>
+            </Section>
+          )}
         </div>
       </ScrollArea>
     </div>

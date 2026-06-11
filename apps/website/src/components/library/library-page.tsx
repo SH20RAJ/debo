@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useMemo } from "react";
+import useSWR from "swr";
 import { FilterBar, type ViewMode, type SortMode } from "@/components/library/filter-bar";
 import { SourceCard } from "@/components/library/source-card";
 import { api } from "@/lib/api";
@@ -18,6 +19,7 @@ function normalizeSource(raw: any): MemorySource {
     projects: raw.projects ?? [],
     taskCount: raw.taskCount ?? raw.task_count ?? 0,
     sourceLabel: raw.sourceLabel ?? raw.source_label ?? "",
+    plainText: raw.plainText ?? raw.plain_text ?? "",
   };
 }
 
@@ -26,42 +28,27 @@ export function LibraryPage() {
   const [search, setSearch] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [sortMode, setSortMode] = useState<SortMode>("date");
-  const [sources, setSources] = useState<MemorySource[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
-    async function fetchSources() {
-      try {
-        const data = await api.sources.list();
-        const items = Array.isArray(data) ? data : data?.sources ?? data?.data ?? [];
-        if (!cancelled) {
-          setSources(items.map(normalizeSource));
-          setLoading(false);
-        }
-      } catch {
-        if (!cancelled) {
-          setError(true);
-          setLoading(false);
-        }
-      }
-    }
-    fetchSources();
-    return () => { cancelled = true; };
-  }, []);
+  const { data: rawSources = [], error, isLoading } = useSWR("/api/sources", () => api.sources.list());
 
-  const filtered = sources.filter((s) => {
-    const matchesType = activeType === "all" || s.type === activeType;
-    const matchesSearch =
-      search === "" ||
-      s.title.toLowerCase().includes(search.toLowerCase()) ||
-      s.summary.toLowerCase().includes(search.toLowerCase());
-    return matchesType && matchesSearch;
-  }).sort((a, b) => {
-    if (sortMode === "title") return a.title.localeCompare(b.title);
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-  });
+  const sources = useMemo(() => {
+    const items = Array.isArray(rawSources) ? rawSources : (rawSources as any)?.sources ?? (rawSources as any)?.data ?? [];
+    return items.map(normalizeSource);
+  }, [rawSources]);
+
+  const filtered = useMemo(() => {
+    return sources.filter((s) => {
+      const matchesType = activeType === "all" || s.type === activeType;
+      const matchesSearch =
+        search === "" ||
+        s.title.toLowerCase().includes(search.toLowerCase()) ||
+        s.summary.toLowerCase().includes(search.toLowerCase());
+      return matchesType && matchesSearch;
+    }).sort((a, b) => {
+      if (sortMode === "title") return a.title.localeCompare(b.title);
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+  }, [sources, activeType, search, sortMode]);
 
   const header = (
     <div className="px-6 pt-6 pb-3">
@@ -74,7 +61,8 @@ export function LibraryPage() {
     </div>
   );
 
-  if (loading) {
+  // Only show loading skeletons if there's no data already cached
+  if (isLoading && sources.length === 0) {
     return (
       <div className="flex flex-col h-full">
         {header}
@@ -104,7 +92,7 @@ export function LibraryPage() {
     );
   }
 
-  if (error) {
+  if (error && sources.length === 0) {
     return (
       <div className="flex flex-col h-full">
         {header}

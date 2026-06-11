@@ -25,6 +25,7 @@ export type MemorySource = {
   projects: string[];
   taskCount: number;
   sourceLabel: string;
+  plainText?: string;
 };
 
 export type DeboTask = {
