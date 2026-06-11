@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { db } from "@debo/db";
-import { sources, sourceFiles, auditLogs } from "@debo/db/schema";
+import { sources, sourceFiles, voiceSessions, auditLogs } from "@debo/db/schema";
 import {
   apiError,
   newId,
@@ -132,6 +132,21 @@ export async function POST(req: Request) {
         uploadStatus: "uploaded",
       })
       .returning();
+
+    if (sourceType === "audio") {
+      const nowStr = new Date().toISOString();
+      await db.insert(voiceSessions).values({
+        id: newId("vs"),
+        userId: user.id,
+        workspaceId,
+        sourceId,
+        roomName: file.name,
+        status: "completed",
+        startedAt: nowStr,
+        endedAt: nowStr,
+        durationSeconds: 0,
+      });
+    }
 
     await db.insert(auditLogs).values({
       id: newId("audit"),

@@ -24,6 +24,16 @@ export async function POST(
   return withErrorHandling(async () => {
     const { sessionId } = await params;
 
+    let sourceId: string | null = null;
+    try {
+      const body = await req.json();
+      if (body && typeof body === "object") {
+        sourceId = body.sourceId || null;
+      }
+    } catch {
+      // ignore if body is missing or malformed
+    }
+
     const [vs] = await db
       .select()
       .from(voiceSessions)
@@ -52,6 +62,7 @@ export async function POST(
         status: "completed",
         endedAt: endedAt.toISOString(),
         durationSeconds,
+        sourceId: sourceId || vs.sourceId,
       })
       .where(eq(voiceSessions.id, sessionId))
       .returning();

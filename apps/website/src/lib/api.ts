@@ -229,8 +229,11 @@ export const api = {
     create: () => fetchApi("/api/voice/sessions", { method: "POST", body: JSON.stringify({}) }),
     getToken: (sessionId: string) =>
       fetchApi(`/api/voice/sessions/${sessionId}/token`, { method: "POST" }),
-    end: (sessionId: string) =>
-      fetchApi(`/api/voice/sessions/${sessionId}/end`, { method: "POST" }),
+    end: (sessionId: string, sourceId?: string) =>
+      fetchApi(`/api/voice/sessions/${sessionId}/end`, {
+        method: "POST",
+        body: sourceId ? JSON.stringify({ sourceId }) : undefined,
+      }),
   },
   media: {
     upload: async (file: File) => {

@@ -81,7 +81,7 @@ export function McpPage() {
     2
   );
 
-  const cliCommand = `bunx @debo/cli login ${user?.id || "user_id"}`;
+  const cliCommand = `bun run cli login ${user?.id || "user_id"}`;
 
   return (
     <div className="h-full flex flex-col bg-[#090d08] text-foreground p-6 overflow-y-auto scrollbar-none">
@@ -221,11 +221,15 @@ export function McpPage() {
                       </div>
                       <div className="flex items-start gap-2.5">
                         <span className="w-5 h-5 rounded-full bg-emerald-500/10 text-emerald-400 font-bold flex items-center justify-center shrink-0">2</span>
-                        <p className="leading-relaxed">Register MCP inside Claude Desktop automatically by running `debo mcp install`.</p>
+                        <p className="leading-relaxed">Register MCP inside Claude Desktop automatically by running `bun run cli mcp install`.</p>
                       </div>
                       <div className="flex items-start gap-2.5">
                         <span className="w-5 h-5 rounded-full bg-emerald-500/10 text-emerald-400 font-bold flex items-center justify-center shrink-0">3</span>
-                        <p className="leading-relaxed">Run semantic memory queries directly in the shell using `debo search "your query"`.</p>
+                        <p className="leading-relaxed">Run semantic memory queries directly in the shell using `bun run cli search "your query"`.</p>
+                      </div>
+                      <div className="flex items-start gap-2.5">
+                        <span className="w-5 h-5 rounded-full bg-emerald-500/10 text-emerald-400 font-bold flex items-center justify-center shrink-0">4</span>
+                        <p className="leading-relaxed">Optional: Link the command globally by running `bun link` inside `apps/cli` to use the direct `debo` binary.</p>
                       </div>
                     </div>
                   </div>
