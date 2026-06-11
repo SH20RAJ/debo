@@ -112,7 +112,7 @@ export function ExtractedReview() {
 
   useEffect(() => {
     api.tasks
-      .list("inbox")
+      .list({ extractionStatus: "extracted_pending" })
       .then((data: any) => {
         const arr: any[] = Array.isArray(data) ? data : [];
         const mapped: ExtractedTask[] = arr.map((t: any) => ({

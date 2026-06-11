@@ -24,8 +24,8 @@ export function OpenLoops() {
   useEffect(() => {
     let cancelled = false;
     api.tasks
-      .list("inbox")
-      .then((data: unknown) => {
+      .list({ status: "inbox" })
+      .then((data: any) => {
         if (cancelled) return;
         const arr = Array.isArray(data) ? data : [];
         const mapped: OpenLoop[] = arr.slice(0, 5).map((task: any) => ({

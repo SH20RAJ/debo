@@ -23,7 +23,7 @@ const CreateTaskSchema = z.object({
 });
 
 /**
- * GET /api/tasks?status=todo|doing|done|inbox|dismissed
+ * GET /api/tasks?status=todo|doing|done|inbox|dismissed&extractionStatus=manual|extracted_pending|extracted_approved|rejected
  */
 export async function GET(req: Request) {
   const session = await requireSession(req);
@@ -33,6 +33,7 @@ export async function GET(req: Request) {
   return withErrorHandling(async () => {
     const url = new URL(req.url);
     const statusParam = url.searchParams.get("status");
+    const extStatusParam = url.searchParams.get("extractionStatus");
 
     const conditions = [
       eq(tasks.userId, user.id),
@@ -45,14 +46,20 @@ export async function GET(req: Request) {
       conditions.push(eq(tasks.status, parsed.data));
     }
 
+    if (extStatusParam) {
+      const parsedExt = z
+        .enum(["manual", "extracted_pending", "extracted_approved", "rejected"])
+        .safeParse(extStatusParam);
+      if (parsedExt.success) {
+        conditions.push(eq(tasks.extractionStatus, parsedExt.data));
+      }
+    }
+
     const rows = await db
       .select()
       .from(tasks)
       .where(and(...conditions))
-      .orderBy(
-        sql`${tasks.dueAt} asc nulls last`,
-        desc(tasks.createdAt),
-      );
+      .orderBy(sql`${tasks.dueAt} asc nulls last`, desc(tasks.createdAt));
 
     return NextResponse.json(rows);
   });

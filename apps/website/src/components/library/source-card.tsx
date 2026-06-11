@@ -58,7 +58,11 @@ const baseCard =
 
 export function SourceCard({ source, variant }: SourceCardProps) {
   const TypeIcon = TYPE_ICONS[source.type] ?? FileText;
-  const statusCfg = STATUS_CONFIG[source.status];
+  const statusCfg = STATUS_CONFIG[source.status] ?? {
+    label: source.status || "Unknown",
+    variant: "outline",
+    icon: FileText,
+  };
   const StatusIcon = statusCfg.icon;
 
   if (variant === "list") {

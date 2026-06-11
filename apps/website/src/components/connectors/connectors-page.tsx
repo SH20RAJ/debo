@@ -129,8 +129,8 @@ export function ConnectorsPage() {
         const normalized = items.map(normalizeConnector);
 
         // Check if any previously disconnected connector became connected
-        const hasNewConnection = normalized.some((newConn) => {
-          const oldConn = connectors.find((c) => c.provider === newConn.provider);
+        const hasNewConnection = normalized.some((newConn: Connector) => {
+          const oldConn = connectors.find((c) => c.id === newConn.id);
           return oldConn && oldConn.status === "not_connected" && newConn.status === "connected";
         });
 

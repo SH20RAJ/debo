@@ -152,7 +152,11 @@ export function SourceDetailPage({ sourceId }: SourceDetailPageProps) {
   }
 
   const TypeIcon = TYPE_ICONS[source.type] ?? FileText;
-  const statusCfg = STATUS_CONFIG[source.status];
+  const statusCfg = STATUS_CONFIG[source.status] ?? {
+    label: source.status || "Unknown",
+    variant: "outline",
+    icon: FileText,
+  };
   const StatusIcon = statusCfg.icon;
 
   return (
@@ -241,8 +245,10 @@ export function SourceDetailPage({ sourceId }: SourceDetailPageProps) {
                   <div className="flex flex-wrap gap-2">
                     {source.people.map((person) => (
                       <Badge key={person} variant="secondary" className="gap-1.5 py-1 px-2.5">
-                        <Avatar size="sm" className="size-4">
-                          <AvatarFallback className="text-[9px]">{person[0]}</AvatarFallback>
+                        <Avatar className="w-4 h-4">
+                          <AvatarFallback className="text-[9px]">
+                            {typeof person === 'string' && person.length > 0 ? person[0] : "?"}
+                          </AvatarFallback>
                         </Avatar>
                         {person}
                       </Badge>

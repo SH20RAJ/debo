@@ -50,3 +50,20 @@ do reseach how will I add http://localhost:3000/dashboard/connectors
  
  
 scroll isnt working anywhere even in the sidebar 
+
+---
+
+shaswatraj@Sh debo % bunx @debo/cli login 7e0d6132-3baf-4363-9d6b-e1b4bdbb6bd4
+error: GET https://registry.npmjs.org/@debo%2fcli - 404
+shaswatraj@Sh debo % 
+cli doesnt working also in http://localhost:3000/dashboard/mcp show the mcp api url and how to connect codes also show the skill file and whole installation guideline.
+
+
+
+also rethink ui ux of http://localhost:3000/dashboard/voice/talk and http://localhost:3000/dashboard/voice/
+
+also make sure whole conversation is recorded and saved and can be seen on library on http://localhost:3000/dashboard/voice/talk made 
+
+
+
+ 

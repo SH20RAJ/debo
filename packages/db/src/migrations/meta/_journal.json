@@ -22,6 +22,13 @@
       "when": 1777230247036,
       "tag": "0002_parallel_shadowcat",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1781164395887,
+      "tag": "0003_wild_spiral",
+      "breakpoints": true
     }
   ]
 }

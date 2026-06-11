@@ -70,32 +70,79 @@ export const api = {
       fetchApi(`/api/sources/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
   },
   tasks: {
-    list: (status?: string) => fetchApi(`/api/tasks${status ? `?status=${status}` : ""}`),
-    create: (data: { title: string; description?: string; dueAt?: string; status?: string; projectId?: string; relatedPersonId?: string }) =>
-      fetchApi("/api/tasks", { method: "POST", body: JSON.stringify(data) }),
-    update: (id: string, data: { title?: string; description?: string; dueAt?: string | null; status?: string; projectId?: string | null; relatedPersonId?: string | null }) =>
-      fetchApi(`/api/tasks/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+    list: (opts?: { status?: string; extractionStatus?: string }) => {
+      const params = new URLSearchParams();
+      if (opts?.status) params.set("status", opts.status);
+      if (opts?.extractionStatus)
+        params.set("extractionStatus", opts.extractionStatus);
+      const q = params.toString();
+      return fetchApi(`/api/tasks${q ? `?${q}` : ""}`);
+    },
+    create: (data: {
+      title: string;
+      description?: string;
+      dueAt?: string;
+      status?: string;
+      projectId?: string;
+      relatedPersonId?: string;
+    }) => fetchApi("/api/tasks", { method: "POST", body: JSON.stringify(data) }),
+    update: (
+      id: string,
+      data: {
+        title?: string;
+        description?: string;
+        dueAt?: string | null;
+        status?: string;
+        projectId?: string | null;
+        relatedPersonId?: string | null;
+      },
+    ) => fetchApi(`/api/tasks/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
     delete: (id: string) => fetchApi(`/api/tasks/${id}`, { method: "DELETE" }),
-    approve: (id: string) => fetchApi(`/api/tasks/${id}/approve`, { method: "POST" }),
-    dismiss: (id: string) => fetchApi(`/api/tasks/${id}/dismiss`, { method: "POST" }),
+    approve: (id: string) =>
+      fetchApi(`/api/tasks/${id}/approve`, { method: "POST" }),
+    dismiss: (id: string) =>
+      fetchApi(`/api/tasks/${id}/dismiss`, { method: "POST" }),
   },
   people: {
     list: () => fetchApi("/api/people"),
     get: (id: string) => fetchApi(`/api/people/${id}`),
-    create: (data: { name: string; relationship?: string; company?: string; role?: string; notes?: string }) =>
-      fetchApi("/api/people", { method: "POST", body: JSON.stringify(data) }),
-    update: (id: string, data: { name?: string; relationship?: string; company?: string; role?: string; notes?: string }) =>
-      fetchApi(`/api/people/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+    create: (data: {
+      name: string;
+      relationship?: string;
+      company?: string;
+      role?: string;
+      notes?: string;
+    }) => fetchApi("/api/people", { method: "POST", body: JSON.stringify(data) }),
+    update: (
+      id: string,
+      data: {
+        name?: string;
+        relationship?: string;
+        company?: string;
+        role?: string;
+        notes?: string;
+      },
+    ) => fetchApi(`/api/people/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
     delete: (id: string) => fetchApi(`/api/people/${id}`, { method: "DELETE" }),
   },
   projects: {
-    list: () => fetchApi("/api/projects"),
+    list: (extractionStatus?: string) =>
+      fetchApi(`/api/projects${extractionStatus ? `?extractionStatus=${extractionStatus}` : ""}`),
     get: (id: string) => fetchApi(`/api/projects/${id}`),
     create: (data: { name: string; description?: string; color?: string }) =>
       fetchApi("/api/projects", { method: "POST", body: JSON.stringify(data) }),
-    update: (id: string, data: { name?: string; description?: string; color?: string; status?: string }) =>
-      fetchApi(`/api/projects/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+    update: (
+      id: string,
+      data: {
+        name?: string;
+        description?: string;
+        color?: string;
+        status?: string;
+      },
+    ) => fetchApi(`/api/projects/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
     archive: (id: string) => fetchApi(`/api/projects/${id}`, { method: "DELETE" }),
+    approve: (id: string) => fetchApi(`/api/projects/${id}/approve`, { method: "POST" }),
+    dismiss: (id: string) => fetchApi(`/api/projects/${id}/dismiss`, { method: "POST" }),
   },
   search: {
     query: (q: string, opts?: { type?: string; limit?: number }) => {

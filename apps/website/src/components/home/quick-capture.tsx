@@ -40,8 +40,8 @@ export function ActionTriad() {
   useEffect(() => {
     let cancelled = false;
     api.tasks
-      .list("inbox")
-      .then((data: unknown) => {
+      .list({ status: "inbox" })
+      .then((data: any) => {
         if (cancelled) return;
         const len = Array.isArray(data) ? data.length : 0;
         setCounts({ inbox: len, loading: false });

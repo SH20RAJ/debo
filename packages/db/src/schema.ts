@@ -463,6 +463,11 @@ export const projects = pgTable(
       .notNull()
       .default("active"),
     color: text("color"),
+    extractionStatus: text("extraction_status", {
+      enum: ["manual", "extracted_pending", "extracted_approved", "rejected"],
+    })
+      .notNull()
+      .default("manual"),
     createdAt: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { mode: "string" }).notNull().defaultNow(),
   },
@@ -470,6 +475,7 @@ export const projects = pgTable(
     index("projects_user_id_idx").on(t.userId),
     index("projects_workspace_id_idx").on(t.workspaceId),
     index("projects_status_idx").on(t.status),
+    index("projects_extraction_status_idx").on(t.extractionStatus),
   ],
 );
 

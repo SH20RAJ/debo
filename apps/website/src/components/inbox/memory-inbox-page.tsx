@@ -79,7 +79,7 @@ export function MemoryInboxPage() {
   useEffect(() => {
     setLoading(true);
     api.tasks
-      .list("inbox")
+      .list({ status: "inbox" })
       .then((data: any) => {
         const tasks: any[] = Array.isArray(data) ? data : [];
         const mapped: InboxItem[] = tasks.map((t: any) => ({

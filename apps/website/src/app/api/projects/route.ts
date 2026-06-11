@@ -18,7 +18,7 @@ const CreateProjectSchema = z.object({
 });
 
 /**
- * GET /api/projects
+ * GET /api/projects?extractionStatus=manual|extracted_pending|extracted_approved|rejected
  */
 export async function GET(req: Request) {
   const session = await requireSession(req);
@@ -26,15 +26,27 @@ export async function GET(req: Request) {
   const { user, workspaceId } = session;
 
   return withErrorHandling(async () => {
+    const url = new URL(req.url);
+    const extStatusParam = url.searchParams.get("extractionStatus");
+
+    const conditions = [
+      eq(projects.userId, user.id),
+      eq(projects.workspaceId, workspaceId),
+    ];
+
+    if (extStatusParam) {
+      const parsed = z
+        .enum(["manual", "extracted_pending", "extracted_approved", "rejected"])
+        .safeParse(extStatusParam);
+      if (parsed.success) {
+        conditions.push(eq(projects.extractionStatus, parsed.data));
+      }
+    }
+
     const rows = await db
       .select()
       .from(projects)
-      .where(
-        and(
-          eq(projects.userId, user.id),
-          eq(projects.workspaceId, workspaceId),
-        ),
-      )
+      .where(and(...conditions))
       .orderBy(asc(projects.status), desc(projects.updatedAt));
 
     return NextResponse.json(rows);
@@ -67,6 +79,7 @@ export async function POST(req: Request) {
         description: parsed.data.description ?? null,
         color: parsed.data.color ?? null,
         status: "active",
+        extractionStatus: "manual",
       })
       .returning();
 

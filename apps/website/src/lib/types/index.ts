@@ -30,11 +30,12 @@ export type MemorySource = {
 export type DeboTask = {
   id: string;
   title: string;
-  status: "todo" | "doing" | "done" | "dismissed";
+  status: "inbox" | "todo" | "doing" | "done" | "dismissed";
   dueDate?: string;
   relatedPerson?: string;
   sourceId?: string;
   confidence: "strong" | "partial" | "weak";
+  extractionStatus?: "manual" | "extracted_pending" | "extracted_approved" | "rejected";
 };
 
 export type PersonMemory = {
@@ -54,6 +55,7 @@ export type ProjectMemory = {
   pinnedMemories: number;
   openTasks: number;
   people: string[];
+  extractionStatus?: "manual" | "extracted_pending" | "extracted_approved" | "rejected";
 };
 
 export type ChatMessage = {
