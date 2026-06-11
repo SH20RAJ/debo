@@ -26,29 +26,40 @@ const statusConfig: Record<
   paused: { label: "Paused", variant: "secondary", icon: Pause },
 };
 
-export function ConnectorCard({ connector }: { connector: Connector }) {
-  const [status, setStatus] = useState(connector.status);
-  const [connecting, setConnecting] = useState(false);
+export function ConnectorCard({
+  connector,
+  onConnect,
+  onDisconnect,
+}: {
+  connector: Connector & { provider: string };
+  onConnect: (provider: string) => Promise<void>;
+  onDisconnect: (id: string) => Promise<void>;
+}) {
+  const [loading, setLoading] = useState(false);
+  const status = connector.status;
   const config = statusConfig[status];
   const StatusIcon = config.icon;
-
-  function handleToggle() {
-    if (status === "not_connected" || status === "paused") {
-      setConnecting(true);
-      setTimeout(() => {
-        setStatus("connected");
-        setConnecting(false);
-      }, 1200);
-    } else {
-      setStatus("not_connected");
-    }
-  }
 
   const isConnected =
     status === "connected" || status === "syncing" || status === "needs_attention";
 
+  async function handleToggle() {
+    setLoading(true);
+    try {
+      if (isConnected) {
+        await onDisconnect(connector.id);
+      } else {
+        await onConnect(connector.provider);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <div className="rounded-2xl border-2 border-border bg-card p-4 transition-colors hover:border-primary/30 flex flex-col gap-3">
+    <div className="rounded-2xl border border-border bg-card p-4 transition-colors hover:border-primary/30 flex flex-col gap-3">
       <div className="flex items-start justify-between">
         <div
           className="size-10 rounded-xl flex items-center justify-center text-base font-bold text-white"
@@ -85,7 +96,7 @@ export function ConnectorCard({ connector }: { connector: Connector }) {
 
       <Button
         onClick={handleToggle}
-        disabled={connecting}
+        disabled={loading}
         variant={isConnected ? "outline" : "default"}
         size="sm"
         className={cn(
@@ -94,9 +105,9 @@ export function ConnectorCard({ connector }: { connector: Connector }) {
             "bg-primary text-primary-foreground shadow-[0_3px_0_#46A302] hover:brightness-105 active:translate-y-[2px] active:shadow-none transition-all"
         )}
       >
-        {connecting ? (
+        {loading ? (
           <>
-            <Loader2 className="size-3.5 animate-spin" /> Connecting...
+            <Loader2 className="size-3.5 animate-spin" /> Processing...
           </>
         ) : isConnected ? (
           "Disconnect"
@@ -107,3 +118,4 @@ export function ConnectorCard({ connector }: { connector: Connector }) {
     </div>
   );
 }
+

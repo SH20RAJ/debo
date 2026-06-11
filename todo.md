@@ -38,3 +38,15 @@ do reseach how will I add http://localhost:3000/dashboard/connectors
 
 
  also give slug to each journal , and they can make any perticular journal public/unlisted. also scroll isnt working in the app and there are soo many ui ux flaws init. fix all.
+
+
+ ---
+
+ Pages to make functional = 
+ - http://localhost:3000/dashboard/media
+ and all work in sidebar also add /apps where all new debo apps will be launched. give chat access to debo apps and connectors.
+ - http://localhost:3000/dashboard/inbox
+ - ui ux revamp of media and debo mail and all pages. and 
+ 
+ 
+scroll isnt working anywhere even in the sidebar 

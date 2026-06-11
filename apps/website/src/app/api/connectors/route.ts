@@ -3,7 +3,11 @@ import { db } from "@debo/db";
 import { connectorAccounts } from "@debo/db/schema";
 import { and, eq } from "drizzle-orm";
 import { requireSession, withErrorHandling } from "@/lib/api-helpers";
-import { SUPPORTED_PROVIDERS } from "@/server/connectors/composio";
+import {
+  SUPPORTED_PROVIDERS,
+  getComposio,
+  isComposioConfigured,
+} from "@/server/connectors/composio";
 
 /**
  * GET /api/connectors
@@ -26,7 +30,43 @@ export async function GET(req: Request) {
         ),
       );
 
-    const byProvider = new Map(rows.map((r) => [r.provider, r] as const));
+    const composio = getComposio();
+
+    // Verify and sync statuses of disconnected accounts from Composio in real-time
+    const updatedRows = await Promise.all(
+      rows.map(async (row) => {
+        if (
+          row.status === "disconnected" &&
+          row.externalAccountId &&
+          isComposioConfigured() &&
+          composio
+        ) {
+          try {
+            const account = await composio.connectedAccounts.get(row.externalAccountId);
+            if (account && account.status === "ACTIVE") {
+              const [updated] = await db
+                .update(connectorAccounts)
+                .set({
+                  status: "connected",
+                  updatedAt: new Date().toISOString(),
+                })
+                .where(eq(connectorAccounts.id, row.id))
+                .returning();
+              if (updated) return updated;
+            }
+          } catch (err) {
+            console.warn(
+              "[connectors] failed to fetch composio status for",
+              row.externalAccountId,
+              err,
+            );
+          }
+        }
+        return row;
+      }),
+    );
+
+    const byProvider = new Map(updatedRows.map((r) => [r.provider, r] as const));
 
     const items = SUPPORTED_PROVIDERS.map((provider) => {
       const row = byProvider.get(provider);
@@ -49,7 +89,7 @@ export async function GET(req: Request) {
     });
 
     // Include any extra providers (e.g. "custom") that aren't in the catalog
-    for (const row of rows) {
+    for (const row of updatedRows) {
       if (!SUPPORTED_PROVIDERS.includes(row.provider as (typeof SUPPORTED_PROVIDERS)[number])) {
         items.push({
           id: row.id,
