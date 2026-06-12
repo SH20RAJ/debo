@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "bun run src/agent.ts dev",
     "start": "bun run src/agent.ts start",
+    "build": "echo 'No build step needed for voice-agent'",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
