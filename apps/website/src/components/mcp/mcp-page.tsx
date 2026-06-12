@@ -5,7 +5,10 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { useUser } from "@stackframe/stack";
+import { api } from "@/lib/api";
 import {
   Key,
   Copy,
@@ -15,8 +18,23 @@ import {
   Sparkles,
   Info,
   Globe,
+  Plus,
+  Trash2,
+  Link2,
+  ShieldCheck,
+  Activity,
+  Server,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
+
+interface CustomMcpServer {
+  id: string;
+  name: string;
+  url: string;
+  headersJson: string | null;
+  createdAt: string;
+}
 
 export function McpPage() {
   const user = useUser();
@@ -27,6 +45,16 @@ export function McpPage() {
   const [copiedClaude, setCopiedClaude] = useState(false);
   const [copiedCursor, setCopiedCursor] = useState(false);
   const [copiedCline, setCopiedCline] = useState(false);
+
+  // Custom MCP Servers states
+  const [customServers, setCustomServers] = useState<CustomMcpServer[]>([]);
+  const [loadingCustom, setLoadingCustom] = useState(true);
+  
+  // Form states
+  const [newName, setNewName] = useState("");
+  const [newUrl, setNewUrl] = useState("");
+  const [newHeaders, setNewHeaders] = useState("");
+  const [submittingCustom, setSubmittingCustom] = useState(false);
 
   // Dynamic origin for HTTP MCP Server URL
   const [mcpUrl, setMcpUrl] = useState("http://localhost:3000/api/mcp");
@@ -44,6 +72,69 @@ export function McpPage() {
       });
     }
   }, [user]);
+
+  // Fetch custom MCP servers
+  const fetchCustomServers = async () => {
+    try {
+      const data = await api.mcp.list();
+      if (data) setCustomServers(data);
+    } catch {
+      toast.error("Failed to load custom MCP servers.");
+    } finally {
+      setLoadingCustom(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCustomServers();
+  }, []);
+
+  const handleAddCustomServer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newName.trim() || !newUrl.trim()) {
+      toast.error("Name and URL are required.");
+      return;
+    }
+
+    if (newHeaders.trim()) {
+      try {
+        JSON.parse(newHeaders);
+      } catch {
+        toast.error("Headers must be valid JSON.");
+        return;
+      }
+    }
+
+    setSubmittingCustom(true);
+    try {
+      const newServer = await api.mcp.create({
+        name: newName.trim(),
+        url: newUrl.trim(),
+        headersJson: newHeaders.trim() || undefined,
+      });
+      if (newServer) {
+        setCustomServers((prev) => [...prev, newServer]);
+        setNewName("");
+        setNewUrl("");
+        setNewHeaders("");
+        toast.success("Custom MCP server added successfully!");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to add custom MCP server.");
+    } finally {
+      setSubmittingCustom(false);
+    }
+  };
+
+  const handleDeleteCustomServer = async (id: string) => {
+    try {
+      await api.mcp.delete(id);
+      setCustomServers((prev) => prev.filter((s) => s.id !== id));
+      toast.success("Custom MCP server removed.");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to remove custom MCP server.");
+    }
+  };
 
   const handleGenerateToken = async () => {
     setLoading(true);
@@ -363,6 +454,144 @@ export function McpPage() {
               </div>
             </Tabs>
           </Card>
+        </div>
+      </div>
+
+      {/* 2. Custom Remote MCP Servers Section */}
+      <div className="border-t border-white/5 pt-10 mt-10 max-w-6xl">
+        <div className="mb-6 select-none">
+          <h2 className="text-xl font-bold font-[var(--font-heading)] tracking-tight flex items-center gap-2.5">
+            <Server className="w-5 h-5 text-emerald-500" />
+            Connect Custom MCP Servers
+          </h2>
+          <p className="text-xs text-muted-foreground mt-1 font-medium">
+            Connect your own remote MCP servers using custom HTTP endpoints and secure authorization headers to expose your own tools to Debo.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Add Server Form */}
+          <div className="lg:col-span-1">
+            <Card className="p-5 bg-[#131911]/35 backdrop-blur-xl border-white/5 space-y-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground/60 select-none">
+                Register New Server
+              </h3>
+              <form onSubmit={handleAddCustomServer} className="space-y-4">
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-muted-foreground/80 block">Server Name</label>
+                  <Input
+                    type="text"
+                    required
+                    placeholder="e.g. My Custom Tools"
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    className="h-9.5 text-xs rounded-xl border-white/5 bg-background placeholder:text-muted-foreground/45 focus-visible:ring-emerald-500/30"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-muted-foreground/80 block">HTTP Endpoint URL</label>
+                  <Input
+                    type="url"
+                    required
+                    placeholder="https://api.mycustommcp.com/mcp"
+                    value={newUrl}
+                    onChange={(e) => setNewUrl(e.target.value)}
+                    className="h-9.5 text-xs rounded-xl border-white/5 bg-background placeholder:text-muted-foreground/45 focus-visible:ring-emerald-500/30"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-muted-foreground/80 block">
+                    Authorization Headers (JSON String, Optional)
+                  </label>
+                  <Textarea
+                    placeholder='{"Authorization": "Bearer my-secret-token"}'
+                    value={newHeaders}
+                    onChange={(e) => setNewHeaders(e.target.value)}
+                    className="min-h-[80px] text-xs rounded-xl border-white/5 bg-background placeholder:text-muted-foreground/45 font-mono resize-none p-3 focus-visible:ring-emerald-500/30"
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  disabled={submittingCustom}
+                  className="w-full bg-emerald-500 text-white rounded-xl h-10 font-semibold cursor-pointer shadow-[0_2px_0_#388E02] hover:bg-emerald-600 flex items-center justify-center gap-2 text-xs"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  {submittingCustom ? "Adding Server..." : "Connect Server"}
+                </Button>
+              </form>
+            </Card>
+          </div>
+
+          {/* Connected Servers List */}
+          <div className="lg:col-span-2">
+            <Card className="p-5 bg-[#131911]/35 backdrop-blur-xl border-white/5 h-full flex flex-col justify-between min-h-[300px]">
+              <div className="space-y-4">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground/60 select-none">
+                  Active Connections
+                </h3>
+
+                {loadingCustom ? (
+                  <div className="flex items-center justify-center py-12 text-xs text-muted-foreground/75 font-medium select-none">
+                    <Loader2 className="w-4 h-4 animate-spin mr-1.5 text-emerald-500" />
+                    Loading custom servers...
+                  </div>
+                ) : customServers.length === 0 ? (
+                  <div className="text-center py-12 border border-dashed border-white/5 rounded-2xl select-none">
+                    <Server className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2.5" />
+                    <p className="text-xs font-bold text-muted-foreground/80">No Custom Servers Connected</p>
+                    <p className="text-[10px] text-muted-foreground/50 mt-1 max-w-[280px] mx-auto leading-normal">
+                      Expose your own APIs as tools in the chat model by registering your MCP server.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {customServers.map((server) => (
+                      <div
+                        key={server.id}
+                        className="flex items-start justify-between border border-white/5 bg-[#0a0f08] p-4 rounded-xl group hover:border-emerald-500/20 transition-all"
+                      >
+                        <div className="flex items-start gap-3 min-w-0">
+                          <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                            <Link2 className="w-4 h-4 text-emerald-500" />
+                          </div>
+                          <div className="min-w-0">
+                            <h4 className="text-xs font-bold text-foreground/90 truncate">
+                              {server.name}
+                            </h4>
+                            <code className="block text-[10px] text-muted-foreground/80 font-mono mt-0.5 truncate select-all">
+                              {server.url}
+                            </code>
+                            {server.headersJson && (
+                              <Badge variant="outline" className="mt-1.5 text-[9px] px-1.5 py-0 bg-white/5 border-white/5 text-muted-foreground select-none font-semibold">
+                                <ShieldCheck className="w-2.5 h-2.5 mr-1 text-emerald-500/80" />
+                                Custom Headers Active
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          <Badge className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 text-[9px] font-bold select-none px-2 py-0.5">
+                            <Activity className="w-2.5 h-2.5 mr-1 animate-pulse" />
+                            Connected
+                          </Badge>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => handleDeleteCustomServer(server.id)}
+                            className="w-8 h-8 rounded-lg text-muted-foreground hover:text-destructive cursor-pointer hover:bg-destructive/10"
+                            title="Remove server"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </Card>
+          </div>
         </div>
       </div>
     </div>

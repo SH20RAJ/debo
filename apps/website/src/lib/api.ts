@@ -264,4 +264,10 @@ export const api = {
     update: (id: string, table: "tasks" | "memory_items", content: string) =>
       fetchApi(`/api/inbox/${id}`, { method: "PATCH", body: JSON.stringify({ table, content }) }),
   },
+  mcp: {
+    list: () => fetchApi("/api/mcp/custom"),
+    create: (data: { name: string; url: string; headersJson?: string }) =>
+      fetchApi("/api/mcp/custom", { method: "POST", body: JSON.stringify(data) }),
+    delete: (id: string) => fetchApi(`/api/mcp/custom/${id}`, { method: "DELETE" }),
+  },
 };

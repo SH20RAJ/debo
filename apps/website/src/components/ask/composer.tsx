@@ -58,9 +58,9 @@ export function Composer({ onSend, isResponding }: ComposerProps) {
                   variant={activeMode === mode ? "default" : "secondary"}
                   onClick={() => setActiveMode(mode)}
                   className={cn(
-                    "cursor-pointer px-3.5 py-1 text-xs font-bold transition-all duration-200 select-none rounded-lg border",
+                    "cursor-pointer px-3.5 py-1 text-xs font-semibold transition-all duration-200 select-none rounded-lg border",
                     activeMode === mode
-                      ? "bg-emerald-500 text-white border-emerald-500 shadow-[0_2px_0_#388E02] hover:bg-emerald-600"
+                      ? "bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700"
                       : "bg-muted/30 text-muted-foreground border-border hover:text-foreground hover:bg-muted/60"
                   )}
                 >
@@ -80,9 +80,9 @@ export function Composer({ onSend, isResponding }: ComposerProps) {
           size="sm"
           onClick={() => setShowModes((s) => !s)}
           className={cn(
-            "shrink-0 rounded-xl text-xs font-bold h-10 px-3 border transition-all duration-200 cursor-pointer",
+            "shrink-0 rounded-xl text-xs font-semibold h-10 px-3 border transition-all duration-200 cursor-pointer",
             showModes 
-              ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.05)]" 
+              ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" 
               : "text-muted-foreground bg-muted/30 border-border hover:text-foreground hover:bg-muted/50"
           )}
           title="Toggle search mode"
@@ -95,8 +95,8 @@ export function Composer({ onSend, isResponding }: ComposerProps) {
         <div className={cn(
           "flex-1 flex items-center relative rounded-2xl border bg-muted/35 transition-all duration-200 px-3 py-1",
           hasText 
-            ? "border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.05)] focus-within:border-emerald-500/35 focus-within:shadow-[0_0_18px_rgba(16,185,129,0.08)]"
-            : "border-border focus-within:border-emerald-500/25 focus-within:shadow-[0_0_15px_rgba(16,185,129,0.06)]"
+            ? "border-emerald-500/20 focus-within:border-emerald-500/35"
+            : "border-border focus-within:border-emerald-500/25"
         )}>
           <Input
             ref={inputRef}
@@ -115,7 +115,7 @@ export function Composer({ onSend, isResponding }: ComposerProps) {
             className={cn(
               "absolute right-1.5 w-8 h-8 rounded-xl transition-all duration-200 cursor-pointer",
               hasText
-                ? "bg-emerald-500 text-white shadow-[0_2px_0_#388E02] hover:bg-emerald-600 scale-100 hover:scale-105 active:scale-95"
+                ? "bg-emerald-600 text-white hover:bg-emerald-500 scale-100 hover:scale-105 active:scale-95"
                 : "bg-transparent text-muted-foreground/40 hover:bg-transparent"
             )}
           >

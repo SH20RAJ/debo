@@ -91,7 +91,7 @@
 :root {
   --font-body: "Nunito Sans", "Nunito", "Segoe UI", sans-serif;
   --font-display: "Nunito", "Segoe UI", sans-serif;
-
+  --bn-colors-editor-background: transparent;
   /* Duolingo-inspired palette */
   --background: #FBFCFA;
   --foreground: #222222;
@@ -162,6 +162,7 @@
 .dark {
   --background: #0C0F0A;
   --foreground: #ECEEEC;
+  --bn-colors-editor-background: transparent;
   --card: #121610;
   --card-foreground: #ECEEEC;
   --popover: #121610;
@@ -225,31 +226,65 @@
   * {
     @apply border-border/40;
   }
+
   body {
     @apply bg-background text-foreground antialiased selection:bg-primary/20 selection:text-primary;
     font-family: var(--font-body);
   }
+
   .dark body {
     background:
       radial-gradient(circle at 18% 0%, rgba(88, 204, 2, 0.06), transparent 28rem),
       radial-gradient(circle at 82% 8%, rgba(88, 204, 2, 0.04), transparent 24rem),
       var(--background);
   }
-  h1, h2, h3, h4, h5, h6 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-heading font-bold tracking-tight;
   }
 }
 
 /* Landing page utilities */
-@utility text-landing-xs { font-size: 0.75rem; }
-@utility text-landing-sm { font-size: 0.875rem; }
-@utility text-landing-base { font-size: 1.01rem; }
-@utility text-landing-lg { font-size: 1.125rem; }
-@utility text-landing-xl { font-size: 1.25rem; }
-@utility text-landing-2xl { font-size: 1.5rem; }
-@utility text-landing-3xl { font-size: 1.875rem; }
-@utility text-landing-4xl { font-size: 2.25rem; }
-@utility text-landing-hero { font-size: 4.5rem; }
+@utility text-landing-xs {
+  font-size: 0.75rem;
+}
+
+@utility text-landing-sm {
+  font-size: 0.875rem;
+}
+
+@utility text-landing-base {
+  font-size: 1.01rem;
+}
+
+@utility text-landing-lg {
+  font-size: 1.125rem;
+}
+
+@utility text-landing-xl {
+  font-size: 1.25rem;
+}
+
+@utility text-landing-2xl {
+  font-size: 1.5rem;
+}
+
+@utility text-landing-3xl {
+  font-size: 1.875rem;
+}
+
+@utility text-landing-4xl {
+  font-size: 2.25rem;
+}
+
+@utility text-landing-hero {
+  font-size: 4.5rem;
+}
 
 @utility minimal-card {
   @apply rounded-2xl border-2 border-border bg-card p-6 transition-all duration-200;
@@ -302,9 +337,19 @@
 }
 
 @keyframes wiggle {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(3deg); }
-  75% { transform: rotate(-3deg); }
+
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(3deg);
+  }
+
+  75% {
+    transform: rotate(-3deg);
+  }
 }
 
 .animate-wiggle {
@@ -312,8 +357,15 @@
 }
 
 @keyframes fadeInUp {
-  0% { opacity: 0; transform: translateY(12px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-fade-in-up {
@@ -324,12 +376,14 @@
 .blocknote-editor {
   --mantine-color-scheme: var(--mantine-color-scheme, light);
 }
+
 .blocknote-editor .bn-container,
 .blocknote-editor [data-mantine-color-scheme] {
   font-family: inherit;
   line-height: inherit;
   --bn-colors-editor-background: transparent;
 }
+
 /* Prevent Mantine resets from bleeding into global elements */
 .blocknote-editor *,
 .blocknote-editor *::before,
@@ -358,4 +412,8 @@
   .confidence-weak {
     @apply text-muted-foreground;
   }
+}
+
+.bn-editor {
+  background-color: transparent;
 }

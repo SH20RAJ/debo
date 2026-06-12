@@ -991,3 +991,26 @@ export const deboMailParticipants = pgTable(
     uniqueIndex("debo_mail_participants_unique_idx").on(t.threadId, t.userId),
   ],
 );
+
+// ─── 30. custom_mcp_servers ──────────────────────────────────────────────────
+export const customMcpServers = pgTable(
+  "custom_mcp_servers",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspaces.id),
+    name: text("name").notNull(),
+    url: text("url").notNull(),
+    headersJson: text("headers_json"), // JSON string containing headers
+    createdAt: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { mode: "string" }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("custom_mcp_servers_user_id_idx").on(t.userId),
+    index("custom_mcp_servers_workspace_id_idx").on(t.workspaceId),
+  ],
+);

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import useSWR from "swr";
 import {
   MessageSquare,
   Plus,
@@ -77,10 +78,17 @@ export function ChatPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // Thread state
-  const [threads, setThreads] = useState<ChatThread[]>([]);
+  // SWR Thread Listing
+  const { data: threads = [], isLoading: loadingThreads, mutate: mutateThreads } = useSWR<ChatThread[]>(
+    "/api/chat/threads",
+    api.ask.listThreads,
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 30000,
+    }
+  );
+
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
-  const [loadingThreads, setLoadingThreads] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [threadSearch, setThreadSearch] = useState("");
 
@@ -92,18 +100,7 @@ export function ChatPage() {
   const [isResponding, setIsResponding] = useState(false);
 
   const abortRef = useRef<AbortController | null>(null);
-
-  // Fetch all threads
-  const fetchThreads = useCallback(async () => {
-    try {
-      const data = await api.ask.listThreads();
-      if (data) setThreads(data);
-    } catch {
-      toast.error("Failed to load thread history.");
-    } finally {
-      setLoadingThreads(false);
-    }
-  }, []);
+  const threadCacheRef = useRef<Record<string, Message[]>>({});
 
   // Fetch specific thread messages
   const loadThread = useCallback(async (threadId: string, updateUrl = true) => {
@@ -111,6 +108,20 @@ export function ChatPage() {
     if (abortRef.current) {
       abortRef.current.abort();
       setIsResponding(false);
+    }
+
+    // Render cached messages instantly if available
+    if (threadCacheRef.current[threadId]) {
+      const cached = threadCacheRef.current[threadId];
+      setMessages(cached);
+      setActiveThreadId(threadId);
+      if (updateUrl) {
+        router.replace(`/dashboard/chat?threadId=${threadId}`);
+      }
+      const lastAssistant = [...cached].reverse().find(m => m.role === "assistant");
+      setActiveSources(lastAssistant?.sources || []);
+      setRelatedMemories([]);
+      setFollowUps([]);
     }
 
     try {
@@ -143,6 +154,10 @@ export function ChatPage() {
           };
         });
 
+        // Update cache
+        threadCacheRef.current[threadId] = mappedMessages;
+        
+        // Update state
         setMessages(mappedMessages);
         setActiveThreadId(threadId);
 
@@ -315,7 +330,7 @@ export function ChatPage() {
                 setActiveThreadId(event.threadId);
                 router.replace(`/dashboard/chat?threadId=${event.threadId}`);
                 // Refresh list of threads to include the new one
-                fetchThreads();
+                mutateThreads();
               }
 
               let finalActions: any[] = [];
@@ -327,8 +342,8 @@ export function ChatPage() {
                 }));
               }
 
-              setMessages((prev) =>
-                prev.map((m) =>
+              setMessages((prev) => {
+                const updated = prev.map((m) =>
                   m.id === assistantId
                     ? {
                         ...m,
@@ -338,8 +353,13 @@ export function ChatPage() {
                         retrievalActive: false
                       }
                     : m
-                )
-              );
+                );
+                const targetId = typeof event.threadId === "string" ? event.threadId : activeThreadId;
+                if (targetId) {
+                  threadCacheRef.current[targetId] = updated;
+                }
+                return updated;
+              });
               break;
             }
 
@@ -372,22 +392,36 @@ export function ChatPage() {
       setIsResponding(false);
       abortRef.current = null;
     }
-  }, [activeThreadId, isResponding, fetchThreads, router]);
+  }, [activeThreadId, isResponding, mutateThreads, router]);
 
-  // Initialize page, handle query params
+  // 1. Load and sync thread when URL search params change
   useEffect(() => {
-    fetchThreads().then(() => {
-      const q = searchParams.get("q");
-      const threadId = searchParams.get("threadId");
+    const threadId = searchParams.get("threadId");
 
-      if (threadId) {
+    if (threadId) {
+      if (threadId !== activeThreadId) {
         loadThread(threadId, false);
-      } else if (q) {
-        router.replace("/dashboard/chat");
-        handleSend(q);
       }
-    });
-  }, [fetchThreads, router, searchParams, handleSend]);
+    } else {
+      // Clear active thread if URL has no thread ID
+      if (activeThreadId !== null) {
+        setActiveThreadId(null);
+        setMessages([]);
+        setActiveSources([]);
+        setRelatedMemories([]);
+        setFollowUps([]);
+      }
+    }
+  }, [searchParams, activeThreadId, loadThread]);
+
+  // 2. Handle query param (?q=...) on initial load
+  useEffect(() => {
+    const q = searchParams.get("q");
+    if (q) {
+      router.replace("/dashboard/chat");
+      handleSend(q);
+    }
+  }, [searchParams, handleSend, router]);
 
   const handleNewChat = () => {
     if (abortRef.current) {
@@ -408,7 +442,8 @@ export function ChatPage() {
     e.stopPropagation();
     try {
       await api.ask.deleteThread(threadId);
-      setThreads((prev) => prev.filter((t) => t.id !== threadId));
+      // Optimistic update of thread list
+      mutateThreads(threads.filter((t) => t.id !== threadId), false);
       if (activeThreadId === threadId) {
         handleNewChat();
       }

@@ -18,6 +18,7 @@ import { HumanMessage, SystemMessage, ToolMessage } from "@langchain/core/messag
 import { requireSession, apiError } from "@/lib/api-helpers";
 import { classifyIntent, classifyRetrievalIntent, classifyOrchestrationIntent } from "@/server/langgraph/nodes/classify-intent.node";
 import { getComposioToolsForUser } from "@/server/connectors/composio";
+import { getCustomMcpToolsForUser } from "@/server/connectors/custom-mcp";
 import { retrieveMemory } from "@/server/langgraph/nodes/retrieve-memory.node";
 import {
   buildSystemPrompt,
@@ -330,8 +331,16 @@ export async function POST(req: Request) {
 
           // Load dynamic Composio tools for user's connected accounts
           let composioTools: any[] = [];
-          if (intentCategory === "connector") {
+          if (intentCategory === "connector" || intentCategory === "recall") {
             composioTools = await getComposioToolsForUser(user.id, workspaceId);
+          }
+
+          // Load dynamic custom MCP tools
+          let customMcpTools: any[] = [];
+          try {
+            customMcpTools = await getCustomMcpToolsForUser(user.id, workspaceId);
+          } catch (err) {
+            console.warn("[ask] failed to load custom MCP tools:", err);
           }
 
           // Define all available tools
@@ -343,6 +352,7 @@ export async function POST(req: Request) {
             queryMailTool(user.id, workspaceId),
             queryConnectorsTool(user.id, workspaceId),
             ...composioTools,
+            ...customMcpTools,
           ];
 
           const llmWithTools = llm.bindTools(allTools);

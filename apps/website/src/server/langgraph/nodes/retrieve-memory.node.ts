@@ -71,8 +71,8 @@ export async function retrieveMemory(
     }
   }
 
-  // Path 2: recency fallback (only when Qdrant is not configured)
-  if (sourcesFound.length === 0 && !isQdrantConfigured()) {
+  // Path 2: recency fallback
+  if (sourcesFound.length === 0) {
     const rows = await db
       .select({
         id: sources.id,

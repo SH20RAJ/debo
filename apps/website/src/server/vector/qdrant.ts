@@ -68,7 +68,18 @@ export async function ensureCollection(vectorSize: number): Promise<boolean> {
       vectors: { size: vectorSize, distance: "Cosine" },
     }),
   });
-  return Boolean(res);
+  if (!res) return false;
+
+  // Create payload index on userId (required for filter query operations)
+  await qdrantFetch(`/collections/${cfg.collection}/index?wait=true`, {
+    method: "PUT",
+    body: JSON.stringify({
+      field_name: "userId",
+      field_schema: "keyword",
+    }),
+  });
+
+  return true;
 }
 
 export async function upsertPoints(points: QdrantPoint[]): Promise<boolean> {
