@@ -9,13 +9,13 @@
   },
   "providers": {
     "vercel": {
-      "accountRequestId": "facctrq_61UpqvDICulb1QrNM16S2z3w1J8CarDnIIEWauSTg0dE",
+      "accountRequestId": "facctrq_61UqlXdLjprT33ww016S2z3w1J8CarDnIIEWauSTgQ48",
       "configuration": {},
-      "linkedAt": "2026-06-09T16:57:27.868Z",
+      "linkedAt": "2026-06-12T05:24:50.303Z",
       "providerId": "prvdr_61ULUAr4zlQgZkvXY5LsG",
       "providerName": "Vercel",
       "redirectUrl": null,
-      "requestedAt": "2026-06-09T16:57:27.868Z",
+      "requestedAt": "2026-06-12T05:24:50.303Z",
       "status": "complete"
     }
   },
@@ -25,7 +25,7 @@
         "name": "debo"
       },
       "createdAt": "2026-06-09T16:57:30.472Z",
-      "lastRevealedAt": "2026-06-09T16:57:31.095Z",
+      "lastRevealedAt": "2026-06-12T05:25:18.077Z",
       "lastStatus": "complete",
       "name": "vercel",
       "providerId": "prvdr_61ULUAr4zlQgZkvXY5LsG",

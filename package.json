@@ -14,7 +14,7 @@
     "dev:voice": "bun run --filter '@debo/voice-agent' dev",
     "dev:web": "bun run dev:landing",
     "dev:app": "bun run dev:website",
-    "build": "bun run build:packages && bun run build:landing && bun run build:website && bun run build:voice",
+    "build": "bun run build:packages && (if [ \"$VERCEL\" = \"1\" ]; then bun run build:website; else bun run build:landing && bun run build:website && bun run build:voice; fi)",
     "build:packages": "bun run --filter './packages/*' build",
     "build:landing": "bun run --filter '@debo/landing-page' build",
     "build:website": "bun run --filter '@debo/website' build",

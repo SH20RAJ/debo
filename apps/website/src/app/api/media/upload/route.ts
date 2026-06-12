@@ -245,7 +245,6 @@ export async function POST(req: Request) {
       })
       .returning();
 
-    // Trigger background process for voice & audio transcriptions
     if (sourceType === "audio" || sourceType === "voice") {
       const nowStr = new Date().toISOString();
       if (voiceSessionId) {
