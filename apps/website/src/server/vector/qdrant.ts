@@ -98,6 +98,10 @@ export async function searchSimilar(
 ): Promise<QdrantSearchHit[]> {
   const cfg = getConfig();
   if (!cfg) return [];
+  
+  // Ensure the collection exists before searching
+  await ensureCollection(vector.length);
+
   const res = await qdrantFetch(`/collections/${cfg.collection}/points/search`, {
     method: "POST",
     body: JSON.stringify({

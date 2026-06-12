@@ -16,7 +16,8 @@
 import { NextResponse } from "next/server";
 import { HumanMessage, SystemMessage, ToolMessage } from "@langchain/core/messages";
 import { requireSession, apiError } from "@/lib/api-helpers";
-import { classifyIntent, classifyRetrievalIntent } from "@/server/langgraph/nodes/classify-intent.node";
+import { classifyIntent, classifyRetrievalIntent, classifyOrchestrationIntent } from "@/server/langgraph/nodes/classify-intent.node";
+import { getComposioToolsForUser } from "@/server/connectors/composio";
 import { retrieveMemory } from "@/server/langgraph/nodes/retrieve-memory.node";
 import {
   buildSystemPrompt,
@@ -224,8 +225,11 @@ export async function POST(req: Request) {
 
   const mode = body.mode ?? "recall";
   const llmReady = isLlmConfigured();
-  const shouldSearchMemory = await classifyRetrievalIntent(question);
-  const chitchat = !shouldSearchMemory;
+  
+  // Use the optimized intent classifier
+  const intentCategory = await classifyOrchestrationIntent(question);
+  const shouldSearchMemory = intentCategory === "recall";
+  const chitchat = intentCategory === "chitchat";
 
   let threadId = body.threadId;
   if (!threadId) {
@@ -284,7 +288,7 @@ export async function POST(req: Request) {
 
         let sourcesFound: Awaited<ReturnType<typeof retrieveMemory>>["sourcesFound"] = [];
         let contextText = "";
-        if (!chitchat) {
+        if (shouldSearchMemory) {
           send({ type: "retrieval_started" });
           const retrieved = await retrieveMemory(user.id, question, 8);
           sourcesFound = retrieved.sourcesFound;
@@ -324,6 +328,12 @@ export async function POST(req: Request) {
             new HumanMessage(question),
           ];
 
+          // Load dynamic Composio tools for user's connected accounts
+          let composioTools: any[] = [];
+          if (intentCategory === "connector") {
+            composioTools = await getComposioToolsForUser(user.id, workspaceId);
+          }
+
           // Define all available tools
           const allTools = [
             webFetchTool,
@@ -332,6 +342,7 @@ export async function POST(req: Request) {
             queryVoiceNotesTool(user.id, workspaceId),
             queryMailTool(user.id, workspaceId),
             queryConnectorsTool(user.id, workspaceId),
+            ...composioTools,
           ];
 
           const llmWithTools = llm.bindTools(allTools);
@@ -355,14 +366,29 @@ export async function POST(req: Request) {
 
                 const toolResult = await (toolToRun as any).invoke(toolCall.args);
 
-                send({
-                  type: "source_found",
-                  id: `${toolCall.name}_${Date.now()}`,
-                  sourceType: toolCall.name === "web_fetch" ? "link" : "task",
-                  title: `Tool output: ${toolCall.name}`,
-                  snippet: typeof toolResult === "string" ? toolResult.slice(0, 300) : JSON.stringify(toolResult).slice(0, 300),
-                  confidence: "strong"
-                });
+                 const readableTitle = toolCall.name
+                   .toLowerCase()
+                   .replace(/_/g, " ")
+                   .replace(/\b[a-z]/g, (letter) => letter.toUpperCase());
+
+                 send({
+                   type: "source_found",
+                   id: `${toolCall.name}_${Date.now()}`,
+                   sourceType: toolCall.name === "web_fetch"
+                     ? "link"
+                     : toolCall.name.startsWith("GMAIL_")
+                     ? "gmail"
+                     : toolCall.name.startsWith("SLACK_")
+                     ? "slack"
+                     : toolCall.name.startsWith("NOTION_")
+                     ? "notion"
+                     : toolCall.name.startsWith("GITHUB_")
+                     ? "github"
+                     : "task",
+                   title: readableTitle,
+                   snippet: typeof toolResult === "string" ? toolResult.slice(0, 300) : JSON.stringify(toolResult).slice(0, 300),
+                   confidence: "strong"
+                 });
 
                 toolMessages.push(new ToolMessage({
                   content: typeof toolResult === "string" ? toolResult : JSON.stringify(toolResult),
