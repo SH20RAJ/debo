@@ -31,6 +31,8 @@ import {
   Cpu,
   Phone,
   LayoutGrid,
+  Brain,
+  UserRound,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -50,6 +52,8 @@ import { useSidebarPrefs, ALL_NAV_ITEMS } from "@/lib/sidebar-prefs";
 const ITEM_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   home: LayoutDashboard,
   ask: MessageSquare,
+  "second-brain": Brain,
+  "digital-twin": UserRound,
   journal: BookOpen,
   voice: Mic,
   "voice-notes": Mic,
@@ -78,7 +82,7 @@ function SidebarItem({
   active,
   collapsed,
 }: {
-  item: { label: string; href: string; icon: React.ComponentType<{ className?: string }> };
+  item: { label: string; href: string; icon: React.ComponentType<{ className?: string }>; badge?: string };
   active: boolean;
   collapsed: boolean;
 }) {
@@ -88,7 +92,7 @@ function SidebarItem({
     <Link
       href={item.href}
       className={cn(
-        "flex items-center gap-3 px-3 py-1.5 rounded-xl text-sm font-medium transition-colors",
+        "flex items-center gap-3 px-3 py-1.5 rounded-xl text-sm font-medium transition-colors group",
         collapsed && "justify-center px-2",
         active
           ? "bg-primary/10 text-primary font-semibold"
@@ -96,22 +100,35 @@ function SidebarItem({
       )}
     >
       <Icon className={cn("w-[18px] h-[18px] shrink-0", active && "text-primary")} />
-      {!collapsed && <span className="truncate font-[var(--font-nunito)]">{item.label}</span>}
+      {!collapsed && (
+        <div className="flex-1 flex items-center justify-between min-w-0">
+          <span className="truncate font-[var(--font-nunito)]">{item.label}</span>
+          {item.badge && (
+            <span className="ml-2 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-primary/10 text-primary rounded-md">
+              {item.badge}
+            </span>
+          )}
+        </div>
+      )}
     </Link>
   );
 
-  if (collapsed) {
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>{content}</TooltipTrigger>
-        <TooltipContent side="right" sideOffset={8}>
-          {item.label}
-        </TooltipContent>
-      </Tooltip>
-    );
-  }
+  const isBeta = item.badge === "Beta";
+  const tooltipContent = isBeta ? (
+    <div className="space-y-1">
+      <div className="font-bold">{item.label}</div>
+      <div className="text-[10px] text-muted-foreground">Beta access will be provided soon</div>
+    </div>
+  ) : item.label;
 
-  return content;
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{content}</TooltipTrigger>
+      <TooltipContent side="right" sideOffset={8}>
+        {tooltipContent}
+      </TooltipContent>
+    </Tooltip>
+  );
 }
 
 // ── Sidebar ────────────────────────────────────────────────────────────────

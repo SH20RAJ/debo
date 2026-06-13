@@ -8,6 +8,7 @@ export interface SidebarItemDef {
   id: string;       // stable key, e.g. "home", "ask", "journal"
   label: string;
   href: string;
+  badge?: string;
   hidden?: boolean;
 }
 
@@ -29,6 +30,8 @@ export interface SidebarPrefs {
 export const ALL_NAV_ITEMS: SidebarItemDef[] = [
   { id: "home",       label: "Home",           href: "/dashboard" },
   { id: "ask",        label: "Ask Debo",       href: "/dashboard/chat" },
+  { id: "second-brain", label: "Second Brain", href: "/dashboard/brain", badge: "Beta" },
+  { id: "digital-twin", label: "Digital Twin", href: "/dashboard/twin", badge: "Beta" },
   { id: "journal",    label: "Journal",        href: "/dashboard/journal" },
   { id: "voice-notes", label: "Voice Notes",    href: "/dashboard/voice" },
   { id: "voice-talk",  label: "Talk to Debo",   href: "/dashboard/voice/talk" },
@@ -54,7 +57,7 @@ const DEFAULT_SECTIONS: SidebarSectionDef[] = [
     id: "core",
     label: "Core",
     collapsed: false,
-    itemIds: ["home", "ask", "journal"],
+    itemIds: ["home", "ask", "second-brain", "digital-twin", "journal"],
   },
   {
     id: "tools",
