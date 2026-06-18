@@ -17,9 +17,11 @@ import {
   Maximize2,
   Minimize2,
   Sparkles,
+  Plus,
+  Minus,
+  X,
 } from "lucide-react";
 import { api } from "@/lib/api";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -59,6 +61,7 @@ export function BrainPage() {
   const [loading, setLoading] = useState(true);
 
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
+  const [peekJournal, setPeekJournal] = useState<any | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTypes, setSelectedTypes] = useState<string[]>([
     "source",
@@ -749,6 +752,22 @@ export function BrainPage() {
     );
   };
 
+  const referencingJournals = useMemo(() => {
+    if (!selectedNode || selectedNode.type !== "person") return [];
+    const personName = selectedNode.label.trim().toLowerCase();
+    if (!personName) return [];
+    
+    return sources.filter((s) => {
+      const isJournal = s.type === "journal";
+      if (!isJournal) return false;
+
+      const titleMatch = (s.title || "").toLowerCase().includes(personName);
+      const contentMatch = (s.content || s.description || s.plainText || "").toLowerCase().includes(personName);
+      
+      return titleMatch || contentMatch;
+    });
+  }, [selectedNode, sources]);
+
   const nodeStats = useMemo(() => {
     return {
       sources: rawNodes.filter((n) => n.type === "source").length,
@@ -935,6 +954,45 @@ export function BrainPage() {
             <Info className="w-3 h-3 text-primary" />
             Drag empty space to rotate. Shift/Right-click + drag to pan. Drag nodes to reposition. Scroll to zoom.
           </div>
+
+          {/* Canvas Zoom & View controls */}
+          <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-1.5 bg-zinc-950/65 backdrop-blur-md p-1 border border-border/20 rounded-xl shadow-lg">
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer hover:bg-zinc-800/60"
+              onClick={() => {
+                setTransform((prev) => ({ ...prev, scale: Math.min(4.0, prev.scale * 1.15) }));
+              }}
+              title="Zoom In"
+            >
+              <Plus className="w-3.5 h-3.5" />
+            </Button>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer hover:bg-zinc-800/60"
+              onClick={() => {
+                setTransform((prev) => ({ ...prev, scale: Math.max(0.25, prev.scale / 1.15) }));
+              }}
+              title="Zoom Out"
+            >
+              <Minus className="w-3.5 h-3.5" />
+            </Button>
+            <div className="w-5 h-[1px] bg-border/20 mx-auto" />
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer hover:bg-zinc-800/60"
+              onClick={() => {
+                setTransform({ x: 0, y: 0, scale: 1 });
+                setRotation({ pitch: -0.25, yaw: 0.6 });
+              }}
+              title="Reset View"
+            >
+              <Compass className="w-3.5 h-3.5" />
+            </Button>
+          </div>
         </div>
 
         {/* Sidebar Inspector Panel */}
@@ -1019,6 +1077,42 @@ export function BrainPage() {
                   </div>
                 )}
 
+                {/* List journals referencing the selected person node */}
+                {selectedNode.type === "person" && referencingJournals.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Mentioned in Journals</p>
+                    <div className="space-y-1.5">
+                      {referencingJournals.map((journal) => (
+                        <div
+                          key={journal.id}
+                          className="flex items-center justify-between p-2 rounded-xl border border-border/10 bg-[#58CC02]/5 hover:bg-[#58CC02]/10 transition text-left gap-2 animate-in fade-in slide-in-from-right-3 duration-250"
+                        >
+                          <span className="font-medium text-[11px] truncate flex-1 text-muted-foreground">
+                            {journal.title || "Journal Note"}
+                          </span>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => setPeekJournal(journal)}
+                              className="text-[9px] font-bold text-[#58CC02] hover:underline px-1.5 py-0.5 rounded bg-[#58CC02]/10 cursor-pointer"
+                            >
+                              Peek
+                            </button>
+                            <a
+                              href={`/dashboard/library/${journal.id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[9px] font-bold text-muted-foreground hover:text-foreground px-1.5 py-0.5 rounded border border-border/20 bg-zinc-900/60 transition-colors"
+                            >
+                              Open
+                            </a>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* List connected nodes */}
                 <div className="space-y-2">
                   <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Connected Synapses</p>
@@ -1062,6 +1156,59 @@ export function BrainPage() {
           )}
         </div>
       </div>
+
+      {/* Peek Modal Overlay for Journal details */}
+      {peekJournal && (
+        <div className="absolute inset-0 bg-zinc-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-6 transition-all duration-300 animate-in fade-in zoom-in-95">
+          <div className="bg-zinc-900/90 border border-border/40 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[80%]">
+            {/* Modal Header */}
+            <div className="p-4.5 border-b border-border/20 flex items-center justify-between bg-zinc-950/40">
+              <div className="min-w-0">
+                <span className="text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded bg-[#58CC02]/25 text-[#58CC02]">
+                  Journal Note
+                </span>
+                <h3 className="text-sm font-bold mt-1.5 truncate text-foreground font-[var(--font-nunito)]">
+                  {peekJournal.title || "Untitled Journal"}
+                </h3>
+              </div>
+              <div className="flex items-center gap-2">
+                <a
+                  href={`/dashboard/library/${peekJournal.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="h-8 px-3 rounded-lg border border-border/20 bg-zinc-900/80 hover:bg-zinc-800 text-xs font-semibold flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Open in New Page
+                </a>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-zinc-800"
+                  onClick={() => setPeekJournal(null)}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+            {/* Modal Content */}
+            <div className="flex-1 overflow-y-auto p-6 text-xs text-muted-foreground leading-relaxed whitespace-pre-wrap select-text scrollbar-none">
+              {peekJournal.content || peekJournal.description || peekJournal.plainText || "This journal entry has no written content details."}
+            </div>
+            {/* Modal Footer */}
+            <div className="p-3 bg-zinc-950/20 border-t border-border/10 flex justify-end">
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-xl border-border/20 hover:bg-zinc-800 text-[10px]"
+                onClick={() => setPeekJournal(null)}
+              >
+                Close Preview
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
