@@ -97,9 +97,9 @@ export async function POST(req: Request) {
       content: m.content,
     })),
     tools: {
-      queryTasks: tool({
+      queryTasks: tool<any, any>({
         description: "Search and query tasks assigned to you or in your inbox.",
-        parameters: z.object({ query: z.string().optional() }) as any,
+        parameters: z.object({ query: z.string().optional() }),
         execute: async ({ query }: { query?: string }) => {
           const conditions = [
             eq(tasks.userId, user.id),
@@ -113,9 +113,9 @@ export async function POST(req: Request) {
           return JSON.stringify(results);
         },
       }),
-      queryJournals: tool({
+      queryJournals: tool<any, any>({
         description: "Search and query your private and public journal logs.",
-        parameters: z.object({ query: z.string().optional() }) as any,
+        parameters: z.object({ query: z.string().optional() }),
         execute: async ({ query }: { query?: string }) => {
           const conditions = [
             eq(sources.userId, user.id),
@@ -130,9 +130,9 @@ export async function POST(req: Request) {
           return JSON.stringify(results);
         },
       }),
-      queryVoiceNotes: tool({
+      queryVoiceNotes: tool<any, any>({
         description: "Search and retrieve transcribed voice notes or recorded phone conversations with Debo.",
-        parameters: z.object({ query: z.string().optional() }) as any,
+        parameters: z.object({ query: z.string().optional() }),
         execute: async ({ query }: { query?: string }) => {
           const conditions = [
             eq(sources.userId, user.id),
@@ -147,9 +147,9 @@ export async function POST(req: Request) {
           return JSON.stringify(results);
         },
       }),
-      queryMail: tool({
+      queryMail: tool<any, any>({
         description: "Search and retrieve your transactional emails from Debo Mail.",
-        parameters: z.object({ query: z.string().optional() }) as any,
+        parameters: z.object({ query: z.string().optional() }),
         execute: async ({ query }: { query?: string }) => {
           const conditions = [
             or(eq(deboMailMessages.senderUserId, user.id), eq(deboMailMessages.recipientUserId, user.id)),
