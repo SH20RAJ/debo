@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { streamText, tool } from "ai";
+import { streamText } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { requireSession, apiError, newId } from "@/lib/api-helpers";
 import { db } from "@debo/db";
@@ -97,7 +97,7 @@ export async function POST(req: Request) {
       content: m.content,
     })),
     tools: {
-      queryTasks: tool<any, any>({
+      queryTasks: {
         description: "Search and query tasks assigned to you or in your inbox.",
         parameters: z.object({ query: z.string().optional() }),
         execute: async ({ query }: { query?: string }) => {
@@ -112,8 +112,8 @@ export async function POST(req: Request) {
           const results = await db.select().from(tasks).where(and(...conditions)).limit(20);
           return JSON.stringify(results);
         },
-      }),
-      queryJournals: tool<any, any>({
+      } as any,
+      queryJournals: {
         description: "Search and query your private and public journal logs.",
         parameters: z.object({ query: z.string().optional() }),
         execute: async ({ query }: { query?: string }) => {
@@ -129,8 +129,8 @@ export async function POST(req: Request) {
           const results = await db.select().from(sources).where(and(...conditions)).limit(10);
           return JSON.stringify(results);
         },
-      }),
-      queryVoiceNotes: tool<any, any>({
+      } as any,
+      queryVoiceNotes: {
         description: "Search and retrieve transcribed voice notes or recorded phone conversations with Debo.",
         parameters: z.object({ query: z.string().optional() }),
         execute: async ({ query }: { query?: string }) => {
@@ -146,8 +146,8 @@ export async function POST(req: Request) {
           const results = await db.select().from(sources).where(and(...conditions)).limit(10);
           return JSON.stringify(results);
         },
-      }),
-      queryMail: tool<any, any>({
+      } as any,
+      queryMail: {
         description: "Search and retrieve your transactional emails from Debo Mail.",
         parameters: z.object({ query: z.string().optional() }),
         execute: async ({ query }: { query?: string }) => {
@@ -161,7 +161,7 @@ export async function POST(req: Request) {
           const results = await db.select().from(deboMailMessages).where(and(...conditions)).limit(15);
           return JSON.stringify(results);
         },
-      }),
+      } as any,
     },
     async onFinish({ text }) {
       // Persist assistant response to DB
