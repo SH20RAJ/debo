@@ -9,10 +9,13 @@ import {
   AlertTriangle,
   Headphones,
   Download,
-  Check,
+  Volume2,
+  Calendar,
+  Clock,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { api } from "@/lib/api";
@@ -57,10 +60,8 @@ function formatDate(iso: string | null | undefined): string {
 
 function SessionRow({
   session,
-  icon,
 }: {
   session: VoiceSession;
-  icon: React.ReactNode;
 }) {
   const [downloading, setDownloading] = useState(false);
 
@@ -86,49 +87,58 @@ function SessionRow({
   };
 
   return (
-    <Card className="rounded-2xl border-border/30 bg-card/45 backdrop-blur-sm hover:bg-card/75 transition-all shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.03)] hover:border-primary/20">
-      <CardContent className="px-4 py-3 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 shadow-[0_2px_10px_rgba(var(--primary-rgb),0.05)]">
-          {icon}
+    <div className="flex items-center justify-between p-4 rounded-2xl border border-border/20 bg-zinc-950/20 hover:bg-zinc-900/35 transition-all duration-300">
+      <div className="flex items-center gap-3.5 min-w-0">
+        <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+          <Volume2 className="w-4 h-4 text-primary" />
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-foreground truncate font-[var(--font-nunito)]">
-            Conversation Profile
+        <div className="min-w-0">
+          <p className="text-xs font-semibold text-foreground truncate font-[var(--font-nunito)]">
+            Debo Voice Conversation
           </p>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
-            {formatDate(session.createdAt)}
-          </p>
+          <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <Calendar className="w-3 h-3" />
+              {formatDate(session.createdAt)}
+            </span>
+            <span>•</span>
+            <span className="flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              {formatDuration(session.durationSeconds)}
+            </span>
+          </div>
         </div>
+      </div>
+
+      <div className="flex items-center gap-3">
         <Badge
-          variant={session.status === "active" ? "default" : "secondary"}
+          variant="outline"
           className={cn(
-            "shrink-0 capitalize px-2 py-0.5 text-[10px] rounded-lg",
-            session.status === "active" && "bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/15"
+            "capitalize px-2 py-0.5 text-[9px] font-semibold rounded-lg border-border/30 bg-zinc-900/40 text-muted-foreground",
+            session.status === "active" && "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
           )}
         >
           {session.status}
         </Badge>
-        <span className="text-xs text-muted-foreground shrink-0 tabular-nums w-12 text-right font-medium">
-          {formatDuration(session.durationSeconds)}
-        </span>
-        {session.sourceId ? (
+
+        {session.sourceId && (
           <Button
             size="icon"
             variant="ghost"
-            className="h-8 w-8 shrink-0 rounded-xl hover:bg-accent"
+            className="h-8 w-8 rounded-xl border border-border/30 bg-zinc-900/10 hover:bg-zinc-900 text-muted-foreground hover:text-foreground transition"
             onClick={handleDownload}
             disabled={downloading}
-            aria-label="Download audio"
+            aria-label="Download call audio"
           >
             {downloading ? (
-              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
             ) : (
-              <Download className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+              <Download className="w-3.5 h-3.5" />
             )}
           </Button>
-        ) : null}
-      </CardContent>
-    </Card>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -184,7 +194,6 @@ function CallRecorder({
           }
         };
 
-        // Find existing remote audio tracks
         room.remoteParticipants.forEach((p: any) => {
           p.trackPublications.forEach((pub: any) => {
             if (pub.track && pub.kind === "audio") {
@@ -193,12 +202,10 @@ function CallRecorder({
           });
         });
 
-        // Listen for new tracks
         room.on(RoomEvent.TrackSubscribed, (track: any) => {
           connectRemoteTrack(track);
         });
 
-        // Start media recorder on the destination stream
         const recorder = new MediaRecorder(dest.stream, { mimeType: "audio/webm" });
         mediaRecorderRef.current = recorder;
         chunksRef.current = [];
@@ -282,32 +289,54 @@ function CallRoom({
     >
       <RoomAudioRenderer />
       <CallRecorder sessionId={sessionId} onRecordingComplete={onRecordingComplete} />
-      <div className="text-center py-12 px-6 bg-zinc-950/40 border border-zinc-800/40 rounded-3xl backdrop-blur-md relative overflow-hidden select-none">
-        {/* Background Glowing Orb Effect */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+      
+      <div className="text-center py-16 px-6 bg-zinc-950/20 border border-border/20 rounded-3xl backdrop-blur-md relative overflow-hidden select-none">
         
-        {/* Voice Particle Orb */}
-        <div className="relative flex items-center justify-center w-32 h-32 mx-auto mb-6">
-          <span className="absolute inset-0 rounded-full bg-gradient-to-tr from-primary via-indigo-500 to-emerald-400 opacity-20 blur-md animate-pulse" />
-          <span className="absolute inset-2 rounded-full bg-gradient-to-tr from-primary via-indigo-500 to-emerald-400 opacity-40 animate-ping [animation-duration:3s]" />
-          <span className="absolute inset-4 rounded-full bg-gradient-to-tr from-primary via-indigo-500 to-emerald-400 opacity-60 animate-pulse [animation-duration:2s]" />
-          <div className="absolute inset-6 rounded-full bg-gradient-to-tr from-primary via-indigo-500 to-emerald-400 flex items-center justify-center shadow-[0_0_35px_rgba(var(--primary-rgb),0.5)]">
-            <Mic className="w-9 h-9 text-primary-foreground animate-pulse" />
+        {/* Dynamic visual pulsing particles behind orb */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-primary/10 rounded-full blur-[100px] pointer-events-none" />
+        
+        {/* Glowing breathing Orb */}
+        <div className="relative flex items-center justify-center w-28 h-28 mx-auto mb-8">
+          <span className="absolute inset-0 rounded-full bg-gradient-to-tr from-primary via-indigo-500 to-emerald-400 opacity-20 blur-md animate-pulse [animation-duration:1.5s]" />
+          <span className="absolute inset-2 rounded-full bg-gradient-to-tr from-primary via-indigo-500 to-emerald-400 opacity-40 animate-ping [animation-duration:2.5s]" />
+          <span className="absolute inset-4 rounded-full bg-gradient-to-tr from-primary via-indigo-500 to-emerald-400 opacity-60 animate-pulse [animation-duration:1.2s]" />
+          <div className="absolute inset-6 rounded-full bg-gradient-to-tr from-primary via-indigo-500 to-emerald-400 flex items-center justify-center shadow-[0_0_30px_rgba(88,204,2,0.3)]">
+            <Mic className="w-7 h-7 text-primary-foreground animate-pulse" />
           </div>
         </div>
 
-        <Badge variant="outline" className="mb-4 bg-emerald-500/10 text-emerald-400 border-emerald-500/30 gap-1.5 px-3 py-1 text-xs">
+        {/* Status badges */}
+        <Badge variant="outline" className="mb-4 bg-emerald-500/10 text-emerald-400 border-emerald-500/30 gap-1.5 px-3 py-1 text-[10px] rounded-lg">
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          Voice Session Connected
+          Active Live Session
         </Badge>
         
-        <h3 className="text-lg font-bold text-foreground font-[var(--font-nunito)]">Debo Live</h3>
-        <p className="text-xs text-muted-foreground mt-1.5 mb-8 max-w-xs mx-auto leading-relaxed">
-          Speak naturally. Debo captures details and notes them down in your private memory.
+        <h3 className="text-base font-bold text-foreground font-[var(--font-nunito)]">Talking to Debo</h3>
+        <p className="text-[11px] text-muted-foreground mt-2 mb-8 max-w-xs mx-auto leading-relaxed">
+          Start speaking naturally. Your conversation is encrypted, transcribed, and extracted into memories in real-time.
         </p>
 
-        <Button onClick={onDisconnect} variant="destructive" className="rounded-xl px-8 h-11 hover:scale-[1.02] active:scale-[0.98] transition-transform shadow-md">
-          <PhoneOff className="w-4 h-4 mr-2" />
+        {/* Waveform Visualizer simulation */}
+        <div className="flex items-end justify-center gap-1.5 h-6 mb-8">
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1].map((val, idx) => (
+            <div
+              key={idx}
+              className="w-[3px] bg-primary/60 rounded-full animate-pulse"
+              style={{
+                height: `${Math.max(15, (val / 10) * 100)}%`,
+                animationDelay: `${idx * 0.08}s`,
+                animationDuration: "0.8s",
+              }}
+            />
+          ))}
+        </div>
+
+        <Button
+          onClick={onDisconnect}
+          variant="destructive"
+          className="rounded-xl px-7 h-10 hover:scale-[1.01] active:scale-[0.99] transition shadow-md bg-destructive hover:bg-destructive/90 text-xs font-semibold"
+        >
+          <PhoneOff className="w-3.5 h-3.5 mr-2" />
           End Conversation
         </Button>
       </div>
@@ -317,17 +346,17 @@ function CallRoom({
 
 function LiveKitNotConfigured() {
   return (
-    <div className="rounded-2xl border border-dashed border-amber-500/30 bg-amber-500/[0.03] p-6 text-sm">
+    <div className="rounded-2xl border border-dashed border-amber-500/20 bg-amber-500/[0.02] p-5 text-xs">
       <div className="flex items-start gap-3">
-        <AlertTriangle className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" />
+        <AlertTriangle className="w-4.5 h-4.5 text-amber-500 mt-0.5 shrink-0" />
         <div className="space-y-2">
           <p className="font-semibold text-foreground">
-            Voice calls aren&apos;t configured
+            Voice Server Credentials Missing
           </p>
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            Set the following environment variables on your server config or `.env.local` to activate LiveKit voice assistant:
+          <p className="text-muted-foreground leading-relaxed">
+            Ensure the following environment variables are set in your local configurations to activate the LiveKit voice engine:
           </p>
-          <ul className="text-xs font-mono bg-background/50 border border-border/60 rounded-lg p-3 space-y-1.5 select-all">
+          <ul className="text-[10px] font-mono bg-zinc-950/40 border border-border/10 rounded-xl p-3 space-y-1.5 select-all">
             <li>LIVEKIT_URL=wss://your-project.livekit.cloud</li>
             <li>LIVEKIT_API_KEY=your-api-key</li>
             <li>LIVEKIT_API_SECRET=your-api-secret</li>
@@ -356,7 +385,6 @@ export function VoiceTalkPage() {
     }
   }, []);
 
-  // Check initial configuration from API
   useEffect(() => {
     api.voice.list()
       .then(() => setLiveKitUnavailable(false))
@@ -412,7 +440,6 @@ export function VoiceTalkPage() {
     refreshSessions();
   }, [refreshSessions]);
 
-  // Clean up connection on unmount
   useEffect(() => {
     return () => {
       if (callConnection) {
@@ -424,24 +451,31 @@ export function VoiceTalkPage() {
   const aiCalls = sessions.filter((s) => s.roomName?.startsWith("debo-voice-"));
 
   return (
-    <div className="p-6 md:p-8 max-w-2xl mx-auto space-y-8 h-full overflow-y-auto scrollbar-none">
+    <div className="p-6 md:p-8 max-w-2xl mx-auto space-y-8 h-full overflow-y-auto scrollbar-none bg-gradient-to-b from-[#090d08] via-[#0b100a] to-[#080b07]">
+      {/* Visual background lights */}
+      <div className="absolute top-0 right-1/4 w-96 h-96 bg-primary/5 rounded-full blur-[140px] pointer-events-none" />
+      
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground font-[var(--font-nunito)]">Talk to Debo</h1>
-        <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-          Initiate an interactive live call with Debo to brain dump, organize notes, or plan your day.
+        <h1 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2 font-[var(--font-nunito)]">
+          <Mic className="w-5 h-5 text-primary" />
+          Talk to Debo
+        </h1>
+        <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+          Initiate an interactive live connection with your memory processor to brain-dump thoughts, organize ideas, and reflect on your goals.
         </p>
       </div>
 
-      <Card className="rounded-3xl border border-border/40 bg-card/60 backdrop-blur-md overflow-hidden relative shadow-sm">
+      <Card className="rounded-3xl border border-border/20 bg-zinc-950/20 backdrop-blur-md overflow-hidden relative shadow-sm">
         {/* Glow accent */}
-        <div className="absolute -top-12 -right-12 w-36 h-36 bg-primary/10 rounded-full blur-2xl pointer-events-none" />
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-base font-bold font-[var(--font-nunito)]">
-            <Phone className="w-4 h-4 text-primary" />
-            Interactive Voice Session
+        <div className="absolute -top-12 -right-12 w-36 h-36 bg-primary/5 rounded-full blur-2xl pointer-events-none" />
+        <CardHeader className="pb-3 border-b border-border/10 bg-zinc-950/40">
+          <CardTitle className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground font-[var(--font-nunito)]">
+            <Phone className="w-3.5 h-3.5 text-primary" />
+            Interactive Voice Console
           </CardTitle>
+          <CardDescription className="text-[10px]">Connected via secure live WebRTC streaming</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           {liveKitUnavailable ? (
             <LiveKitNotConfigured />
           ) : callConnection ? (
@@ -453,28 +487,28 @@ export function VoiceTalkPage() {
               onRecordingComplete={handleRecordingFinished}
             />
           ) : (
-            <div className="text-center py-10 px-4">
-              <div className="w-20 h-20 rounded-2xl bg-primary/[0.08] border border-primary/10 flex items-center justify-center mx-auto mb-5 shadow-[0_8px_30px_rgb(0,0,0,0.03)]">
-                <Phone className="w-8 h-8 text-primary animate-pulse" />
+            <div className="text-center py-12 px-4">
+              <div className="w-20 h-20 rounded-2xl bg-primary/[0.08] border border-primary/15 flex items-center justify-center mx-auto mb-6 shadow-sm">
+                <Mic className="w-8 h-8 text-primary animate-pulse" />
               </div>
-              <h3 className="text-sm font-semibold text-foreground font-[var(--font-nunito)]">Start a Conversation</h3>
+              <h3 className="text-sm font-semibold text-foreground font-[var(--font-nunito)]">Initialize Voice Link</h3>
               <p className="text-xs text-muted-foreground mt-1.5 mb-6 max-w-sm mx-auto leading-relaxed">
-                Debrief your day, plan tasks, or brainstorm ideas directly with Debo in real-time.
+                Connect and speak. Debo automatically processes speech, extracts actionable tasks, and saves the recording.
               </p>
               <Button
                 onClick={handleStartCall}
                 disabled={callConnecting}
-                className="rounded-xl bg-primary hover:bg-primary/95 text-primary-foreground font-semibold px-6 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                className="rounded-xl bg-primary hover:bg-primary/95 text-primary-foreground font-semibold px-6 hover:scale-[1.01] active:scale-[0.99] transition text-xs h-10 shadow-sm"
               >
                 {callConnecting ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Connecting...
+                    <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
+                    Connecting Synapse...
                   </>
                 ) : (
                   <>
-                    <Phone className="w-4 h-4 mr-2" />
-                    Start Call
+                    <Phone className="w-3.5 h-3.5 mr-2" />
+                    Start Conversation
                   </>
                 )}
               </Button>
@@ -484,8 +518,8 @@ export function VoiceTalkPage() {
       </Card>
 
       {/* Call History / Library */}
-      <div className="space-y-4 pt-4 border-t border-white/5">
-        <h2 className="text-sm font-bold text-foreground font-[var(--font-nunito)] flex items-center gap-2 select-none">
+      <div className="space-y-4 pt-4 border-t border-border/20">
+        <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-[var(--font-nunito)] flex items-center gap-2 select-none">
           <Headphones className="w-4 h-4 text-primary" />
           Recent AI Conversations
         </h2>
@@ -493,23 +527,22 @@ export function VoiceTalkPage() {
         {loadingSessions ? (
           <div className="flex items-center justify-center py-8 text-muted-foreground text-xs font-medium">
             <Loader2 className="w-4 h-4 animate-spin mr-2" />
-            Loading conversations...
+            Retrieving call logs...
           </div>
         ) : aiCalls.length > 0 ? (
           <div className="space-y-2.5">
-            {aiCalls.slice(0, 10).map((session) => (
+            {aiCalls.slice(0, 8).map((session) => (
               <SessionRow
                 key={session.id}
                 session={session}
-                icon={<Phone className="w-5 h-5 text-primary" />}
               />
             ))}
           </div>
         ) : (
-          <div className="text-center py-10 border border-dashed border-border/50 rounded-2xl bg-card/20">
-            <p className="text-xs text-muted-foreground font-medium">No recorded conversations yet.</p>
-            <p className="text-[10px] text-muted-foreground/60 mt-1">
-              Your completed Live Calls with Debo will be saved and transcribed here.
+          <div className="text-center py-10 border border-dashed border-border/20 rounded-2xl bg-zinc-950/20 p-6">
+            <p className="text-xs font-semibold text-muted-foreground">No recorded sessions yet</p>
+            <p className="text-[10px] text-muted-foreground/60 mt-1 max-w-xs mx-auto leading-relaxed">
+              Once you complete an interactive session, your transcript and audio link will populate here.
             </p>
           </div>
         )}
