@@ -125,9 +125,15 @@ export function ChatPage() {
           router.replace(`/dashboard/chat?threadId=${threadId}`);
         }
       }
-    } catch {
-      toast.error("Failed to load thread details.");
+    } catch (err) {
+      console.error("Failed to load thread:", err);
+      toast.error("Conversation not found or failed to load.");
+      setActiveThreadId(null);
+      setMessages([]);
+      router.replace("/dashboard/chat");
     }
+
+
   }, [router, setMessages, stop]);
 
   // Sync thread when URL params change

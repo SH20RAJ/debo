@@ -38,7 +38,27 @@ export async function POST(req: Request) {
   const question = lastUserMessage?.content || "";
 
   let threadId = body.threadId;
-  if (!threadId) {
+  let threadExists = false;
+
+  if (threadId) {
+    const [existingThread] = await db
+      .select({ id: chatThreads.id })
+      .from(chatThreads)
+      .where(
+        and(
+          eq(chatThreads.id, threadId),
+          eq(chatThreads.userId, user.id),
+          eq(chatThreads.workspaceId, workspaceId),
+        ),
+      )
+      .limit(1);
+
+    if (existingThread) {
+      threadExists = true;
+    }
+  }
+
+  if (!threadId || !threadExists) {
     threadId = newId("thr");
     await db.insert(chatThreads).values({
       id: threadId,
@@ -48,6 +68,7 @@ export async function POST(req: Request) {
       title: question.slice(0, 80),
     });
   }
+
 
   // Persist user message to DB
   await db.insert(chatMessages).values({
