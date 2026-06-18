@@ -19,6 +19,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { AgentChat } from "@/components/agent-elements/agent-chat";
@@ -47,6 +48,12 @@ export function ChatPage() {
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [threadSearch, setThreadSearch] = useState("");
+  const [renaming, setRenaming] = useState(false);
+  const [tempTitle, setTempTitle] = useState("");
+
+  const activeThread = useMemo(() => {
+    return threads.find((t) => t.id === activeThreadId);
+  }, [threads, activeThreadId]);
 
   const activeThreadIdRef = useRef(activeThreadId);
   useEffect(() => {
@@ -169,6 +176,48 @@ export function ChatPage() {
     }
   };
 
+  const handleDeleteAllThreads = async () => {
+    if (threads.length === 0) return;
+    if (!confirm("Are you sure you want to delete all chat history? This cannot be undone.")) {
+      return;
+    }
+    try {
+      await api.ask.deleteAllThreads();
+      mutateThreads([], false);
+      handleNewChat();
+      toast.success("All conversations cleared.");
+    } catch {
+      toast.error("Failed to clear conversations.");
+    }
+  };
+
+  const handleStartRename = () => {
+    if (!activeThread) return;
+    setTempTitle(activeThread.title || "Conversation");
+    setRenaming(true);
+  };
+
+  const handleSaveRename = async () => {
+    if (!activeThreadId || !tempTitle.trim()) {
+      setRenaming(false);
+      return;
+    }
+    try {
+      await api.ask.renameThread(activeThreadId, tempTitle.trim());
+      mutateThreads(
+        threads.map((t) =>
+          t.id === activeThreadId ? { ...t, title: tempTitle.trim() } : t
+        ),
+        false
+      );
+      toast.success("Thread renamed.");
+    } catch {
+      toast.error("Failed to rename thread.");
+    } finally {
+      setRenaming(false);
+    }
+  };
+
   const handleAgentSend = useCallback((msg: { role: "user"; content: string }) => {
     sendMessage({
       text: msg.content,
@@ -189,28 +238,41 @@ export function ChatPage() {
   }, [threads, threadSearch]);
 
   return (
-    <div className="flex h-full bg-background relative overflow-hidden">
+    <div className="flex h-full bg-background relative overflow-hidden select-none">
       
       {/* 1. Collapsible Thread History Sidebar */}
       <div
         className={cn(
-          "flex flex-col border-r border-border bg-card transition-all duration-200 ease-in-out relative shrink-0 min-h-0",
-          sidebarCollapsed ? "w-0 overflow-hidden border-r-0" : "w-64"
+          "flex flex-col border-r border-border bg-card transition-all duration-200 ease-in-out relative shrink-0 min-h-0 z-30",
+          sidebarCollapsed ? "w-0 overflow-hidden border-r-0" : "w-66"
         )}
       >
-        <div className="flex items-center justify-between h-14 px-4.5 border-b border-border">
+        <div className="flex items-center justify-between h-14 px-4.5 border-b border-border bg-card">
           <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground/60 font-[var(--font-nunito)]">
-            History
+            Memory Threads
           </span>
-          <Button
-            size="icon"
-            variant="ghost"
-            className="h-8 w-8 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer hover:bg-accent/60"
-            onClick={handleNewChat}
-            title="Start new conversation"
-          >
-            <Plus className="w-4 h-4" />
-          </Button>
+          <div className="flex items-center gap-1">
+            {threads.length > 0 && (
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-8 w-8 rounded-xl text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 cursor-pointer transition-colors"
+                onClick={handleDeleteAllThreads}
+                title="Clear all chat history"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </Button>
+            )}
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer hover:bg-accent/60 transition-colors"
+              onClick={handleNewChat}
+              title="Start new conversation"
+            >
+              <Plus className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
 
         {/* Thread History Search */}
@@ -236,16 +298,17 @@ export function ChatPage() {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto py-2 scrollbar-thin scrollbar-thumb-emerald-500/25 scrollbar-track-transparent">
+        {/* List scroll area */}
+        <div className="flex-1 overflow-y-auto py-2 scrollbar-none">
           {loadingThreads ? (
             <div className="flex items-center justify-center py-12 text-xs text-muted-foreground/75 font-medium">
-              <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
+              <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5 text-primary" />
               Loading history...
             </div>
           ) : filteredThreads.length === 0 ? (
             <div className="text-center py-12 px-4 select-none">
-              <Clock className="w-5 h-5 text-muted-foreground/40 mx-auto mb-2" />
-              <p className="text-[10px] text-muted-foreground/60 font-semibold uppercase tracking-wider">
+              <Clock className="w-5 h-5 text-muted-foreground/30 mx-auto mb-2" />
+              <p className="text-[10px] text-muted-foreground/50 font-semibold uppercase tracking-wider">
                 {threadSearch ? "No results found" : "No past chats"}
               </p>
             </div>
@@ -260,12 +323,12 @@ export function ChatPage() {
                     className={cn(
                       "flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold cursor-pointer transition-all border border-transparent group",
                       isActive
-                        ? "bg-primary/10 text-primary border-primary/20 font-bold"
+                        ? "bg-primary/8 text-primary border-primary/20 font-bold"
                         : "text-muted-foreground hover:text-foreground hover:bg-accent/40"
                     )}
                   >
                     <div className="flex items-center gap-2 min-w-0">
-                      <MessageSquare className={cn("w-3.5 h-3.5 shrink-0", isActive && "text-primary")} />
+                      <MessageSquare className={cn("w-3.5 h-3.5 shrink-0", isActive ? "text-primary" : "text-muted-foreground/45")} />
                       <span className="truncate pr-2">{thread.title || "Conversation"}</span>
                     </div>
                     <button
@@ -286,23 +349,85 @@ export function ChatPage() {
       <button
         onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
         className="absolute w-4.5 h-12 bg-card border border-border border-l-0 rounded-r-xl z-20 flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer transition-all shadow-sm"
-        style={{ left: sidebarCollapsed ? 0 : "255px", top: "50%", transform: "translateY(-50%)" }}
+        style={{ left: sidebarCollapsed ? 0 : "263px", top: "50%", transform: "translateY(-50%)" }}
       >
         {sidebarCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
       </button>
 
-      {/* 2. Main Chat Column (Completely using AgentChat with 0 custom components) */}
-      <div className="flex-1 flex flex-col min-w-0 h-full bg-background relative z-10 min-h-0 p-4">
-        <AgentChat
-          messages={messages as any}
-          status={status}
-          onSend={handleAgentSend}
-          onStop={stop}
-          error={error}
-          suggestions={suggestions}
-          emptyStatePosition="center"
-          className="flex-1"
-        />
+      {/* 2. Main Chat Column */}
+      <div className="flex-1 flex flex-col min-w-0 h-full bg-gradient-to-b from-[#090d08] via-zinc-950 to-zinc-950 relative z-10 min-h-0">
+        
+        {/* Glow ambient aura background */}
+        <div className="absolute top-0 right-0 w-[450px] h-[450px] bg-primary/[0.015] rounded-full blur-[120px] pointer-events-none" />
+
+        {/* Chat Area Header */}
+        <div className="h-14 border-b border-border/20 px-6 flex items-center justify-between bg-zinc-950/45 backdrop-blur-md shrink-0">
+          <div className="flex items-center gap-3 min-w-0">
+            {activeThreadId ? (
+              renaming ? (
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={tempTitle}
+                    onChange={(e) => setTempTitle(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleSaveRename();
+                      if (e.key === "Escape") setRenaming(false);
+                    }}
+                    className="h-8 py-1 px-2 text-xs bg-zinc-900/60 border-zinc-700 max-w-[200px]"
+                    autoFocus
+                  />
+                  <Button size="sm" variant="default" onClick={handleSaveRename} className="h-8 px-2.5 text-[10px] rounded-lg">
+                    Save
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => setRenaming(false)} className="h-8 px-2 text-[10px] rounded-lg">
+                    Cancel
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 group min-w-0">
+                  <h2 className="text-sm font-bold truncate text-foreground font-[var(--font-nunito)]">
+                    {activeThread?.title || "Conversation"}
+                  </h2>
+                  <button
+                    onClick={handleStartRename}
+                    className="opacity-0 group-hover:opacity-100 text-[9px] text-muted-foreground/60 hover:text-foreground transition-all px-1.5 py-0.5 rounded border border-zinc-800 bg-zinc-900/40"
+                  >
+                    Rename
+                  </button>
+                </div>
+              )
+            ) : (
+              <h2 className="text-sm font-bold text-foreground flex items-center gap-2.5 font-[var(--font-nunito)]">
+                Ask Debo
+                <Badge variant="outline" className="border-primary/25 bg-primary/5 text-[9px] font-bold text-primary py-0 px-2 rounded-lg">
+                  recall active
+                </Badge>
+              </h2>
+            )}
+          </div>
+          <div className="flex items-center gap-2 text-[10px] text-muted-foreground/60 font-semibold uppercase tracking-wider">
+            {status === "streaming" && (
+              <span className="flex items-center gap-1.5 text-primary text-[10px]">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" />
+                Thinking...
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Chat message viewport wrapper */}
+        <div className="flex-1 min-h-0 p-4 flex flex-col relative">
+          <AgentChat
+            messages={messages as any}
+            status={status}
+            onSend={handleAgentSend}
+            onStop={stop}
+            error={error}
+            suggestions={suggestions}
+            emptyStatePosition="center"
+            className="flex-1"
+          />
+        </div>
       </div>
 
     </div>
