@@ -33,8 +33,10 @@ interface GraphNode {
   details?: string;
   x: number;
   y: number;
+  z: number;
   vx: number;
   vy: number;
+  vz: number;
   radius: number;
   color: string;
   originalData: any;
@@ -71,8 +73,72 @@ export function BrainPage() {
   
   // Simulation and interaction states
   const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1 });
+  const [rotation, setRotation] = useState({ pitch: -0.25, yaw: 0.6 });
   const [draggedNode, setDraggedNode] = useState<GraphNode | null>(null);
+  const draggedNodeZRef = useRef<number>(0);
+  const timeRef = useRef<number>(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [activeBrainWave, setActiveBrainWave] = useState<"gamma" | "beta" | "alpha" | "theta" | "delta">("alpha");
+
+  const waveParams = useMemo(() => {
+    switch (activeBrainWave) {
+      case "gamma":
+        return {
+          label: "Gamma (30-100 Hz - High Focus)",
+          color: "#CE82FF",
+          repel: 300,
+          link: 0.08,
+          gravity: 0.05,
+          speed: 2.2,
+          particleSize: 2.5,
+          particleCount: 5,
+        };
+      case "beta":
+        return {
+          label: "Beta (12-30 Hz - Active Processing)",
+          color: "#1CB0F6",
+          repel: 350,
+          link: 0.055,
+          gravity: 0.035,
+          speed: 1.4,
+          particleSize: 2.0,
+          particleCount: 3,
+        };
+      case "alpha":
+        return {
+          label: "Alpha (8-12 Hz - Relaxed Focus)",
+          color: "#58CC02",
+          repel: 320,
+          link: 0.045,
+          gravity: 0.025,
+          speed: 0.8,
+          particleSize: 2.0,
+          particleCount: 2,
+        };
+      case "theta":
+        return {
+          label: "Theta (4-8 Hz - Memory/Intuition)",
+          color: "#FFC800",
+          repel: 280,
+          link: 0.035,
+          gravity: 0.015,
+          speed: 0.4,
+          particleSize: 1.5,
+          particleCount: 1,
+        };
+      case "delta":
+        return {
+          label: "Delta (0.5-4 Hz - Deep Consolidation)",
+          color: "#FF5B5B",
+          repel: 200,
+          link: 0.02,
+          gravity: 0.005,
+          speed: 0.15,
+          particleSize: 1.0,
+          particleCount: 0,
+        };
+    }
+  }, [activeBrainWave]);
 
   // Fetch all memory components on mount
   useEffect(() => {
@@ -213,16 +279,19 @@ export function BrainPage() {
       }
     });
 
-    // Initialize random positions for force simulation
+    // Initialize random positions in 3D space for force simulation
     const nodes: GraphNode[] = Array.from(nodesMap.values()).map((n, i) => {
-      const angle = (i / nodesMap.size) * Math.PI * 2;
-      const dist = 100 + Math.random() * 100;
+      const phi = Math.acos(-1 + (2 * i) / (nodesMap.size || 1)); // spherical distribution
+      const theta = Math.sqrt(nodesMap.size * Math.PI) * phi;
+      const dist = 70 + Math.random() * 50;
       return {
         ...n,
-        x: Math.cos(angle) * dist,
-        y: Math.sin(angle) * dist,
+        x: dist * Math.sin(phi) * Math.cos(theta),
+        y: dist * Math.sin(phi) * Math.sin(theta),
+        z: dist * Math.cos(phi),
         vx: 0,
         vy: 0,
+        vz: 0,
       };
     });
 
@@ -263,78 +332,119 @@ export function BrainPage() {
     if (nodes.length === 0) return;
 
     let animId: number;
-    const gravity = 0.035;
-    const friction = 0.88;
-    const repelForce = 350;
-    const linkForce = 0.055;
-    const minDistance = 75;
 
     const tick = () => {
-      // 1. Force towards center
+      // 1. Force towards center + Lobe positioning force
       nodes.forEach((n) => {
         if (n === draggedNode) return;
-        n.vx -= n.x * gravity;
-        n.vy -= n.y * gravity;
+        
+        // Base center gravity
+        n.vx -= n.x * waveParams.gravity;
+        n.vy -= n.y * waveParams.gravity;
+        n.vz -= n.z * waveParams.gravity;
+
+        // Lobe positioning force
+        let targetLobe = { x: 0, y: 0, z: 0 };
+        switch (n.type) {
+          case "project":
+            targetLobe = { x: 0, y: -70, z: 90 }; // frontal
+            break;
+          case "task":
+            targetLobe = { x: 0, y: -90, z: -15 }; // parietal
+            break;
+          case "decision":
+            // Split temporal left/right based on character code
+            const isLeft = n.id.charCodeAt(n.id.length - 1) % 2 === 0;
+            targetLobe = { x: isLeft ? -90 : 90, y: -20, z: 20 }; // temporal
+            break;
+          case "source":
+            targetLobe = { x: 0, y: -30, z: -90 }; // occipital
+            break;
+          case "person":
+            targetLobe = { x: 0, y: 60, z: 0 }; // subcortical / brainstem
+            break;
+        }
+
+        const lobeForceStrength = 0.025;
+        n.vx += (targetLobe.x - n.x) * lobeForceStrength;
+        n.vy += (targetLobe.y - n.y) * lobeForceStrength;
+        n.vz += (targetLobe.z - n.z) * lobeForceStrength;
       });
 
-      // 2. Electrostatic repulsion (all pairs)
+      // 2. Electrostatic repulsion in 3D (all pairs)
       for (let i = 0; i < nodes.length; i++) {
         const n1 = nodes[i];
         for (let j = i + 1; j < nodes.length; j++) {
           const n2 = nodes[j];
           const dx = n2.x - n1.x;
           const dy = n2.y - n1.y;
-          const distSq = dx * dx + dy * dy || 1;
+          const dz = n2.z - n1.z;
+          const distSq = dx * dx + dy * dy + dz * dz || 1;
           const dist = Math.sqrt(distSq);
 
+          const minDistance = 70;
           if (dist < minDistance * 2.5) {
-            const force = repelForce / distSq;
+            const force = waveParams.repel / distSq;
             const fx = (dx / dist) * force;
             const fy = (dy / dist) * force;
+            const fz = (dz / dist) * force;
 
             if (n1 !== draggedNode) {
               n1.vx -= fx;
               n1.vy -= fy;
+              n1.vz -= fz;
             }
             if (n2 !== draggedNode) {
               n2.vx += fx;
               n2.vy += fy;
+              n2.vz += fz;
             }
           }
         }
       }
 
-      // 3. Link spring tension
+      // 3. Link spring tension in 3D
       links.forEach((l) => {
         if (!l.sourceNode || !l.targetNode) return;
         const s = l.sourceNode;
         const t = l.targetNode;
         const dx = t.x - s.x;
         const dy = t.y - s.y;
-        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-        const force = (dist - minDistance) * linkForce;
+        const dz = t.z - s.z;
+        const dist = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
+        const minDistance = 70;
+        const force = (dist - minDistance) * waveParams.link;
 
         const fx = (dx / dist) * force;
         const fy = (dy / dist) * force;
+        const fz = (dz / dist) * force;
 
         if (s !== draggedNode) {
           s.vx += fx;
           s.vy += fy;
+          s.vz += fz;
         }
         if (t !== draggedNode) {
           t.vx -= fx;
           t.vy -= fy;
+          t.vz -= fz;
         }
       });
 
       // 4. Apply velocity + friction
+      const friction = 0.88;
       nodes.forEach((n) => {
         if (n === draggedNode) return;
         n.x += n.vx;
         n.y += n.vy;
+        n.z += n.vz;
         n.vx *= friction;
         n.vy *= friction;
+        n.vz *= friction;
       });
+
+      // Increment wave particle time offset
+      timeRef.current += waveParams.speed;
 
       draw();
       animId = requestAnimationFrame(tick);
@@ -359,51 +469,123 @@ export function BrainPage() {
       ctx.clearRect(0, 0, width, height);
 
       ctx.save();
-      // Translate to center + apply zoom/pan
+      // Translate to center + apply zoom panning
       ctx.translate(width / 2 + transform.x, height / 2 + transform.y);
-      ctx.scale(transform.scale, transform.scale);
 
-      // Draw link lines
-      links.forEach((l) => {
-        if (!l.sourceNode || !l.targetNode) return;
-        ctx.beginPath();
-        ctx.moveTo(l.sourceNode.x, l.sourceNode.y);
-        ctx.lineTo(l.targetNode.x, l.targetNode.y);
-        ctx.strokeStyle = "rgba(100, 110, 100, 0.18)";
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
+      // Precompute 3D rotations for all active nodes
+      const cosY = Math.cos(rotation.yaw);
+      const sinY = Math.sin(rotation.yaw);
+      const cosP = Math.cos(rotation.pitch);
+      const sinP = Math.sin(rotation.pitch);
+      const fov = 450;
+      const cameraDist = 380;
+
+      const projectedNodes = nodes.map((n) => {
+        // Rotate horizontal (yaw)
+        const x1 = n.x * cosY - n.z * sinY;
+        const z1 = n.x * sinY + n.z * cosY;
+        // Rotate vertical (pitch)
+        const y2 = n.y * cosP - z1 * sinP;
+        const z2 = n.y * sinP + z1 * cosP;
+
+        const scaleFactor = fov / Math.max(50, cameraDist + z2);
+        const screenX = x1 * scaleFactor * transform.scale;
+        const screenY = y2 * scaleFactor * transform.scale;
+
+        return {
+          node: n,
+          sx: screenX,
+          sy: screenY,
+          sz: z2,
+          scale: scaleFactor * transform.scale,
+        };
       });
 
-      // Draw nodes
-      nodes.forEach((n) => {
-        const isHovered = false; // Add hover state check if needed
-        const isSelected = selectedNode?.id === n.id;
+      // Painter's algorithm: sort back-to-front (sz descending)
+      projectedNodes.sort((a, b) => b.sz - a.sz);
+
+      // 1. Draw connection links with depth fading
+      links.forEach((l) => {
+        const sProj = projectedNodes.find((p) => p.node.id === l.source);
+        const tProj = projectedNodes.find((p) => p.node.id === l.target);
+        if (!sProj || !tProj) return;
+
+        // Base opacity on average depth
+        const avgDepth = (sProj.sz + tProj.sz) / 2;
+        const depthAlpha = Math.max(0.02, Math.min(0.28, 0.16 - avgDepth / 400));
 
         ctx.beginPath();
-        ctx.arc(n.x, n.y, n.radius, 0, Math.PI * 2);
-
-        // Fill with subtle glow
-        ctx.fillStyle = n.color;
-        ctx.shadowColor = n.color;
-        ctx.shadowBlur = isSelected ? 18 : 6;
-        ctx.fill();
-        ctx.shadowBlur = 0; // reset shadow
-
-        // Custom borders for selection
-        ctx.strokeStyle = isSelected ? "#ffffff" : "rgba(255, 255, 255, 0.15)";
-        ctx.lineWidth = isSelected ? 3 : 1.5;
+        ctx.moveTo(sProj.sx, sProj.sy);
+        ctx.lineTo(tProj.sx, tProj.sy);
+        ctx.strokeStyle = `rgba(255, 255, 255, ${depthAlpha})`;
+        ctx.lineWidth = Math.max(0.4, 1.2 * ((sProj.scale + tProj.scale) / 2));
         ctx.stroke();
 
-        // Node Title Text
-        ctx.fillStyle = isSelected ? "#ffffff" : "rgba(255, 255, 255, 0.75)";
-        ctx.font = isSelected ? "bold 11px system-ui" : "normal 10px system-ui";
+        // 2. Draw animated wave signal flow particles along links
+        if (waveParams.particleCount > 0) {
+          const numParticles = waveParams.particleCount;
+          for (let pIdx = 0; pIdx < numParticles; pIdx++) {
+            // Stagger position + time propagation
+            const stagger = (pIdx / numParticles + timeRef.current * 0.006) % 1.0;
+            const px = sProj.sx + (tProj.sx - sProj.sx) * stagger;
+            const py = sProj.sy + (tProj.sy - sProj.sy) * stagger;
+            const pz = sProj.sz + (tProj.sz - sProj.sz) * stagger;
+
+            const pScale = fov / Math.max(50, cameraDist + pz) * transform.scale;
+            const pRadius = waveParams.particleSize * pScale;
+            const pAlpha = Math.max(0.1, Math.min(0.9, 0.7 - pz / 300));
+
+            ctx.beginPath();
+            ctx.arc(px, py, pRadius, 0, Math.PI * 2);
+            ctx.fillStyle = waveParams.color;
+            ctx.shadowColor = waveParams.color;
+            ctx.shadowBlur = pRadius * 3;
+            ctx.save();
+            ctx.globalAlpha = pAlpha;
+            ctx.fill();
+            ctx.restore();
+            ctx.shadowBlur = 0;
+          }
+        }
+      });
+
+      // 3. Draw nodes sorted by depth
+      projectedNodes.forEach(({ node: n, sx, sy, sz, scale }) => {
+        const isSelected = selectedNode?.id === n.id;
+        const nodeRad = n.radius * scale * 0.7;
+        const opacity = Math.max(0.12, Math.min(1.0, 0.85 - sz / 350));
+
+        ctx.beginPath();
+        ctx.arc(sx, sy, nodeRad, 0, Math.PI * 2);
+
+        // Ambient pulse for Delta wave mode
+        const pulse = activeBrainWave === "delta" ? (1.0 + 0.15 * Math.sin(timeRef.current * 0.04)) : 1.0;
+
+        ctx.fillStyle = n.color;
+        ctx.shadowColor = n.color;
+        ctx.shadowBlur = (isSelected ? 20 : 6) * scale * pulse;
+
+        ctx.save();
+        ctx.globalAlpha = opacity;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // selection border
+        ctx.strokeStyle = isSelected ? "#ffffff" : "rgba(255, 255, 255, 0.14)";
+        ctx.lineWidth = isSelected ? 2.5 * scale : 1.0 * scale;
+        ctx.stroke();
+
+        // text label
+        ctx.fillStyle = isSelected ? "#ffffff" : `rgba(255, 255, 255, ${opacity * 0.95})`;
+        ctx.font = `${isSelected ? "bold" : "normal"} ${Math.max(7.5, Math.min(13.5, 9.5 * scale))}px system-ui`;
         ctx.textAlign = "center";
         ctx.textBaseline = "top";
         ctx.fillText(
           n.label.length > 18 ? n.label.slice(0, 16) + "..." : n.label,
-          n.x,
-          n.y + n.radius + 5
+          sx,
+          sy + nodeRad + 5
         );
+        ctx.restore();
       });
 
       ctx.restore();
@@ -411,7 +593,7 @@ export function BrainPage() {
 
     animId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animId);
-  }, [nodes, links, transform, selectedNode, draggedNode]);
+  }, [nodes, links, transform, rotation, selectedNode, draggedNode, activeBrainWave, waveParams]);
 
   // Click & Drag handlers
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -421,17 +603,48 @@ export function BrainPage() {
     const clientX = e.clientX - rect.left;
     const clientY = e.clientY - rect.top;
 
-    // Convert screen coordinate to graph space coordinate
-    const graphX = (clientX - canvas.width / 2 - transform.x) / transform.scale;
-    const graphY = (clientY - canvas.height / 2 - transform.y) / transform.scale;
+    const screenX = clientX - canvas.width / 2 - transform.x;
+    const screenY = clientY - canvas.height / 2 - transform.y;
 
-    // Check if clicked a node
+    // Precompute 3D coordinates to find clicked node front-to-back
+    const cosY = Math.cos(rotation.yaw);
+    const sinY = Math.sin(rotation.yaw);
+    const cosP = Math.cos(rotation.pitch);
+    const sinP = Math.sin(rotation.pitch);
+    const fov = 450;
+    const cameraDist = 380;
+
+    const projectedNodes = nodes.map((n) => {
+      const x1 = n.x * cosY - n.z * sinY;
+      const z1 = n.x * sinY + n.z * cosY;
+      const y2 = n.y * cosP - z1 * sinP;
+      const z2 = n.y * sinP + z1 * cosP;
+
+      const scaleFactor = fov / Math.max(50, cameraDist + z2);
+      const screenNodeX = x1 * scaleFactor * transform.scale;
+      const screenNodeY = y2 * scaleFactor * transform.scale;
+
+      return {
+        node: n,
+        sx: screenNodeX,
+        sy: screenNodeY,
+        sz: z2,
+        scale: scaleFactor,
+      };
+    });
+
+    // Traverse closest nodes first (sz ascending)
     let clickedNode: GraphNode | null = null;
-    for (let n of nodes) {
-      const dx = graphX - n.x;
-      const dy = graphY - n.y;
-      if (dx * dx + dy * dy < n.radius * n.radius * 2) {
-        clickedNode = n;
+    let clickedNodeZ = 0;
+    const sortedFrontToBack = [...projectedNodes].sort((a, b) => a.sz - b.sz);
+
+    for (let p of sortedFrontToBack) {
+      const dx = screenX - p.sx;
+      const dy = screenY - p.sy;
+      const nodeRad = p.node.radius * p.scale * transform.scale * 0.7;
+      if (dx * dx + dy * dy < nodeRad * nodeRad * 3.5) { // generous hitbox
+        clickedNode = p.node;
+        clickedNodeZ = p.sz;
         break;
       }
     }
@@ -439,18 +652,32 @@ export function BrainPage() {
     if (clickedNode) {
       setDraggedNode(clickedNode);
       setSelectedNode(clickedNode);
+      draggedNodeZRef.current = clickedNodeZ;
     } else {
-      // Start drag panning
+      // Start drag panning or rotating
       const startX = e.clientX;
       const startY = e.clientY;
       const startTrans = { ...transform };
+      const startRot = { ...rotation };
+      const isPanning = e.button === 2 || e.shiftKey; // right click or shift key for panning
 
       const handleMouseMove = (moveEvent: MouseEvent) => {
-        setTransform({
-          ...startTrans,
-          x: startTrans.x + (moveEvent.clientX - startX),
-          y: startTrans.y + (moveEvent.clientY - startY),
-        });
+        const dx = moveEvent.clientX - startX;
+        const dy = moveEvent.clientY - startY;
+
+        if (isPanning) {
+          setTransform({
+            ...startTrans,
+            x: startTrans.x + dx,
+            y: startTrans.y + dy,
+          });
+        } else {
+          // Adjust pitch & yaw based on drag delta
+          setRotation({
+            pitch: Math.max(-Math.PI / 2 + 0.05, Math.min(Math.PI / 2 - 0.05, startRot.pitch + dy * 0.007)),
+            yaw: startRot.yaw + dx * 0.007,
+          });
+        }
       };
 
       const handleMouseUp = () => {
@@ -470,8 +697,36 @@ export function BrainPage() {
     const clientX = e.clientX - rect.left;
     const clientY = e.clientY - rect.top;
 
-    draggedNode.x = (clientX - canvas.width / 2 - transform.x) / transform.scale;
-    draggedNode.y = (clientY - canvas.height / 2 - transform.y) / transform.scale;
+    const screenX = clientX - canvas.width / 2 - transform.x;
+    const screenY = clientY - canvas.height / 2 - transform.y;
+
+    // Math projection parameters
+    const fov = 450;
+    const cameraDist = 380;
+    const rz = draggedNodeZRef.current;
+    const scaleFactor = fov / Math.max(50, cameraDist + rz);
+
+    const rx = screenX / (transform.scale * scaleFactor);
+    const ry = screenY / (transform.scale * scaleFactor);
+
+    // Inverse of pitch and yaw rotation to get node back in 3D space
+    const cp = Math.cos(-rotation.pitch);
+    const sp = Math.sin(-rotation.pitch);
+    const cy = Math.cos(-rotation.yaw);
+    const sy = Math.sin(-rotation.yaw);
+
+    const z1_inv = rz * cp - ry * sp;
+    const y_inv = rz * sp + ry * cp;
+    const x_inv = rx * cy - z1_inv * sy;
+    const z_inv = rx * sy + z1_inv * cy;
+
+    draggedNode.x = x_inv;
+    draggedNode.y = y_inv;
+    draggedNode.z = z_inv;
+    // reset velocity to prevent flying away on release
+    draggedNode.vx = 0;
+    draggedNode.vy = 0;
+    draggedNode.vz = 0;
   };
 
   const handleMouseUpOrLeave = () => {
@@ -484,7 +739,7 @@ export function BrainPage() {
     const zoomFactor = e.deltaY < 0 ? 1 + zoomIntensity : 1 - zoomIntensity;
     setTransform((prev) => ({
       ...prev,
-      scale: Math.max(0.25, Math.min(4, prev.scale * zoomFactor)),
+      scale: Math.max(0.25, Math.min(4.0, prev.scale * zoomFactor)),
     }));
   };
 
