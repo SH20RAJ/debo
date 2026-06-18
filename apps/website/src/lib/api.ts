@@ -180,6 +180,7 @@ export const api = {
       });
     },
     listThreads: () => fetchApi("/api/chat/threads"),
+    deleteAllThreads: () => fetchApi("/api/chat/threads", { method: "DELETE" }),
     getThread: (threadId: string) => fetchApi(`/api/chat/threads/${threadId}`),
     renameThread: (threadId: string, title: string) =>
       fetchApi(`/api/chat/threads/${threadId}`, {
