@@ -859,6 +859,51 @@ export function BrainPage() {
             </div>
           </div>
 
+          {/* Brain Wave Controller Panel */}
+          <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 max-w-sm items-end">
+            <div className="flex flex-col bg-zinc-950/70 backdrop-blur-md p-2 border border-border/20 rounded-2xl gap-2 min-w-56 shadow-xl">
+              <div className="flex items-center justify-between px-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-primary" />
+                  Brain Wave State
+                </span>
+                <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-zinc-800 text-foreground" style={{ color: waveParams.color }}>
+                  {activeBrainWave.toUpperCase()}
+                </span>
+              </div>
+              
+              <div className="flex flex-col gap-1">
+                {[
+                  { id: "gamma", wave: "Gamma", hz: "30-100 Hz", desc: "Insight / Focus", color: "text-[#CE82FF]", border: "hover:border-[#CE82FF]/30" },
+                  { id: "beta", wave: "Beta", hz: "12-30 Hz", desc: "Thinking / Logic", color: "text-[#1CB0F6]", border: "hover:border-[#1CB0F6]/30" },
+                  { id: "alpha", wave: "Alpha", hz: "8-12 Hz", desc: "Relaxed Focus", color: "text-[#58CC02]", border: "hover:border-[#58CC02]/30" },
+                  { id: "theta", wave: "Theta", hz: "4-8 Hz", desc: "Intuition / Dream", color: "text-[#FFC800]", border: "hover:border-[#FFC800]/30" },
+                  { id: "delta", wave: "Delta", hz: "0.5-4 Hz", desc: "Rest / Healing", color: "text-[#FF5B5B]", border: "hover:border-[#FF5B5B]/30" },
+                ].map((w) => {
+                  const isActive = activeBrainWave === w.id;
+                  return (
+                    <button
+                      key={w.id}
+                      onClick={() => setActiveBrainWave(w.id as any)}
+                      className={cn(
+                        "flex items-center justify-between px-2.5 py-1.5 rounded-xl border text-[10px] font-medium transition-all text-left",
+                        isActive
+                          ? "bg-zinc-800/80 border-zinc-700/80 text-foreground shadow-inner"
+                          : `bg-transparent border-transparent text-muted-foreground/80 hover:bg-zinc-900/40 hover:text-foreground ${w.border}`
+                      )}
+                    >
+                      <div className="flex flex-col">
+                        <span className={cn("font-bold", isActive && w.color)}>{w.wave}</span>
+                        <span className="text-[8px] text-muted-foreground/60">{w.desc}</span>
+                      </div>
+                      <span className="text-[8px] font-semibold text-muted-foreground/40">{w.hz}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
           {loading ? (
             <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground text-xs font-medium gap-2">
               <Loader2 className="w-5 h-5 animate-spin text-primary" />
@@ -880,6 +925,7 @@ export function BrainPage() {
               onMouseUp={handleMouseUpOrLeave}
               onMouseLeave={handleMouseUpOrLeave}
               onWheel={handleWheel}
+              onContextMenu={(e) => e.preventDefault()}
               className="flex-1 cursor-grab active:cursor-grabbing"
             />
           )}
@@ -887,7 +933,7 @@ export function BrainPage() {
           {/* Interactive Help Hint */}
           <div className="absolute bottom-4 left-4 z-10 bg-zinc-950/40 backdrop-blur-sm px-2.5 py-1 rounded-xl border border-border/10 text-[9px] text-muted-foreground/80 flex items-center gap-1.5">
             <Info className="w-3 h-3 text-primary" />
-            Drag nodes to organize. Scroll wheel to zoom. Click node to inspect details.
+            Drag empty space to rotate. Shift/Right-click + drag to pan. Drag nodes to reposition. Scroll to zoom.
           </div>
         </div>
 
