@@ -71,8 +71,16 @@ export function ChatPage() {
   } = useChat({
     transport: new DefaultChatTransport({
       api: "/api/chat",
-      body: {
-        threadId: activeThreadId,
+      prepareSendMessagesRequest: ({ body, headers, credentials, api }) => {
+        return {
+          body: {
+            ...body,
+            threadId: activeThreadIdRef.current,
+          },
+          headers,
+          credentials,
+          api,
+        };
       },
       fetch: async (input: RequestInfo | URL, init?: RequestInit) => {
         const response = await globalThis.fetch(input, init);
@@ -157,7 +165,14 @@ export function ChatPage() {
     const q = searchParams.get("q");
     if (q) {
       router.replace("/dashboard/chat");
-      sendMessage({ text: q });
+      sendMessage(
+        { text: q },
+        {
+          body: {
+            threadId: activeThreadIdRef.current || undefined,
+          },
+        }
+      );
     }
   }, [searchParams, sendMessage, router]);
 
@@ -225,9 +240,16 @@ export function ChatPage() {
   };
 
   const handleAgentSend = useCallback((msg: { role: "user"; content: string }) => {
-    sendMessage({
-      text: msg.content,
-    });
+    sendMessage(
+      {
+        text: msg.content,
+      },
+      {
+        body: {
+          threadId: activeThreadIdRef.current || undefined,
+        },
+      }
+    );
   }, [sendMessage]);
 
   const suggestions = useMemo(() => [
