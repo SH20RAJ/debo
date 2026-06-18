@@ -34,8 +34,8 @@ export async function POST(req: Request) {
   const messages = body.messages || [];
   if (messages.length === 0) return apiError("messages_required", 400);
 
-  const lastUserMessage = messages[messages.length - 1];
-  const question = lastUserMessage.content;
+  const lastUserMessage = [...messages].reverse().find((m) => m.role === "user");
+  const question = lastUserMessage?.content || "";
 
   let threadId = body.threadId;
   if (!threadId) {
