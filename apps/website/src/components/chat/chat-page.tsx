@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import useSWR from "swr";
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 import {
   MessageSquare,
   Plus,
@@ -17,61 +19,15 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
 import { api } from "@/lib/api";
 import { toast } from "sonner";
-import { ChatArea, type Message } from "@/components/ask/chat-area";
-import { Composer } from "@/components/ask/composer";
-import { SourceRail, type RelatedMemory } from "@/components/ask/source-rail";
-import { type SourceData } from "@/components/ask/source-citation";
+import { AgentChat } from "@/components/agent-elements/agent-chat";
 
 interface ChatThread {
   id: string;
   title: string;
   createdAt: string;
   updatedAt: string;
-}
-
-interface AskEvent {
-  type: string;
-  [key: string]: unknown;
-}
-
-function createSSEParser() {
-  let buffer = "";
-  return function parse(chunk: string): AskEvent[] {
-    buffer += chunk;
-    const events: AskEvent[] = [];
-    const parts = buffer.split("\n\n");
-    buffer = parts.pop() ?? "";
-
-    for (const part of parts) {
-      for (const line of part.split("\n")) {
-        if (line.startsWith("data: ")) {
-          try {
-            events.push(JSON.parse(line.slice(6)));
-          } catch {
-            // skip malformed JSON
-          }
-        }
-      }
-    }
-    return events;
-  };
-}
-
-function mapSource(raw: Record<string, unknown>): SourceData {
-  return {
-    id: String(raw.id ?? crypto.randomUUID()),
-    type: (raw.type as SourceData["type"]) ?? (raw.sourceType as SourceData["type"]) ?? "file",
-    label: String(raw.label ?? raw.title ?? "Source"),
-    detail: String(raw.detail ?? raw.meta ?? raw.snippet ?? ""),
-    confidence: (raw.confidence as SourceData["confidence"]) ?? "partial",
-    excerpt: raw.excerpt ? String(raw.excerpt) : (raw.snippet ? String(raw.snippet) : undefined),
-    timestamp: raw.timestamp ? String(raw.timestamp) : undefined,
-    people: raw.people as string[] | undefined,
-    relatedTasks: raw.relatedTasks as string[] | undefined,
-  };
 }
 
 export function ChatPage() {
@@ -92,309 +48,82 @@ export function ChatPage() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [threadSearch, setThreadSearch] = useState("");
 
-  // Chat message & rail state
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [activeSources, setActiveSources] = useState<SourceData[]>([]);
-  const [relatedMemories, setRelatedMemories] = useState<RelatedMemory[]>([]);
-  const [followUps, setFollowUps] = useState<string[]>([]);
-  const [isResponding, setIsResponding] = useState(false);
+  const activeThreadIdRef = useRef(activeThreadId);
+  useEffect(() => {
+    activeThreadIdRef.current = activeThreadId;
+  }, [activeThreadId]);
 
-  const abortRef = useRef<AbortController | null>(null);
-  const threadCacheRef = useRef<Record<string, Message[]>>({});
-
-  // Fetch specific thread messages
-  const loadThread = useCallback(async (threadId: string, updateUrl = true) => {
-    // Abort active streams if any
-    if (abortRef.current) {
-      abortRef.current.abort();
-      setIsResponding(false);
+  // Vercel AI SDK useChat integration (v6 transport style)
+  const {
+    messages,
+    setMessages,
+    sendMessage,
+    stop,
+    status,
+    error,
+  } = useChat({
+    transport: new DefaultChatTransport({
+      api: "/api/chat",
+      body: {
+        threadId: activeThreadId,
+      },
+      fetch: async (input: RequestInfo | URL, init?: RequestInit) => {
+        const response = await globalThis.fetch(input, init);
+        const headerThreadId = response.headers.get("x-thread-id");
+        const currentThreadId = activeThreadIdRef.current;
+        if (headerThreadId && headerThreadId !== currentThreadId) {
+          setActiveThreadId(headerThreadId);
+          router.replace(`/dashboard/chat?threadId=${headerThreadId}`);
+          mutateThreads();
+        }
+        return response;
+      }
+    }),
+    onError(err) {
+      console.error("Vercel AI SDK error:", err);
+      toast.error(err.message || "Failed to process chat message.");
     }
+  });
 
-    // Render cached messages instantly if available
+  const threadCacheRef = useRef<Record<string, any[]>>({});
+
+  // Fetch and hydrate past messages for specific thread
+  const loadThread = useCallback(async (threadId: string, updateUrl = true) => {
+    // Stop active streams
+    stop();
+
+    // Load from cache instantly
     if (threadCacheRef.current[threadId]) {
-      const cached = threadCacheRef.current[threadId];
-      setMessages(cached);
+      setMessages(threadCacheRef.current[threadId]);
       setActiveThreadId(threadId);
       if (updateUrl) {
         router.replace(`/dashboard/chat?threadId=${threadId}`);
       }
-      const lastAssistant = [...cached].reverse().find(m => m.role === "assistant");
-      setActiveSources(lastAssistant?.sources || []);
-      setRelatedMemories([]);
-      setFollowUps([]);
     }
 
     try {
       const data = await api.ask.getThread(threadId);
       if (data) {
-        const mappedMessages = data.messages.map((m: any) => {
-          let sources: SourceData[] = [];
-          if (m.citations && m.citations.length > 0) {
-            const seen = new Set<string>();
-            for (const c of m.citations) {
-              if (seen.has(c.sourceId)) continue;
-              seen.add(c.sourceId);
-              sources.push({
-                id: c.sourceId,
-                type: c.sourceType || "file",
-                label: c.sourceTitle || "Source",
-                detail: c.quoteText || "",
-                excerpt: c.quoteText,
-                confidence: typeof c.confidence === "number" 
-                  ? (c.confidence >= 0.85 ? "strong" : c.confidence >= 0.55 ? "partial" : "weak") 
-                  : "partial",
-              });
-            }
-          }
-          return {
-            id: m.id,
-            role: m.role as "user" | "assistant",
-            content: m.content || "",
-            sources: sources.length > 0 ? sources : undefined,
-          };
-        });
+        const mappedMessages = data.messages.map((m: any) => ({
+          id: m.id,
+          role: m.role as "user" | "assistant",
+          content: m.content || "",
+        }));
 
-        // Update cache
         threadCacheRef.current[threadId] = mappedMessages;
-        
-        // Update state
         setMessages(mappedMessages);
         setActiveThreadId(threadId);
 
         if (updateUrl) {
           router.replace(`/dashboard/chat?threadId=${threadId}`);
         }
-
-        // Populate rails with the last assistant message's sources if available
-        const lastAssistant = [...mappedMessages].reverse().find(m => m.role === "assistant");
-        if (lastAssistant && lastAssistant.sources) {
-          setActiveSources(lastAssistant.sources);
-        } else {
-          setActiveSources([]);
-        }
-        setRelatedMemories([]);
-        setFollowUps([]);
       }
     } catch {
-      toast.error("Failed to load thread.");
+      toast.error("Failed to load thread details.");
     }
-  }, [router]);
+  }, [router, setMessages, stop]);
 
-
-
-  // Handle stream send
-  const handleSend = useCallback(async (text: string, mode?: string) => {
-    if (isResponding) return;
-
-    const userMsg: Message = {
-      id: `user-${Date.now()}`,
-      role: "user",
-      content: text,
-    };
-
-    const assistantId = `assistant-${Date.now()}`;
-    const assistantMsg: Message = {
-      id: assistantId,
-      role: "assistant",
-      content: "",
-      retrievalActive: true, // Start showing thinking accordion instantly (0ms delay)
-    };
-
-    setMessages((prev) => [...prev, userMsg, assistantMsg]);
-    setIsResponding(true);
-    setActiveSources([]);
-    setRelatedMemories([]);
-    setFollowUps([]);
-
-    let answer = "";
-    const sources: SourceData[] = [];
-    const related: RelatedMemory[] = [];
-    const followupQuestions: string[] = [];
-
-    const abort = new AbortController();
-    abortRef.current = abort;
-
-    try {
-      const response = await api.ask.stream({
-        question: text,
-        mode: mode || "recall",
-        threadId: activeThreadId || undefined,
-      });
-
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
-      }
-
-      const reader = response.body?.getReader();
-      if (!reader) throw new Error("No response body");
-
-      const decoder = new TextDecoder();
-      const parse = createSSEParser();
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const events = parse(decoder.decode(value, { stream: true }));
-
-        for (const event of events) {
-          switch (event.type) {
-            case "retrieval_started": {
-              setMessages((prev) =>
-                prev.map((m) =>
-                  m.id === assistantId
-                    ? { ...m, content: "", retrievalActive: true }
-                    : m
-                )
-              );
-              break;
-            }
-
-            case "source_found": {
-              const src = mapSource(event as Record<string, unknown>);
-              sources.push(src);
-              setActiveSources([...sources]);
-              setMessages((prev) =>
-                prev.map((m) =>
-                  m.id === assistantId
-                    ? { ...m, sources: [...sources] }
-                    : m
-                )
-              );
-              break;
-            }
-
-            case "answer_delta": {
-              const token = String(event.token ?? event.delta ?? event.text ?? "");
-              answer += token;
-              setMessages((prev) =>
-                prev.map((m) =>
-                  m.id === assistantId
-                    ? { ...m, content: answer, retrievalActive: false }
-                    : m
-                )
-              );
-              break;
-            }
-
-            case "citation_added": {
-              const citation = mapSource(event as Record<string, unknown>);
-              if (!sources.find((s) => s.id === citation.id)) {
-                sources.push(citation);
-                setActiveSources([...sources]);
-                setMessages((prev) =>
-                  prev.map((m) =>
-                    m.id === assistantId
-                      ? { ...m, sources: [...sources] }
-                      : m
-                  )
-                );
-              }
-              break;
-            }
-
-            case "related_memory": {
-              related.push({
-                id: String(event.id ?? crypto.randomUUID()),
-                type: (event.sourceType as SourceData["type"]) ?? "file",
-                title: String(event.title ?? ""),
-                meta: String(event.meta ?? ""),
-              });
-              setRelatedMemories([...related]);
-              break;
-            }
-
-            case "suggested_followup": {
-              const q = String(event.question ?? event.text ?? "");
-              if (q) followupQuestions.push(q);
-              setFollowUps([...followupQuestions]);
-              break;
-            }
-
-            case "done": {
-              let finalSources = sources;
-              if (event.sources) {
-                finalSources = (event.sources as Record<string, unknown>[]).map(mapSource);
-                setActiveSources(finalSources);
-              }
-              if (event.followUps || event.follow_ups) {
-                const ups = (event.followUps ?? event.follow_ups) as string[];
-                setFollowUps(ups);
-              }
-              if (event.related) {
-                setRelatedMemories(event.related as RelatedMemory[]);
-              }
-
-              // Update the active thread ID if it was newly created
-              if (event.threadId && typeof event.threadId === "string") {
-                setActiveThreadId(event.threadId);
-                router.replace(`/dashboard/chat?threadId=${event.threadId}`);
-                // Refresh list of threads to include the new one
-                mutateThreads();
-              }
-
-              let finalActions: any[] = [];
-              if (event.actionSuggestions) {
-                finalActions = (event.actionSuggestions as any[]).map(a => ({
-                  id: String(a.id ?? crypto.randomUUID()),
-                  label: String(a.label ?? a.text ?? ""),
-                  kind: a.kind || "ask"
-                }));
-              }
-
-              setMessages((prev) => {
-                const updated = prev.map((m) =>
-                  m.id === assistantId
-                    ? {
-                        ...m,
-                        content: answer || m.content,
-                        sources: finalSources,
-                        suggestedActions: finalActions.length > 0 ? finalActions : undefined,
-                        retrievalActive: false
-                      }
-                    : m
-                );
-                const targetId = typeof event.threadId === "string" ? event.threadId : activeThreadId;
-                if (targetId) {
-                  threadCacheRef.current[targetId] = updated;
-                }
-                return updated;
-              });
-              break;
-            }
-
-            case "error": {
-              throw new Error(String(event.message ?? "Stream error"));
-            }
-          }
-        }
-      }
-    } catch (err: unknown) {
-      if (abort.signal.aborted) return;
-      const msg = err instanceof Error ? err.message : "Something went wrong";
-      console.error("Ask stream error:", err);
-      toast.error(msg);
-
-      if (!answer) {
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === assistantId
-              ? {
-                  ...m,
-                  content: "Hmm, I couldn't reach my AI brain just now. Give it another try in a sec.",
-                  retrievalActive: false,
-                }
-              : m
-          )
-        );
-      }
-    } finally {
-      setIsResponding(false);
-      abortRef.current = null;
-    }
-  }, [activeThreadId, isResponding, mutateThreads, router]);
-
-  // 1. Load and sync thread when URL search params change
+  // Sync thread when URL params change
   useEffect(() => {
     const threadId = searchParams.get("threadId");
 
@@ -403,38 +132,26 @@ export function ChatPage() {
         loadThread(threadId, false);
       }
     } else {
-      // Clear active thread if URL has no thread ID
       if (activeThreadId !== null) {
         setActiveThreadId(null);
         setMessages([]);
-        setActiveSources([]);
-        setRelatedMemories([]);
-        setFollowUps([]);
       }
     }
-  }, [searchParams, activeThreadId, loadThread]);
+  }, [searchParams, activeThreadId, loadThread, setMessages]);
 
-  // 2. Handle query param (?q=...) on initial load
+  // Handle direct query parameters (e.g. greeting or widget clicks)
   useEffect(() => {
     const q = searchParams.get("q");
     if (q) {
       router.replace("/dashboard/chat");
-      handleSend(q);
+      sendMessage({ text: q });
     }
-  }, [searchParams, handleSend, router]);
+  }, [searchParams, sendMessage, router]);
 
   const handleNewChat = () => {
-    if (abortRef.current) {
-      abortRef.current.abort();
-      abortRef.current = null;
-    }
+    stop();
     setActiveThreadId(null);
     setMessages([]);
-    setActiveSources([]);
-    setRelatedMemories([]);
-    setFollowUps([]);
-    setIsResponding(false);
-    // Clear search parameters
     router.replace("/dashboard/chat");
   };
 
@@ -442,7 +159,6 @@ export function ChatPage() {
     e.stopPropagation();
     try {
       await api.ask.deleteThread(threadId);
-      // Optimistic update of thread list
       mutateThreads(threads.filter((t) => t.id !== threadId), false);
       if (activeThreadId === threadId) {
         handleNewChat();
@@ -453,19 +169,17 @@ export function ChatPage() {
     }
   };
 
-  const handlePromptClick = useCallback(
-    (prompt: string) => {
-      handleSend(prompt, "Recall");
-    },
-    [handleSend]
-  );
+  const handleAgentSend = useCallback((msg: { role: "user"; content: string }) => {
+    sendMessage({
+      text: msg.content,
+    });
+  }, [sendMessage]);
 
-  const handleFollowUpClick = useCallback(
-    (question: string) => {
-      handleSend(question, "Recall");
-    },
-    [handleSend]
-  );
+  const suggestions = useMemo(() => [
+    { id: "s1", label: "What did I write in my journal recently?", value: "What did I write in my journal recently?" },
+    { id: "s2", label: "Check my inbox tasks", value: "Show me my pending inbox tasks." },
+    { id: "s3", label: "Summarize recent voice calls", value: "What was discussed in my recent voice conversations?" },
+  ], []);
 
   // Filter threads by search query
   const filteredThreads = useMemo(() => {
@@ -476,6 +190,7 @@ export function ChatPage() {
 
   return (
     <div className="flex h-full bg-background relative overflow-hidden">
+      
       {/* 1. Collapsible Thread History Sidebar */}
       <div
         className={cn(
@@ -507,7 +222,7 @@ export function ChatPage() {
               placeholder="Search chat history..."
               value={threadSearch}
               onChange={(e) => setThreadSearch(e.target.value)}
-              className="h-8.5 pl-8 pr-7 text-xs rounded-lg border-2 border-border bg-background focus:bg-background"
+              className="h-8.5 pl-8 pr-7 text-xs rounded-lg border border-border bg-background focus:bg-background focus-visible:ring-primary"
             />
             {threadSearch && (
               <button
@@ -557,7 +272,7 @@ export function ChatPage() {
                       onClick={(e) => handleDeleteThread(thread.id, e)}
                       className="opacity-0 group-hover:opacity-100 hover:text-destructive p-0.5 rounded transition-all cursor-pointer shrink-0"
                     >
-                      <Trash2 className="w-3 h-3" />
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 );
@@ -576,23 +291,20 @@ export function ChatPage() {
         {sidebarCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
       </button>
 
-      {/* 2. Main Chat Column */}
-      <div className="flex-1 flex flex-col min-w-0 h-full bg-background relative z-10 min-h-0">
-        <ChatArea
-          messages={messages}
-          isResponding={isResponding}
-          onPromptClick={handlePromptClick}
+      {/* 2. Main Chat Column (Completely using AgentChat with 0 custom components) */}
+      <div className="flex-1 flex flex-col min-w-0 h-full bg-background relative z-10 min-h-0 p-4">
+        <AgentChat
+          messages={messages as any}
+          status={status}
+          onSend={handleAgentSend}
+          onStop={stop}
+          error={error}
+          suggestions={suggestions}
+          emptyStatePosition="center"
+          className="flex-1"
         />
-        <Composer onSend={handleSend} isResponding={isResponding} />
       </div>
 
-      {/* 3. Right Source Rail */}
-      <SourceRail
-        sources={activeSources}
-        related={relatedMemories}
-        followUps={followUps}
-        onFollowUpClick={handleFollowUpClick}
-      />
     </div>
   );
 }
