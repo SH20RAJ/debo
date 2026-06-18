@@ -99,7 +99,7 @@ export async function POST(req: Request) {
     tools: {
       queryTasks: tool({
         description: "Search and query tasks assigned to you or in your inbox.",
-        parameters: z.object({ query: z.string().optional() }),
+        parameters: z.object({ query: z.string().optional() }) as any,
         execute: async ({ query }: { query?: string }) => {
           const conditions = [
             eq(tasks.userId, user.id),
@@ -115,7 +115,7 @@ export async function POST(req: Request) {
       }),
       queryJournals: tool({
         description: "Search and query your private and public journal logs.",
-        parameters: z.object({ query: z.string().optional() }),
+        parameters: z.object({ query: z.string().optional() }) as any,
         execute: async ({ query }: { query?: string }) => {
           const conditions = [
             eq(sources.userId, user.id),
@@ -132,7 +132,7 @@ export async function POST(req: Request) {
       }),
       queryVoiceNotes: tool({
         description: "Search and retrieve transcribed voice notes or recorded phone conversations with Debo.",
-        parameters: z.object({ query: z.string().optional() }),
+        parameters: z.object({ query: z.string().optional() }) as any,
         execute: async ({ query }: { query?: string }) => {
           const conditions = [
             eq(sources.userId, user.id),
@@ -149,7 +149,7 @@ export async function POST(req: Request) {
       }),
       queryMail: tool({
         description: "Search and retrieve your transactional emails from Debo Mail.",
-        parameters: z.object({ query: z.string().optional() }),
+        parameters: z.object({ query: z.string().optional() }) as any,
         execute: async ({ query }: { query?: string }) => {
           const conditions = [
             or(eq(deboMailMessages.senderUserId, user.id), eq(deboMailMessages.recipientUserId, user.id)),
