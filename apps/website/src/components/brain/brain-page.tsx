@@ -168,7 +168,7 @@ export function BrainPage() {
 
   // Build nodes and links from real data
   const { rawNodes, rawLinks } = useMemo(() => {
-    const nodesMap = new Map<string, Omit<GraphNode, "x" | "y" | "vx" | "vy">>();
+    const nodesMap = new Map<string, Omit<GraphNode, "x" | "y" | "z" | "vx" | "vy" | "vz">>();
     const links: GraphLink[] = [];
 
     // 1. Add Sources
