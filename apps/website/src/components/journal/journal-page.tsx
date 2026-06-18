@@ -254,7 +254,7 @@ export function JournalPage({ fallbackData = [] }: JournalPageProps) {
   );
 
   // UI Modes
-  const [viewMode, setViewMode] = useState<"split" | "gallery">("split");
+  const [viewMode, setViewMode] = useState<"split" | "gallery">("gallery");
   const [creating, setCreating] = useState(false);
   const [listOpen, setListOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -817,7 +817,7 @@ export function JournalPage({ fallbackData = [] }: JournalPageProps) {
         </div>
 
         {/* Dynamic Panel Content */}
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden flex flex-col min-h-0">
           {viewMode === "split" ? (
             /* Write Mode Split View Panel */
             activeEntry ? (
@@ -836,7 +836,7 @@ export function JournalPage({ fallbackData = [] }: JournalPageProps) {
             )
           ) : (
             /* Gallery Explore View Panel */
-            <div className="h-full flex flex-col overflow-hidden bg-background">
+            <div className="flex-1 flex flex-col overflow-hidden bg-background min-h-0">
               
               {/* Search, Filter and Sort Options bar */}
               <div className="px-6 py-3.5 border-b border-border bg-background flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">

@@ -61,6 +61,7 @@ export function BrainPage() {
   const [loading, setLoading] = useState(true);
 
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
+  const [sidebarListType, setSidebarListType] = useState<"source" | "task" | "decision" | "person" | "project" | null>(null);
   const [peekJournal, setPeekJournal] = useState<any | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTypes, setSelectedTypes] = useState<string[]>([
@@ -513,19 +514,42 @@ export function BrainPage() {
         const tProj = projectedNodes.find((p) => p.node.id === l.target);
         if (!sProj || !tProj) return;
 
+        // Check connection highlight
+        const isRelatedToSelection = selectedNode
+          ? l.source === selectedNode.id || l.target === selectedNode.id
+          : false;
+
         // Base opacity on average depth
         const avgDepth = (sProj.sz + tProj.sz) / 2;
-        const depthAlpha = Math.max(0.02, Math.min(0.28, 0.16 - avgDepth / 400));
+        let depthAlpha = Math.max(0.02, Math.min(0.28, 0.16 - avgDepth / 400));
+
+        // If a node is selected, dim non-selected links
+        if (selectedNode && !isRelatedToSelection) {
+          depthAlpha *= 0.12; // dim non-connected lines significantly
+        } else if (selectedNode && isRelatedToSelection) {
+          depthAlpha *= 2.5; // highlight active connections
+        }
 
         ctx.beginPath();
         ctx.moveTo(sProj.sx, sProj.sy);
         ctx.lineTo(tProj.sx, tProj.sy);
-        ctx.strokeStyle = `rgba(255, 255, 255, ${depthAlpha})`;
-        ctx.lineWidth = Math.max(0.4, 1.2 * ((sProj.scale + tProj.scale) / 2));
+
+        if (selectedNode && isRelatedToSelection) {
+          // Glow style for active link
+          ctx.strokeStyle = waveParams.color;
+          ctx.lineWidth = Math.max(1.2, 2.5 * ((sProj.scale + tProj.scale) / 2));
+        } else {
+          ctx.strokeStyle = `rgba(255, 255, 255, ${depthAlpha})`;
+          ctx.lineWidth = Math.max(0.4, 1.2 * ((sProj.scale + tProj.scale) / 2));
+        }
         ctx.stroke();
 
         // 2. Draw animated wave signal flow particles along links
         if (waveParams.particleCount > 0) {
+          if (selectedNode && !isRelatedToSelection) {
+            return; // skip/dim particles on non-connected links
+          }
+
           const numParticles = waveParams.particleCount;
           for (let pIdx = 0; pIdx < numParticles; pIdx++) {
             // Stagger position + time propagation
@@ -535,8 +559,8 @@ export function BrainPage() {
             const pz = sProj.sz + (tProj.sz - sProj.sz) * stagger;
 
             const pScale = fov / Math.max(50, cameraDist + pz) * transform.scale;
-            const pRadius = waveParams.particleSize * pScale;
-            const pAlpha = Math.max(0.1, Math.min(0.9, 0.7 - pz / 300));
+            const pRadius = waveParams.particleSize * pScale * (selectedNode ? 1.4 : 1.0);
+            const pAlpha = Math.max(0.1, Math.min(0.9, 0.7 - pz / 300)) * (selectedNode ? 1.2 : 1.0);
 
             ctx.beginPath();
             ctx.arc(px, py, pRadius, 0, Math.PI * 2);
@@ -555,8 +579,17 @@ export function BrainPage() {
       // 3. Draw nodes sorted by depth
       projectedNodes.forEach(({ node: n, sx, sy, sz, scale }) => {
         const isSelected = selectedNode?.id === n.id;
+        const isConnectedToSelected = selectedNode
+          ? links.some((l) => (l.source === selectedNode.id && l.target === n.id) || (l.target === selectedNode.id && l.source === n.id))
+          : false;
+
         const nodeRad = n.radius * scale * 0.7;
-        const opacity = Math.max(0.12, Math.min(1.0, 0.85 - sz / 350));
+        let opacity = Math.max(0.12, Math.min(1.0, 0.85 - sz / 350));
+
+        // Dim if a node is selected and this node is neither selected nor connected
+        if (selectedNode && !isSelected && !isConnectedToSelected) {
+          opacity *= 0.12; // dim down to a faint outline
+        }
 
         ctx.beginPath();
         ctx.arc(sx, sy, nodeRad, 0, Math.PI * 2);
@@ -566,7 +599,7 @@ export function BrainPage() {
 
         ctx.fillStyle = n.color;
         ctx.shadowColor = n.color;
-        ctx.shadowBlur = (isSelected ? 20 : 6) * scale * pulse;
+        ctx.shadowBlur = (isSelected ? 24 : isConnectedToSelected ? 12 : 6) * scale * pulse;
 
         ctx.save();
         ctx.globalAlpha = opacity;
@@ -574,20 +607,23 @@ export function BrainPage() {
         ctx.shadowBlur = 0;
 
         // selection border
-        ctx.strokeStyle = isSelected ? "#ffffff" : "rgba(255, 255, 255, 0.14)";
-        ctx.lineWidth = isSelected ? 2.5 * scale : 1.0 * scale;
+        ctx.strokeStyle = isSelected ? "#ffffff" : isConnectedToSelected ? "rgba(255, 255, 255, 0.5)" : "rgba(255, 255, 255, 0.14)";
+        ctx.lineWidth = isSelected ? 2.5 * scale : isConnectedToSelected ? 1.5 * scale : 1.0 * scale;
         ctx.stroke();
 
         // text label
-        ctx.fillStyle = isSelected ? "#ffffff" : `rgba(255, 255, 255, ${opacity * 0.95})`;
-        ctx.font = `${isSelected ? "bold" : "normal"} ${Math.max(7.5, Math.min(13.5, 9.5 * scale))}px system-ui`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "top";
-        ctx.fillText(
-          n.label.length > 18 ? n.label.slice(0, 16) + "..." : n.label,
-          sx,
-          sy + nodeRad + 5
-        );
+        const shouldShowLabel = !selectedNode || isSelected || isConnectedToSelected || scale > 1.1;
+        if (shouldShowLabel) {
+          ctx.fillStyle = isSelected ? "#ffffff" : isConnectedToSelected ? "#e4e4e7" : `rgba(255, 255, 255, ${opacity * 0.95})`;
+          ctx.font = `${isSelected ? "bold" : "normal"} ${Math.max(7.5, Math.min(13.5, 9.5 * scale))}px system-ui`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "top";
+          ctx.fillText(
+            n.label.length > 18 ? n.label.slice(0, 16) + "..." : n.label,
+            sx,
+            sy + nodeRad + 5
+          );
+        }
         ctx.restore();
       });
 
@@ -746,6 +782,123 @@ export function BrainPage() {
     }));
   };
 
+  const getResourceUrl = (node: GraphNode) => {
+    if (!node.originalData) return null;
+    switch (node.type) {
+      case "source":
+        return `/dashboard/library/${node.originalData.id}`;
+      case "person":
+        return `/dashboard/people/${node.originalData.id}`;
+      case "task":
+        return `/dashboard/tasks`;
+      case "project":
+        return `/dashboard/projects`;
+      case "decision":
+        return `/dashboard/decisions`;
+      default:
+        return null;
+    }
+  };
+
+  const focusOnNode = (node: GraphNode) => {
+    setSelectedNode(node);
+
+    const cosY = Math.cos(rotation.yaw);
+    const sinY = Math.sin(rotation.yaw);
+    const cosP = Math.cos(rotation.pitch);
+    const sinP = Math.sin(rotation.pitch);
+    const fov = 450;
+    const cameraDist = 380;
+
+    const x1 = node.x * cosY - node.z * sinY;
+    const z1 = node.x * sinY + node.z * cosY;
+    const y2 = node.y * cosP - z1 * sinP;
+    const z2 = node.y * sinP + z1 * cosP;
+
+    const scaleFactor = fov / Math.max(50, cameraDist + z2);
+    const targetScale = 1.35;
+    const targetX = -x1 * scaleFactor * targetScale;
+    const targetY = -y2 * scaleFactor * targetScale;
+
+    // Smoothly animate
+    let startTime: number | null = null;
+    const duration = 450; // ms
+    const startX = transform.x;
+    const startY = transform.y;
+    const startScale = transform.scale;
+
+    const step = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 3); // cubic ease out
+
+      setTransform({
+        x: startX + (targetX - startX) * ease,
+        y: startY + (targetY - startY) * ease,
+        scale: startScale + (targetScale - startScale) * ease,
+      });
+
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      }
+    };
+    requestAnimationFrame(step);
+  };
+
+  const handleDoubleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.clientX - rect.left;
+    const clientY = e.clientY - rect.top;
+
+    const screenX = clientX - canvas.width / 2 - transform.x;
+    const screenY = clientY - canvas.height / 2 - transform.y;
+
+    const cosY = Math.cos(rotation.yaw);
+    const sinY = Math.sin(rotation.yaw);
+    const cosP = Math.cos(rotation.pitch);
+    const sinP = Math.sin(rotation.pitch);
+    const fov = 450;
+    const cameraDist = 380;
+
+    const projectedNodes = nodes.map((n) => {
+      const x1 = n.x * cosY - n.z * sinY;
+      const z1 = n.x * sinY + n.z * cosY;
+      const y2 = n.y * cosP - z1 * sinP;
+      const z2 = n.y * sinP + z1 * cosP;
+
+      const scaleFactor = fov / Math.max(50, cameraDist + z2);
+      const screenNodeX = x1 * scaleFactor * transform.scale;
+      const screenNodeY = y2 * scaleFactor * transform.scale;
+
+      return {
+        node: n,
+        sx: screenNodeX,
+        sy: screenNodeY,
+        sz: z2,
+        scale: scaleFactor,
+      };
+    });
+
+    let clickedNode: GraphNode | null = null;
+    const sortedFrontToBack = [...projectedNodes].sort((a, b) => a.sz - b.sz);
+
+    for (let p of sortedFrontToBack) {
+      const dx = screenX - p.sx;
+      const dy = screenY - p.sy;
+      const nodeRad = p.node.radius * p.scale * transform.scale * 0.7;
+      if (dx * dx + dy * dy < nodeRad * nodeRad * 3.5) {
+        clickedNode = p.node;
+        break;
+      }
+    }
+
+    if (clickedNode) {
+      focusOnNode(clickedNode);
+    }
+  };
+
   const toggleTypeFilter = (type: string) => {
     setSelectedTypes((prev) =>
       prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
@@ -798,21 +951,76 @@ export function BrainPage() {
 
         {/* Global stats bar */}
         <div className="flex flex-wrap items-center gap-2.5 mt-3 md:mt-0 text-[10px] font-semibold tracking-wide uppercase">
-          <Badge variant="outline" className="border-border/30 bg-card/25 gap-1 text-[#58CC02]">
+          <button
+            onClick={() => {
+              setSelectedNode(null);
+              setSidebarListType(sidebarListType === "source" ? null : "source");
+            }}
+            className={cn(
+              "flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all cursor-pointer font-semibold uppercase tracking-wider text-[10px]",
+              sidebarListType === "source"
+                ? "bg-[#58CC02]/20 border-[#58CC02] text-[#58CC02] shadow-sm"
+                : "border-border/30 bg-card/25 text-[#58CC02] hover:bg-[#58CC02]/10"
+            )}
+          >
             {nodeStats.sources} Notes
-          </Badge>
-          <Badge variant="outline" className="border-border/30 bg-card/25 gap-1 text-[#FF9600]">
+          </button>
+          <button
+            onClick={() => {
+              setSelectedNode(null);
+              setSidebarListType(sidebarListType === "task" ? null : "task");
+            }}
+            className={cn(
+              "flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all cursor-pointer font-semibold uppercase tracking-wider text-[10px]",
+              sidebarListType === "task"
+                ? "bg-[#FF9600]/20 border-[#FF9600] text-[#FF9600] shadow-sm"
+                : "border-border/30 bg-card/25 text-[#FF9600] hover:bg-[#FF9600]/10"
+            )}
+          >
             {nodeStats.tasks} Tasks
-          </Badge>
-          <Badge variant="outline" className="border-border/30 bg-card/25 gap-1 text-[#FFC800]">
+          </button>
+          <button
+            onClick={() => {
+              setSelectedNode(null);
+              setSidebarListType(sidebarListType === "decision" ? null : "decision");
+            }}
+            className={cn(
+              "flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all cursor-pointer font-semibold uppercase tracking-wider text-[10px]",
+              sidebarListType === "decision"
+                ? "bg-[#FFC800]/20 border-[#FFC800] text-[#FFC800] shadow-sm"
+                : "border-border/30 bg-card/25 text-[#FFC800] hover:bg-[#FFC800]/10"
+            )}
+          >
             {nodeStats.decisions} Decisions
-          </Badge>
-          <Badge variant="outline" className="border-border/30 bg-card/25 gap-1 text-[#1CB0F6]">
+          </button>
+          <button
+            onClick={() => {
+              setSelectedNode(null);
+              setSidebarListType(sidebarListType === "person" ? null : "person");
+            }}
+            className={cn(
+              "flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all cursor-pointer font-semibold uppercase tracking-wider text-[10px]",
+              sidebarListType === "person"
+                ? "bg-[#1CB0F6]/20 border-[#1CB0F6] text-[#1CB0F6] shadow-sm"
+                : "border-border/30 bg-card/25 text-[#1CB0F6] hover:bg-[#1CB0F6]/10"
+            )}
+          >
             {nodeStats.people} People
-          </Badge>
-          <Badge variant="outline" className="border-border/30 bg-card/25 gap-1 text-[#CE82FF]">
+          </button>
+          <button
+            onClick={() => {
+              setSelectedNode(null);
+              setSidebarListType(sidebarListType === "project" ? null : "project");
+            }}
+            className={cn(
+              "flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all cursor-pointer font-semibold uppercase tracking-wider text-[10px]",
+              sidebarListType === "project"
+                ? "bg-[#CE82FF]/20 border-[#CE82FF] text-[#CE82FF] shadow-sm"
+                : "border-border/30 bg-card/25 text-[#CE82FF] hover:bg-[#CE82FF]/10"
+            )}
+          >
             {nodeStats.projects} Projects
-          </Badge>
+          </button>
         </div>
       </div>
 
@@ -940,6 +1148,7 @@ export function BrainPage() {
             <canvas
               ref={canvasRef}
               onMouseDown={handleMouseDown}
+              onDoubleClick={handleDoubleClick}
               onMouseMove={handleMouseMove}
               onMouseUp={handleMouseUpOrLeave}
               onMouseLeave={handleMouseUpOrLeave}
@@ -999,11 +1208,22 @@ export function BrainPage() {
         <div
           className={cn(
             "w-80 border-l border-border/20 bg-zinc-950/20 backdrop-blur-md flex flex-col z-20 shrink-0 transition-transform duration-300",
-            selectedNode ? "translate-x-0" : "translate-x-full absolute right-0 top-0 bottom-0 md:relative md:translate-x-0 md:opacity-0 md:pointer-events-none"
+            selectedNode || sidebarListType ? "translate-x-0" : "translate-x-full absolute right-0 top-0 bottom-0 md:relative md:translate-x-0 md:opacity-0 md:pointer-events-none"
           )}
         >
           {selectedNode ? (
             <div className="flex-1 flex flex-col min-h-0 divide-y divide-border/20">
+              {/* Back to List option */}
+              {sidebarListType && (
+                <button
+                  onClick={() => setSelectedNode(null)}
+                  className="flex items-center gap-1.5 px-4 py-2 text-[10px] text-primary hover:text-primary/80 border-b border-border/10 bg-zinc-950/30 transition-colors text-left font-semibold cursor-pointer"
+                >
+                  <ArrowRight className="w-3.5 h-3.5 rotate-180" />
+                  Back to {sidebarListType === "person" ? "People" : sidebarListType === "project" ? "Projects" : sidebarListType === "source" ? "Notes" : sidebarListType === "task" ? "Tasks" : "Decisions"} List
+                </button>
+              )}
+
               {/* Node Header */}
               <div className="p-4 flex items-start justify-between gap-3 bg-zinc-950/40">
                 <div className="flex-1 min-w-0">
@@ -1017,18 +1237,48 @@ export function BrainPage() {
                     {selectedNode.label}
                   </h3>
                 </div>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-6 w-6 rounded-md hover:bg-zinc-800 text-muted-foreground hover:text-foreground"
-                  onClick={() => setSelectedNode(null)}
-                >
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Button>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {getResourceUrl(selectedNode) && (
+                    <a
+                      href={getResourceUrl(selectedNode)!}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[9px] font-bold text-primary hover:underline px-2 py-1 bg-primary/10 rounded-lg flex items-center gap-1 border border-primary/20 hover:bg-primary/20 transition-all cursor-pointer"
+                    >
+                      Open
+                    </a>
+                  )}
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-6 w-6 rounded-md hover:bg-zinc-800 text-muted-foreground hover:text-foreground cursor-pointer"
+                    onClick={() => {
+                      setSelectedNode(null);
+                      setSidebarListType(null);
+                    }}
+                  >
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
               </div>
 
               {/* Node Details */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs scrollbar-none">
+                {/* Primary Open CTA */}
+                {getResourceUrl(selectedNode) && (
+                  <div className="pb-1.5">
+                    <a
+                      href={getResourceUrl(selectedNode)!}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full py-2 px-3 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-[10px] uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-primary/25 cursor-pointer text-center"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      Open Full Resource Page
+                    </a>
+                  </div>
+                )}
+
                 <div className="space-y-1.5">
                   <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Content Summary</p>
                   <div className="p-3 bg-zinc-900/35 border border-border/10 rounded-xl leading-relaxed text-muted-foreground whitespace-pre-wrap select-text">
@@ -1125,8 +1375,8 @@ export function BrainPage() {
                         return (
                           <button
                             key={targetNode.id}
-                            onClick={() => setSelectedNode(targetNode)}
-                            className="w-full flex items-center justify-between p-2 rounded-xl border border-border/10 bg-zinc-900/10 hover:bg-zinc-800/30 transition text-left"
+                            onClick={() => focusOnNode(targetNode)}
+                            className="w-full flex items-center justify-between p-2 rounded-xl border border-border/10 bg-zinc-900/10 hover:bg-zinc-800/30 transition text-left cursor-pointer"
                           >
                             <span className="font-medium truncate max-w-[140px] text-muted-foreground hover:text-foreground">
                               {targetNode.label}
@@ -1143,6 +1393,72 @@ export function BrainPage() {
                       })}
                   </div>
                 </div>
+              </div>
+            </div>
+          ) : sidebarListType ? (
+            <div className="flex-1 flex flex-col min-h-0 divide-y divide-border/20 bg-zinc-950/40">
+              {/* List Header */}
+              <div className="p-4 flex items-center justify-between bg-zinc-950/60">
+                <div>
+                  <h3 className="text-xs uppercase font-bold tracking-wider text-muted-foreground">
+                    All {sidebarListType === "person" ? "People" : sidebarListType === "project" ? "Projects" : sidebarListType === "source" ? "Notes" : sidebarListType === "task" ? "Tasks" : "Decisions"}
+                  </h3>
+                  <span className="text-[10px] text-primary font-bold">
+                    {rawNodes.filter((n) => n.type === sidebarListType).length} entries found
+                  </span>
+                </div>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-6 w-6 rounded-md hover:bg-zinc-800 text-muted-foreground hover:text-foreground cursor-pointer"
+                  onClick={() => setSidebarListType(null)}
+                >
+                  <X className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+
+              {/* List Content */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-2 text-xs scrollbar-none">
+                {rawNodes.filter((n) => n.type === sidebarListType).length === 0 ? (
+                  <div className="text-center py-6 text-muted-foreground/60 text-[10px]">
+                    No entries in this category.
+                  </div>
+                ) : (
+                  rawNodes
+                    .filter((n) => n.type === sidebarListType)
+                    .map((el) => (
+                      <div
+                        key={el.id}
+                        className="p-3 bg-zinc-900/30 border border-border/10 rounded-xl hover:bg-zinc-800/40 transition-all flex flex-col gap-2 relative group"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <button
+                            onClick={() => focusOnNode(el)}
+                            className="font-bold text-foreground text-left hover:text-primary transition-colors truncate max-w-[170px] cursor-pointer"
+                          >
+                            {el.label}
+                          </button>
+                          <div className="flex gap-1.5 opacity-90 group-hover:opacity-100 transition-opacity">
+                            {getResourceUrl(el) && (
+                              <a
+                                href={getResourceUrl(el)!}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[9px] font-bold text-primary hover:underline px-1.5 py-0.5 rounded bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-all flex items-center gap-0.5 cursor-pointer"
+                              >
+                                Open
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                        {el.details && (
+                          <p className="text-[10px] text-muted-foreground line-clamp-2 leading-relaxed">
+                            {el.details}
+                          </p>
+                        )}
+                      </div>
+                    ))
+                )}
               </div>
             </div>
           ) : (
