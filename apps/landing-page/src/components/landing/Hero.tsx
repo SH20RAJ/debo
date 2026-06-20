@@ -21,11 +21,11 @@ export function Hero() {
           </div>
 
           <h1 className="font-heading text-5xl font-semibold tracking-tight text-landing-text-primary md:text-landing-4xl lg:text-landing-hero max-w-4xl leading-[1.05]">
-            The memory layer for your life.
+            Capture anything.<br />Ask your past.<br />Trust every answer.
           </h1>
 
           <p className="mx-auto max-w-2xl text-landing-base md:text-landing-lg font-medium leading-relaxed text-landing-text-secondary">
-            Debo is foundational infrastructure for personal context. Capture your history, index your decisions, and build the memory substrate for your future AI.
+            Debo is the private Memory OS for personal intelligence. We ingest your voice, documents, mails, and connector activity into a unified, source-backed memory graph, giving your personal AI permanent recall.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center gap-4 pt-6">

@@ -27,6 +27,7 @@ export async function POST(req: Request) {
   let body: { messages?: any[]; threadId?: string };
   try {
     body = await req.json();
+    console.log("ROUTE API BODY:", JSON.stringify(body, null, 2));
   } catch {
     return apiError("invalid_json", 400);
   }
@@ -102,6 +103,7 @@ export async function POST(req: Request) {
   const customOpenAI = createOpenAI({
     baseURL: cfg.baseURL,
     apiKey: cfg.apiKey,
+    compatibility: "compatible",
   });
   const model = customOpenAI.chat(cfg.chatModel);
 

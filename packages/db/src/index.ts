@@ -4,7 +4,7 @@ import * as schema from './schema';
 export * from './schema';
 
 const databaseUrl = process.env.DATABASE_URL;
-const defaultTimeout = process.env.NODE_ENV === "development" ? 3000 : 2500;
+const defaultTimeout = process.env.NODE_ENV === "development" ? 15000 : 10000;
 const neonFetchTimeoutMs = Number(process.env.NEON_FETCH_TIMEOUT_MS || defaultTimeout);
 
 neonConfig.fetchFunction = async (input: string | URL | Request, init?: RequestInit) => {

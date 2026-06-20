@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useUser } from "@stackframe/stack";
@@ -271,10 +271,19 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
 function SidebarUser({ collapsed }: { collapsed: boolean }) {
   const router = useRouter();
   const user = useUser();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || !user) {
+    return <SidebarUserFallback collapsed={collapsed} />;
+  }
 
   const handleLogout = async () => {
     try {
-      await user?.signOut();
+      await user.signOut();
       router.push("/");
     } catch {
       // Force redirect even if signOut fails
@@ -283,7 +292,7 @@ function SidebarUser({ collapsed }: { collapsed: boolean }) {
   };
 
   // User display info
-  const displayName = user?.displayName || user?.primaryEmail?.split("@")[0] || "User";
+  const displayName = user.displayName || user.primaryEmail?.split("@")[0] || "User";
   const initials = displayName.slice(0, 2).toUpperCase();
 
   return (

@@ -18,14 +18,17 @@ export function FounderNote() {
     <section className="py-24 md:py-32 px-6 bg-landing-bg border-t border-landing-border-light">
       <div className="mx-auto max-w-3xl">
         <h2 className="font-heading text-landing-2xl md:text-landing-3xl font-semibold tracking-tight text-landing-text-primary mb-8">
-          Why I&apos;m building Debo
+          The memory substrate for human agency
         </h2>
         <div className="space-y-6">
           <p className="text-landing-base md:text-landing-lg font-medium leading-relaxed text-landing-text-secondary">
-            I kept losing useful context — voice notes, project ideas, saved links, meeting promises, and thoughts from different apps. AI chats were helpful, but every conversation started from zero.
+            Every day, we leak intelligence. We lose context—fleeting thoughts, raw voice transcripts, meeting promises, decisions, and files—scattered across a dozen disjointed applications. AI models are getting smarter, but they still treat you like a stranger. Every conversation starts from absolute zero.
           </p>
           <p className="text-landing-base md:text-landing-lg font-medium leading-relaxed text-landing-text-secondary">
-            Debo is my attempt to build a private memory system that actually remembers the things I choose to save.
+            Without permanent memory, personal agency is crippled. We are building Debo as a private Memory OS—a secure, source-backed context engine that turns your history into active intelligence. It connects your past to your present, ensuring that every answer links back to the exact truth of what you did and said.
+          </p>
+          <p className="text-landing-base md:text-landing-lg font-medium leading-relaxed text-landing-text-secondary">
+            The future of AI isn't just about general knowledge; it's about deeply personalized context. Debo is our contribution to making that memory layer open, secure, and permanently yours.
           </p>
 
           <div className="pt-8">

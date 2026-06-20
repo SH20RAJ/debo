@@ -24,6 +24,7 @@ if (typeof window === 'undefined') {
 export const aiProvider = createOpenAI({
   apiKey: NVIDIA_KEY,
   baseURL: NVIDIA_BASE_URL,
+  compatibility: "compatible",
 });
 
 export function getChatModel() {
