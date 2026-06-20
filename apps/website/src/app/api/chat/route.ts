@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { streamText } from "ai";
+import { streamText, convertToModelMessages, type UIMessage, stepCountIs } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { requireSession, apiError, newId } from "@/lib/api-helpers";
 import { db } from "@debo/db";
@@ -24,18 +24,32 @@ export async function POST(req: Request) {
   if (session instanceof NextResponse) return session;
   const { user, workspaceId } = session;
 
-  let body: { messages?: { role: "user" | "assistant"; content: string }[]; threadId?: string };
+  let body: { messages?: any[]; threadId?: string };
   try {
     body = await req.json();
   } catch {
     return apiError("invalid_json", 400);
   }
 
-  const messages = body.messages || [];
-  if (messages.length === 0) return apiError("messages_required", 400);
+  const rawMessages = body.messages || [];
+  if (rawMessages.length === 0) return apiError("messages_required", 400);
 
-  const lastUserMessage = [...messages].reverse().find((m) => m.role === "user");
-  const question = lastUserMessage?.content || "";
+  // Extract text from UIMessage format (parts) or legacy format (content)
+  function extractText(msg: any): string {
+    // UIMessage v6 format: { parts: [{ type: "text", text: "..." }] }
+    if (Array.isArray(msg.parts)) {
+      return msg.parts
+        .filter((p: any) => p.type === "text")
+        .map((p: any) => p.text || "")
+        .join("\n");
+    }
+    // Legacy format: { content: "..." }
+    if (typeof msg.content === "string") return msg.content;
+    return "";
+  }
+
+  const lastUserMessage = [...rawMessages].reverse().find((m) => m.role === "user");
+  const question = lastUserMessage ? extractText(lastUserMessage) : "";
 
   let threadId = body.threadId;
   let threadExists = false;
@@ -89,7 +103,7 @@ export async function POST(req: Request) {
     baseURL: cfg.baseURL,
     apiKey: cfg.apiKey,
   });
-  const model = customOpenAI(cfg.chatModel);
+  const model = customOpenAI.chat(cfg.chatModel);
 
   // Perform memory retrieval
   const retrieved = await retrieveMemory(user.id, question, 8);
@@ -110,13 +124,14 @@ export async function POST(req: Request) {
       : "\nNo relevant memory found for this question.",
   ].join("\n");
 
+  // Convert UIMessage[] to ModelMessage[] for the LLM
+  const modelMessages = await convertToModelMessages(rawMessages);
+
   const result = streamText({
     model,
     system: systemPrompt,
-    messages: messages.map((m) => ({
-      role: m.role as "user" | "assistant",
-      content: m.content,
-    })),
+    messages: modelMessages,
+    stopWhen: stepCountIs(5),
     tools: {
       queryTasks: {
         description: "Search and query tasks assigned to you or in your inbox.",
@@ -133,7 +148,7 @@ export async function POST(req: Request) {
           const results = await db.select().from(tasks).where(and(...conditions)).limit(20);
           return JSON.stringify(results);
         },
-      } as any,
+      },
       queryJournals: {
         description: "Search and query your private and public journal logs.",
         parameters: z.object({ query: z.string().optional() }),
@@ -150,7 +165,7 @@ export async function POST(req: Request) {
           const results = await db.select().from(sources).where(and(...conditions)).limit(10);
           return JSON.stringify(results);
         },
-      } as any,
+      },
       queryVoiceNotes: {
         description: "Search and retrieve transcribed voice notes or recorded phone conversations with Debo.",
         parameters: z.object({ query: z.string().optional() }),
@@ -167,7 +182,7 @@ export async function POST(req: Request) {
           const results = await db.select().from(sources).where(and(...conditions)).limit(10);
           return JSON.stringify(results);
         },
-      } as any,
+      },
       queryMail: {
         description: "Search and retrieve your transactional emails from Debo Mail.",
         parameters: z.object({ query: z.string().optional() }),
@@ -182,9 +197,9 @@ export async function POST(req: Request) {
           const results = await db.select().from(deboMailMessages).where(and(...conditions)).limit(15);
           return JSON.stringify(results);
         },
-      } as any,
+      },
     },
-    async onFinish({ text }) {
+    async onFinish({ text }: { text: string }) {
       // Persist assistant response to DB
       const assistantMessageId = newId("msg");
       await db.insert(chatMessages).values({
@@ -212,9 +227,9 @@ export async function POST(req: Request) {
         );
       }
     },
-  });
+  } as any);
 
-  return result.toTextStreamResponse({
+  return result.toUIMessageStreamResponse({
     headers: {
       // Send the thread ID in headers so the client can retrieve or update the search param
       "x-thread-id": threadId,
