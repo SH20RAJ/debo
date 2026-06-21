@@ -5,6 +5,7 @@ import { TodayRail } from "@/components/home/today-rail";
 import { OpenLoops } from "@/components/home/open-loops";
 import { DeboChatWidget } from "@/components/home/debo-chat-widget";
 import { RecentMemories } from "@/components/home/recent-memories";
+import { SmartHomeWidget } from "@/components/dashboard/smart-home-widget";
 
 export default function DashboardPage() {
   return (
@@ -21,8 +22,13 @@ export default function DashboardPage() {
         <OpenLoops />
       </div>
 
-      <div className="mb-6">
-        <DeboChatWidget />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+        <div className="md:col-span-2">
+          <DeboChatWidget />
+        </div>
+        <div>
+          <SmartHomeWidget />
+        </div>
       </div>
 
       <RecentMemories />

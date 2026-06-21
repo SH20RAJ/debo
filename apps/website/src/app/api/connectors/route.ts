@@ -76,6 +76,7 @@ export async function GET(req: Request) {
       { provider: "github", name: "GitHub", description: "Sync repositories, pull requests, issues, and commits.", icon: "https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/github.svg", color: "#24292e", category: "Development", permission: "Read access to repositories, code, and issues" },
       { provider: "slack", name: "Slack", description: "Index channels and direct messages for conversational context.", icon: "https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/slack.svg", color: "#4A154B", category: "Communication", permission: "Read public channels and direct messages" },
       { provider: "drive", name: "Google Drive", description: "Sync PDFs, text documents, spreadsheets, and presentations.", icon: "https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/googledrive.svg", color: "#34A853", category: "Knowledge & Notes", permission: "Read-only access to select files and folders" },
+      { provider: "homeassistant", name: "Home Assistant", description: "Control and monitor your smart home devices (lights, switches, climate, locks).", icon: "https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/homeassistant.svg", color: "#41BDF5", category: "Smart Home & IoT", permission: "Read states and call device control services" },
       { provider: "jira", name: "Jira", description: "Sync sprint tickets, tasks, boards, and project timelines.", icon: "https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/jira.svg", color: "#0052CC", category: "Development", permission: "Read tasks and ticket details" },
       { provider: "hubspot", name: "HubSpot", description: "Sync customer deals, contacts, pipeline notes, and CRM emails.", icon: "https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/hubspot.svg", color: "#FF7A59", category: "Business", permission: "Read CRM deals and contacts" },
       { provider: "discord", name: "Discord", description: "Sync guild channels, messages, and voice chat transcripts.", icon: "https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/discord.svg", color: "#5865F2", category: "Communication", permission: "Read guild text messages" },
@@ -118,6 +119,7 @@ export async function GET(req: Request) {
           status: row ? (row.status === "disconnected" ? "disconnected" : row.status) : "disconnected",
           lastSyncedAt: row ? row.lastSyncedAt : null,
           externalAccountId: row ? row.externalAccountId : null,
+          metadataJson: row ? row.metadataJson : null,
         };
       });
     } else {
@@ -136,6 +138,7 @@ export async function GET(req: Request) {
           status: row ? (row.status === "disconnected" ? "disconnected" : row.status) : "disconnected",
           lastSyncedAt: row ? row.lastSyncedAt : null,
           externalAccountId: row ? row.externalAccountId : null,
+          metadataJson: row ? row.metadataJson : null,
         };
       });
     }
@@ -156,6 +159,7 @@ export async function GET(req: Request) {
           status: row.status,
           lastSyncedAt: row.lastSyncedAt,
           externalAccountId: row.externalAccountId,
+          metadataJson: row.metadataJson,
         });
       }
     }

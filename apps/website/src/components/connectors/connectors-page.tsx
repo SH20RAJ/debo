@@ -1,11 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ShieldCheck, Loader2 } from "lucide-react";
+import { ShieldCheck, Loader2, Home } from "lucide-react";
 import { ConnectorCard } from "./connector-card";
 import { api } from "@/lib/api";
 import type { Connector } from "@/lib/types";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
 
 const PROVIDER_METADATA: Record<string, {
   name: string;
@@ -15,6 +26,14 @@ const PROVIDER_METADATA: Record<string, {
   category: string;
   permission: string;
 }> = {
+  homeassistant: {
+    name: "Home Assistant",
+    description: "Control and monitor your smart home devices (lights, switches, climate, locks).",
+    icon: "🏠",
+    color: "#41BDF5",
+    category: "Smart Home & IoT",
+    permission: "Read states and call device control services",
+  },
   gmail: {
     name: "Gmail",
     description: "Sync your emails to search conversations, summaries, and action items.",
@@ -103,6 +122,13 @@ export function ConnectorsPage() {
   const [error, setError] = useState(false);
   const [pollActive, setPollActive] = useState(false);
 
+  // Home Assistant Modal states
+  const [haModalOpen, setHaModalOpen] = useState(false);
+  const [haUrl, setHaUrl] = useState("");
+  const [haToken, setHaToken] = useState("");
+  const [haSimulated, setHaSimulated] = useState(true);
+  const [haConnecting, setHaConnecting] = useState(false);
+
   // Initial fetch
   useEffect(() => {
     let cancelled = false;
@@ -156,6 +182,11 @@ export function ConnectorsPage() {
   }, [pollActive, connectors]);
 
   const handleConnect = async (provider: string) => {
+    if (provider === "homeassistant") {
+      setHaModalOpen(true);
+      return;
+    }
+
     try {
       const res = await api.connectors.connect(provider);
       if (res && res.redirectUrl) {
@@ -178,6 +209,36 @@ export function ConnectorsPage() {
       }
     } catch {
       toast.error("Error connecting service.");
+    }
+  };
+
+  const handleConnectHomeAssistant = async () => {
+    setHaConnecting(true);
+    try {
+      const res = await fetch("/api/connectors/homeassistant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          url: haUrl,
+          token: haToken,
+          simulated: haSimulated,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to connect Home Assistant");
+      }
+      setHaModalOpen(false);
+      
+      // Refresh list
+      const freshData = await api.connectors.list();
+      const items = Array.isArray(freshData) ? freshData : freshData?.connectors ?? freshData?.data ?? [];
+      setConnectors(items.map(normalizeConnector));
+      toast.success("Home Assistant connected successfully!");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to connect Home Assistant");
+    } finally {
+      setHaConnecting(false);
     }
   };
 
@@ -302,6 +363,96 @@ export function ConnectorsPage() {
           </div>
         ))}
       </div>
+
+      <Dialog open={haModalOpen} onOpenChange={setHaModalOpen}>
+        <DialogContent className="max-w-md bg-[var(--background)] border border-border rounded-3xl p-6 shadow-2xl">
+          <DialogHeader className="space-y-2">
+            <div className="size-12 rounded-2xl bg-[#41BDF5]/15 flex items-center justify-center text-2xl text-[#41BDF5] mb-2">
+              🏠
+            </div>
+            <DialogTitle className="text-xl font-bold font-[var(--font-nunito)] text-foreground">
+              Connect Home Assistant
+            </DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground leading-relaxed">
+              Integrate your smart home with Debo. Control smart bulbs, fans, locks, and climate via natural voice or text commands.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 my-4">
+            <div className="flex items-center justify-between p-3 rounded-2xl border border-primary/10 bg-primary/5">
+              <div className="space-y-0.5 pr-4">
+                <span className="text-xs font-bold text-foreground block">
+                  Simulated Demo Mode
+                </span>
+                <span className="text-[11px] text-muted-foreground block">
+                  Creates virtual mock devices to test AI execution instantly without real Home Assistant.
+                </span>
+              </div>
+              <Switch
+                checked={haSimulated}
+                onCheckedChange={setHaSimulated}
+                className="data-[state=checked]:bg-primary"
+              />
+            </div>
+
+            {!haSimulated && (
+              <>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-muted-foreground block">
+                    Home Assistant URL
+                  </label>
+                  <Input
+                    placeholder="https://your-hass-instance.duckdns.org:8123"
+                    value={haUrl}
+                    onChange={(e) => setHaUrl(e.target.value)}
+                    className="rounded-xl border-border bg-card text-sm focus-visible:ring-primary"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-muted-foreground block">
+                    Long-Lived Access Token
+                  </label>
+                  <Input
+                    type="password"
+                    placeholder="eyJhbGciOi..."
+                    value={haToken}
+                    onChange={(e) => setHaToken(e.target.value)}
+                    className="rounded-xl border-border bg-card text-sm focus-visible:ring-primary"
+                  />
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    Generate this in your Home Assistant Profile settings page.
+                  </p>
+                </div>
+              </>
+            )}
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0 mt-2">
+            <Button
+              variant="outline"
+              onClick={() => setHaModalOpen(false)}
+              className="rounded-full font-medium"
+              disabled={haConnecting}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConnectHomeAssistant}
+              className="bg-primary hover:bg-primary/95 text-primary-foreground rounded-full font-medium shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+              disabled={haConnecting}
+            >
+              {haConnecting ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  <span>Connecting...</span>
+                </>
+              ) : (
+                <span>Connect Integration</span>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

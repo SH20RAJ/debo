@@ -209,6 +209,146 @@ const queryConnectorsTool = (userId: string, workspaceId: string) => tool(
   }
 );
 
+const getIotDeviceStatesTool = (userId: string, workspaceId: string) => tool(
+  async () => {
+    try {
+      const [account] = await db
+        .select()
+        .from(connectorAccounts)
+        .where(
+          and(
+            eq(connectorAccounts.userId, userId),
+            eq(connectorAccounts.workspaceId, workspaceId),
+            eq(connectorAccounts.provider, "homeassistant"),
+            eq(connectorAccounts.status, "connected")
+          )
+        )
+        .limit(1);
+
+      if (!account) {
+        return "The Home Assistant / IoT connector is not connected yet. Please instruct the user to go to Settings > Connectors to connect it (either in real or simulated mode).";
+      }
+
+      const metadata = JSON.parse(account.metadataJson || "{}");
+      return JSON.stringify(metadata.devices || {});
+    } catch (err: any) {
+      return `Error retrieving IoT device states: ${err.message || err}`;
+    }
+  },
+  {
+    name: "get_iot_device_states",
+    description: "Get the current states of all connected smart home devices (lights, switches, climate, locks, etc.).",
+    schema: z.object({}),
+  }
+);
+
+const controlIotDeviceTool = (userId: string, workspaceId: string) => tool(
+  async (input: any) => {
+    try {
+      const { entityId, state, brightness, temperature } = input;
+
+      const [account] = await db
+        .select()
+        .from(connectorAccounts)
+        .where(
+          and(
+            eq(connectorAccounts.userId, userId),
+            eq(connectorAccounts.workspaceId, workspaceId),
+            eq(connectorAccounts.provider, "homeassistant"),
+            eq(connectorAccounts.status, "connected")
+          )
+        )
+        .limit(1);
+
+      if (!account) {
+        return "The Home Assistant / IoT connector is not connected yet. Please ask the user to connect it.";
+      }
+
+      const metadata = JSON.parse(account.metadataJson || "{}");
+      const { url, token, simulated, devices = {} } = metadata;
+
+      const device = devices[entityId];
+      if (!device) {
+        return `Device with entity ID "${entityId}" was not found. Available devices: ${Object.keys(devices).join(", ")}`;
+      }
+
+      const updatedDevice = { ...device };
+      if (entityId.startsWith("lock.")) {
+        updatedDevice.state = state === "lock" || state === "locked" ? "locked" : "unlocked";
+      } else {
+        updatedDevice.state = state;
+      }
+      if (brightness !== undefined) updatedDevice.brightness = brightness;
+      if (temperature !== undefined) updatedDevice.temperature = temperature;
+
+      if (!simulated) {
+        const [domain] = entityId.split(".");
+        let service = "";
+        let body: Record<string, any> = { entity_id: entityId };
+
+        if (domain === "light" || domain === "switch") {
+          service = state === "on" ? "turn_on" : "turn_off";
+          if (domain === "light" && brightness !== undefined) {
+            body.brightness = brightness;
+          }
+        } else if (domain === "lock") {
+          service = state === "lock" || state === "locked" ? "lock" : "unlock";
+        } else if (domain === "climate") {
+          service = "set_temperature";
+          if (temperature !== undefined) {
+            body.temperature = temperature;
+          }
+        }
+
+        try {
+          const haRes = await fetch(`${url}/api/services/${domain}/${service}`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(body),
+          });
+
+          if (!haRes.ok) {
+            return `Failed to execute control service on Home Assistant. Status: ${haRes.status}`;
+          }
+        } catch (err: any) {
+          return `Error contacting Home Assistant API: ${err.message || err}`;
+        }
+      }
+
+      // Persist the updated state back to the database
+      metadata.devices = {
+        ...devices,
+        [entityId]: updatedDevice,
+      };
+
+      await db
+        .update(connectorAccounts)
+        .set({
+          metadataJson: JSON.stringify(metadata),
+          updatedAt: new Date().toISOString(),
+        })
+        .where(eq(connectorAccounts.id, account.id));
+
+      return `Successfully set ${entityId} to state: "${state}"${brightness !== undefined ? ` with brightness ${brightness}` : ""}${temperature !== undefined ? ` at temperature ${temperature}°C` : ""}.`;
+    } catch (err: any) {
+      return `Error controlling IoT device: ${err.message || err}`;
+    }
+  },
+  {
+    name: "control_iot_device",
+    description: "Control a connected smart home device by changing its state (e.g. turn on a light, lock a door, set thermostat temperature).",
+    schema: z.object({
+      entityId: z.string().describe("The entity ID of the device (e.g., 'light.living_room', 'switch.kitchen_fan', 'lock.front_door', 'climate.thermostat')"),
+      state: z.string().describe("The target state for the device (e.g., 'on', 'off', 'lock', 'unlock', 'heat')"),
+      brightness: z.number().min(0).max(255).optional().describe("Optional brightness level (0-255) for lights only"),
+      temperature: z.number().optional().describe("Optional target temperature value for climate/thermostat devices only"),
+    }),
+  }
+);
+
 export async function POST(req: Request) {
   const session = await requireSession(req);
   if (session instanceof NextResponse) return session;
@@ -351,6 +491,8 @@ export async function POST(req: Request) {
             queryVoiceNotesTool(user.id, workspaceId),
             queryMailTool(user.id, workspaceId),
             queryConnectorsTool(user.id, workspaceId),
+            getIotDeviceStatesTool(user.id, workspaceId),
+            controlIotDeviceTool(user.id, workspaceId),
             ...composioTools,
             ...customMcpTools,
           ];
