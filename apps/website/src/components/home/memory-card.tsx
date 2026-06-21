@@ -52,9 +52,9 @@ export function MemoryCard({
   return (
     <Card
       className={cn(
-        "rounded-2xl border-2 border-border bg-card p-0",
-        "transition-all duration-200",
-        "hover:-translate-y-0.5 hover:shadow-md hover:border-primary/30",
+        "rounded-[1.75rem] border border-border/85 bg-card p-0",
+        "transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.02)]",
+        "hover:-translate-y-[1.5px] hover:shadow-[0_8px_24px_rgba(0,0,0,0.04)] hover:border-primary/25",
         "flex flex-col"
       )}
     >

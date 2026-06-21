@@ -26,13 +26,15 @@ export function Greeting() {
     "there";
 
   return (
-    <div className="flex flex-col gap-1">
-      <p className="text-sm text-muted-foreground font-medium">
-        {greeting}, {displayName}
-      </p>
-      <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground font-[var(--font-nunito)]">
-        What&apos;s on your mind?
-      </h1>
+    <div className="flex items-center justify-between py-2 border-b border-border/40 pb-4">
+      <div>
+        <h2 className="text-2xl font-black text-foreground tracking-tight">
+          Hi, {displayName}
+        </h2>
+        <p className="text-xs text-muted-foreground font-semibold mt-0.5">
+          {greeting}
+        </p>
+      </div>
     </div>
   );
 }

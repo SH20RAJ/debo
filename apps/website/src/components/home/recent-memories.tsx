@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Loader2 } from "lucide-react";
+import useSWR from "swr";
 import { Button } from "@/components/ui/button";
 import { MemoryCard } from "./memory-card";
 import type { MemoryCardProps } from "./memory-card";
@@ -41,70 +41,57 @@ function formatRelativeDate(iso?: string): string {
 
 export function RecentMemories() {
   const router = useRouter();
-  const [memories, setMemories] = useState<MemoryCardProps[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
-    api.sources
-      .list()
-      .then((data: unknown) => {
-        if (cancelled) return;
-        const items = Array.isArray(data)
-          ? data
-          : (data as any)?.sources ?? (data as any)?.data ?? [];
-        setMemories((items as any[]).slice(0, 8).map(normalizeSource));
-        setLoading(false);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setError(true);
-        setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // Fetch sources with SWR
+  const { data: rawSources, isLoading, error } = useSWR(
+    "/api/sources",
+    () => api.sources.list()
+  );
+
+  const items = Array.isArray(rawSources)
+    ? rawSources
+    : (rawSources as any)?.sources ?? (rawSources as any)?.data ?? [];
+
+  const memories: MemoryCardProps[] = items.slice(0, 8).map(normalizeSource);
 
   return (
-    <section>
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-semibold text-foreground font-[var(--font-nunito)]">
+    <section className="mt-2">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-sm font-bold text-foreground uppercase tracking-wider font-[var(--font-nunito)]">
           Recent memories
         </h2>
         <Button
           variant="ghost"
           size="xs"
           onClick={() => router.push("/dashboard/library")}
-          className="rounded-lg text-muted-foreground"
+          className="rounded-xl text-muted-foreground hover:text-primary text-xs"
         >
           Library
-          <ArrowRight className="size-3.5" />
+          <ArrowRight className="size-3.5 ml-1" />
         </Button>
       </div>
 
-      {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      {isLoading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[0, 1, 2, 3].map((i) => (
             <div
               key={i}
               className={cn(
-                "rounded-2xl border-2 border-border bg-card h-36",
+                "rounded-[1.75rem] border border-border bg-card h-36",
                 "animate-pulse"
               )}
             />
           ))}
         </div>
       ) : error ? (
-        <p className="text-sm text-muted-foreground py-4">
+        <p className="text-sm text-muted-foreground py-6 text-center">
           Could not load memories.
         </p>
       ) : memories.length === 0 ? (
         <div
           className={cn(
-            "rounded-2xl border-2 border-dashed border-border bg-card/40",
-            "p-6 text-center"
+            "rounded-[1.75rem] border border-dashed border-border/80 bg-card/40",
+            "p-8 text-center"
           )}
         >
           <p className="text-sm text-muted-foreground">
@@ -115,11 +102,11 @@ export function RecentMemories() {
         <>
           {/* Mobile: horizontal scroll */}
           <div className="-mx-4 px-4 sm:hidden">
-            <div className="flex gap-3 overflow-x-auto pb-2 snap-x">
+            <div className="flex gap-4 overflow-x-auto pb-4 snap-x scrollbar-hide">
               {memories.map((m, i) => (
                 <div
                   key={i}
-                  className="snap-start shrink-0 w-[78%] first:ml-0"
+                  className="snap-start shrink-0 w-[80%] first:ml-0"
                 >
                   <MemoryCard {...m} />
                 </div>
@@ -127,7 +114,7 @@ export function RecentMemories() {
             </div>
           </div>
           {/* Tablet/desktop grid */}
-          <div className="hidden sm:grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="hidden sm:grid grid-cols-2 lg:grid-cols-4 gap-4">
             {memories.slice(0, 4).map((m, i) => (
               <MemoryCard key={i} {...m} />
             ))}

@@ -50,11 +50,11 @@ export function Drawer({ isOpen, onClose, title, description, children }: Drawer
             transition={{ type: "spring", damping: 25, stiffness: 220 }}
             className={cn(
               "fixed right-0 top-0 bottom-0 z-50 w-full sm:max-w-md md:max-w-lg h-full",
-              "border-l border-white/5 bg-[#0f140d]/90 backdrop-blur-2xl p-6 shadow-2xl flex flex-col"
+              "border-l border-border bg-card/95 backdrop-blur-2xl p-6 shadow-2xl flex flex-col"
             )}
           >
             {/* Header */}
-            <div className="flex items-start justify-between pb-4 border-b border-white/5 mb-5">
+            <div className="flex items-start justify-between pb-4 border-b border-border/40 mb-5">
               <div>
                 {title && (
                   <h2 className="text-base font-bold text-foreground font-[var(--font-nunito)] tracking-tight">

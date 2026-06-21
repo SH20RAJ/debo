@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowUpRight,
@@ -14,7 +14,7 @@ import {
   Upload,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Card, CardContent } from "@/components/ui/card";
+import useSWR from "swr";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -27,32 +27,17 @@ import {
 import { cn } from "@/lib/utils";
 import { api } from "@/lib/api";
 
-interface Counts {
-  inbox: number | null;
-  loading: boolean;
-}
-
 export function ActionTriad() {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
-  const [counts, setCounts] = useState<Counts>({ inbox: null, loading: true });
 
-  useEffect(() => {
-    let cancelled = false;
-    api.tasks
-      .list({ status: "inbox" })
-      .then((data: any) => {
-        if (cancelled) return;
-        const len = Array.isArray(data) ? data.length : 0;
-        setCounts({ inbox: len, loading: false });
-      })
-      .catch(() => {
-        if (!cancelled) setCounts({ inbox: 0, loading: false });
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // Fetch inbox tasks with SWR
+  const { data: inboxTasks, isLoading } = useSWR(
+    "/api/tasks?status=inbox",
+    () => api.tasks.list({ status: "inbox" })
+  );
+
+  const inboxCount = Array.isArray(inboxTasks) ? inboxTasks.length : 0;
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -101,49 +86,44 @@ export function ActionTriad() {
             <button
               type="button"
               className={cn(
-                "group text-left rounded-2xl border-2 border-border bg-card p-4",
-                "transition-all duration-200 cursor-pointer",
-                "hover:-translate-y-0.5 hover:shadow-md hover:border-primary/40",
-                "active:translate-y-0 active:shadow-sm",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                "group text-left ios-card border border-border/80 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/45"
               )}
             >
               <TriadInner
                 icon={Plus}
                 label="Capture"
                 hint="Journal, voice, file, link"
-                accent="primary"
               />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-56 rounded-xl">
+          <DropdownMenuContent align="start" className="w-56 rounded-2xl p-1.5 shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-border/60">
             <DropdownMenuItem
               onClick={() => router.push("/dashboard/journal")}
-              className="rounded-lg cursor-pointer"
+              className="rounded-xl cursor-pointer py-2 px-3 focus:bg-accent/60"
             >
-              <BookOpen className="size-4 text-muted-foreground" />
+              <BookOpen className="size-4 text-muted-foreground mr-2" />
               Write journal
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => router.push("/dashboard/voice")}
-              className="rounded-lg cursor-pointer"
+              className="rounded-xl cursor-pointer py-2 px-3 focus:bg-accent/60"
             >
-              <Mic className="size-4 text-muted-foreground" />
+              <Mic className="size-4 text-muted-foreground mr-2" />
               Record voice
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
+            <DropdownMenuSeparator className="my-1.5 border-border/40" />
             <DropdownMenuItem
               onClick={() => fileRef.current?.click()}
-              className="rounded-lg cursor-pointer"
+              className="rounded-xl cursor-pointer py-2 px-3 focus:bg-accent/60"
             >
-              <Upload className="size-4 text-muted-foreground" />
+              <Upload className="size-4 text-muted-foreground mr-2" />
               Upload file
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={saveLink}
-              className="rounded-lg cursor-pointer"
+              className="rounded-xl cursor-pointer py-2 px-3 focus:bg-accent/60"
             >
-              <LinkIcon className="size-4 text-muted-foreground" />
+              <LinkIcon className="size-4 text-muted-foreground mr-2" />
               Save link
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -154,18 +134,13 @@ export function ActionTriad() {
           type="button"
           onClick={() => router.push("/dashboard/ask")}
           className={cn(
-            "group text-left rounded-2xl border-2 border-border bg-card p-4",
-            "transition-all duration-200 cursor-pointer",
-            "hover:-translate-y-0.5 hover:shadow-md hover:border-primary/40",
-            "active:translate-y-0 active:shadow-sm",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            "group text-left ios-card border border-border/80 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/45"
           )}
         >
           <TriadInner
             icon={MessageSquare}
             label="Ask Debo"
             hint="Search your past with citations"
-            accent="primary"
           />
         </button>
 
@@ -174,31 +149,26 @@ export function ActionTriad() {
           type="button"
           onClick={() => router.push("/dashboard/inbox")}
           className={cn(
-            "group text-left rounded-2xl border-2 border-border bg-card p-4",
-            "transition-all duration-200 cursor-pointer",
-            "hover:-translate-y-0.5 hover:shadow-md hover:border-primary/40",
-            "active:translate-y-0 active:shadow-sm",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            "group text-left ios-card border border-border/80 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/45"
           )}
         >
           <TriadInner
             icon={Inbox}
             label="Review"
             hint={
-              counts.loading
+              isLoading
                 ? "Loading..."
-                : counts.inbox && counts.inbox > 0
-                ? `${counts.inbox} item${counts.inbox === 1 ? "" : "s"} to triage`
+                : inboxCount > 0
+                ? `${inboxCount} item${inboxCount === 1 ? "" : "s"} to triage`
                 : "Inbox is clear"
             }
-            accent="primary"
             badge={
-              counts.inbox && counts.inbox > 0 ? (
-                <Badge className="rounded-full bg-primary text-primary-foreground border-0 text-[10px] px-2 py-0">
-                  {counts.inbox}
+              inboxCount > 0 ? (
+                <Badge className="rounded-full bg-primary text-primary-foreground border-0 text-[10px] font-bold px-2 py-0.5 shadow-xs">
+                  {inboxCount}
                 </Badge>
-              ) : counts.loading ? null : (
-                <span className="text-muted-foreground">
+              ) : isLoading ? null : (
+                <span className="text-primary">
                   <CheckCircle2 className="size-4" />
                 </span>
               )
@@ -219,25 +189,24 @@ function TriadInner({
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   hint: string;
-  accent: "primary";
   badge?: React.ReactNode;
 }) {
   return (
-    <div className="flex items-start gap-3">
+    <div className="flex items-start gap-3 w-full">
       <div
         className={cn(
-          "size-10 rounded-xl shrink-0 flex items-center justify-center",
+          "size-10 rounded-2xl shrink-0 flex items-center justify-center transition-all duration-300",
           "bg-primary/10 text-primary",
-          "group-hover:bg-primary/15 transition-colors"
+          "group-hover:scale-105 group-hover:bg-primary/15"
         )}
       >
         <Icon className="size-5" />
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-foreground">{label}</span>
+          <span className="text-sm font-bold text-foreground font-[var(--font-nunito)]">{label}</span>
           {badge}
-          <ArrowUpRight className="size-3.5 text-muted-foreground/50 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+          <ArrowUpRight className="size-3.5 text-primary/60 ml-auto opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-[-4px] group-hover:translate-x-0" />
         </div>
         <p className="text-xs text-muted-foreground mt-0.5 truncate">{hint}</p>
       </div>

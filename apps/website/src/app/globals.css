@@ -93,48 +93,48 @@
   --font-body: "Nunito Sans", "Nunito", "Segoe UI", sans-serif;
   --font-display: "Nunito", "Segoe UI", sans-serif;
   --bn-colors-editor-background: transparent;
-  /* Duolingo-inspired palette */
-  --background: #FBFCFA;
-  --foreground: #222222;
+  /* Smart Home & FlowUp inspired palette */
+  --background: #FAF8F5;
+  --foreground: #1A1A1A;
   --card: #FFFFFF;
-  --card-foreground: #222222;
+  --card-foreground: #1A1A1A;
   --popover: #FFFFFF;
-  --popover-foreground: #222222;
-  --primary: #58CC02;
+  --popover-foreground: #1A1A1A;
+  --primary: #E04006;
   --primary-foreground: #FFFFFF;
-  --secondary: #FAFAF7;
-  --secondary-foreground: #555555;
-  --muted: #FAFAF7;
-  --muted-foreground: #888888;
-  --accent: #FAFAF7;
-  --accent-foreground: #222222;
-  --destructive: #FF4B4B;
+  --secondary: #F3EFEA;
+  --secondary-foreground: #4E4A42;
+  --muted: #F3EFEA;
+  --muted-foreground: #8A857C;
+  --accent: #F3EFEA;
+  --accent-foreground: #1A1A1A;
+  --destructive: #E53E3E;
   --destructive-foreground: #FFFFFF;
-  --border: #EAEAEA;
-  --input: #EAEAEA;
-  --ring: #58CC02;
-  --radius: 1rem;
+  --border: #E5E1D8;
+  --input: #E5E1D8;
+  --ring: #E04006;
+  --radius: 1.75rem;
 
   /* Memory/AI accent */
-  --memory: #58CC02;
+  --memory: #E04006;
   --memory-foreground: #FFFFFF;
-  --surface: #F5F5F3;
-  --surface-foreground: #222222;
+  --surface: #F5F3ED;
+  --surface-foreground: #1A1A1A;
 
   /* Duo accent colors */
-  --duo-eel: #4B4B4B;
-  --duo-wolf: #777777;
-  --duo-swan: #E5E5E5;
-  --duo-polar: #F7F7F7;
+  --duo-eel: #4A4A4A;
+  --duo-wolf: #7A7670;
+  --duo-swan: #E5E1D8;
+  --duo-polar: #FAF8F5;
   --duo-snow: #FFFFFF;
-  --duo-feather: #58CC02;
-  --duo-green: #58CC02;
+  --duo-feather: #E04006;
+  --duo-green: #E04006;
   --duo-macaw: #1CB0F6;
   --duo-blue: #1CB0F6;
   --duo-fox: #FF9600;
   --duo-orange: #FF9600;
-  --duo-cardinal: #FF4B4B;
-  --duo-red: #FF4B4B;
+  --duo-cardinal: #E53E3E;
+  --duo-red: #E53E3E;
   --duo-beetle: #CE82FF;
   --duo-purple: #CE82FF;
   --duo-yellow: #FFC800;
@@ -142,85 +142,131 @@
 
   /* Sidebar */
   --sidebar-background: #FFFFFF;
-  --sidebar-foreground: #4B4B4B;
-  --sidebar-border: #E5E5E5;
-  --sidebar-accent: #F7F7F7;
-  --sidebar-accent-foreground: #4B4B4B;
+  --sidebar-foreground: #4A4A4A;
+  --sidebar-border: #E5E1D8;
+  --sidebar-accent: #FAF8F5;
+  --sidebar-accent-foreground: #4A4A4A;
 
   /* Landing page */
-  --landing-bg: #FBFCFA;
+  --landing-bg: #FAF8F5;
   --landing-surface: #FFFFFF;
-  --landing-surface-subtle: #FAFAF7;
-  --landing-border: #EAEAEA;
-  --landing-border-light: #F0F0F0;
-  --landing-text-primary: #222222;
-  --landing-text-secondary: #555555;
-  --landing-text-tertiary: #888888;
-  --landing-accent: #58CC02;
-  --landing-accent-hover: #4ea603;
+  --landing-surface-subtle: #F3EFEA;
+  --landing-border: #E5E1D8;
+  --landing-border-light: #F0EDE6;
+  --landing-text-primary: #1A1A1A;
+  --landing-text-secondary: #4E4A42;
+  --landing-text-tertiary: #8A857C;
+  --landing-accent: #E04006;
+  --landing-accent-hover: #C03604;
+
+  /* Agent Elements theme overrides */
+  --an-background: var(--background);
+  --an-background-secondary: var(--secondary);
+  --an-background-tertiary: var(--muted);
+  --an-foreground: var(--foreground);
+  --an-foreground-muted: var(--muted-foreground);
+  --an-foreground-subtle: var(--muted-foreground);
+  --an-border-color: var(--border);
+  --an-primary-color: var(--primary);
+  --an-user-message-bg: var(--secondary);
+  --an-user-message-text: var(--foreground);
+  --an-input-background: var(--card);
+  --an-input-border-color: var(--border);
+  --an-input-color: var(--foreground);
+  --an-input-placeholder-color: var(--muted-foreground);
+  --an-send-button-bg: var(--primary);
+  --an-send-button-color: var(--primary-foreground);
+  --an-tool-background: var(--secondary);
+  --an-tool-border-color: var(--border);
+  --an-tool-color: var(--foreground);
+  --an-tool-color-muted: var(--muted-foreground);
+  --an-border-radius: 24px;
 }
 
 .dark {
-  --background: #0C0F0A;
-  --foreground: #ECEEEC;
+  --background: #0F0E0C;
+  --foreground: #F5F3ED;
   --bn-colors-editor-background: transparent;
-  --card: #121610;
-  --card-foreground: #ECEEEC;
-  --popover: #121610;
-  --popover-foreground: #ECEEEC;
-  --primary: #58CC02;
+  --card: #161512;
+  --card-foreground: #F5F3ED;
+  --popover: #161512;
+  --popover-foreground: #F5F3ED;
+  --primary: #FF5A1F;
   --primary-foreground: #FFFFFF;
-  --secondary: #181E15;
-  --secondary-foreground: #B0B5B0;
-  --muted: #181E15;
-  --muted-foreground: #808680;
-  --accent: #181E15;
-  --accent-foreground: #ECEEEC;
-  --destructive: #FF4B4B;
+  --secondary: #1F1D19;
+  --secondary-foreground: #C7C2B8;
+  --muted: #1F1D19;
+  --muted-foreground: #999388;
+  --accent: #1F1D19;
+  --accent-foreground: #F5F3ED;
+  --destructive: #E53E3E;
   --destructive-foreground: #FFFFFF;
-  --border: #1F261B;
-  --input: #1F261B;
-  --ring: #58CC02;
+  --border: #2B2824;
+  --input: #2B2824;
+  --ring: #FF5A1F;
 
-  --memory: #58CC02;
+  --memory: #FF5A1F;
   --memory-foreground: #FFFFFF;
-  --surface: #1A1A1E;
-  --surface-foreground: #ECEEEC;
+  --surface: #22201C;
+  --surface-foreground: #F5F3ED;
 
-  --duo-eel: #e6edf3;
-  --duo-wolf: #8b949e;
-  --duo-swan: #30363d;
-  --duo-polar: #21262d;
-  --duo-snow: #0d1117;
-  --duo-feather: #58CC02;
-  --duo-green: #58CC02;
+  --duo-eel: #F5F3ED;
+  --duo-wolf: #999388;
+  --duo-swan: #2B2824;
+  --duo-polar: #1F1D19;
+  --duo-snow: #0F0E0C;
+  --duo-feather: #FF5A1F;
+  --duo-green: #FF5A1F;
   --duo-macaw: #1CB0F6;
   --duo-blue: #1CB0F6;
   --duo-fox: #FF9600;
   --duo-orange: #FF9600;
-  --duo-cardinal: #FF4B4B;
-  --duo-red: #FF4B4B;
+  --duo-cardinal: #E53E3E;
+  --duo-red: #E53E3E;
   --duo-beetle: #CE82FF;
   --duo-purple: #CE82FF;
   --duo-yellow: #FFC800;
   --duo-canary: #FFC800;
 
-  --sidebar-background: #0d1117;
-  --sidebar-foreground: #e6edf3;
-  --sidebar-border: #30363d;
-  --sidebar-accent: #21262d;
-  --sidebar-accent-foreground: #e6edf3;
+  --sidebar-background: #0F0E0C;
+  --sidebar-foreground: #F5F3ED;
+  --sidebar-border: #2B2824;
+  --sidebar-accent: #1F1D19;
+  --sidebar-accent-foreground: #F5F3ED;
 
-  --landing-bg: #0C0F0A;
-  --landing-surface: #121610;
-  --landing-surface-subtle: #181E15;
-  --landing-border: #1F261B;
-  --landing-border-light: #181E15;
-  --landing-text-primary: #ECEEEC;
-  --landing-text-secondary: #B0B5B0;
-  --landing-text-tertiary: #808680;
-  --landing-accent: #58CC02;
-  --landing-accent-hover: #69DF0E;
+  --landing-bg: #0F0E0C;
+  --landing-surface: #161512;
+  --landing-surface-subtle: #1F1D19;
+  --landing-border: #2B2824;
+  --landing-border-light: #1F1D19;
+  --landing-text-primary: #F5F3ED;
+  --landing-text-secondary: #C7C2B8;
+  --landing-text-tertiary: #999388;
+  --landing-accent: #FF5A1F;
+  --landing-accent-hover: #FF7747;
+
+  /* Agent Elements dark theme overrides */
+  --an-background: var(--background);
+  --an-background-secondary: var(--secondary);
+  --an-background-tertiary: var(--muted);
+  --an-foreground: var(--foreground);
+  --an-foreground-muted: var(--muted-foreground);
+  --an-foreground-subtle: var(--muted-foreground);
+  --an-border-color: var(--border);
+  --an-primary-color: var(--primary);
+  --an-user-message-bg: var(--secondary);
+  --an-user-message-text: var(--foreground);
+  --an-input-background: var(--card);
+  --an-input-border-color: var(--border);
+  --an-input-color: var(--foreground);
+  --an-input-placeholder-color: var(--muted-foreground);
+  --an-send-button-bg: var(--primary);
+  --an-send-button-color: var(--primary-foreground);
+  --an-tool-background: var(--secondary);
+  --an-tool-border-color: var(--border);
+  --an-tool-color: var(--foreground);
+  --an-tool-color-muted: var(--muted-foreground);
+  --an-border-radius: 24px;
 }
 
 @layer base {
@@ -288,18 +334,18 @@
 }
 
 @utility minimal-card {
-  @apply rounded-2xl border-2 border-border bg-card p-6 transition-all duration-200;
-  @apply hover:border-primary/30 hover:shadow-[0_2px_0_var(--border)];
+  @apply rounded-3xl border border-border bg-card p-6 transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.02)];
+  @apply hover:border-primary/30 hover:shadow-[0_8px_24px_rgba(0,0,0,0.04)] hover:-translate-y-[1px];
 }
 
 @utility minimal-btn {
-  @apply inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-extrabold uppercase tracking-wide transition-all duration-100;
+  @apply inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-extrabold uppercase tracking-wide transition-all duration-100;
   @apply active:translate-y-[2px] disabled:opacity-50 disabled:cursor-not-allowed;
 }
 
 @utility minimal-btn-primary {
   @apply minimal-btn bg-primary text-primary-foreground;
-  box-shadow: 0 4px 0 #46A302;
+  box-shadow: 0 4px 0 #A02D04;
   @apply hover:brightness-105 active:shadow-none;
 }
 
@@ -314,27 +360,41 @@
   @apply hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:shadow-none;
 }
 
-@utility grad-green {
-  background: linear-gradient(135deg, #58CC02 0%, #89E219 100%);
+@utility grad-orange {
+  background: linear-gradient(135deg, #E04006 0%, #FF7A45 100%);
 }
 
 @utility glass {
-  @apply bg-background/60 backdrop-blur-xl border-2 border-border/30;
+  @apply bg-background/60 backdrop-blur-xl border border-border/30;
 }
 
 @utility glass-card {
-  @apply bg-card/80 backdrop-blur-xl border-2 border-border/20;
+  @apply bg-card/85 backdrop-blur-xl border border-border/20 shadow-[0_8px_30px_rgb(0,0,0,0.02)];
 }
 
 @utility duo-card {
-  @apply rounded-2xl border-2 border-border bg-card p-4;
+  @apply rounded-3xl border border-border bg-card p-5 shadow-[0_4px_16px_rgba(0,0,0,0.01)];
   box-shadow: 0 2px 0 var(--border);
 }
 
 @utility duo-input {
-  @apply rounded-xl border-2 border-border bg-card px-4 py-3 text-sm font-medium text-foreground placeholder:text-muted-foreground/60;
+  @apply rounded-2xl border-2 border-border bg-card px-4 py-3 text-sm font-medium text-foreground placeholder:text-muted-foreground/60;
   @apply focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none;
   @apply transition-all duration-200;
+}
+
+@utility ios-card {
+  @apply rounded-[1.75rem] border border-border/80 bg-card p-5 transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.02)];
+  @apply hover:border-primary/20 hover:shadow-[0_8px_24px_rgba(0,0,0,0.04)] hover:-translate-y-[1px];
+}
+
+@utility ios-pill-btn {
+  @apply inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-bold transition-all duration-200 active:scale-[0.98];
+  @apply disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+@utility ios-badge-orange {
+  @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-primary/10 text-primary border border-primary/20;
 }
 
 @keyframes wiggle {

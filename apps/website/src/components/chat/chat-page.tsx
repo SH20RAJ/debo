@@ -343,10 +343,10 @@ export function ChatPage() {
                         setHistoryOpen(false);
                       }}
                       className={cn(
-                        "flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold cursor-pointer transition-all border border-transparent group",
+                        "flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold cursor-pointer transition-all border border-transparent group",
                         isActive
-                          ? "bg-primary/8 text-primary border-primary/20 font-bold"
-                          : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+                          ? "bg-primary/10 text-primary border-primary/20"
+                          : "text-muted-foreground hover:text-foreground hover:bg-accent/60"
                       )}
                     >
                       <div className="flex items-center gap-2 min-w-0">
@@ -369,13 +369,13 @@ export function ChatPage() {
       </Drawer>
 
       {/* 2. Main Chat Column */}
-      <div className="flex-1 flex flex-col min-w-0 h-full bg-gradient-to-b from-[#090d08] via-zinc-950 to-zinc-950 relative z-10 min-h-0">
+      <div className="flex-1 flex flex-col min-w-0 h-full bg-background relative z-10 min-h-0">
         
         {/* Glow ambient aura background */}
-        <div className="absolute top-0 right-0 w-[450px] h-[450px] bg-primary/[0.015] rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute top-0 right-0 w-[450px] h-[450px] bg-primary/[0.025] rounded-full blur-[120px] pointer-events-none" />
 
         {/* Chat Area Header */}
-        <div className="h-14 border-b border-border/20 px-6 flex items-center justify-between bg-zinc-950/45 backdrop-blur-md shrink-0">
+        <div className="h-14 border-b border-border/40 px-6 flex items-center justify-between bg-card/40 backdrop-blur-md shrink-0">
           <div className="flex items-center gap-3 min-w-0">
             {activeThreadId ? (
               renaming ? (

@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowRight,
@@ -9,6 +8,7 @@ import {
   MessageSquarePlus,
   Sparkles,
 } from "lucide-react";
+import useSWR from "swr";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -44,36 +44,23 @@ function formatRelative(iso?: string | null): string {
 
 export function DeboChatWidget() {
   const router = useRouter();
-  const [threads, setThreads] = useState<Thread[] | null>(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    let cancelled = false;
-    api.ask
-      .listThreads()
-      .then((data: unknown) => {
-        if (cancelled) return;
-        const arr = Array.isArray(data)
-          ? data
-          : (data as any)?.threads ?? (data as any)?.data ?? [];
-        const mapped: Thread[] = (arr as any[]).slice(0, 3).map((t) => ({
-          id: String(t.id),
-          title: t.title ?? null,
-          preview: t.lastMessage ?? t.preview ?? null,
-          updatedAt: t.updatedAt ?? t.updated_at ?? t.createdAt ?? null,
-        }));
-        setThreads(mapped);
-        setLoading(false);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setThreads([]);
-        setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // Fetch threads with SWR
+  const { data: rawThreads, isLoading } = useSWR(
+    "/api/chat/threads",
+    () => api.ask.listThreads()
+  );
+
+  const threadsArr = Array.isArray(rawThreads)
+    ? rawThreads
+    : (rawThreads as any)?.threads ?? (rawThreads as any)?.data ?? [];
+
+  const threads: Thread[] = threadsArr.slice(0, 3).map((t: any) => ({
+    id: String(t.id),
+    title: t.title ?? null,
+    preview: t.lastMessage ?? t.preview ?? null,
+    updatedAt: t.updatedAt ?? t.updated_at ?? t.createdAt ?? null,
+  }));
 
   const goAsk = (q?: string) => {
     if (q) router.push(`/dashboard/ask?q=${encodeURIComponent(q)}`);
@@ -84,22 +71,22 @@ export function DeboChatWidget() {
     router.push(`/dashboard/chat?threadId=${encodeURIComponent(id)}`);
   };
 
-  const hasThreads = !loading && threads && threads.length > 0;
+  const hasThreads = !isLoading && threads.length > 0;
 
   return (
     <Card
       className={cn(
-        "rounded-2xl border-2 border-border bg-card p-0",
-        "bg-gradient-to-br from-card to-primary/[0.03]"
+        "rounded-[1.75rem] border border-border/80 bg-card p-0 shadow-[0_4px_24px_rgba(0,0,0,0.02)]",
+        "bg-gradient-to-br from-card to-primary/[0.02]"
       )}
     >
-      <CardContent className="p-4 md:p-5">
-        <div className="flex items-center justify-between mb-3">
+      <CardContent className="p-5">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <div className="size-7 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Brain className="size-4 text-primary" />
+            <div className="size-8 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Brain className="size-4.5 text-primary" />
             </div>
-            <h2 className="text-sm font-semibold text-foreground font-[var(--font-nunito)]">
+            <h2 className="text-sm font-bold text-foreground uppercase tracking-wider font-[var(--font-nunito)]">
               Ask Debo
             </h2>
           </div>
@@ -107,53 +94,53 @@ export function DeboChatWidget() {
             variant="ghost"
             size="xs"
             onClick={() => goAsk()}
-            className="rounded-lg text-muted-foreground"
+            className="rounded-xl text-muted-foreground hover:text-primary text-xs"
           >
-            <MessageSquarePlus className="size-3.5" />
+            <MessageSquarePlus className="size-3.5 mr-1" />
             New
           </Button>
         </div>
 
-        {loading ? (
-          <div className="flex items-center gap-2 text-muted-foreground text-xs py-6">
-            <Loader2 className="size-3.5 animate-spin" />
+        {isLoading ? (
+          <div className="flex items-center gap-2 text-muted-foreground text-xs py-8 justify-center">
+            <Loader2 className="size-4 animate-spin text-primary" />
             Loading threads...
           </div>
         ) : hasThreads ? (
           <div className="space-y-1.5">
-            {threads!.map((t) => (
+            {threads.map((t) => (
               <button
                 key={t.id}
                 onClick={() => openThread(t.id)}
                 className={cn(
-                  "w-full flex items-center gap-3 rounded-lg px-2 py-2 text-left",
-                  "hover:bg-accent/50 transition-colors group"
+                  "w-full flex items-center gap-3 rounded-2xl px-2.5 py-2.5 text-left",
+                  "hover:bg-primary/5 transition-all group duration-200"
                 )}
               >
-                <Sparkles className="size-3.5 text-primary/60 shrink-0" />
+                <Sparkles className="size-4 text-primary/60 shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-foreground truncate font-medium">
+                  <p className="text-sm text-foreground truncate font-medium group-hover:text-primary transition-colors">
                     {t.title || "Untitled chat"}
                   </p>
                   {t.preview && (
-                    <p className="text-xs text-muted-foreground truncate">
+                    <p className="text-xs text-muted-foreground truncate mt-0.5">
                       {t.preview}
                     </p>
                   )}
                 </div>
-                <span className="text-[11px] text-muted-foreground shrink-0">
+                <span className="text-[10px] font-semibold text-muted-foreground shrink-0 bg-secondary px-2 py-0.5 rounded-full">
                   {formatRelative(t.updatedAt)}
                 </span>
-                <ArrowRight className="size-3.5 text-muted-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                <ArrowRight className="size-4 text-primary opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-[-4px] group-hover:translate-x-0 shrink-0" />
               </button>
             ))}
           </div>
         ) : (
-          <div className="space-y-2 py-1">
-            <p className="text-xs text-muted-foreground mb-2">
+          <div className="space-y-3 py-2">
+            <p className="text-xs font-semibold text-muted-foreground">
               Try asking your past:
             </p>
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-2">
               {FALLBACK_PROMPTS.map((p) => (
                 <Button
                   key={p}
@@ -161,12 +148,12 @@ export function DeboChatWidget() {
                   size="xs"
                   onClick={() => goAsk(p)}
                   className={cn(
-                    "rounded-full text-xs font-normal h-7 px-3",
-                    "border-2 border-border text-muted-foreground",
-                    "hover:text-foreground hover:border-primary/40 hover:bg-primary/5"
+                    "rounded-full text-xs font-semibold h-8 px-4",
+                    "border border-border/80 text-muted-foreground bg-card",
+                    "hover:text-primary hover:border-primary/30 hover:bg-primary/5 transition-all"
                   )}
                 >
-                  <Sparkles className="size-3 text-primary/60" />
+                  <Sparkles className="size-3.5 text-primary mr-1.5" />
                   {p}
                 </Button>
               ))}
