@@ -19,7 +19,10 @@ export type EmbeddingResult = {
   dim: number;
 };
 
-export async function embedText(text: string): Promise<EmbeddingResult | null> {
+export async function embedText(
+  text: string,
+  inputType: "passage" | "query" = "passage"
+): Promise<EmbeddingResult | null> {
   const cfg = resolveProvider();
   if (!cfg || !text.trim()) return null;
 
@@ -28,7 +31,7 @@ export async function embedText(text: string): Promise<EmbeddingResult | null> {
     model: cfg.embedModel,
   };
   // NVIDIA's NV-EmbedQA models require an input_type. OpenAI ignores extras.
-  if (cfg.embedInputType) body.input_type = "passage";
+  if (cfg.embedInputType) body.input_type = inputType;
 
   const res = await fetch(`${cfg.baseURL.replace(/\/$/, "")}/embeddings`, {
     method: "POST",
@@ -52,5 +55,5 @@ export async function embedText(text: string): Promise<EmbeddingResult | null> {
 }
 
 export async function embedQuery(text: string): Promise<EmbeddingResult | null> {
-  return embedText(text);
+  return embedText(text, "query");
 }

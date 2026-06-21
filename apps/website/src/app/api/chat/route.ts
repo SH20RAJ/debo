@@ -103,7 +103,6 @@ export async function POST(req: Request) {
   const customOpenAI = createOpenAI({
     baseURL: cfg.baseURL,
     apiKey: cfg.apiKey,
-    compatibility: "compatible",
   });
   const model = customOpenAI.chat(cfg.chatModel);
 

@@ -49,18 +49,24 @@ async function qdrantFetch(path: string, init?: RequestInit) {
   return res.json();
 }
 
+let collectionVerified = false;
+
 /**
  * Ensure the collection exists with the given vector size. Idempotent.
  * Call once on first upsert per process.
  */
 export async function ensureCollection(vectorSize: number): Promise<boolean> {
+  if (collectionVerified) return true;
   const cfg = getConfig();
   if (!cfg) return false;
   // Check existence
   const exists = await fetch(`${cfg.url}/collections/${cfg.collection}`, {
     headers: { "api-key": cfg.apiKey },
   });
-  if (exists.ok) return true;
+  if (exists.ok) {
+    collectionVerified = true;
+    return true;
+  }
   // Create with default cosine distance.
   const res = await qdrantFetch(`/collections/${cfg.collection}`, {
     method: "PUT",
@@ -79,6 +85,7 @@ export async function ensureCollection(vectorSize: number): Promise<boolean> {
     }),
   });
 
+  collectionVerified = true;
   return true;
 }
 
