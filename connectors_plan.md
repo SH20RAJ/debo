@@ -22,6 +22,9 @@ To build the ultimate Private AI Memory OS, we categorize target connectors into
 - **GitHub / GitLab**: Track pull requests, issues, codebase updates, and comments.
 - **Jira / Linear**: Sync task states, epic logs, and sprint context.
 
+### Tier 4: Smart Home & IoT (Interactive Control & Telemetry Context)
+- **Home Assistant**: Control smart plugs, bulbs, thermostats, and locks. Provides real-time context of the user's physical environment.
+
 ---
 
 ## 2. Integration Strategy: Composio vs. Nango vs. Custom
@@ -32,7 +35,7 @@ We compare three integration paths for Debo:
 |:---|:---|:---|:---|:---|:---|
 | **Composio** (Recommended) | **Extremely High** (1 day) | Built-in (entity-based) | High | **Natively Optimized for Agents** | **Very Low** |
 | **Nango** | High (3 days) | Built-in | **Excellent (focused on syncing)** | Moderate (requires custom actions) | Low |
-| **Custom APIs** | Low (Weeks) | Manual OAuth routes | Manual cron jobs | Manual prompt mappings | High |
+| **Custom APIs & Local Hooks** | Moderate (Used for HA/IoT) | Direct token setup / Simulated | On-demand / Local state | Custom LangChain tools | Moderate |
 
 ### Why Composio is the Best Fit for Debo
 1. **Zero-Code Integration Catalog**: Composio maps directly to 1000+ popular developer and communication apps. Adding a new connector is as simple as adding a string value to our `SUPPORTED_PROVIDERS` enum.

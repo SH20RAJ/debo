@@ -20,7 +20,8 @@ Debo is a **private AI memory operating system**. It turns your writing, voice n
 - **Multimodal Capture** — Process text, voice, files (PDF/images), and connected apps
 - **Voice Capture** — Real-time voice interface powered by LiveKit
 - **Character Graph** — People mentioned in your memories become editable profiles
-- **Connectors** — Import from Gmail, Calendar, Notion (manual/explicit import only)
+- **Connectors** — Import from Gmail, Calendar, Notion, GitHub, and Slack
+- **IoT & Smart Home** — Control and monitor smart devices (lights, switches, locks, climate) via dashboard widget or natural language. Supports Live Home Assistant API & Simulated Demo mode.
 - **Debo Mail** — Internal Debo-to-Debo messaging with memory integration
 - **Private by Design** — Your data stays yours. No training on your memories.
 
@@ -32,6 +33,7 @@ Debo is a **private AI memory operating system**. It turns your writing, voice n
 | **Product App** | `apps/website` — Next.js 16 full-stack UI + API routes |
 | **AI Orchestration** | LangChain + LangGraph |
 | **AI Providers** | NVIDIA NIM primary, OpenAI-compatible APIs |
+| **IoT / Smart Home** | Home Assistant REST API or DB-persisted Simulated State |
 | **Database** | Neon (PostgreSQL) via Drizzle ORM |
 | **Vector DB** | Qdrant |
 | **Media Storage** | Cloudflare R2 |
@@ -128,12 +130,13 @@ bun run vercel:env:pull    # writes .env.local from project env
 3. **Store** → Chunks in Neon + embeddings in Qdrant
 4. **Ask** → Semantic + structured retrieval from both stores
 5. **Answer** → Grounded response with source citations
+6. **Smart Home Commands** → Decides IoT intents, invokes control tools, updates HA state
 
 ## Design Philosophy: Editorial Calm
 
 - **Typography-First** — Large, readable headings; warm aesthetics
-- **Warm Canvas** — Cream (`#f7f7f4`) and warm ink (`#26251e`), no pure black/white
-- **Minimal UI** — 1px hairlines, generous whitespace, no heavy shadows
+- **Warm Canvas** — Peach/cream (`#FAF8F5`) and warm ink (`#26251e`), with vermilion (`#E04006`) accent details
+- **Minimal UI** — Large rounded card corners (`rounded-[1.75rem]`), fine borders, and smooth micro-animations
 - **Source Trust** — Every answer shows where it came from
 
 ## License

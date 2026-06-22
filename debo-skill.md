@@ -6,7 +6,7 @@ This file specifies developer rules, codebase architecture, and system capabilit
 
 ## 1. IDENTITY & MOTTO
 - **Motto:** "Capture anything. Ask your past. Trust every answer."
-- **Core Identity:** Debo is a private AI memory OS that captures voice recordings, written journals, files, and third-party connector updates (Gmail, Notion, Slack, GitHub, Calendar, Google Drive) into a unified, source-backed semantic memory graph.
+- **Core Identity:** Debo is a private AI memory OS that captures voice recordings, written journals, files, and third-party connector updates (Gmail, Notion, Slack, GitHub, Calendar, Google Drive, Home Assistant / IoT) into a unified, source-backed semantic memory graph.
 
 ---
 

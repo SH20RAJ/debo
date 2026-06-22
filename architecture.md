@@ -66,3 +66,13 @@ The user reported an error on the Library page. The optimal architecture for the
 - **Unified Querying**: A single `GET /api/sources` endpoint that can filter by `type`, `status`, and `search` query.
 - **Client-Side Hydration**: The `LibraryPage` fetches all sources on mount. This allows instantaneous client-side filtering (Grid/List toggle, Type filtering).
 - **Robust Normalization**: The `normalizeSource` helper function in the frontend ensures that variations in database casing (`created_at` vs `createdAt`) don't cause `TypeError: Cannot read properties of undefined` exceptions during render. (This was a likely culprit for the reported bug).
+
+## 6. IoT & Smart Home Ingestion & Control
+
+Debo integrates with smart home systems through a modular API layer supporting both real-world integrations and virtual mock devices:
+- **Simulated Demo Mode**: Enabled by default to provide an instant interactive onboarding experience. Initial device states (Living Room Light, Kitchen Fan, Front Door Lock, Thermostat) are initialized and persisted in the user's `connectorAccounts.metadataJson` column.
+- **Live Home Assistant API**: Directly connects via local or remote HTTP REST endpoints (`/api/states` and `/api/services`) using long-lived access tokens.
+- **AI Tool Integration**: Two custom LangChain tools are registered in the main chat handler:
+  1. `get_iot_device_states`: Allows the LLM to inspect the current state of any device in the home.
+  2. `control_iot_device`: Automatically maps language intents (e.g. "turn off the living room light") into structured state commands, updating the DB and sending a fetch request to the Home Assistant API if live mode is enabled.
+- **Dynamic Frontend Updates**: The dashboard renders a custom `SmartHomeWidget` adjacent to the chat. It binds to the SWR connectors endpoint, automatically reflecting status updates (like turning on a fan with spinning animations) in real-time as the AI executes commands.

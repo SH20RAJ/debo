@@ -29,15 +29,18 @@ We will officially support and expose the following catalog on the dashboard:
 | **GitHub** | Development | Commits, pull requests, issues | Create issue, review code, comment on PR |
 | **Slack** | Communication | Channel context, thread discussions | Post messages, send DMs, list channels |
 | **Google Drive** | Knowledge & Notes | PDFs, text documents, presentations | Upload files, create folders, read file text |
+| **Home Assistant**| Smart Home & IoT | Device states, telemetry history | Control lights, switches, lock front door, set thermostat climate |
 
 ---
 
-## 3. Real-time Connection Lifecycle (Popup OAuth)
+## 3. Real-time Connection Lifecycle (Popup OAuth & Custom Setup)
 
-To bridge Composio's OAuth flow with Debo's database (`connectorAccounts`):
-1. **Initiate**: When the user clicks "Connect" on the dashboard, the UI calls `POST /api/connectors/connect` with the provider name.
-2. **Link Creation**: The backend calls `composio.toolkits.authorize(userId, toolkitSlug)` to get an OAuth redirect URL and a Connection ID. It saves/updates a `connectorAccounts` row in the database with `status: "disconnected"` and `externalAccountId: connectionId`.
-3. **Popup Flow**: The UI opens the OAuth URL in a popup window.
+To bridge Composio's OAuth flow and custom local integrations with Debo's database (`connectorAccounts`):
+1. **Initiate**: When the user clicks "Connect" on the dashboard, the UI calls `POST /api/connectors/connect` with the provider name. If the provider is `homeassistant`, a custom Dialog credentials overlay is displayed.
+2. **Link Creation**: 
+   - For Composio: The backend calls `composio.toolkits.authorize(userId, toolkitSlug)` to get an OAuth redirect URL and a Connection ID. It saves/updates a `connectorAccounts` row in the database with `status: "disconnected"` and `externalAccountId: connectionId`.
+   - For Home Assistant: The user configures URL & Access Token or toggles **Simulated Demo Mode**. The frontend calls `POST /api/connectors/homeassistant` which initialises device states in `metadataJson` and sets the connector status directly to `"connected"`.
+3. **Popup Flow (OAuth)**: The UI opens the OAuth URL in a popup window for SaaS providers.
 4. **Active Polling**: While the popup is active, the UI polls `GET /api/connectors` every 3 seconds.
 5. **Real-time Status Sync**: Inside the GET `/api/connectors` route, if a connector has `status === "disconnected"` but has an `externalAccountId`, the server calls Composio's API:
    ```typescript
@@ -55,7 +58,7 @@ To bridge Composio's OAuth flow with Debo's database (`connectorAccounts`):
 
 We will implement an on-demand and background sync runner for connected accounts:
 - **Sync Trigger**: Create `POST /api/connectors/sync` or update the MCP `debo_trigger_connector_sync` tool.
-- **Data Pulling**: Retrieve recent items from the connected services using Composio queries (e.g. `gmail.list_messages`, `notion.search`).
+- **Data Pulling**: Retrieve recent items from the connected services using Composio queries (e.g. `gmail.list_messages`, `notion.search`). For Home Assistant, queries are made to `/api/states` to update current status metrics.
 - **Memory Ingestion**: For each retrieved item, we:
   1. Parse the text body, metadata (e.g., date, title, author).
   2. Insert a row in the `sources` database table with the appropriate type (`email`, `notion`, `file`, etc.) and status `"ready"`.
@@ -74,6 +77,9 @@ We will implement an on-demand and background sync runner for connected accounts
     ...actionArguments
   });
   ```
+- Expose **IoT / Smart Home Tools**:
+  - `get_iot_device_states`: Reads smart home device states from `metadataJson` / Home Assistant API.
+  - `control_iot_device`: Controls lights, fan, locks, and climate via custom LangChain tools, persisting state in `connectorAccounts`.
 
 ### B. MCP Server & CLI Integration
 - Update [route.ts](file:///Users/shaswatraj/Desktop/debo/apps/website/src/app/api/mcp/route.ts): Expose connection listing and execution tools via the HTTP MCP endpoint.
@@ -87,4 +93,5 @@ We will implement an on-demand and background sync runner for connected accounts
 2. **Step 2**: Implement real-time status checking from Composio in the backend `GET /api/connectors` route.
 3. **Step 3**: Wire up `DELETE /api/connectors/:id` to call Composio's delete endpoint and clean up the database row.
 4. **Step 4**: Implement active action execution in the LangGraph `connectorActionNode`.
-5. **Step 5**: Run verification checks using `bun run typecheck`.
+5. **Step 5**: Integrate Home Assistant / IoT Connector setup modal, backend APIs (`/api/connectors/homeassistant`), dashboard widgets (`SmartHomeWidget`), and custom AI tools.
+6. **Step 6**: Run verification checks using `bun run typecheck`.
