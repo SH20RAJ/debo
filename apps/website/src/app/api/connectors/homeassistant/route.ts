@@ -10,6 +10,7 @@ import {
   requireSession,
   withErrorHandling,
 } from "@/lib/api-helpers";
+import { parseAutomationInstruction } from "@/server/connectors/automations/parser";
 
 const DEFAULT_SIMULATED_DEVICES = {
   "light.living_room": { entity_id: "light.living_room", name: "Living Room Light", state: "off", brightness: 128 },
@@ -19,14 +20,20 @@ const DEFAULT_SIMULATED_DEVICES = {
 };
 
 const ConnectSchema = z.object({
+  action: z.string().optional().default("connect"),
+  // For action: "connect"
   url: z.string().optional(),
   token: z.string().optional(),
-  simulated: z.boolean().default(true),
+  simulated: z.boolean().optional(),
+  // For action: "add_automation"
+  instruction: z.string().optional(),
+  // For action: "delete_automation"
+  automationId: z.string().optional(),
 });
 
 /**
  * POST /api/connectors/homeassistant
- * Connects or updates a Home Assistant account.
+ * Handles connection setup, creating automations, deleting automations, and running the scheduler.
  */
 export async function POST(req: Request) {
   const session = await requireSession(req);
@@ -40,20 +47,178 @@ export async function POST(req: Request) {
     const parsed = ConnectSchema.safeParse(raw);
     if (!parsed.success) return apiError("invalid_body", 400);
 
-    const { url, token, simulated } = parsed.data;
+    const { action, url, token, simulated, instruction, automationId } = parsed.data;
 
+    // ─── ACTION: ADD AUTOMATION ───────────────────────────────────────────────
+    if (action === "add_automation") {
+      if (!instruction) return apiError("instruction_required", 400);
+
+      const parsedAuto = await parseAutomationInstruction(instruction);
+      if (!parsedAuto) {
+        return apiError("Could not parse automation rule. Make sure it specifies a device and a schedule/trigger keyword.", 422);
+      }
+
+      const [account] = await db
+        .select()
+        .from(connectorAccounts)
+        .where(
+          and(
+            eq(connectorAccounts.userId, user.id),
+            eq(connectorAccounts.workspaceId, workspaceId),
+            eq(connectorAccounts.provider, "homeassistant"),
+            eq(connectorAccounts.status, "connected")
+          )
+        )
+        .limit(1);
+
+      if (!account) return apiError("connector_not_connected", 404);
+
+      const metadata = JSON.parse(account.metadataJson || "{}");
+      const automations = metadata.automations || [];
+      automations.push(parsedAuto);
+      metadata.automations = automations;
+
+      await db
+        .update(connectorAccounts)
+        .set({
+          metadataJson: JSON.stringify(metadata),
+          updatedAt: new Date().toISOString(),
+        })
+        .where(eq(connectorAccounts.id, account.id));
+
+      return NextResponse.json({ success: true, automation: parsedAuto });
+    }
+
+    // ─── ACTION: DELETE AUTOMATION ────────────────────────────────────────────
+    if (action === "delete_automation") {
+      if (!automationId) return apiError("automation_id_required", 400);
+
+      const [account] = await db
+        .select()
+        .from(connectorAccounts)
+        .where(
+          and(
+            eq(connectorAccounts.userId, user.id),
+            eq(connectorAccounts.workspaceId, workspaceId),
+            eq(connectorAccounts.provider, "homeassistant"),
+            eq(connectorAccounts.status, "connected")
+          )
+        )
+        .limit(1);
+
+      if (!account) return apiError("connector_not_connected", 404);
+
+      const metadata = JSON.parse(account.metadataJson || "{}");
+      const automations = metadata.automations || [];
+      metadata.automations = automations.filter((a: any) => a.id !== automationId);
+
+      await db
+        .update(connectorAccounts)
+        .set({
+          metadataJson: JSON.stringify(metadata),
+          updatedAt: new Date().toISOString(),
+        })
+        .where(eq(connectorAccounts.id, account.id));
+
+      return NextResponse.json({ success: true });
+    }
+
+    // ─── ACTION: RUN SCHEDULER ───────────────────────────────────────────────
+    if (action === "run_scheduler") {
+      const [account] = await db
+        .select()
+        .from(connectorAccounts)
+        .where(
+          and(
+            eq(connectorAccounts.userId, user.id),
+            eq(connectorAccounts.workspaceId, workspaceId),
+            eq(connectorAccounts.provider, "homeassistant"),
+            eq(connectorAccounts.status, "connected")
+          )
+        )
+        .limit(1);
+
+      if (!account) return NextResponse.json({ success: true, triggered: [] });
+
+      const metadata = JSON.parse(account.metadataJson || "{}");
+      const automations = metadata.automations || [];
+      const devices = metadata.devices || {};
+      
+      const now = new Date();
+      // Format current time in local/server HH:MM format
+      const hour = String(now.getHours()).padStart(2, "0");
+      const minute = String(now.getMinutes()).padStart(2, "0");
+      const timeStr = `${hour}:${minute}`;
+      const dateStr = now.toISOString().split("T")[0];
+
+      const triggered: any[] = [];
+
+      for (const auto of automations) {
+        if (auto.type === "schedule" && auto.active && auto.time === timeStr && auto.lastExecutedDate !== dateStr) {
+          const device = devices[auto.entityId];
+          if (device) {
+            // Apply action
+            device.state = auto.state;
+            auto.lastExecutedDate = dateStr;
+            triggered.push(auto);
+
+            // If live connection, execute service call
+            if (!metadata.simulated) {
+              const [domain] = auto.entityId.split(".");
+              let service = "";
+              const body = { entity_id: auto.entityId };
+              if (domain === "light" || domain === "switch") {
+                service = auto.state === "on" ? "turn_on" : "turn_off";
+              } else if (domain === "lock") {
+                service = auto.state === "lock" || auto.state === "locked" ? "lock" : "unlock";
+              }
+              try {
+                await fetch(`${metadata.url}/api/services/${domain}/${service}`, {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${metadata.token}`,
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify(body),
+                });
+              } catch (err) {
+                console.error("[scheduler] Live Home Assistant trigger failed:", err);
+              }
+            }
+          }
+        }
+      }
+
+      if (triggered.length > 0) {
+        metadata.devices = devices;
+        metadata.automations = automations;
+
+        await db
+          .update(connectorAccounts)
+          .set({
+            metadataJson: JSON.stringify(metadata),
+            updatedAt: new Date().toISOString(),
+          })
+          .where(eq(connectorAccounts.id, account.id));
+      }
+
+      return NextResponse.json({ success: true, triggered });
+    }
+
+    // ─── ACTION: CONNECT (FALLBACK) ──────────────────────────────────────────
+    const isSimulated = simulated ?? true;
     let deviceStates = { ...DEFAULT_SIMULATED_DEVICES };
     let finalUrl = "";
     let finalToken = "";
 
-    if (!simulated) {
+    if (!isSimulated) {
       if (!url) return apiError("url_required_for_real_mode", 400);
       if (!token) return apiError("token_required_for_real_mode", 400);
 
       finalUrl = url.trim().replace(/\/+$/, "");
       finalToken = token.trim();
 
-      // Test connection to Home Assistant API
+      // Test connection
       try {
         const testRes = await fetch(`${finalUrl}/api/`, {
           headers: {
@@ -66,7 +231,6 @@ export async function POST(req: Request) {
           return apiError(`Failed to connect to Home Assistant API. Status: ${testRes.status}`, 400);
         }
 
-        // Fetch current states to see if we can read them
         const statesRes = await fetch(`${finalUrl}/api/states`, {
           headers: {
             Authorization: `Bearer ${finalToken}`,
@@ -76,8 +240,6 @@ export async function POST(req: Request) {
 
         if (statesRes.ok) {
           const rawStates = await statesRes.json();
-          // We can index key smart devices (lights, switches, locks, climate) if present,
-          // or fallback to default UI representation if clean list isn't found.
           if (Array.isArray(rawStates)) {
             const haDevices: Record<string, any> = {};
             for (const item of rawStates) {
@@ -97,8 +259,6 @@ export async function POST(req: Request) {
                 };
               }
             }
-            // If the user's HA has matching entities, we merge/use them.
-            // Otherwise, we keep our default controllable mock devices to ensure a smooth UI walkthrough.
             if (Object.keys(haDevices).length > 0) {
               deviceStates = { ...DEFAULT_SIMULATED_DEVICES, ...haDevices };
             }
@@ -112,11 +272,11 @@ export async function POST(req: Request) {
     const metadata = {
       url: finalUrl,
       token: finalToken,
-      simulated,
+      simulated: isSimulated,
       devices: deviceStates,
+      automations: [],
     };
 
-    // Upsert by (userId, workspaceId, provider: "homeassistant")
     const existing = await db
       .select()
       .from(connectorAccounts)
@@ -165,26 +325,26 @@ export async function POST(req: Request) {
       targetId: row.id,
       ipAddress: req.headers.get("x-forwarded-for"),
       userAgent: req.headers.get("user-agent"),
-      metadataJson: JSON.stringify({ provider: "homeassistant", simulated }),
+      metadataJson: JSON.stringify({ provider: "homeassistant", simulated: isSimulated }),
     });
 
     return NextResponse.json({
       success: true,
       connectorId: row.id,
-      simulated,
+      simulated: isSimulated,
     });
   });
 }
 
 const ControlSchema = z.object({
   entityId: z.string(),
-  state: z.string(), // "on", "off", "lock", "unlock", "heat", "cool", etc.
+  state: z.string(),
   brightness: z.number().min(0).max(255).optional(),
   temperature: z.number().optional(),
 });
 
 /**
- * PATCH /api/connectors/homeassistant - Control an IoT device
+ * PATCH /api/connectors/homeassistant - Control an IoT device directly
  */
 export async function PATCH(req: Request) {
   const session = await requireSession(req);
@@ -213,22 +373,15 @@ export async function PATCH(req: Request) {
       )
       .limit(1);
 
-    if (!account) {
-      return apiError("connector_not_connected", 404);
-    }
+    if (!account) return apiError("connector_not_connected", 404);
 
     const metadata = JSON.parse(account.metadataJson || "{}");
     const { url, token, simulated, devices = {} } = metadata;
 
     const device = devices[entityId];
-    if (!device) {
-      return apiError("device_not_found_in_connector_config", 404);
-    }
+    if (!device) return apiError("device_not_found", 404);
 
-    // Prepare updated device object
     const updatedDevice = { ...device };
-
-    // Standardize lock states
     if (entityId.startsWith("lock.")) {
       updatedDevice.state = state === "lock" || state === "locked" ? "locked" : "unlocked";
     } else {
@@ -239,11 +392,9 @@ export async function PATCH(req: Request) {
     if (temperature !== undefined) updatedDevice.temperature = temperature;
 
     if (!simulated) {
-      // Call actual Home Assistant API
-      // Domain is prefix: light, switch, lock, climate
       const [domain] = entityId.split(".");
       let service = "";
-      let body: Record<string, any> = { entity_id: entityId };
+      const body: Record<string, any> = { entity_id: entityId };
 
       if (domain === "light" || domain === "switch") {
         service = state === "on" ? "turn_on" : "turn_off";
@@ -260,7 +411,7 @@ export async function PATCH(req: Request) {
       }
 
       try {
-        const haRes = await fetch(`${url}/api/services/${domain}/${service}`, {
+        await fetch(`${url}/api/services/${domain}/${service}`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -268,17 +419,11 @@ export async function PATCH(req: Request) {
           },
           body: JSON.stringify(body),
         });
-
-        if (!haRes.ok) {
-          console.warn("[homeassistant/control] HA API call failed:", haRes.status);
-        }
       } catch (err) {
         console.error("[homeassistant/control] HA request failed:", err);
-        // Fallback to updating metadata state anyway so the user sees something in case of temporary HA connection issues
       }
     }
 
-    // Persist local state (crucial for simulated, and acts as cache for real HA)
     metadata.devices = {
       ...devices,
       [entityId]: updatedDevice,

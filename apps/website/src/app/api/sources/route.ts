@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@debo/db";
-import { sources, auditLogs } from "@debo/db/schema";
+import { sources, auditLogs, connectorAccounts } from "@debo/db/schema";
 import { and, desc, eq } from "drizzle-orm";
 import {
   apiError,
@@ -104,6 +104,12 @@ export async function POST(req: Request) {
         workspaceId,
         plainText: created.plainText,
       }).catch((err) => console.error("[sources] index failed", err));
+
+      // Trigger IoT automations if the source is a journal entry
+      if (created.type === "journal") {
+        evaluateIotAutomations(user.id, workspaceId, created.plainText)
+          .catch((err) => console.error("[sources] IoT trigger evaluation failed:", err));
+      }
     }
 
     await db.insert(auditLogs).values({
@@ -120,4 +126,85 @@ export async function POST(req: Request) {
 
     return NextResponse.json(created, { status: 201 });
   });
+}
+
+async function evaluateIotAutomations(userId: string, workspaceId: string, plainText: string) {
+  try {
+    const [account] = await db
+      .select()
+      .from(connectorAccounts)
+      .where(
+        and(
+          eq(connectorAccounts.userId, userId),
+          eq(connectorAccounts.workspaceId, workspaceId),
+          eq(connectorAccounts.provider, "homeassistant"),
+          eq(connectorAccounts.status, "connected")
+        )
+      )
+      .limit(1);
+
+    if (!account) return;
+
+    const metadata = JSON.parse(account.metadataJson || "{}");
+    const automations = metadata.automations || [];
+    const devices = metadata.devices || {};
+    let updated = false;
+
+    const lowerText = plainText.toLowerCase();
+
+    for (const auto of automations) {
+      if (auto.type === "trigger" && auto.active && auto.triggerKeyword) {
+        if (lowerText.includes(auto.triggerKeyword.toLowerCase())) {
+          const device = devices[auto.entityId];
+          if (device) {
+            device.state = auto.entityId.startsWith("lock.")
+              ? auto.state === "lock" || auto.state === "locked"
+                ? "locked"
+                : "unlocked"
+              : auto.state;
+            updated = true;
+
+            console.log(`[IoT Automation] Triggered "${auto.description}" due to keyword "${auto.triggerKeyword}"`);
+
+            // If live connection, execute service call
+            if (!metadata.simulated) {
+              const [domain] = auto.entityId.split(".");
+              let service = "";
+              const body = { entity_id: auto.entityId };
+              if (domain === "light" || domain === "switch") {
+                service = auto.state === "on" ? "turn_on" : "turn_off";
+              } else if (domain === "lock") {
+                service = auto.state === "lock" || auto.state === "locked" ? "lock" : "unlock";
+              }
+              try {
+                await fetch(`${metadata.url}/api/services/${domain}/${service}`, {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${metadata.token}`,
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify(body),
+                });
+              } catch (haErr) {
+                console.error("[IoT Automation] Live Home Assistant call failed:", haErr);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if (updated) {
+      metadata.devices = devices;
+      await db
+        .update(connectorAccounts)
+        .set({
+          metadataJson: JSON.stringify(metadata),
+          updatedAt: new Date().toISOString(),
+        })
+        .where(eq(connectorAccounts.id, account.id));
+    }
+  } catch (err) {
+    console.error("[evaluateIotAutomations] Error running evaluation:", err);
+  }
 }
