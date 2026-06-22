@@ -118,6 +118,7 @@
         "@copilotkit/react-core": "^1.58.0",
         "@copilotkit/react-ui": "^1.58.0",
         "@copilotkit/runtime": "^1.58.0",
+        "@debo/connectors": "workspace:*",
         "@debo/db": "workspace:*",
         "@langchain/core": "^0.3.0",
         "@langchain/langgraph": "^0.2.0",
@@ -189,6 +190,16 @@
       "dependencies": {
         "clsx": "^2.1.1",
         "tailwind-merge": "^3.5.0",
+        "zod": "^4.4.3",
+      },
+      "devDependencies": {
+        "typescript": "^5.7.4",
+      },
+    },
+    "packages/connectors": {
+      "name": "@debo/connectors",
+      "version": "0.1.0",
+      "dependencies": {
         "zod": "^4.4.3",
       },
       "devDependencies": {
@@ -567,6 +578,8 @@
     "@debo/ai": ["@debo/ai@workspace:packages/ai"],
 
     "@debo/config": ["@debo/config@workspace:packages/config"],
+
+    "@debo/connectors": ["@debo/connectors@workspace:packages/connectors"],
 
     "@debo/db": ["@debo/db@workspace:packages/db"],
 

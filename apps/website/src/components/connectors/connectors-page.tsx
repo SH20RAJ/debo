@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ShieldCheck, Loader2, Home } from "lucide-react";
+import { ShieldCheck, Loader2, Search, SlidersHorizontal, RefreshCw } from "lucide-react";
 import { ConnectorCard } from "./connector-card";
 import { api } from "@/lib/api";
 import type { Connector } from "@/lib/types";
@@ -29,23 +29,23 @@ const PROVIDER_METADATA: Record<string, {
   homeassistant: {
     name: "Home Assistant",
     description: "Control and monitor your smart home devices (lights, switches, climate, locks).",
-    icon: "🏠",
+    icon: "https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/homeassistant.svg",
     color: "#41BDF5",
-    category: "Smart Home & IoT",
+    category: "Smart Home",
     permission: "Read states and call device control services",
   },
   gmail: {
     name: "Gmail",
     description: "Sync your emails to search conversations, summaries, and action items.",
-    icon: "✉️",
+    icon: "https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/gmail.svg",
     color: "#EA4335",
-    category: "Communication",
+    category: "Productivity",
     permission: "Read-only access to emails and metadata",
   },
   google_calendar: {
     name: "Google Calendar",
     description: "Sync your schedule to cross-reference meetings, events, and timelines.",
-    icon: "📅",
+    icon: "https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/googlecalendar.svg",
     color: "#4285F4",
     category: "Productivity",
     permission: "Read-only access to calendar events",
@@ -53,45 +53,56 @@ const PROVIDER_METADATA: Record<string, {
   notion: {
     name: "Notion",
     description: "Import pages, databases, and workspace notes into your memory graph.",
-    icon: "📓",
+    icon: "https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/notion.svg",
     color: "#000000",
-    category: "Knowledge & Notes",
+    category: "Productivity",
     permission: "Read and import pages shared with the integration",
   },
   github: {
     name: "GitHub",
     description: "Sync repositories, pull requests, issues, and commits.",
-    icon: "💻",
-    color: "#181717",
-    category: "Development",
+    icon: "https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/github.svg",
+    color: "#24292e",
+    category: "Productivity",
     permission: "Read access to repositories, code, and issues",
   },
   slack: {
     name: "Slack",
     description: "Index channels and direct messages for conversational context.",
-    icon: "💬",
+    icon: "https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/slack.svg",
     color: "#4A154B",
-    category: "Communication",
+    category: "Productivity",
     permission: "Read public channels and direct messages",
   },
   drive: {
     name: "Google Drive",
     description: "Sync PDFs, text documents, spreadsheets, and presentations.",
-    icon: "📁",
+    icon: "https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/googledrive.svg",
     color: "#34A853",
-    category: "Knowledge & Notes",
+    category: "Productivity",
     permission: "Read-only access to select files and folders",
   },
 };
+
+const CATEGORIES = [
+  "All",
+  "Productivity",
+  "Health",
+  "Smart Home",
+  "IoT",
+  "Security",
+  "Location",
+  "Vehicles",
+];
 
 function normalizeConnector(raw: any): Connector & { provider: string } {
   const provider = raw.provider || "";
   const meta = PROVIDER_METADATA[provider] || {
     name: provider ? provider.charAt(0).toUpperCase() + provider.slice(1) : "Unknown",
     description: "Connect this service to import data.",
-    icon: "🔌",
+    icon: `https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/${provider.toLowerCase()}.svg`,
     color: "#6b7280",
-    category: "Other",
+    category: "Productivity",
     permission: "Required scopes for read access",
   };
 
@@ -121,6 +132,8 @@ export function ConnectorsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [pollActive, setPollActive] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
 
   // Home Assistant Modal states
   const [haModalOpen, setHaModalOpen] = useState(false);
@@ -129,26 +142,25 @@ export function ConnectorsPage() {
   const [haSimulated, setHaSimulated] = useState(true);
   const [haConnecting, setHaConnecting] = useState(false);
 
+  // Fetch connectors list
+  const loadList = async (showLoading = true) => {
+    if (showLoading) setLoading(true);
+    try {
+      const data = await api.connectors.list();
+      const items = Array.isArray(data) ? data : data?.connectors ?? data?.data ?? [];
+      setConnectors(items.map(normalizeConnector));
+      setError(false);
+    } catch (err) {
+      console.error("Failed to load connectors list:", err);
+      setError(true);
+    } finally {
+      if (showLoading) setLoading(false);
+    }
+  };
+
   // Initial fetch
   useEffect(() => {
-    let cancelled = false;
-    async function fetchConnectors() {
-      try {
-        const data = await api.connectors.list();
-        const items = Array.isArray(data) ? data : data?.connectors ?? data?.data ?? [];
-        if (!cancelled) {
-          setConnectors(items.map(normalizeConnector));
-          setLoading(false);
-        }
-      } catch {
-        if (!cancelled) {
-          setError(true);
-          setLoading(false);
-        }
-      }
-    }
-    fetchConnectors();
-    return () => { cancelled = true; };
+    loadList();
   }, []);
 
   // Poll connectors status while pollActive is true
@@ -162,8 +174,8 @@ export function ConnectorsPage() {
         const normalized = items.map(normalizeConnector);
 
         // Check if any previously disconnected connector became connected
-        const hasNewConnection = normalized.some((newConn: Connector) => {
-          const oldConn = connectors.find((c) => c.id === newConn.id);
+        const hasNewConnection = normalized.some((newConn: any) => {
+          const oldConn = connectors.find((c) => c.provider === newConn.provider);
           return oldConn && oldConn.status === "not_connected" && newConn.status === "connected";
         });
 
@@ -231,9 +243,7 @@ export function ConnectorsPage() {
       setHaModalOpen(false);
       
       // Refresh list
-      const freshData = await api.connectors.list();
-      const items = Array.isArray(freshData) ? freshData : freshData?.connectors ?? freshData?.data ?? [];
-      setConnectors(items.map(normalizeConnector));
+      await loadList(false);
       toast.success("Home Assistant connected successfully!");
     } catch (err: any) {
       toast.error(err.message || "Failed to connect Home Assistant");
@@ -246,47 +256,61 @@ export function ConnectorsPage() {
     try {
       await api.connectors.disconnect(id);
       // Refresh connectors list
-      const data = await api.connectors.list();
-      const items = Array.isArray(data) ? data : data?.connectors ?? data?.data ?? [];
-      setConnectors(items.map(normalizeConnector));
+      await loadList(false);
       toast.success("Disconnected successfully.");
     } catch {
       toast.error("Failed to disconnect service.");
     }
   };
 
-  // Group connectors by category
-  const categories = connectors.reduce<Record<string, (Connector & { provider: string })[]>>((acc, c) => {
+  // Filter & Search Logic
+  const filteredConnectors = connectors.filter((c) => {
+    const matchesSearch =
+      c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.category.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesCategory =
+      selectedCategory === "All" ||
+      c.category.toLowerCase() === selectedCategory.toLowerCase();
+
+    return matchesSearch && matchesCategory;
+  });
+
+  // Group filtered connectors by category for structured display
+  const groupedCategories = filteredConnectors.reduce<Record<string, (Connector & { provider: string })[]>>((acc, c) => {
     const cat = c.category || "Other";
     if (!acc[cat]) acc[cat] = [];
     acc[cat].push(c);
     return acc;
   }, {});
 
-  const categoryEntries = Object.entries(categories);
+  const categoryEntries = Object.entries(groupedCategories);
 
   if (loading) {
     return (
-      <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-5">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground font-[var(--font-nunito)]">
-            Connectors
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Bring your existing memory sources into Debo.
+      <div className="p-6 md:p-8 max-w-6xl mx-auto space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-extrabold text-foreground tracking-tight font-[var(--font-nunito)]">
+              Connector Marketplace
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1.5">
+              Securely stream timeline events, health vitals, and smart home updates directly into your private OS.
+            </p>
+          </div>
+        </div>
+        <div className="rounded-3xl border-2 border-primary/10 bg-primary/5 px-4 py-3.5 flex items-start gap-3">
+          <ShieldCheck className="size-5 text-primary shrink-0 mt-0.5" />
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Data security is our foundation. Connectors authorize read-only access. You can instantly disconnect and purge any synced workspace history in one click.
           </p>
         </div>
-        <div className="rounded-2xl border-2 border-primary/15 bg-primary/5 px-3 py-2.5 flex items-start gap-2">
-          <ShieldCheck className="size-4 text-primary mt-0.5 shrink-0" />
-          <p className="text-xs text-muted-foreground">
-            Connectors are optional. Disconnect anytime and imported data will be removed.
-          </p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {[0, 1, 2].map((i) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[0, 1, 2, 3, 4, 5].map((i) => (
             <div
               key={i}
-              className="rounded-2xl border-2 border-border bg-card p-4 h-44 animate-pulse"
+              className="rounded-3xl border border-border bg-card p-5 h-48 animate-pulse shadow-sm"
             />
           ))}
         </div>
@@ -296,96 +320,170 @@ export function ConnectorsPage() {
 
   if (error) {
     return (
-      <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-5">
+      <div className="p-6 md:p-8 max-w-6xl mx-auto space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-foreground font-[var(--font-nunito)]">
-            Connectors
+          <h1 className="text-3xl font-extrabold text-foreground tracking-tight font-[var(--font-nunito)]">
+            Connector Marketplace
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Bring your existing memory sources into Debo.
+          <p className="text-sm text-muted-foreground mt-1.5">
+            Securely stream timeline events, health vitals, and smart home updates directly into your private OS.
           </p>
         </div>
-        <div className="flex flex-col items-center text-center py-16 gap-3">
-          <div className="size-10 rounded-xl bg-accent flex items-center justify-center">
-            <ShieldCheck className="size-5 text-muted-foreground" />
+        <div className="flex flex-col items-center justify-center text-center py-20 bg-card rounded-3xl border border-border gap-4 shadow-sm">
+          <div className="size-12 rounded-2xl bg-destructive/10 flex items-center justify-center">
+            <ShieldCheck className="size-6 text-destructive" />
           </div>
-          <p className="text-xs text-muted-foreground max-w-[28ch]">
-            Could not load connectors. Make sure the API is running.
-          </p>
+          <div className="space-y-1">
+            <h3 className="font-bold text-foreground">API Connection Error</h3>
+            <p className="text-xs text-muted-foreground max-w-xs leading-relaxed">
+              We couldn't reach the Dev server. Make sure the API backend is running locally.
+            </p>
+          </div>
+          <Button onClick={() => loadList(true)} variant="outline" className="rounded-full gap-2">
+            <RefreshCw className="size-3.5" /> Retry Connection
+          </Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-5">
-      <div className="flex items-center justify-between">
+    <div className="p-6 md:p-8 max-w-6xl mx-auto space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground font-[var(--font-nunito)]">
-            Connectors
+          <h1 className="text-3xl font-extrabold text-foreground tracking-tight font-[var(--font-nunito)]">
+            Connector Marketplace
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Bring your existing memory sources into Debo.
+          <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">
+            Securely stream timeline events, health vitals, and smart home updates directly into your private OS.
           </p>
         </div>
         {pollActive && (
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/30 px-3 py-1.5 rounded-full border border-border">
-            <Loader2 className="size-3 animate-spin text-primary" />
-            <span>Awaiting authorization...</span>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground bg-primary/5 px-4 py-2 rounded-full border border-primary/20 animate-pulse self-start md:self-auto">
+            <Loader2 className="size-3.5 animate-spin text-primary" />
+            <span className="font-medium text-primary">Awaiting authorization...</span>
           </div>
         )}
       </div>
 
-      <div className="rounded-2xl border-2 border-primary/15 bg-primary/5 px-3 py-2.5 flex items-start gap-2">
-        <ShieldCheck className="size-4 text-primary mt-0.5 shrink-0" />
-        <p className="text-xs text-muted-foreground">
-          Connectors are optional. You control what Debo remembers and can
-          disconnect anytime &mdash; all imported data will be removed.
+      {/* Security Banner */}
+      <div className="rounded-3xl border border-primary/15 bg-primary/5 px-4 py-3.5 flex items-start gap-3">
+        <ShieldCheck className="size-5 text-primary shrink-0 mt-0.5" />
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          Data security is our foundation. Connectors authorize read-only access. You can instantly disconnect and purge any synced workspace history in one click.
         </p>
       </div>
 
-      <div className="space-y-6">
-        {categoryEntries.map(([category, items]) => (
-          <div key={category} className="space-y-3">
-            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              {category}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {items.map((connector) => (
-                <ConnectorCard
-                  key={connector.id}
-                  connector={connector}
-                  onConnect={handleConnect}
-                  onDisconnect={handleDisconnect}
-                />
-              ))}
-            </div>
+      {/* Search & Category Filter Section */}
+      <div className="flex flex-col gap-4 bg-card border border-border p-4 rounded-3xl shadow-sm">
+        {/* Search input */}
+        <div className="relative w-full">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          <Input
+            placeholder="Search integrations by name, description, or protocol..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 rounded-2xl border-border bg-muted/30 focus-visible:ring-primary focus-visible:bg-card text-sm transition-all"
+          />
+        </div>
+
+        {/* Category capsule tabs */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">
+          <div className="flex gap-1.5">
+            {CATEGORIES.map((category) => {
+              const isActive = selectedCategory === category;
+              return (
+                <button
+                  key={category}
+                  onClick={() => setSelectedCategory(category)}
+                  className={`px-4 py-2 text-xs font-semibold rounded-full whitespace-nowrap transition-all duration-200 cursor-pointer ${
+                    isActive
+                      ? "bg-primary text-primary-foreground shadow-md hover:brightness-105"
+                      : "bg-secondary text-secondary-foreground hover:bg-muted/80"
+                  }`}
+                >
+                  {category}
+                </button>
+              );
+            })}
           </div>
-        ))}
+        </div>
       </div>
 
+      {/* Grid List */}
+      <div className="space-y-8">
+        {filteredConnectors.length === 0 ? (
+          <div className="flex flex-col items-center justify-center text-center py-20 bg-card rounded-3xl border border-border gap-3 shadow-xs">
+            <div className="size-12 rounded-2xl bg-muted flex items-center justify-center">
+              <SlidersHorizontal className="size-5 text-muted-foreground" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="font-bold text-foreground">No integrations found</h3>
+              <p className="text-xs text-muted-foreground max-w-xs leading-relaxed">
+                We couldn't find any connectors matching "{searchQuery}" under category "{selectedCategory}".
+              </p>
+            </div>
+            {(searchQuery !== "" || selectedCategory !== "All") && (
+              <Button
+                onClick={() => {
+                  setSearchQuery("");
+                  setSelectedCategory("All");
+                }}
+                variant="outline"
+                className="rounded-full mt-2"
+              >
+                Clear Filters
+              </Button>
+            )}
+          </div>
+        ) : (
+          categoryEntries.map(([category, items]) => (
+            <div key={category} className="space-y-4">
+              <div className="flex items-center gap-3">
+                <h2 className="text-sm font-bold text-foreground tracking-wide font-[var(--font-nunito)] bg-secondary/80 px-3.5 py-1 rounded-full border border-border/40">
+                  {category}
+                </h2>
+                <div className="h-[1px] bg-border/60 grow" />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {items.map((connector) => (
+                  <ConnectorCard
+                    key={connector.id}
+                    connector={connector}
+                    onConnect={handleConnect}
+                    onDisconnect={handleDisconnect}
+                  />
+                ))}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Home Assistant Setup Dialog */}
       <Dialog open={haModalOpen} onOpenChange={setHaModalOpen}>
-        <DialogContent className="max-w-md bg-[var(--background)] border border-border rounded-3xl p-6 shadow-2xl">
+        <DialogContent className="max-w-md bg-card border border-border rounded-3xl p-6 shadow-2xl">
           <DialogHeader className="space-y-2">
-            <div className="size-12 rounded-2xl bg-[#41BDF5]/15 flex items-center justify-center text-2xl text-[#41BDF5] mb-2">
+            <div className="size-12 rounded-2xl bg-[#41BDF5]/15 flex items-center justify-center text-2xl text-[#41BDF5] mb-2 border border-[#41BDF5]/20">
               🏠
             </div>
             <DialogTitle className="text-xl font-bold font-[var(--font-nunito)] text-foreground">
               Connect Home Assistant
             </DialogTitle>
-            <DialogDescription className="text-sm text-muted-foreground leading-relaxed">
-              Integrate your smart home with Debo. Control smart bulbs, fans, locks, and climate via natural voice or text commands.
+            <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
+              Integrate your smart home network with Debo. Control lights, climate, smart plugs, locks, and sensors via natural agent command flows.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 my-4">
-            <div className="flex items-center justify-between p-3 rounded-2xl border border-primary/10 bg-primary/5">
+            <div className="flex items-center justify-between p-3 rounded-2xl border border-primary/10 bg-primary/5 transition-all">
               <div className="space-y-0.5 pr-4">
                 <span className="text-xs font-bold text-foreground block">
                   Simulated Demo Mode
                 </span>
-                <span className="text-[11px] text-muted-foreground block">
-                  Creates virtual mock devices to test AI execution instantly without real Home Assistant.
+                <span className="text-[11px] text-muted-foreground block leading-normal">
+                  Creates virtual mock devices to test intelligence APIs instantly without requiring a live Home Assistant configuration.
                 </span>
               </div>
               <Switch
@@ -398,18 +496,18 @@ export function ConnectorsPage() {
             {!haSimulated && (
               <>
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-muted-foreground block">
+                  <label className="text-xs font-bold text-muted-foreground block">
                     Home Assistant URL
                   </label>
                   <Input
                     placeholder="https://your-hass-instance.duckdns.org:8123"
                     value={haUrl}
                     onChange={(e) => setHaUrl(e.target.value)}
-                    className="rounded-xl border-border bg-card text-sm focus-visible:ring-primary"
+                    className="rounded-xl border-border bg-muted/20 text-sm focus-visible:ring-primary focus-visible:bg-card transition-all"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-muted-foreground block">
+                  <label className="text-xs font-bold text-muted-foreground block">
                     Long-Lived Access Token
                   </label>
                   <Input
@@ -417,10 +515,10 @@ export function ConnectorsPage() {
                     placeholder="eyJhbGciOi..."
                     value={haToken}
                     onChange={(e) => setHaToken(e.target.value)}
-                    className="rounded-xl border-border bg-card text-sm focus-visible:ring-primary"
+                    className="rounded-xl border-border bg-muted/20 text-sm focus-visible:ring-primary focus-visible:bg-card transition-all"
                   />
-                  <p className="text-[10px] text-muted-foreground mt-1">
-                    Generate this in your Home Assistant Profile settings page.
+                  <p className="text-[10px] text-muted-foreground mt-1 leading-normal">
+                    Generate this at the bottom of your Home Assistant Profile settings page.
                   </p>
                 </div>
               </>
@@ -438,7 +536,7 @@ export function ConnectorsPage() {
             </Button>
             <Button
               onClick={handleConnectHomeAssistant}
-              className="bg-primary hover:bg-primary/95 text-primary-foreground rounded-full font-medium shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+              className="bg-primary hover:bg-primary/95 text-primary-foreground rounded-full font-medium shadow-[0_3px_0_#b53305] hover:brightness-105 active:translate-y-[2px] active:shadow-none transition-all flex items-center gap-2"
               disabled={haConnecting}
             >
               {haConnecting ? (
@@ -456,3 +554,4 @@ export function ConnectorsPage() {
     </div>
   );
 }
+

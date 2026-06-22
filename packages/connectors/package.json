@@ -1,0 +1,22 @@
+{
+  "name": "@debo/connectors",
+  "version": "0.1.0",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./base": "./src/base.ts",
+    "./types": "./src/types.ts",
+    "./registry": "./src/registry.ts",
+    "./providers/health": "./src/providers/health/health-layer.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "echo 'connectors package - no build needed'"
+  },
+  "dependencies": {
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.4"
+  }
+}

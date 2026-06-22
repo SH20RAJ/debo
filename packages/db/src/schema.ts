@@ -1014,3 +1014,61 @@ export const customMcpServers = pgTable(
     index("custom_mcp_servers_workspace_id_idx").on(t.workspaceId),
   ],
 );
+
+// ─── 31. normalized_events ──────────────────────────────────────────────────
+export const normalizedEvents = pgTable(
+  "normalized_events",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspaces.id),
+    connectorAccountId: text("connector_account_id")
+      .references(() => connectorAccounts.id),
+    source: text("source").notNull(),
+    category: text("category").notNull(),
+    eventType: text("event_type").notNull(),
+    timestamp: timestamp("timestamp", { mode: "string" }).notNull(),
+    summary: text("summary").notNull(),
+    metadataJson: text("metadata_json"),
+    rawPayloadJson: text("raw_payload_json"),
+    createdAt: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("normalized_events_user_id_idx").on(t.userId),
+    index("normalized_events_workspace_id_idx").on(t.workspaceId),
+    index("normalized_events_category_idx").on(t.category),
+    index("normalized_events_timestamp_idx").on(t.timestamp),
+  ],
+);
+
+// ─── 32. iot_entities ────────────────────────────────────────────────────────
+export const iotEntities = pgTable(
+  "iot_entities",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspaces.id),
+    connectorAccountId: text("connector_account_id")
+      .notNull()
+      .references(() => connectorAccounts.id),
+    entityId: text("entity_id").notNull(),
+    domain: text("domain").notNull(),
+    name: text("name").notNull(),
+    state: text("state").notNull(),
+    attributesJson: text("attributes_json"),
+    lastUpdated: timestamp("last_updated", { mode: "string" }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("iot_entities_user_id_idx").on(t.userId),
+    index("iot_entities_workspace_id_idx").on(t.workspaceId),
+    index("iot_entities_entity_id_idx").on(t.entityId),
+  ],
+);

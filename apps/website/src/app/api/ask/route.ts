@@ -44,6 +44,13 @@ import {
 } from "@debo/db/schema";
 import { eq, and, or, ilike, ne } from "drizzle-orm";
 import { newId } from "@/lib/api-helpers";
+import {
+  getEventsTool,
+  getHealthEventsTool,
+  getHomeEventsTool,
+  getSecurityEventsTool,
+  searchTimelineTool,
+} from "@/server/langgraph/tools/iot-retrieval";
 
 export const runtime = "nodejs";
 
@@ -493,6 +500,11 @@ export async function POST(req: Request) {
             queryConnectorsTool(user.id, workspaceId),
             getIotDeviceStatesTool(user.id, workspaceId),
             controlIotDeviceTool(user.id, workspaceId),
+            getEventsTool(user.id, workspaceId),
+            getHealthEventsTool(user.id, workspaceId),
+            getHomeEventsTool(user.id, workspaceId),
+            getSecurityEventsTool(user.id, workspaceId),
+            searchTimelineTool(user.id, workspaceId),
             ...composioTools,
             ...customMcpTools,
           ];
@@ -536,6 +548,8 @@ export async function POST(req: Request) {
                      ? "notion"
                      : toolCall.name.startsWith("GITHUB_")
                      ? "github"
+                     : ["get_events", "get_health_events", "get_home_events", "get_security_events", "search_timeline"].includes(toolCall.name)
+                     ? "timeline"
                      : "task",
                    title: readableTitle,
                    snippet: typeof toolResult === "string" ? toolResult.slice(0, 300) : JSON.stringify(toolResult).slice(0, 300),
