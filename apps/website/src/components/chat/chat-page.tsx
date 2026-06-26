@@ -216,6 +216,13 @@ export function ChatPage() {
   );
 
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
+  const activeThreadIdRef = useRef<string | null>(null);
+
+  const changeActiveThreadId = useCallback((id: string | null) => {
+    activeThreadIdRef.current = id;
+    setActiveThreadId(id);
+  }, []);
+
   const [historyOpen, setHistoryOpen] = useState(false);
   const [threadSearch, setThreadSearch] = useState("");
   const [renaming, setRenaming] = useState(false);
@@ -227,11 +234,6 @@ export function ChatPage() {
   const activeThread = useMemo(() => {
     return threads.find((t) => t.id === activeThreadId);
   }, [threads, activeThreadId]);
-
-  const activeThreadIdRef = useRef(activeThreadId);
-  useEffect(() => {
-    activeThreadIdRef.current = activeThreadId;
-  }, [activeThreadId]);
 
   // Vercel AI SDK useChat integration (v6 transport style)
   const {
@@ -268,7 +270,7 @@ export function ChatPage() {
         const headerThreadId = response.headers.get("x-thread-id");
         const currentThreadId = activeThreadIdRef.current;
         if (headerThreadId && headerThreadId !== currentThreadId) {
-          setActiveThreadId(headerThreadId);
+          changeActiveThreadId(headerThreadId);
           router.replace(`/dashboard/chat?threadId=${headerThreadId}`);
           mutateThreads();
         }
@@ -296,7 +298,7 @@ export function ChatPage() {
 
     if (threadCacheRef.current[threadId]) {
       setMessages(threadCacheRef.current[threadId]);
-      setActiveThreadId(threadId);
+      changeActiveThreadId(threadId);
       if (updateUrl) {
         router.replace(`/dashboard/chat?threadId=${threadId}`);
       }
@@ -308,12 +310,13 @@ export function ChatPage() {
         const mappedMessages = data.messages.map((m: any) => ({
           id: m.id,
           role: m.role as "user" | "assistant",
+          content: m.content || "",
           parts: [{ type: "text" as const, text: m.content || "" }],
         }));
 
         threadCacheRef.current[threadId] = mappedMessages;
         setMessages(mappedMessages);
-        setActiveThreadId(threadId);
+        changeActiveThreadId(threadId);
 
         if (updateUrl) {
           router.replace(`/dashboard/chat?threadId=${threadId}`);
@@ -322,27 +325,27 @@ export function ChatPage() {
     } catch (err) {
       console.error("Failed to load thread:", err);
       toast.error("Conversation not found or failed to load.");
-      setActiveThreadId(null);
+      changeActiveThreadId(null);
       setMessages([]);
       router.replace("/dashboard/chat");
     }
-  }, [router, setMessages, stop]);
+  }, [router, setMessages, stop, changeActiveThreadId]);
 
   // Sync thread when URL params change
   useEffect(() => {
     const threadId = searchParams.get("threadId");
 
     if (threadId) {
-      if (threadId !== activeThreadId) {
+      if (threadId !== activeThreadIdRef.current) {
         loadThread(threadId, false);
       }
     } else {
-      if (activeThreadId !== null) {
-        setActiveThreadId(null);
+      if (activeThreadIdRef.current !== null) {
+        changeActiveThreadId(null);
         setMessages([]);
       }
     }
-  }, [searchParams, activeThreadId, loadThread, setMessages]);
+  }, [searchParams, loadThread, setMessages, changeActiveThreadId]);
 
   // Handle direct query parameters (e.g. greeting or widget clicks)
   useEffect(() => {
@@ -355,7 +358,7 @@ export function ChatPage() {
 
   const handleNewChat = () => {
     stop();
-    setActiveThreadId(null);
+    changeActiveThreadId(null);
     setMessages([]);
     router.replace("/dashboard/chat");
   };

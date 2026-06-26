@@ -3,7 +3,7 @@
  *
  * Auto-detects provider:
  *   - If OPENAI_BASE_URL points at NVIDIA NIM (integrate.api.nvidia.com),
- *     uses nvidia/llama-3.2-nv-embedqa-1b-v2 (current 2026 model).
+ *     uses nvidia/llama-nemotron-embed-1b-v2.
  *   - Otherwise (OpenAI default), uses text-embedding-3-small.
  *
  * Override either with DEBO_EMBEDDING_MODEL.

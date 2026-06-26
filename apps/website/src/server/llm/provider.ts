@@ -46,7 +46,7 @@ export function resolveProvider(): ResolvedProvider | null {
         process.env.DEBO_ANSWER_MODEL ||
         "meta/llama-3.3-70b-instruct",
       embedModel:
-        process.env.DEBO_EMBEDDING_MODEL || "nvidia/llama-3.2-nv-embedqa-1b-v2",
+        process.env.DEBO_EMBEDDING_MODEL || "nvidia/llama-nemotron-embed-1b-v2",
       embedInputType: true,
     };
   }
@@ -62,7 +62,7 @@ export function resolveProvider(): ResolvedProvider | null {
         process.env.DEBO_ANSWER_MODEL ||
         "meta/llama-3.3-70b-instruct",
       embedModel:
-        process.env.DEBO_EMBEDDING_MODEL || "nvidia/llama-3.2-nv-embedqa-1b-v2",
+        process.env.DEBO_EMBEDDING_MODEL || "nvidia/llama-nemotron-embed-1b-v2",
       embedInputType: true,
     };
   }
