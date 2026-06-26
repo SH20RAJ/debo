@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { ChatPage } from "@/components/chat/chat-page";
+import { ChatPage, ChatSkeleton } from "@/components/chat/chat-page";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +17,7 @@ export default function Page() {
         route throws NoSuspenseBoundaryError ("Suspense boundary not found")
         at runtime — see https://nextjs.org/docs/messages/no-suspense-boundary
       */}
-      <Suspense fallback={null}>
+      <Suspense fallback={<ChatSkeleton />}>
         <ChatPage />
       </Suspense>
     </div>

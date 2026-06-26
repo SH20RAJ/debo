@@ -71,17 +71,7 @@ export function TasksPage() {
   );
 
   if (loading) {
-    return (
-      <div className="p-6 md:p-8 max-w-6xl mx-auto animate-pulse">
-        <div className="h-8 w-48 bg-muted rounded-lg mb-8" />
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-4">
-            <div className="h-64 bg-card border-2 border-border rounded-3xl" />
-          </div>
-          <div className="h-96 bg-card border-2 border-border rounded-3xl" />
-        </div>
-      </div>
-    );
+    return <TasksSkeleton />;
   }
 
   return (
@@ -193,6 +183,79 @@ function EmptyState({ message }: { message: string }) {
   return (
     <div className="py-8 text-center border-2 border-dashed border-border rounded-2xl">
       <p className="text-xs text-muted-foreground font-medium">{message}</p>
+    </div>
+  );
+}
+
+export function TasksSkeleton() {
+  return (
+    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-5 animate-pulse">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <div className="space-y-2">
+          <div className="h-7 w-28 bg-muted rounded-xl" />
+          <div className="h-4 w-72 bg-muted rounded-lg" />
+        </div>
+        <div className="h-9 w-24 bg-muted rounded-xl" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Main List */}
+        <div className="lg:col-span-8 space-y-6">
+          <div className="flex gap-2 mb-4">
+            <div className="h-8 w-20 bg-muted rounded-lg" />
+            <div className="h-8 w-16 bg-muted rounded-lg" />
+            <div className="h-8 w-16 bg-muted rounded-lg" />
+            <div className="h-8 w-24 bg-muted rounded-lg" />
+          </div>
+          
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <div className="h-3.5 w-20 bg-muted rounded-md" />
+              {[1, 2].map((i) => (
+                <div key={i} className="h-16 bg-card border-2 border-border rounded-2xl flex items-center gap-3 p-4">
+                  <div className="w-4 h-4 rounded-full bg-muted" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-muted rounded w-1/3" />
+                    <div className="h-3 bg-muted rounded w-1/4" />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="space-y-2">
+              <div className="h-3.5 w-24 bg-muted rounded-md" />
+              <div className="h-16 bg-card border-2 border-border rounded-2xl flex items-center gap-3 p-4">
+                <div className="w-4 h-4 rounded-full bg-muted" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 bg-muted rounded w-1/2" />
+                  <div className="h-3 bg-muted rounded w-1/3" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Sidebar */}
+        <div className="lg:col-span-4">
+          <div className="rounded-3xl border-2 border-border bg-card overflow-hidden">
+            <div className="p-4 border-b border-border flex items-center justify-between">
+              <div className="h-4 w-28 bg-muted rounded-md" />
+              <div className="h-4 w-12 bg-muted rounded-md" />
+            </div>
+            <div className="p-4 space-y-3 h-[320px]">
+              {[1, 2].map((i) => (
+                <div key={i} className="h-16 bg-muted/40 rounded-2xl flex items-center gap-3 p-4">
+                  <div className="w-4 h-4 rounded-full bg-muted" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-3.5 bg-muted rounded w-2/3" />
+                    <div className="h-3 bg-muted rounded w-1/2" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

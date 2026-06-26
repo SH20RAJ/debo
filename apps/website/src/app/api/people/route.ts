@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@debo/db";
-import { people, personMentions, auditLogs } from "@debo/db/schema";
+import { people, personMentions, auditLogs, tasks } from "@debo/db/schema";
 import { and, asc, eq, sql } from "drizzle-orm";
 import {
   apiError,
@@ -17,6 +17,12 @@ const CreatePersonSchema = z.object({
   company: z.string().optional().nullable(),
   role: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
+  email: z.string().optional().nullable(),
+  phone: z.string().optional().nullable(),
+  twitter: z.string().optional().nullable(),
+  linkedin: z.string().optional().nullable(),
+  github: z.string().optional().nullable(),
+  avatarUrl: z.string().optional().nullable(),
 });
 
 /**
@@ -40,20 +46,34 @@ export async function GET(req: Request) {
         company: people.company,
         role: people.role,
         notes: people.notes,
+        email: people.email,
+        phone: people.phone,
+        twitter: people.twitter,
+        linkedin: people.linkedin,
+        github: people.github,
+        avatarUrl: people.avatarUrl,
         lastMentionedAt: people.lastMentionedAt,
         createdAt: people.createdAt,
         updatedAt: people.updatedAt,
-        mentionCount: sql<number>`coalesce(count(${personMentions.id}), 0)::int`,
+        mentionCount: sql<number>`coalesce((
+          select count(*) from ${personMentions}
+          where ${personMentions.personId} = ${people.id}
+          and ${personMentions.userId} = ${user.id}
+        ), 0)::int`,
+        openTaskCount: sql<number>`coalesce((
+          select count(*) from ${tasks}
+          where ${tasks.relatedPersonId} = ${people.id}
+          and ${tasks.status} not in ('done', 'dismissed')
+          and ${tasks.userId} = ${user.id}
+        ), 0)::int`,
       })
       .from(people)
-      .leftJoin(personMentions, eq(personMentions.personId, people.id))
       .where(
         and(
           eq(people.userId, user.id),
           eq(people.workspaceId, workspaceId),
         ),
       )
-      .groupBy(people.id)
       .orderBy(
         sql`${people.lastMentionedAt} desc nulls last`,
         asc(people.name),
@@ -90,6 +110,12 @@ export async function POST(req: Request) {
         company: parsed.data.company ?? null,
         role: parsed.data.role ?? null,
         notes: parsed.data.notes ?? null,
+        email: parsed.data.email ?? null,
+        phone: parsed.data.phone ?? null,
+        twitter: parsed.data.twitter ?? null,
+        linkedin: parsed.data.linkedin ?? null,
+        github: parsed.data.github ?? null,
+        avatarUrl: parsed.data.avatarUrl ?? null,
       })
       .returning();
 

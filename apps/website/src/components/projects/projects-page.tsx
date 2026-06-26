@@ -197,19 +197,7 @@ export function ProjectsPage() {
   );
 
   if (loading) {
-    return (
-      <div className="p-6 md:p-8 max-w-7xl mx-auto animate-pulse">
-        <div className="h-8 w-48 bg-muted rounded-lg mb-8" />
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 grid sm:grid-cols-2 gap-4">
-            {[0, 1, 2, 3].map((i) => (
-              <div key={i} className="h-32 bg-card border-2 border-border rounded-2xl" />
-            ))}
-          </div>
-          <div className="h-96 bg-card border-2 border-border rounded-3xl" />
-        </div>
-      </div>
-    );
+    return <ProjectsSkeleton />;
   }
 
   if (error) {
@@ -282,6 +270,73 @@ export function ProjectsPage() {
                 )}
               </div>
             </ScrollArea>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function ProjectsSkeleton() {
+  return (
+    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-5 animate-pulse">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <div className="space-y-2">
+          <div className="h-7 w-28 bg-muted rounded-xl" />
+          <div className="h-4 w-72 bg-muted rounded-lg" />
+        </div>
+        <div className="h-9 w-28 bg-muted rounded-xl" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Main Projects Grid */}
+        <div className="lg:col-span-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="rounded-2xl border-2 border-border bg-card p-4 flex flex-col h-36 gap-3">
+                <div className="flex items-start gap-3">
+                  <div className="size-9 rounded-xl bg-muted shrink-0" />
+                  <div className="flex-1 space-y-2 min-w-0">
+                    <div className="h-4 bg-muted rounded w-1/2" />
+                    <div className="h-3 bg-muted rounded w-3/4" />
+                  </div>
+                </div>
+                <div className="mt-auto pt-3 border-t border-border flex items-center justify-between">
+                  <div className="flex gap-2">
+                    <div className="h-4 w-8 bg-muted rounded" />
+                    <div className="h-4 w-8 bg-muted rounded" />
+                  </div>
+                  <div className="flex -space-x-1.5">
+                    <div className="w-5 h-5 rounded-full bg-muted border border-card" />
+                    <div className="w-5 h-5 rounded-full bg-muted border border-card" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Sidebar */}
+        <div className="lg:col-span-4">
+          <div className="rounded-3xl border-2 border-border bg-card overflow-hidden">
+            <div className="p-4 border-b border-border flex items-center justify-between">
+              <div className="h-4 w-28 bg-muted rounded-md" />
+              <div className="h-4 w-12 bg-muted rounded-md" />
+            </div>
+            <div className="p-4 space-y-3 h-[320px]">
+              {[1, 2].map((i) => (
+                <div key={i} className="h-32 bg-muted/40 rounded-2xl flex flex-col p-4 gap-2">
+                  <div className="flex gap-2.5">
+                    <div className="size-8 rounded-lg bg-muted shrink-0" />
+                    <div className="flex-1 space-y-1.5">
+                      <div className="h-3.5 bg-muted rounded w-1/3" />
+                      <div className="h-3 bg-muted rounded w-2/3" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

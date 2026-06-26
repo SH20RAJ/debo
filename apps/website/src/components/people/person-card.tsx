@@ -2,7 +2,7 @@
 
 import { CheckSquare, Database, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import Link from "next/link";
 import type { PersonMemory } from "@/lib/types";
 
@@ -48,6 +48,7 @@ export function PersonCard({ person }: { person: PersonMemory }) {
       >
         <div className="flex items-start gap-3 mb-3">
           <Avatar size="lg">
+            {person.avatar && <AvatarImage src={person.avatar} alt={person.name} className="object-cover" />}
             <AvatarFallback
               className={cn("text-sm font-bold", avatarColors[colorIdx])}
             >
@@ -77,8 +78,7 @@ export function PersonCard({ person }: { person: PersonMemory }) {
           </span>
           <span className="inline-flex items-center gap-1">
             <Database className="size-3" />
-            {person.memoryCount} memor
-            {person.memoryCount !== 1 ? "ies" : "y"}
+            {person.memoryCount} memor{person.memoryCount !== 1 ? "ies" : "y"}
           </span>
         </div>
       </div>

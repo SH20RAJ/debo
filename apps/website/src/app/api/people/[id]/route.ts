@@ -6,8 +6,10 @@ import {
   personMentions,
   sources,
   auditLogs,
+  memoryItems,
+  tasks,
 } from "@debo/db/schema";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, ne } from "drizzle-orm";
 import {
   apiError,
   newId,
@@ -22,6 +24,12 @@ const PatchPersonSchema = z.object({
   company: z.string().optional().nullable(),
   role: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
+  email: z.string().optional().nullable(),
+  phone: z.string().optional().nullable(),
+  twitter: z.string().optional().nullable(),
+  linkedin: z.string().optional().nullable(),
+  github: z.string().optional().nullable(),
+  avatarUrl: z.string().optional().nullable(),
 });
 
 /**
@@ -74,7 +82,73 @@ export async function GET(
       .orderBy(desc(personMentions.createdAt))
       .limit(20);
 
-    return NextResponse.json({ ...person, mentions });
+    const promisesRows = await db
+      .select({
+        content: memoryItems.content,
+      })
+      .from(memoryItems)
+      .innerJoin(personMentions, eq(personMentions.memoryItemId, memoryItems.id))
+      .where(
+        and(
+          eq(personMentions.personId, id),
+          eq(memoryItems.type, "promise"),
+          eq(memoryItems.userId, user.id),
+        )
+      );
+
+    const promises = promisesRows.map(r => r.content);
+
+    const openTasksRows = await db
+      .select({
+        title: tasks.title,
+        sourceTitle: sources.title,
+      })
+      .from(tasks)
+      .leftJoin(sources, eq(sources.id, tasks.sourceId))
+      .where(
+        and(
+          eq(tasks.relatedPersonId, id),
+          eq(tasks.userId, user.id),
+          ne(tasks.status, "done"),
+          ne(tasks.status, "dismissed"),
+        )
+      );
+
+    const openTasks = openTasksRows.map(r => ({
+      title: r.title,
+      source: r.sourceTitle ?? "Manual Entry",
+    }));
+
+    const relatedSourcesRows = await db
+      .select({
+        title: sources.title,
+        type: sources.type,
+        createdAt: sources.createdAt,
+      })
+      .from(sources)
+      .innerJoin(personMentions, eq(personMentions.sourceId, sources.id))
+      .where(
+        and(
+          eq(personMentions.personId, id),
+          eq(sources.userId, user.id),
+        )
+      )
+      .orderBy(desc(sources.createdAt))
+      .limit(20);
+
+    const seenSources = new Set<string>();
+    const relatedSources: any[] = [];
+    for (const s of relatedSourcesRows) {
+      if (!s.title || seenSources.has(s.title)) continue;
+      seenSources.add(s.title);
+      relatedSources.push({
+        title: s.title,
+        type: s.type,
+        date: s.createdAt ? new Date(s.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "Recent",
+      });
+    }
+
+    return NextResponse.json({ ...person, mentions, promises, openTasks, relatedSources });
   });
 }
 
@@ -106,6 +180,12 @@ export async function PATCH(
       "company",
       "role",
       "notes",
+      "email",
+      "phone",
+      "twitter",
+      "linkedin",
+      "github",
+      "avatarUrl",
     ] as const) {
       if (parsed.data[key] !== undefined) updates[key] = parsed.data[key];
     }

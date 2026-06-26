@@ -348,7 +348,23 @@ export function ChatPage() {
     setMessages([]);
 
     try {
-      const data = await api.ask.getThread(threadId);
+      let data = null;
+      let retries = 2;
+      while (retries >= 0) {
+        try {
+          data = await api.ask.getThread(threadId);
+          if (data) break;
+        } catch (err: any) {
+          if (retries > 0 && err.status === 404) {
+            retries--;
+            await new Promise((resolve) => setTimeout(resolve, 500));
+            continue;
+          }
+          throw err;
+        }
+        retries--;
+      }
+
       if (data) {
         const mappedMessages = data.messages.map((m: any) => ({
           id: m.id,
@@ -862,6 +878,47 @@ export function ChatPage() {
         </div>
       </div>
 
+    </div>
+  );
+}
+
+export function ChatSkeleton() {
+  return (
+    <div className="flex h-full bg-background relative overflow-hidden select-none animate-pulse">
+      {/* Main Chat Column */}
+      <div className="flex-1 flex flex-col min-w-0 h-full bg-background relative z-10 min-h-0">
+        {/* Chat Area Header */}
+        <div className="h-14 border-b border-border/40 px-6 flex items-center justify-between bg-card/40 backdrop-blur-md shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="h-5 w-20 bg-muted rounded-md" />
+            <div className="h-4 w-16 bg-muted rounded-md" />
+          </div>
+          <div className="h-8.5 w-20 bg-muted rounded-xl" />
+        </div>
+
+        {/* Messages Viewport */}
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+          <div className="max-w-3xl mx-auto space-y-6">
+            <div className="flex w-full flex-col gap-1.5 items-end">
+              <div className="h-3 w-12 bg-muted rounded animate-pulse" />
+              <div className="rounded-3xl w-64 h-12 bg-primary/5 border border-primary/5 animate-pulse" />
+            </div>
+            <div className="flex w-full flex-col gap-1.5 items-start">
+              <div className="h-3 w-12 bg-muted rounded animate-pulse" />
+              <div className="rounded-3xl w-[80%] h-24 bg-card border border-border p-4 space-y-2 animate-pulse">
+                <div className="h-3.5 bg-muted rounded w-[90%]" />
+                <div className="h-3.5 bg-muted rounded w-[75%]" />
+                <div className="h-3.5 bg-muted rounded w-[45%]" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Input Bar Outline */}
+        <div className="p-4 border-t border-border/40 bg-card/10 shrink-0">
+          <div className="max-w-2xl mx-auto h-12 bg-muted/60 rounded-2xl border-2 border-border" />
+        </div>
+      </div>
     </div>
   );
 }

@@ -47,6 +47,16 @@ export type PersonMemory = {
   openTaskCount: number;
   memoryCount: number;
   avatar?: string;
+  email?: string;
+  phone?: string;
+  twitter?: string;
+  linkedin?: string;
+  github?: string;
+  avatarUrl?: string;
+  relationship?: string;
+  company?: string;
+  role?: string;
+  notes?: string;
 };
 
 export type ProjectMemory = {

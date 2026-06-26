@@ -112,6 +112,12 @@ export const api = {
       company?: string;
       role?: string;
       notes?: string;
+      email?: string;
+      phone?: string;
+      twitter?: string;
+      linkedin?: string;
+      github?: string;
+      avatarUrl?: string;
     }) => fetchApi("/api/people", { method: "POST", body: JSON.stringify(data) }),
     update: (
       id: string,
@@ -121,6 +127,12 @@ export const api = {
         company?: string;
         role?: string;
         notes?: string;
+        email?: string;
+        phone?: string;
+        twitter?: string;
+        linkedin?: string;
+        github?: string;
+        avatarUrl?: string;
       },
     ) => fetchApi(`/api/people/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
     delete: (id: string) => fetchApi(`/api/people/${id}`, { method: "DELETE" }),
