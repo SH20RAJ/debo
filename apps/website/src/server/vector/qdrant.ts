@@ -30,66 +30,138 @@ function getConfig(): QdrantConfig | null {
   return { url, apiKey, collection };
 }
 
-async function qdrantFetch(path: string, init?: RequestInit) {
-  const cfg = getConfig();
-  if (!cfg) return null;
-  const res = await fetch(`${cfg.url}${path}`, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      "api-key": cfg.apiKey,
-      ...(init?.headers ?? {}),
-    },
-  });
-  if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    console.error(`[qdrant] ${path} ${res.status} ${body}`);
-    return null;
-  }
-  return res.json();
+interface QdrantCircuitState {
+  collectionVerified: boolean;
+  lastErrorTime: number;
 }
 
-let collectionVerified = false;
+const globalForQdrant = global as typeof globalThis & {
+  qdrantCircuitState?: QdrantCircuitState;
+};
+
+if (!globalForQdrant.qdrantCircuitState) {
+  globalForQdrant.qdrantCircuitState = {
+    collectionVerified: false,
+    lastErrorTime: 0,
+  };
+}
+
+const qdrantState = globalForQdrant.qdrantCircuitState;
+const CIRCUIT_BREAKER_DURATION_MS = 60000; // 1 minute (60s)
+
+function isCircuitActive(): boolean {
+  if (qdrantState.lastErrorTime === 0) return false;
+  return Date.now() - qdrantState.lastErrorTime < CIRCUIT_BREAKER_DURATION_MS;
+}
+
+function tripCircuit() {
+  qdrantState.lastErrorTime = Date.now();
+  qdrantState.collectionVerified = false; // Reset collection verification state
+}
+
+async function qdrantFetch(path: string, init?: RequestInit) {
+  if (isCircuitActive()) return null;
+  const cfg = getConfig();
+  if (!cfg) return null;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => {
+    controller.abort();
+  }, 1200); // 1.2s timeout to prevent thread blocking
+
+  try {
+    const res = await fetch(`${cfg.url}${path}`, {
+      ...init,
+      signal: controller.signal,
+      headers: {
+        "Content-Type": "application/json",
+        "api-key": cfg.apiKey,
+        ...(init?.headers ?? {}),
+      },
+    });
+    clearTimeout(timeoutId);
+
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      console.warn(`[qdrant] ${path} ${res.status} ${body} (tripping circuit breaker)`);
+      tripCircuit();
+      return null;
+    }
+    return res.json();
+  } catch (err: any) {
+    clearTimeout(timeoutId);
+    console.warn(`[qdrant] fetch failed for ${path}: ${err.message || err} (tripping circuit breaker)`);
+    tripCircuit();
+    return null;
+  }
+}
 
 /**
  * Ensure the collection exists with the given vector size. Idempotent.
  * Call once on first upsert per process.
  */
 export async function ensureCollection(vectorSize: number): Promise<boolean> {
-  if (collectionVerified) return true;
+  if (qdrantState.collectionVerified) return true;
+  if (isCircuitActive()) return false;
   const cfg = getConfig();
   if (!cfg) return false;
-  // Check existence
-  const exists = await fetch(`${cfg.url}/collections/${cfg.collection}`, {
-    headers: { "api-key": cfg.apiKey },
-  });
-  if (exists.ok) {
-    collectionVerified = true;
-    return true;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => {
+    controller.abort();
+  }, 1200); // 1.2s timeout
+
+  try {
+    const exists = await fetch(`${cfg.url}/collections/${cfg.collection}`, {
+      signal: controller.signal,
+      headers: { "api-key": cfg.apiKey },
+    });
+    clearTimeout(timeoutId);
+
+    if (exists.ok) {
+      qdrantState.collectionVerified = true;
+      return true;
+    }
+
+    if (exists.status === 404) {
+      console.log(`[qdrant] Collection ${cfg.collection} not found, attempting to create...`);
+      // Create with default cosine distance.
+      const res = await qdrantFetch(`/collections/${cfg.collection}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          vectors: { size: vectorSize, distance: "Cosine" },
+        }),
+      });
+      if (!res) {
+        tripCircuit();
+        return false;
+      }
+
+      // Create payload index on userId (required for filter query operations)
+      await qdrantFetch(`/collections/${cfg.collection}/index?wait=true`, {
+        method: "PUT",
+        body: JSON.stringify({
+          field_name: "userId",
+          field_schema: "keyword",
+        }),
+      });
+
+      qdrantState.collectionVerified = true;
+      return true;
+    }
+
+    tripCircuit();
+    return false;
+  } catch (err: any) {
+    clearTimeout(timeoutId);
+    console.warn(`[qdrant] ensureCollection failed: ${err.message || err} (tripping circuit breaker)`);
+    tripCircuit();
+    return false;
   }
-  // Create with default cosine distance.
-  const res = await qdrantFetch(`/collections/${cfg.collection}`, {
-    method: "PUT",
-    body: JSON.stringify({
-      vectors: { size: vectorSize, distance: "Cosine" },
-    }),
-  });
-  if (!res) return false;
-
-  // Create payload index on userId (required for filter query operations)
-  await qdrantFetch(`/collections/${cfg.collection}/index?wait=true`, {
-    method: "PUT",
-    body: JSON.stringify({
-      field_name: "userId",
-      field_schema: "keyword",
-    }),
-  });
-
-  collectionVerified = true;
-  return true;
 }
 
 export async function upsertPoints(points: QdrantPoint[]): Promise<boolean> {
+  if (isCircuitActive()) return false;
   const cfg = getConfig();
   if (!cfg || points.length === 0) return false;
   const res = await qdrantFetch(`/collections/${cfg.collection}/points?wait=true`, {
@@ -114,11 +186,13 @@ export async function searchSimilar(
   userId: string,
   limit = 8,
 ): Promise<QdrantSearchHit[]> {
+  if (isCircuitActive()) return [];
   const cfg = getConfig();
   if (!cfg) return [];
   
   // Ensure the collection exists before searching
-  await ensureCollection(vector.length);
+  const verified = await ensureCollection(vector.length);
+  if (!verified) return [];
 
   const res = await qdrantFetch(`/collections/${cfg.collection}/points/search`, {
     method: "POST",
@@ -136,6 +210,7 @@ export async function searchSimilar(
 }
 
 export async function deletePoints(ids: string[]): Promise<boolean> {
+  if (isCircuitActive()) return false;
   const cfg = getConfig();
   if (!cfg || ids.length === 0) return false;
   const res = await qdrantFetch(`/collections/${cfg.collection}/points/delete?wait=true`, {
@@ -146,5 +221,6 @@ export async function deletePoints(ids: string[]): Promise<boolean> {
 }
 
 export function isQdrantConfigured(): boolean {
+  if (isCircuitActive()) return false;
   return getConfig() !== null;
 }
