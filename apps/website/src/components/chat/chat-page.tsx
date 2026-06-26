@@ -201,6 +201,43 @@ function MarkdownRenderer({ content, className }: { content: string; className?:
   );
 }
 
+function MessageListSkeleton() {
+  return (
+    <div className="max-w-3xl mx-auto space-y-6">
+      {/* Pulse skeleton block 1 (user message, right aligned) */}
+      <div className="flex w-full flex-col gap-1.5 items-end">
+        <div className="h-3.5 w-16 bg-muted rounded-md animate-pulse" />
+        <div className="rounded-3xl px-5 py-3.5 w-64 h-12 bg-primary/10 border border-primary/5 animate-pulse shadow-xs" />
+      </div>
+
+      {/* Pulse skeleton block 2 (assistant message, left aligned) */}
+      <div className="flex w-full flex-col gap-1.5 items-start">
+        <div className="h-3.5 w-16 bg-muted rounded-md animate-pulse" />
+        <div className="rounded-3xl px-5 py-3.5 w-[80%] space-y-2.5 bg-card border border-border animate-pulse shadow-xs">
+          <div className="h-4 bg-muted rounded-md w-[90%] animate-pulse" />
+          <div className="h-4 bg-muted rounded-md w-[75%] animate-pulse" />
+          <div className="h-4 bg-muted rounded-md w-[40%] animate-pulse" />
+        </div>
+      </div>
+
+      {/* Pulse skeleton block 3 (user message, right aligned) */}
+      <div className="flex w-full flex-col gap-1.5 items-end">
+        <div className="h-3.5 w-16 bg-muted rounded-md animate-pulse" />
+        <div className="rounded-3xl px-5 py-3.5 w-48 h-12 bg-primary/10 border border-primary/5 animate-pulse shadow-xs" />
+      </div>
+
+      {/* Pulse skeleton block 4 (assistant message, left aligned) */}
+      <div className="flex w-full flex-col gap-1.5 items-start">
+        <div className="h-3.5 w-16 bg-muted rounded-md animate-pulse" />
+        <div className="rounded-3xl px-5 py-3.5 w-[70%] space-y-2.5 bg-card border border-border animate-pulse shadow-xs">
+          <div className="h-4 bg-muted rounded-md w-[95%] animate-pulse" />
+          <div className="h-4 bg-muted rounded-md w-[60%] animate-pulse" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function ChatPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -222,6 +259,8 @@ export function ChatPage() {
     activeThreadIdRef.current = id;
     setActiveThreadId(id);
   }, []);
+
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
 
   const [historyOpen, setHistoryOpen] = useState(false);
   const [threadSearch, setThreadSearch] = useState("");
@@ -295,14 +334,18 @@ export function ChatPage() {
   // Fetch and hydrate past messages for specific thread
   const loadThread = useCallback(async (threadId: string, updateUrl = true) => {
     stop();
+    changeActiveThreadId(threadId);
 
     if (threadCacheRef.current[threadId]) {
       setMessages(threadCacheRef.current[threadId]);
-      changeActiveThreadId(threadId);
       if (updateUrl) {
         router.replace(`/dashboard/chat?threadId=${threadId}`);
       }
+      return;
     }
+
+    setIsLoadingMessages(true);
+    setMessages([]);
 
     try {
       const data = await api.ask.getThread(threadId);
@@ -316,7 +359,6 @@ export function ChatPage() {
 
         threadCacheRef.current[threadId] = mappedMessages;
         setMessages(mappedMessages);
-        changeActiveThreadId(threadId);
 
         if (updateUrl) {
           router.replace(`/dashboard/chat?threadId=${threadId}`);
@@ -328,6 +370,8 @@ export function ChatPage() {
       changeActiveThreadId(null);
       setMessages([]);
       router.replace("/dashboard/chat");
+    } finally {
+      setIsLoadingMessages(false);
     }
   }, [router, setMessages, stop, changeActiveThreadId]);
 
@@ -443,7 +487,12 @@ export function ChatPage() {
     return threads.filter((t) => (t.title || "Conversation").toLowerCase().includes(q));
   }, [threads, threadSearch]);
 
-  const isEmpty = messages.length === 0 && !error;
+  const isEmpty = messages.length === 0 && !isLoadingMessages && !error;
+
+  const lastMessage = messages[messages.length - 1];
+  const showThinkingSkeleton =
+    (status === "submitted" || status === "streaming") &&
+    (!lastMessage || lastMessage.role === "user");
 
   return (
     <div className="flex h-full bg-background relative overflow-hidden select-none">
@@ -631,7 +680,9 @@ export function ChatPage() {
             ref={scrollContainerRef}
             className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 scrollbar-none"
           >
-            {isEmpty ? (
+            {isLoadingMessages ? (
+              <MessageListSkeleton />
+            ) : isEmpty ? (
               /* Greeting / Landing State */
               <div className="h-full flex flex-col items-center justify-center max-w-lg mx-auto text-center space-y-6 select-none my-auto">
                 <div className="size-16 rounded-3xl bg-primary/10 border border-primary/20 flex items-center justify-center shadow-sm">
@@ -704,8 +755,13 @@ export function ChatPage() {
                       >
                         {isUser ? (
                           <p className="whitespace-pre-wrap font-medium">{text}</p>
-                        ) : (
+                        ) : text.trim() ? (
                           <MarkdownRenderer content={text} />
+                        ) : (
+                          <div className="flex flex-col gap-2.5 py-1 min-w-[200px]">
+                            <div className="h-3.5 bg-muted rounded-md w-[85%] animate-pulse" />
+                            <div className="h-3.5 bg-muted rounded-md w-[60%] animate-pulse" />
+                          </div>
                         )}
 
                         {/* Rendering Tool Logs inside assistant bubble */}
@@ -737,6 +793,20 @@ export function ChatPage() {
                     </div>
                   );
                 })}
+
+                {showThinkingSkeleton && (
+                  <div className="flex w-full flex-col gap-1.5 items-start">
+                    <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider flex items-center gap-1">
+                      Debo <Activity className="size-2.5 text-primary animate-pulse" />
+                    </span>
+                    <div className="rounded-3xl px-5 py-3.5 bg-card text-foreground border border-border max-w-[85%] shadow-xs">
+                      <div className="flex flex-col gap-2.5 py-1 min-w-[200px]">
+                        <div className="h-3.5 bg-muted rounded-md w-[85%] animate-pulse" />
+                        <div className="h-3.5 bg-muted rounded-md w-[60%] animate-pulse" />
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {error && (
                   <div className="flex items-center gap-3 p-4 rounded-2xl border border-destructive/20 bg-destructive/5 text-destructive text-xs max-w-3xl mx-auto">

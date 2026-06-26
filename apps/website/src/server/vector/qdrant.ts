@@ -124,6 +124,13 @@ export async function ensureCollection(vectorSize: number): Promise<boolean> {
     }
 
     if (exists.status === 404) {
+      const contentType = exists.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        console.warn(`[qdrant] Instance returned non-JSON 404, likely paused/unreachable (tripping circuit breaker)`);
+        tripCircuit();
+        return false;
+      }
+
       console.log(`[qdrant] Collection ${cfg.collection} not found, attempting to create...`);
       // Create with default cosine distance.
       const res = await qdrantFetch(`/collections/${cfg.collection}`, {
