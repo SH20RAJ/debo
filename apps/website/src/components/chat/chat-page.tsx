@@ -15,6 +15,14 @@ import {
   ChevronRight,
   Search,
   X,
+  Send,
+  StopCircle,
+  Activity,
+  User,
+  Sparkles,
+  Database,
+  Calendar,
+  AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -24,13 +32,173 @@ import { Drawer } from "@/components/ui/drawer";
 import { api } from "@/lib/api";
 import { stackClientApp } from "@/stack/client";
 import { toast } from "sonner";
-import { AgentChat } from "@/components/agent-elements/agent-chat";
+import { Streamdown, type Components } from "streamdown";
+import { createCodePlugin } from "@streamdown/code";
+
+const codePlugin = createCodePlugin({
+  themes: ["github-light", "github-dark"],
+});
 
 interface ChatThread {
   id: string;
   title: string;
   createdAt: string;
   updatedAt: string;
+}
+
+function getMessageText(message: any): string {
+  if (typeof message.content === "string" && message.content.trim() !== "") {
+    return message.content;
+  }
+  if (Array.isArray(message.parts)) {
+    return message.parts
+      .filter((p: any) => p.type === "text")
+      .map((p: any) => p.text || "")
+      .join("\n");
+  }
+  return "";
+}
+
+function getToolCalls(message: any): any[] {
+  const toolCalls: any[] = [];
+  if (Array.isArray(message.toolCalls)) {
+    toolCalls.push(...message.toolCalls);
+  }
+  if (Array.isArray(message.parts)) {
+    message.parts.forEach((part: any) => {
+      if (
+        part.type === "tool-call" ||
+        part.type === "dynamic-tool" ||
+        (typeof part.type === "string" && part.type.startsWith("tool-"))
+      ) {
+        toolCalls.push(part);
+      }
+    });
+  }
+  return toolCalls;
+}
+
+function getToolNameReadable(name: string): string {
+  const mapping: Record<string, string> = {
+    queryTasks: "Searching tasks",
+    query_tasks: "Searching tasks",
+    queryJournals: "Searching memory logs",
+    query_journals: "Searching memory logs",
+    queryVoiceNotes: "Searching voice notes",
+    query_voice_notes: "Searching voice notes",
+    queryMail: "Searching emails",
+    query_mail: "Searching emails",
+    get_iot_device_states: "Checking smart home status",
+    control_iot_device: "Sending smart home command",
+    web_fetch: "Reading webpage content",
+    query_connectors: "Checking integrations list"
+  };
+  return mapping[name] || `Running ${name}`;
+}
+
+function MarkdownRenderer({ content, className }: { content: string; className?: string }) {
+  const fixedContent = content
+    .replace(/^(\d+)\.\s*\n+\s*\n*/gm, "$1. ")
+    .replace(/```([^\n]*)/g, (_match, langRaw) => {
+      const lang = String(langRaw || "").trim().toLowerCase();
+      if (!lang) return "```";
+      const normalized = lang.split(/\s+/)[0];
+      const allowedLangs = new Set([
+        "bash", "diff", "html", "js", "json", "jsx", "md", "markdown", "sh", "shell", "text", "ts", "tsx", "yml", "yaml"
+      ]);
+      return allowedLangs.has(normalized) ? `\`\`\`${normalized}` : "```text";
+    });
+
+  const components: Components = {
+    h1: ({ children, ...props }) => (
+      <h1 className="text-sm font-extrabold mt-3 mb-1 text-foreground font-[var(--font-heading)]" {...props}>
+        {children}
+      </h1>
+    ),
+    h2: ({ children, ...props }) => (
+      <h2 className="text-xs font-bold mt-2.5 mb-1 text-foreground font-[var(--font-heading)]" {...props}>
+        {children}
+      </h2>
+    ),
+    h3: ({ children, ...props }) => (
+      <h3 className="text-xs font-semibold mt-2 mb-0.5 text-foreground font-[var(--font-heading)]" {...props}>
+        {children}
+      </h3>
+    ),
+    p: ({ children, ...props }) => (
+      <p className="text-[13px] leading-relaxed text-foreground/90 my-1" {...props}>
+        {children}
+      </p>
+    ),
+    ul: ({ children, ...props }) => (
+      <ul className="list-disc list-outside space-y-0.5 text-[13px] mb-2.5 pl-4 text-foreground/90" {...props}>
+        {children}
+      </ul>
+    ),
+    ol: ({ children, ...props }) => (
+      <ol className="list-decimal list-outside space-y-0.5 text-[13px] mb-2.5 pl-4.5 text-foreground/90" {...props}>
+        {children}
+      </ol>
+    ),
+    li: ({ children, ...props }) => (
+      <li className="text-[13px] pl-0.5 text-foreground/90" {...props}>
+        {children}
+      </li>
+    ),
+    strong: ({ children, ...props }) => (
+      <strong className="font-extrabold text-foreground" {...props}>
+        {children}
+      </strong>
+    ),
+    a: ({ href, children, ...props }) => {
+      if (!href) return <span>{children}</span>;
+      const isExternal = href.startsWith("http") || href.startsWith("mailto:");
+      return (
+        <a
+          {...props}
+          href={href}
+          target={isExternal ? "_blank" : undefined}
+          rel={isExternal ? "noopener noreferrer" : undefined}
+          className="text-primary font-semibold hover:underline"
+        >
+          {children}
+        </a>
+      );
+    },
+    blockquote: ({ children, ...props }) => (
+      <blockquote className="pl-3 italic my-2 border-l-2 border-border text-muted-foreground text-xs" {...props}>
+        {children}
+      </blockquote>
+    ),
+    hr: ({ ...props }) => (
+      <hr className="my-3 border-border/40" {...props} />
+    ),
+    table: ({ children, ...props }) => (
+      <div className="overflow-x-auto my-3 border border-border rounded-xl">
+        <table className="w-full text-xs text-left border-collapse" {...props}>
+          {children}
+        </table>
+      </div>
+    ),
+    th: ({ children, ...props }) => (
+      <th className="font-bold px-3 py-1.5 bg-muted border-b border-border text-foreground" {...props}>
+        {children}
+      </th>
+    ),
+    td: ({ children, ...props }) => (
+      <td className="px-3 py-1.5 border-b border-border text-foreground/80" {...props}>
+        {children}
+      </td>
+    ),
+  };
+
+  return (
+    <div className={cn("overflow-hidden break-words [&_li>p]:inline [&_li>p]:mb-0", className)}>
+      <Streamdown components={components} plugins={{ code: codePlugin }}>
+        {fixedContent}
+      </Streamdown>
+    </div>
+  );
 }
 
 export function ChatPage() {
@@ -52,6 +220,9 @@ export function ChatPage() {
   const [threadSearch, setThreadSearch] = useState("");
   const [renaming, setRenaming] = useState(false);
   const [tempTitle, setTempTitle] = useState("");
+  const [inputText, setInputText] = useState("");
+  
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const activeThread = useMemo(() => {
     return threads.find((t) => t.id === activeThreadId);
@@ -61,6 +232,7 @@ export function ChatPage() {
   useEffect(() => {
     activeThreadIdRef.current = activeThreadId;
   }, [activeThreadId]);
+
   // Vercel AI SDK useChat integration (v6 transport style)
   const {
     messages,
@@ -111,12 +283,17 @@ export function ChatPage() {
 
   const threadCacheRef = useRef<Record<string, any[]>>({});
 
+  // Auto Scroll
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    }
+  }, [messages, status]);
+
   // Fetch and hydrate past messages for specific thread
   const loadThread = useCallback(async (threadId: string, updateUrl = true) => {
-    // Stop active streams
     stop();
 
-    // Load from cache instantly
     if (threadCacheRef.current[threadId]) {
       setMessages(threadCacheRef.current[threadId]);
       setActiveThreadId(threadId);
@@ -128,7 +305,6 @@ export function ChatPage() {
     try {
       const data = await api.ask.getThread(threadId);
       if (data) {
-        // Convert DB messages to UIMessage v6 format with parts array
         const mappedMessages = data.messages.map((m: any) => ({
           id: m.id,
           role: m.role as "user" | "assistant",
@@ -150,8 +326,6 @@ export function ChatPage() {
       setMessages([]);
       router.replace("/dashboard/chat");
     }
-
-
   }, [router, setMessages, stop]);
 
   // Sync thread when URL params change
@@ -242,14 +416,21 @@ export function ChatPage() {
     }
   };
 
-  const handleAgentSend = useCallback((msg: { role: "user"; content: string }) => {
-    sendMessage({ text: msg.content });
-  }, [sendMessage]);
+  const handleSend = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!inputText.trim() || status === "streaming") return;
+    sendMessage({ text: inputText.trim() });
+    setInputText("");
+  };
+
+  const handleSuggestionClick = (val: string) => {
+    sendMessage({ text: val });
+  };
 
   const suggestions = useMemo(() => [
-    { id: "s1", label: "What did I write in my journal recently?", value: "What did I write in my journal recently?" },
-    { id: "s2", label: "Check my inbox tasks", value: "Show me my pending inbox tasks." },
-    { id: "s3", label: "Summarize recent voice calls", value: "What was discussed in my recent voice conversations?" },
+    { label: "What did I write in my journal recently?", icon: Sparkles },
+    { label: "Show me my pending inbox tasks", icon: Database },
+    { label: "What did I do yesterday according to location?", icon: Calendar },
   ], []);
 
   // Filter threads by search query
@@ -258,6 +439,8 @@ export function ChatPage() {
     if (!q) return threads;
     return threads.filter((t) => (t.title || "Conversation").toLowerCase().includes(q));
   }, [threads, threadSearch]);
+
+  const isEmpty = messages.length === 0 && !error;
 
   return (
     <div className="flex h-full bg-background relative overflow-hidden select-none">
@@ -312,7 +495,7 @@ export function ChatPage() {
                 onClick={() => setThreadSearch("")}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
-                <X className="w-3 h-3" />
+                <X className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
@@ -368,7 +551,7 @@ export function ChatPage() {
         </div>
       </Drawer>
 
-      {/* 2. Main Chat Column */}
+      {/* Main Chat Column */}
       <div className="flex-1 flex flex-col min-w-0 h-full bg-background relative z-10 min-h-0">
         
         {/* Glow ambient aura background */}
@@ -439,17 +622,170 @@ export function ChatPage() {
         </div>
 
         {/* Chat message viewport wrapper */}
-        <div className="flex-1 min-h-0 p-4 flex flex-col relative">
-          <AgentChat
-            messages={messages as any}
-            status={status}
-            onSend={handleAgentSend}
-            onStop={stop}
-            error={error}
-            suggestions={suggestions}
-            emptyStatePosition="center"
-            className="flex-1"
-          />
+        <div className="flex-1 min-h-0 flex flex-col relative overflow-hidden bg-background">
+          
+          <div 
+            ref={scrollContainerRef}
+            className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 scrollbar-none"
+          >
+            {isEmpty ? (
+              /* Greeting / Landing State */
+              <div className="h-full flex flex-col items-center justify-center max-w-lg mx-auto text-center space-y-6 select-none my-auto">
+                <div className="size-16 rounded-3xl bg-primary/10 border border-primary/20 flex items-center justify-center shadow-sm">
+                  <Activity className="size-8 text-primary" />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-lg font-bold text-foreground tracking-tight font-[var(--font-nunito)]">
+                    Ask your past memory OS
+                  </h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed max-w-sm">
+                    Search notes, health stats, location traces, tasks, and connected app telemetry. Debo answers using backing citations.
+                  </p>
+                </div>
+
+                <div className="w-full grid grid-cols-1 gap-2">
+                  {suggestions.map((s, idx) => {
+                    const Icon = s.icon;
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => handleSuggestionClick(s.label)}
+                        className="w-full text-left p-3.5 rounded-2xl border border-border hover:border-primary/20 bg-card hover:bg-primary/[0.015] hover:shadow-xs transition-all flex items-center gap-3 group text-xs text-muted-foreground hover:text-foreground font-semibold cursor-pointer"
+                      >
+                        <div className="size-7 rounded-xl bg-secondary flex items-center justify-center shrink-0">
+                          <Icon className="size-3.5 text-muted-foreground/80 group-hover:text-primary transition-colors" />
+                        </div>
+                        <span className="truncate">{s.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              /* Message List */
+              <div className="max-w-3xl mx-auto space-y-6">
+                {messages.map((message) => {
+                  const isUser = message.role === "user";
+                  const text = getMessageText(message);
+                  const toolCalls = getToolCalls(message);
+
+                  return (
+                    <div
+                      key={message.id}
+                      className={cn(
+                        "flex w-full flex-col gap-1.5",
+                        isUser ? "items-end" : "items-start"
+                      )}
+                    >
+                      {/* Avatar/Name indicator */}
+                      <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider flex items-center gap-1">
+                        {isUser ? (
+                          <>
+                            You <User className="size-2.5" />
+                          </>
+                        ) : (
+                          <>
+                            Debo <Activity className="size-2.5 text-primary" />
+                          </>
+                        )}
+                      </span>
+
+                      {/* Bubble */}
+                      <div
+                        className={cn(
+                          "rounded-3xl px-5 py-3.5 text-sm leading-relaxed max-w-[85%] border shadow-xs transition-colors",
+                          isUser
+                            ? "bg-primary text-primary-foreground border-primary/10 shadow-[0_3px_0_#b53305]"
+                            : "bg-card text-foreground border-border"
+                        )}
+                      >
+                        {isUser ? (
+                          <p className="whitespace-pre-wrap font-medium">{text}</p>
+                        ) : (
+                          <MarkdownRenderer content={text} />
+                        )}
+
+                        {/* Rendering Tool Logs inside assistant bubble */}
+                        {!isUser && toolCalls.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mt-3 pt-2.5 border-t border-border/40">
+                            {toolCalls.map((tc: any, index: number) => {
+                              const name = tc.name || tc.toolName || "";
+                              const label = getToolNameReadable(name);
+                              const isCompleted = tc.state === "result" || tc.result !== undefined;
+
+                              return (
+                                <Badge
+                                  key={index}
+                                  variant="outline"
+                                  className="text-[10px] font-semibold py-1 px-3 rounded-full flex items-center gap-1.5 bg-muted/40 border-border/40 text-muted-foreground/80 shadow-2xs"
+                                >
+                                  {isCompleted ? (
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                                  ) : (
+                                    <Loader2 className="w-2.5 h-2.5 animate-spin text-primary shrink-0" />
+                                  )}
+                                  {label}
+                                </Badge>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {error && (
+                  <div className="flex items-center gap-3 p-4 rounded-2xl border border-destructive/20 bg-destructive/5 text-destructive text-xs max-w-3xl mx-auto">
+                    <AlertTriangle className="size-4 shrink-0" />
+                    <span className="font-semibold leading-relaxed">
+                      Error: {error.message || "Failed to parse message from stream."}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Form Ingestion Area */}
+          <div className="p-4 border-t border-border/40 bg-card/60 backdrop-blur-md shrink-0">
+            <div className="max-w-3xl mx-auto">
+              <form onSubmit={handleSend} className="relative flex items-center">
+                <Input
+                  type="text"
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
+                  placeholder="Ask your past OS..."
+                  disabled={status === "streaming"}
+                  className="w-full pr-12 pl-4 py-6 rounded-3xl border-border bg-muted/30 focus-visible:bg-card focus-visible:ring-primary text-sm shadow-xs transition-all"
+                />
+                
+                <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                  {status === "streaming" ? (
+                    <Button
+                      type="button"
+                      onClick={stop}
+                      size="icon"
+                      variant="ghost"
+                      className="size-8.5 rounded-full text-destructive hover:bg-destructive/10 cursor-pointer"
+                    >
+                      <StopCircle className="size-4.5" />
+                    </Button>
+                  ) : (
+                    <Button
+                      type="submit"
+                      disabled={!inputText.trim()}
+                      size="icon"
+                      className="size-8.5 rounded-full bg-primary text-primary-foreground shadow-[0_2px_0_#b53305] hover:brightness-105 active:translate-y-[1px] active:shadow-none transition-all disabled:opacity-50 disabled:shadow-none disabled:active:translate-y-0 cursor-pointer"
+                    >
+                      <Send className="size-4" />
+                    </Button>
+                  )}
+                </div>
+              </form>
+            </div>
+          </div>
+
         </div>
       </div>
 

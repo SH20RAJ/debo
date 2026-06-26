@@ -2,7 +2,6 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "tw-shimmer";
-@import "../components/agent-elements/agent-ui.css";
 
 @plugin "@tailwindcss/typography";
 @plugin "tailwind-scrollbar-hide";
