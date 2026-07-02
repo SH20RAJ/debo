@@ -774,16 +774,14 @@ export function ChatPage({ threadId: initialThreadId }: { threadId?: string }) {
                             scrollAnchor={isUser}
                           >
                             <Message align={isUser ? "end" : "start"}>
-                              {!isUser && (
-                                <MessageAvatar>
-                                  <Avatar className="size-8">
-                                    <AvatarImage src="" alt="Debo" />
-                                    <AvatarFallback className="bg-primary/15 text-primary text-xs font-semibold">
-                                      DB
-                                    </AvatarFallback>
-                                  </Avatar>
-                                </MessageAvatar>
-                              )}
+                              <MessageAvatar>
+                                <Avatar className="size-8">
+                                  <AvatarImage src="" alt={isUser ? "You" : "Debo"} />
+                                  <AvatarFallback className={isUser ? "bg-muted text-muted-foreground" : "bg-primary/15 text-primary text-xs font-semibold"}>
+                                    {isUser ? "U" : "DB"}
+                                  </AvatarFallback>
+                                </Avatar>
+                              </MessageAvatar>
                               <MessageContent>
                                 <MessageHeader>
                                   {isUser ? "You" : "Debo"}
@@ -791,7 +789,7 @@ export function ChatPage({ threadId: initialThreadId }: { threadId?: string }) {
                                 {isUser ? (
                                   <Bubble variant="default" align="end">
                                     <BubbleContent>
-                                      <p className="whitespace-pre-wrap font-medium">{text}</p>
+                                      <p className="whitespace-pre-wrap font-medium text-white">{text}</p>
                                     </BubbleContent>
                                   </Bubble>
                                 ) : (
@@ -872,16 +870,7 @@ export function ChatPage({ threadId: initialThreadId }: { threadId?: string }) {
                                   </div>
                                 )}
                               </MessageContent>
-                              {isUser && (
-                                <MessageAvatar>
-                                  <Avatar className="size-8">
-                                    <AvatarImage src="" alt="You" />
-                                    <AvatarFallback className="bg-muted text-muted-foreground">
-                                      U
-                                    </AvatarFallback>
-                                  </Avatar>
-                                </MessageAvatar>
-                              )}
+                              {/* Avatar rendered at start of Message for correct placement */}
                             </Message>
                           </MessageScrollerItem>
                         );

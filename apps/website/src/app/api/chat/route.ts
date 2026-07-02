@@ -53,48 +53,83 @@ export async function POST(req: Request) {
   const lastUserMessage = [...rawMessages].reverse().find((m) => m.role === "user");
   const question = lastUserMessage ? extractText(lastUserMessage) : "";
 
+  // Helper to wrap promises in a strict timeout
+  function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+    let timeoutId: any;
+    const timeoutPromise = new Promise<T>((resolve) => {
+      timeoutId = setTimeout(() => resolve(fallback), ms);
+    });
+    return Promise.race([
+      promise.then((val) => {
+        clearTimeout(timeoutId);
+        return val;
+      }),
+      timeoutPromise,
+    ]);
+  }
+
   let threadId = body.threadId;
   let threadExists = false;
 
-  if (threadId) {
-    const [existingThread] = await db
-      .select({ id: chatThreads.id })
-      .from(chatThreads)
-      .where(
-        and(
-          eq(chatThreads.id, threadId),
-          eq(chatThreads.userId, user.id),
-          eq(chatThreads.workspaceId, workspaceId),
-        ),
-      )
-      .limit(1);
+  try {
+    if (threadId) {
+      const existingThread = await withTimeout(
+        db
+          .select({ id: chatThreads.id })
+          .from(chatThreads)
+          .where(
+            and(
+              eq(chatThreads.id, threadId),
+              eq(chatThreads.userId, user.id),
+              eq(chatThreads.workspaceId, workspaceId),
+            ),
+          )
+          .limit(1),
+        3000,
+        []
+      );
 
-    if (existingThread) {
-      threadExists = true;
+      if (existingThread && existingThread.length > 0) {
+        threadExists = true;
+      }
     }
+
+    if (!threadId || !threadExists) {
+      threadId = newId("thr");
+      await withTimeout(
+        db.insert(chatThreads).values({
+          id: threadId,
+          userId: user.id,
+          workspaceId,
+          mode: "recall",
+          title: question.slice(0, 80) || "New Chat",
+        }),
+        3000,
+        null
+      );
+    }
+
+    // Persist user message to DB (safe, non-blocking)
+    try {
+      await withTimeout(
+        db.insert(chatMessages).values({
+          id: newId("msg"),
+          userId: user.id,
+          workspaceId,
+          threadId,
+          role: "user",
+          content: question,
+        }),
+        3000,
+        null
+      );
+    } catch (e) {
+      console.error("[api/chat] Failed to persist user message to DB:", e);
+    }
+  } catch (err: any) {
+    console.error("[api/chat] Error preparing thread/message in DB:", err);
+    return apiError("database_error", 500, { message: err.message });
   }
-
-  if (!threadId || !threadExists) {
-    threadId = newId("thr");
-    await db.insert(chatThreads).values({
-      id: threadId,
-      userId: user.id,
-      workspaceId,
-      mode: "recall",
-      title: question.slice(0, 80),
-    });
-  }
-
-
-  // Persist user message to DB
-  await db.insert(chatMessages).values({
-    id: newId("msg"),
-    userId: user.id,
-    workspaceId,
-    threadId,
-    role: "user",
-    content: question,
-  });
 
   const cfg = resolveProvider();
   if (!cfg) {
@@ -107,16 +142,24 @@ export async function POST(req: Request) {
   });
   const model = customOpenAI.chat(cfg.chatModel);
 
-  // Perform intent classification to decide if we should retrieve memories
-  const intent = await classifyOrchestrationIntent(question);
+  // Perform intent classification to decide if we should retrieve memories (3s timeout)
+  const intent = await withTimeout(
+    classifyOrchestrationIntent(question),
+    3000,
+    "general" as const
+  );
   console.log(`[api/chat] Classified user question intent: ${intent}`);
 
   let contextText = "";
   let sourcesFound: any[] = [];
 
   if (intent === "recall") {
-    console.log("[api/chat] Intent is RECALL. Querying vector memory...");
-    const retrieved = await retrieveMemory(user.id, question, 8);
+    console.log("[api/chat] Intent is RECALL. Querying vector memory (4s timeout)...");
+    const retrieved = await withTimeout(
+      retrieveMemory(user.id, question, 8),
+      4000,
+      { sourcesFound: [], contextText: "" }
+    );
     contextText = retrieved.contextText;
     sourcesFound = retrieved.sourcesFound;
   } else {
@@ -274,31 +317,35 @@ export async function POST(req: Request) {
       },
     },
     async onFinish({ text }: { text: string }) {
-      // Persist assistant response to DB
-      const assistantMessageId = newId("msg");
-      await db.insert(chatMessages).values({
-        id: assistantMessageId,
-        userId: user.id,
-        workspaceId,
-        threadId,
-        role: "assistant",
-        content: text,
-        metadataJson: JSON.stringify({ sourcesCount: sourcesFound.length }),
-      });
+      try {
+        // Persist assistant response to DB
+        const assistantMessageId = newId("msg");
+        await db.insert(chatMessages).values({
+          id: assistantMessageId,
+          userId: user.id,
+          workspaceId,
+          threadId,
+          role: "assistant",
+          content: text,
+          metadataJson: JSON.stringify({ sourcesCount: sourcesFound.length }),
+        });
 
-      // Save citations for the sources found
-      if (sourcesFound.length > 0) {
-        await db.insert(answerCitations).values(
-          sourcesFound.map((s) => ({
-            id: newId("cit"),
-            userId: user.id,
-            workspaceId,
-            messageId: assistantMessageId,
-            sourceId: s.id,
-            quoteText: s.snippet.slice(0, 200) || null,
-            confidence: 0.7,
-          }))
-        );
+        // Save citations for the sources found
+        if (sourcesFound.length > 0) {
+          await db.insert(answerCitations).values(
+            sourcesFound.map((s) => ({
+              id: newId("cit"),
+              userId: user.id,
+              workspaceId,
+              messageId: assistantMessageId,
+              sourceId: s.id,
+              quoteText: s.snippet.slice(0, 200) || null,
+              confidence: 0.7,
+            }))
+          );
+        }
+      } catch (e) {
+        console.error("[api/chat] Failed to save assistant message/citations to DB:", e);
       }
     },
   } as any);
