@@ -66,3 +66,6 @@ fetch details about  use https://agent-elements.21st.dev/  use context7 and seac
 
 allow digital twin sharing feature http://localhost:3000/dashboard/twin
 make ui more better http://localhost:3000/dashboard/brain
+
+
+ in all pages in the sidebar and the whole app i.e. = http://localhost:3000/dashboard/mcp and all remove all custom css and custom components I want you to use shadcn skills and use pure shadcn components without modification directly raw everywhere and replace all custom components maximum use the tokens defined in the globalscss of shadcn defaults and revamp the clean minimal ui with raw shadcn and keep things afster from frontend

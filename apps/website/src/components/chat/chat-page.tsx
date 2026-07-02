@@ -751,10 +751,21 @@ export function ChatPage({ threadId: initialThreadId }: { threadId?: string }) {
                   ) : (
                     /* Message List */
                     <>
-                      {messages.map((message) => {
+                      {messages.map((message, messageIndex) => {
                         const isUser = message.role === "user";
                         const text = getMessageText(message);
                         const toolCalls = getToolCalls(message);
+                        const isLastMessage = messageIndex === messages.length - 1;
+
+                        const messageCitations = (message as any).citations || [];
+                        const hasCitations = messageCitations.length > 0;
+                        const hasToolCalls = toolCalls.length > 0;
+
+                        // Conditionally show assistant message container only if it has content, toolcalls, citations or is currently streaming
+                        const isStreaming = status === "submitted" || status === "streaming";
+                        const showMessage = isUser || text.trim() || hasToolCalls || hasCitations || (isLastMessage && isStreaming);
+
+                        if (!showMessage) return null;
 
                         return (
                           <MessageScrollerItem
@@ -777,19 +788,27 @@ export function ChatPage({ threadId: initialThreadId }: { threadId?: string }) {
                                 <MessageHeader>
                                   {isUser ? "You" : "Debo"}
                                 </MessageHeader>
-                                <Bubble variant={isUser ? "default" : "secondary"} align={isUser ? "end" : "start"}>
-                                  <BubbleContent>
-                                    {isUser ? (
+                                {isUser ? (
+                                  <Bubble variant="default" align="end">
+                                    <BubbleContent>
                                       <p className="whitespace-pre-wrap font-medium">{text}</p>
-                                    ) : text.trim() ? (
-                                      <MarkdownRenderer content={text} />
-                                    ) : (
-              <div className="flex flex-col gap-2.5 py-1 min-w-[200px]">
-                                        <span className="shimmer text-muted-foreground">Thinking…</span>
-                                      </div>
-                                    )}
-                                  </BubbleContent>
-                                </Bubble>
+                                    </BubbleContent>
+                                  </Bubble>
+                                ) : (
+                                  (text.trim() || (isLastMessage && isStreaming)) && (
+                                    <Bubble variant="secondary" align="start">
+                                      <BubbleContent>
+                                        {text.trim() ? (
+                                          <MarkdownRenderer content={text} />
+                                        ) : (
+                                          <div className="flex flex-col gap-2.5 py-1 min-w-[200px]">
+                                            <span className="shimmer text-muted-foreground">Thinking…</span>
+                                          </div>
+                                        )}
+                                      </BubbleContent>
+                                    </Bubble>
+                                  )
+                                )}
 
                                 {/* Citations (Sources) */}
                                 {(() => {

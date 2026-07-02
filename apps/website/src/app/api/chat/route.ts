@@ -14,6 +14,7 @@ import {
 } from "@debo/db/schema";
 import { eq, and, or, ilike, ne } from "drizzle-orm";
 import { retrieveMemory } from "@/server/langgraph/nodes/retrieve-memory.node";
+import { classifyOrchestrationIntent } from "@/server/langgraph/nodes/classify-intent.node";
 import { resolveProvider } from "@/server/llm/provider";
 import { z } from "zod";
 
@@ -106,10 +107,21 @@ export async function POST(req: Request) {
   });
   const model = customOpenAI.chat(cfg.chatModel);
 
-  // Perform memory retrieval
-  const retrieved = await retrieveMemory(user.id, question, 8);
-  const contextText = retrieved.contextText;
-  const sourcesFound = retrieved.sourcesFound;
+  // Perform intent classification to decide if we should retrieve memories
+  const intent = await classifyOrchestrationIntent(question);
+  console.log(`[api/chat] Classified user question intent: ${intent}`);
+
+  let contextText = "";
+  let sourcesFound: any[] = [];
+
+  if (intent === "recall") {
+    console.log("[api/chat] Intent is RECALL. Querying vector memory...");
+    const retrieved = await retrieveMemory(user.id, question, 8);
+    contextText = retrieved.contextText;
+    sourcesFound = retrieved.sourcesFound;
+  } else {
+    console.log(`[api/chat] Intent is ${intent}. Skipping vector memory lookup.`);
+  }
 
   // Build system prompt compiling memory context
   const systemPrompt = [
@@ -146,7 +158,17 @@ export async function POST(req: Request) {
           if (query) {
             conditions.push(or(ilike(tasks.title, `%${query}%`), ilike(tasks.description, `%${query}%`)) as any);
           }
-          const results = await db.select().from(tasks).where(and(...conditions)).limit(20);
+          const results = await db
+            .select({
+              id: tasks.id,
+              title: tasks.title,
+              description: tasks.description,
+              status: tasks.status,
+              dueAt: tasks.dueAt,
+            })
+            .from(tasks)
+            .where(and(...conditions))
+            .limit(10);
           return JSON.stringify(results);
         },
       },
@@ -163,8 +185,25 @@ export async function POST(req: Request) {
           if (query) {
             conditions.push(or(ilike(sources.title, `%${query}%`), ilike(sources.plainText, `%${query}%`)) as any);
           }
-          const results = await db.select().from(sources).where(and(...conditions)).limit(10);
-          return JSON.stringify(results);
+          const results = await db
+            .select({
+              id: sources.id,
+              title: sources.title,
+              plainText: sources.plainText,
+              createdAt: sources.createdAt,
+            })
+            .from(sources)
+            .where(and(...conditions))
+            .limit(5);
+
+          return JSON.stringify(
+            results.map((r) => ({
+              id: r.id,
+              title: r.title,
+              snippet: r.plainText ? r.plainText.slice(0, 400) : "",
+              createdAt: r.createdAt,
+            }))
+          );
         },
       },
       queryVoiceNotes: {
@@ -180,8 +219,25 @@ export async function POST(req: Request) {
           if (query) {
             conditions.push(or(ilike(sources.title, `%${query}%`), ilike(sources.plainText, `%${query}%`)) as any);
           }
-          const results = await db.select().from(sources).where(and(...conditions)).limit(10);
-          return JSON.stringify(results);
+          const results = await db
+            .select({
+              id: sources.id,
+              title: sources.title,
+              plainText: sources.plainText,
+              createdAt: sources.createdAt,
+            })
+            .from(sources)
+            .where(and(...conditions))
+            .limit(5);
+
+          return JSON.stringify(
+            results.map((r) => ({
+              id: r.id,
+              title: r.title,
+              snippet: r.plainText ? r.plainText.slice(0, 400) : "",
+              createdAt: r.createdAt,
+            }))
+          );
         },
       },
       queryMail: {
@@ -195,8 +251,25 @@ export async function POST(req: Request) {
           if (query) {
             conditions.push(or(ilike(deboMailMessages.subject, `%${query}%`), ilike(deboMailMessages.body, `%${query}%`)) as any);
           }
-          const results = await db.select().from(deboMailMessages).where(and(...conditions)).limit(15);
-          return JSON.stringify(results);
+          const results = await db
+            .select({
+              id: deboMailMessages.id,
+              subject: deboMailMessages.subject,
+              body: deboMailMessages.body,
+              createdAt: deboMailMessages.createdAt,
+            })
+            .from(deboMailMessages)
+            .where(and(...conditions))
+            .limit(5);
+
+          return JSON.stringify(
+            results.map((r) => ({
+              id: r.id,
+              subject: r.subject,
+              bodySnippet: r.body ? r.body.slice(0, 400) : "",
+              createdAt: r.createdAt,
+            }))
+          );
         },
       },
     },
