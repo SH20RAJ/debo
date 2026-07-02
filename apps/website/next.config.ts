@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 import { config as loadDotenv } from "dotenv";
 import { resolve } from "path";
+import { withEve } from "eve/next";
 
 // Single source of truth: monorepo root .env.local
 loadDotenv({ path: resolve(__dirname, "../../.env.local"), override: false });
@@ -17,4 +18,4 @@ const nextConfig: NextConfig = {
   ],
 };
 
-export default nextConfig;
+export default withEve(nextConfig);
