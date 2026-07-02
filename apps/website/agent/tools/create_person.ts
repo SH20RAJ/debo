@@ -2,7 +2,7 @@ import { defineTool } from "eve/tools";
 import { z } from "zod";
 import { db } from "@debo/db";
 import { people } from "@debo/db/schema";
-import { newId } from "../../src/lib/api-helpers";
+import { newId } from "../../src/lib/new-id";
 
 export default defineTool({
   description: "Create a new contact (person).",

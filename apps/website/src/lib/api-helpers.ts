@@ -25,15 +25,7 @@ export function withErrorHandling<T>(
   });
 }
 
-/**
- * Cuid-style id with a typed prefix. Stable enough for app-level IDs.
- * Use crypto.randomUUID() for cryptographic identifiers.
- */
-export function newId(prefix: string): string {
-  const ts = Date.now().toString(36);
-  const rand = crypto.randomUUID().replace(/-/g, "").slice(0, 12);
-  return `${prefix}_${ts}${rand}`;
-}
+export { newId } from "./new-id";
 
 /**
  * Authenticate the request and ensure the user has a personal workspace

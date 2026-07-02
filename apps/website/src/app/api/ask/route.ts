@@ -490,8 +490,8 @@ export async function POST(req: Request) {
             console.warn("[ask] failed to load custom MCP tools:", err);
           }
 
-          // Define all available tools
-          const allTools = [
+          // Define all available tools - skip if intent is chitchat
+          const allTools = intentCategory === "chitchat" ? [] : [
             webFetchTool,
             queryTasksTool(user.id, workspaceId),
             queryJournalsTool(user.id, workspaceId),
@@ -509,7 +509,7 @@ export async function POST(req: Request) {
             ...customMcpTools,
           ];
 
-          const llmWithTools = llm.bindTools(allTools);
+          const llmWithTools = allTools.length > 0 ? llm.bindTools(allTools) : llm;
           
           // Invoke once to check if model wants to call any tool
           const firstResponse = await llmWithTools.invoke(initialMessages);

@@ -188,7 +188,12 @@ export async function POST(req: Request) {
     system: systemPrompt,
     messages: modelMessages,
     stopWhen: stepCountIs(5),
-    tools: {
+    providerOptions: {
+      openai: {
+        parallelToolCalls: false,
+      },
+    },
+    tools: intent === "chitchat" ? {} : {
       queryTasks: {
         description: "Search and query tasks assigned to you or in your inbox.",
         parameters: z.object({ query: z.string().optional() }),

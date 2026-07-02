@@ -16,4 +16,5 @@ const model = customOpenAI.chat(cfg.chatModel);
 
 export default defineAgent({
   model,
+  modelContextWindowTokens: 131072,
 });
