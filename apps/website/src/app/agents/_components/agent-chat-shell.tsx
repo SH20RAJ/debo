@@ -138,7 +138,7 @@ export function AgentChatShell({
     activeChatIdRef.current = null;
     setActiveChatId(null);
     setMobileSidebarOpen(false);
-    router.push("/", { scroll: false });
+    router.push("/agents", { scroll: false });
   }, [router]);
 
   const handleSidebarNavigate = useCallback((chatId?: string | null) => {
@@ -424,7 +424,7 @@ function setSidebarDocumentHint(open: boolean) {
 function ChatRouteShareButton() {
   const pathname = usePathname();
 
-  if (!pathname.startsWith("/chat/")) {
+  if (!pathname.startsWith("/agents/chat/")) {
     return null;
   }
 

@@ -45,7 +45,7 @@ export function HomeChatPage() {
   }, [setActiveChatId]);
 
   useEffect(() => {
-    if (pathname === "/") {
+    if (pathname === "/agents") {
       submittingRef.current = false;
       setSubmitting(false);
     }
@@ -114,7 +114,7 @@ export function HomeChatPage() {
       }
 
       setActiveChatId(provisionalChatId);
-      router.push(`/chat/${provisionalChatId}`, { scroll: false });
+      router.push(`/agents/chat/${provisionalChatId}`, { scroll: false });
     },
     [
       requestSignIn,
@@ -133,7 +133,7 @@ export function HomeChatPage() {
     submitting,
   });
 
-  if (pathname !== "/") {
+  if (pathname !== "/agents" && pathname !== "/agents/") {
     return null;
   }
 

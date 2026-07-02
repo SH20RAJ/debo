@@ -86,6 +86,10 @@
   --font-size-landing-3xl: 1.875rem;
   --font-size-landing-4xl: 2.25rem;
   --font-size-landing-hero: 4.5rem;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar: var(--sidebar);
 }
 
 :root {
@@ -180,6 +184,10 @@
   --an-tool-color: var(--foreground);
   --an-tool-color-muted: var(--muted-foreground);
   --an-border-radius: 24px;
+  --sidebar: hsl(0 0% 98%);
+  --sidebar-primary: hsl(240 5.9% 10%);
+  --sidebar-primary-foreground: hsl(0 0% 98%);
+  --sidebar-ring: hsl(217.2 91.2% 59.8%);
 }
 
 .dark {
@@ -266,6 +274,10 @@
   --an-tool-color: var(--foreground);
   --an-tool-color-muted: var(--muted-foreground);
   --an-border-radius: 24px;
+  --sidebar: hsl(240 5.9% 10%);
+  --sidebar-primary: hsl(224.3 76.3% 48%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-ring: hsl(217.2 91.2% 59.8%);
 }
 
 @layer base {

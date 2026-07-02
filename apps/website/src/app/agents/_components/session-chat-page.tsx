@@ -112,7 +112,7 @@ export function SessionChatPage({
         clearPendingChatMessage(chatId);
         touchChat(created);
         setActiveChatId(created.id);
-        router.replace(`/chat/${created.id}`, { scroll: false });
+        router.replace(`/agents/chat/${created.id}`, { scroll: false });
       } catch (error) {
         if (currentChatIdRef.current !== chatId) {
           return;
@@ -126,7 +126,7 @@ export function SessionChatPage({
         } catch {}
 
         setClientError(error instanceof Error ? error.message : "Failed to start chat.");
-        router.replace("/", { scroll: false });
+        router.replace("/agents", { scroll: false });
       }
     })();
   }, [

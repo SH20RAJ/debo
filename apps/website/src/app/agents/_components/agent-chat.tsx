@@ -1007,7 +1007,7 @@ export function AgentChatSession({
         knownInitialEventsRef.current = [];
         setCurrentTitle(created.title);
         currentTitleRef.current = created.title;
-        router.replace(`/chat/${created.id}`, { scroll: false });
+        router.replace(`/agents/chat/${created.id}`, { scroll: false });
       }
 
       return true;
