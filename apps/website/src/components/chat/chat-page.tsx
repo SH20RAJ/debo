@@ -290,11 +290,29 @@ export function ChatPage({ threadId: initialThreadId }: { threadId?: string }) {
 
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
 
-  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(true);
   const [threadSearch, setThreadSearch] = useState("");
   const [renaming, setRenaming] = useState(false);
   const [tempTitle, setTempTitle] = useState("");
   const [inputText, setInputText] = useState("");
+
+  const [selectedSource, setSelectedSource] = useState<any>(null);
+  const [selectedToolCall, setSelectedToolCall] = useState<any>(null);
+  const [loadingSourceId, setLoadingSourceId] = useState<string | null>(null);
+
+  const handleSourceClick = async (sourceId: string) => {
+    if (!sourceId) return;
+    setLoadingSourceId(sourceId);
+    try {
+      const data = await api.sources.get(sourceId);
+      setSelectedSource(data);
+      setSelectedToolCall(null);
+    } catch {
+      toast.error("Failed to load source details.");
+    } finally {
+      setLoadingSourceId(null);
+    }
+  };
 
   const activeThread = useMemo(() => {
     return threads.find((t) => t.id === activeThreadId);
@@ -336,7 +354,7 @@ export function ChatPage({ threadId: initialThreadId }: { threadId?: string }) {
         const currentThreadId = activeThreadIdRef.current;
         if (headerThreadId && headerThreadId !== currentThreadId) {
           changeActiveThreadId(headerThreadId);
-          router.replace(`/dashboard/chat/${headerThreadId}`);
+          window.history.replaceState(null, "", `/dashboard/chat/${headerThreadId}`);
           mutateThreads();
         }
         return response;
@@ -531,121 +549,124 @@ export function ChatPage({ threadId: initialThreadId }: { threadId?: string }) {
   return (
     <div className="flex h-full bg-background relative overflow-hidden select-none">
       
-      {/* Thread History Drawer Overlay */}
-      <Drawer
-        isOpen={historyOpen}
-        onClose={() => setHistoryOpen(false)}
-        title="Memory Threads"
-        description="Search or manage your past conversations."
-      >
-        <div className="flex flex-col h-full space-y-4 pt-1">
-          <div className="flex items-center justify-between">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                handleNewChat();
-                setHistoryOpen(false);
-              }}
-              className="h-8.5 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              New Chat
-            </Button>
-            {threads.length > 0 && (
+      {/* Glow ambient aura background */}
+      <div className="absolute top-0 right-0 w-[450px] h-[450px] bg-primary/[0.025] rounded-full blur-[120px] pointer-events-none z-0" />
+
+      {/* Collapsible Left Sidebar for Thread History */}
+      {historyOpen && (
+        <div className="w-80 border-r border-border/40 bg-card/10 backdrop-blur-md flex flex-col shrink-0 z-20 relative h-full">
+          <div className="flex flex-col h-full p-4 space-y-4">
+            <div className="flex items-center justify-between">
               <Button
+                variant="outline"
                 size="sm"
-                variant="ghost"
-                className="h-8.5 px-3 text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 cursor-pointer transition-colors text-xs font-semibold flex items-center gap-1.5"
-                onClick={handleDeleteAllThreads}
+                onClick={handleNewChat}
+                className="h-8.5 text-xs font-semibold flex items-center gap-1.5 cursor-pointer rounded-xl hover:border-primary/20 hover:text-primary transition-all"
               >
-                <Trash2 className="w-3.5 h-3.5" />
-                Clear All
+                <Plus className="w-3.5 h-3.5" />
+                New Chat
               </Button>
-            )}
-          </div>
+              {threads.length > 0 && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-8.5 px-3 text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 cursor-pointer transition-colors text-xs font-semibold flex items-center gap-1.5 rounded-xl"
+                  onClick={handleDeleteAllThreads}
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Clear All
+                </Button>
+              )}
+            </div>
 
-          {/* Search box */}
-          <div className="relative group">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50 group-focus-within:text-foreground transition-colors" />
-            <Input
-              type="text"
-              placeholder="Search chat history..."
-              value={threadSearch}
-              onChange={(e) => setThreadSearch(e.target.value)}
-              className="h-8.5 pl-8 pr-7 text-xs rounded-lg border border-border bg-background/50 focus:bg-background focus-visible:ring-primary"
-            />
-            {threadSearch && (
-              <button
-                type="button"
-                onClick={() => setThreadSearch("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
+            {/* Search Box */}
+            <div className="relative group">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50 group-focus-within:text-foreground transition-colors" />
+              <Input
+                type="text"
+                placeholder="Search chat history..."
+                value={threadSearch}
+                onChange={(e) => setThreadSearch(e.target.value)}
+                className="h-8.5 pl-8 pr-7 text-xs rounded-xl border border-border bg-background/50 focus:bg-background focus-visible:ring-primary"
+              />
+              {threadSearch && (
+                <button
+                  type="button"
+                  onClick={() => setThreadSearch("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
 
-          {/* List scroll area */}
-          <div className="flex-1 overflow-y-auto min-h-0 py-2 scrollbar-none space-y-1 pr-1">
-            {loadingThreads ? (
-              <div className="flex items-center justify-center py-12 text-xs text-muted-foreground/75 font-medium">
-                <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5 text-primary" />
-                Loading history...
-              </div>
-            ) : filteredThreads.length === 0 ? (
-              <div className="text-center py-12 px-4 select-none">
-                <Clock className="w-5 h-5 text-muted-foreground/30 mx-auto mb-2" />
-                <p className="text-[10px] text-muted-foreground/50 font-semibold uppercase tracking-wider">
-                  {threadSearch ? "No results found" : "No past chats"}
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-1">
-                {filteredThreads.map((thread) => {
-                  const isActive = activeThreadId === thread.id;
-                  return (
-                    <div
-                      key={thread.id}
-                      onClick={() => {
-                        loadThread(thread.id);
-                        setHistoryOpen(false);
-                      }}
-                      className={cn(
-                        "flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold cursor-pointer transition-all border border-transparent group",
-                        isActive
-                          ? "bg-primary/10 text-primary border-primary/20"
-                          : "text-muted-foreground hover:text-foreground hover:bg-accent/60"
-                      )}
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <MessageSquare className={cn("w-3.5 h-3.5 shrink-0", isActive ? "text-primary" : "text-muted-foreground/45")} />
-                        <span className="truncate pr-2">{thread.title || "Conversation"}</span>
-                      </div>
-                      <button
-                        onClick={(e) => handleDeleteThread(thread.id, e)}
-                        className="opacity-0 group-hover:opacity-100 hover:text-destructive p-0.5 rounded transition-all cursor-pointer shrink-0"
+            {/* Thread List Scroll Area */}
+            <div className="flex-1 overflow-y-auto min-h-0 py-2 scrollbar-none space-y-1 pr-1">
+              {loadingThreads ? (
+                <div className="flex items-center justify-center py-12 text-xs text-muted-foreground/75 font-medium">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5 text-primary" />
+                  Loading history...
+                </div>
+              ) : filteredThreads.length === 0 ? (
+                <div className="text-center py-12 px-4 select-none">
+                  <Clock className="w-5 h-5 text-muted-foreground/30 mx-auto mb-2" />
+                  <p className="text-[10px] text-muted-foreground/50 font-semibold uppercase tracking-wider">
+                    {threadSearch ? "No results found" : "No past chats"}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  {filteredThreads.map((thread) => {
+                    const isActive = activeThreadId === thread.id;
+                    return (
+                      <div
+                        key={thread.id}
+                        onClick={() => loadThread(thread.id)}
+                        className={cn(
+                          "flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold cursor-pointer transition-all border border-transparent group",
+                          isActive
+                            ? "bg-primary/10 text-primary border-primary/20"
+                            : "text-muted-foreground hover:text-foreground hover:bg-accent/60"
+                        )}
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+                        <div className="flex items-center gap-2 min-w-0">
+                          <MessageSquare className={cn("w-3.5 h-3.5 shrink-0", isActive ? "text-primary" : "text-muted-foreground/45")} />
+                          <span className="truncate pr-2">{thread.title || "Conversation"}</span>
+                        </div>
+                        <button
+                          onClick={(e) => handleDeleteThread(thread.id, e)}
+                          className="opacity-0 group-hover:opacity-100 hover:text-destructive p-0.5 rounded transition-all cursor-pointer shrink-0"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </Drawer>
+      )}
 
       {/* Main Chat Column */}
       <div className="flex-1 flex flex-col min-w-0 h-full bg-background relative z-10 min-h-0">
         
-        {/* Glow ambient aura background */}
-        <div className="absolute top-0 right-0 w-[450px] h-[450px] bg-primary/[0.025] rounded-full blur-[120px] pointer-events-none" />
-
         {/* Chat Area Header */}
         <div className="h-14 border-b border-border/40 px-6 flex items-center justify-between bg-card/40 backdrop-blur-md shrink-0">
           <div className="flex items-center gap-3 min-w-0">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setHistoryOpen(!historyOpen)}
+              className={cn(
+                "h-8 w-8 rounded-lg cursor-pointer transition-colors border-border/40 bg-card hover:bg-accent",
+                historyOpen && "border-primary/20 text-primary bg-primary/5"
+              )}
+            >
+              <Clock className="w-4 h-4" />
+            </Button>
+
             {activeThreadId ? (
               renaming ? (
                 <div className="flex items-center gap-2">
@@ -695,15 +716,6 @@ export function ChatPage({ threadId: initialThreadId }: { threadId?: string }) {
                 Thinking...
               </span>
             )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setHistoryOpen(true)}
-              className="h-8.5 px-3 rounded-lg border border-border bg-card hover:bg-accent text-foreground hover:text-accent-foreground text-xs flex items-center gap-1.5 font-semibold transition-colors cursor-pointer"
-            >
-              <Clock className="w-3.5 h-3.5" />
-              History
-            </Button>
           </div>
         </div>
 
@@ -819,7 +831,13 @@ export function ChatPage({ threadId: initialThreadId }: { threadId?: string }) {
                                       </span>
                                       <AttachmentGroup>
                                         {messageCitations.map((cit: any) => (
-                                          <Attachment key={cit.id} state="done" size="sm">
+                                          <Attachment
+                                            key={cit.id}
+                                            state="done"
+                                            size="sm"
+                                            className="cursor-pointer hover:border-primary/45 transition-colors"
+                                            onClick={() => handleSourceClick(cit.sourceId || cit.id)}
+                                          >
                                             <AttachmentMedia variant="icon">
                                               <Database className="size-3.5 text-primary" />
                                             </AttachmentMedia>
@@ -844,13 +862,32 @@ export function ChatPage({ threadId: initialThreadId }: { threadId?: string }) {
                                       {toolCalls.map((tc: any, index: number) => {
                                         const name = tc.name || tc.toolName || "";
                                         const label = getToolNameReadable(name);
-                                        const isCompleted = tc.state === "result" || tc.result !== undefined;
+                                        const toolResults = Array.isArray(message.parts)
+                                          ? message.parts.filter((p: any) => p.type === "tool-result")
+                                          : [];
+                                        const correspondingResult = toolResults.find((tr: any) => (tr as any).toolCallId === tc.toolCallId);
+                                        const resultData = tc.result || (correspondingResult as any)?.result;
+                                        const isCompleted = tc.state === "result" || tc.result !== undefined || !!correspondingResult;
 
                                         return (
                                           <Attachment
                                             key={index}
                                             state={isCompleted ? "done" : "processing"}
                                             size="sm"
+                                            className={cn(
+                                              "transition-colors",
+                                              isCompleted && "cursor-pointer hover:border-emerald-500/40"
+                                            )}
+                                            onClick={() => {
+                                              if (isCompleted) {
+                                                setSelectedToolCall({
+                                                  name: label,
+                                                  args: tc.args,
+                                                  result: resultData,
+                                                });
+                                                setSelectedSource(null);
+                                              }
+                                            }}
                                           >
                                             <AttachmentMedia variant="icon">
                                               {isCompleted ? (
@@ -958,6 +995,82 @@ export function ChatPage({ threadId: initialThreadId }: { threadId?: string }) {
 
         </div>
       </div>
+
+      {/* Collapsible Details Panel on the right */}
+      {(selectedSource || selectedToolCall) && (
+        <div className="w-[420px] border-l border-border/40 bg-card/15 backdrop-blur-lg flex flex-col shrink-0 overflow-hidden h-full z-20 relative">
+          {/* Header */}
+          <div className="h-14 border-b border-border/40 px-6 flex items-center justify-between bg-card/40 backdrop-blur-md shrink-0">
+            <h3 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              {selectedSource ? "Source details" : "Action details"}
+            </h3>
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={() => {
+                setSelectedSource(null);
+                setSelectedToolCall(null);
+              }}
+              className="h-8 w-8 rounded-lg cursor-pointer hover:bg-accent/40"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+
+          {/* Details Content */}
+          <div className="p-6 space-y-5 flex-1 overflow-y-auto min-h-0 select-text">
+            {selectedSource && (
+              <div className="space-y-4">
+                <div>
+                  <span className="text-[9px] font-bold text-primary uppercase tracking-wider bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-md">
+                    {selectedSource.type || "Source"}
+                  </span>
+                  <h2 className="text-base font-bold text-foreground mt-2 font-[var(--font-nunito)]">
+                    {selectedSource.title || "Untitled Source"}
+                  </h2>
+                  <div className="text-[10px] text-muted-foreground mt-1">
+                    Created: {new Date(selectedSource.createdAt).toLocaleString()}
+                  </div>
+                </div>
+                <hr className="border-border/40" />
+                <div className="text-xs text-foreground leading-relaxed whitespace-pre-wrap select-text selection:bg-primary/25 bg-muted/10 p-4 rounded-2xl border border-border/20 font-mono">
+                  {selectedSource.plainText || "No content available."}
+                </div>
+              </div>
+            )}
+
+            {selectedToolCall && (
+              <div className="space-y-4">
+                <div>
+                  <span className="text-[9px] font-bold text-emerald-500 uppercase tracking-wider bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
+                    Action Executed
+                  </span>
+                  <h2 className="text-base font-bold text-foreground mt-2 font-[var(--font-nunito)]">
+                    {selectedToolCall.name}
+                  </h2>
+                </div>
+                <hr className="border-border/40" />
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/75 mb-1.5">Arguments</h4>
+                    <pre className="text-[10px] bg-muted/40 p-3 rounded-xl border border-border/20 overflow-x-auto text-foreground font-mono">
+                      {JSON.stringify(selectedToolCall.args, null, 2)}
+                    </pre>
+                  </div>
+                  <div>
+                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/75 mb-1.5">Output</h4>
+                    <pre className="text-[10px] bg-muted/40 p-3 rounded-xl border border-border/20 overflow-x-auto text-foreground font-mono">
+                      {typeof selectedToolCall.result === "string"
+                        ? selectedToolCall.result
+                        : JSON.stringify(selectedToolCall.result, null, 2)}
+                    </pre>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
     </div>
   );
