@@ -34,6 +34,33 @@ import { stackClientApp } from "@/stack/client";
 import { toast } from "sonner";
 import { Streamdown, type Components } from "streamdown";
 import { createCodePlugin } from "@streamdown/code";
+import {
+  MessageScrollerProvider,
+  MessageScroller,
+  MessageScrollerViewport,
+  MessageScrollerContent,
+  MessageScrollerItem,
+  MessageScrollerButton,
+} from "@/components/ui/message-scroller";
+import {
+  Message,
+  MessageAvatar,
+  MessageContent,
+  MessageHeader,
+  MessageFooter,
+} from "@/components/ui/message";
+import { Bubble, BubbleContent } from "@/components/ui/bubble";
+import {
+  Attachment,
+  AttachmentGroup,
+  AttachmentMedia,
+  AttachmentContent,
+  AttachmentTitle,
+  AttachmentDescription,
+} from "@/components/ui/attachment";
+import { Marker, MarkerContent } from "@/components/ui/marker";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const codePlugin = createCodePlugin({
   themes: ["github-light", "github-dark"],
@@ -203,37 +230,38 @@ function MarkdownRenderer({ content, className }: { content: string; className?:
 
 function MessageListSkeleton() {
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto flex flex-col gap-6">
       {/* Pulse skeleton block 1 (user message, right aligned) */}
-      <div className="flex w-full flex-col gap-1.5 items-end">
-        <div className="h-3.5 w-16 bg-muted rounded-md animate-pulse" />
-        <div className="rounded-3xl px-5 py-3.5 w-64 h-12 bg-primary/10 border border-primary/5 animate-pulse shadow-xs" />
-      </div>
+      <Message align="end">
+        <MessageContent>
+          <MessageHeader>You</MessageHeader>
+          <Bubble variant="default" align="end">
+            <BubbleContent>
+              <Skeleton className="h-5 w-48 bg-primary-foreground/20" />
+            </BubbleContent>
+          </Bubble>
+        </MessageContent>
+        <MessageAvatar>
+          <Skeleton className="size-8 rounded-full" />
+        </MessageAvatar>
+      </Message>
 
       {/* Pulse skeleton block 2 (assistant message, left aligned) */}
-      <div className="flex w-full flex-col gap-1.5 items-start">
-        <div className="h-3.5 w-16 bg-muted rounded-md animate-pulse" />
-        <div className="rounded-3xl px-5 py-3.5 w-[80%] space-y-2.5 bg-card border border-border animate-pulse shadow-xs">
-          <div className="h-4 bg-muted rounded-md w-[90%] animate-pulse" />
-          <div className="h-4 bg-muted rounded-md w-[75%] animate-pulse" />
-          <div className="h-4 bg-muted rounded-md w-[40%] animate-pulse" />
-        </div>
-      </div>
-
-      {/* Pulse skeleton block 3 (user message, right aligned) */}
-      <div className="flex w-full flex-col gap-1.5 items-end">
-        <div className="h-3.5 w-16 bg-muted rounded-md animate-pulse" />
-        <div className="rounded-3xl px-5 py-3.5 w-48 h-12 bg-primary/10 border border-primary/5 animate-pulse shadow-xs" />
-      </div>
-
-      {/* Pulse skeleton block 4 (assistant message, left aligned) */}
-      <div className="flex w-full flex-col gap-1.5 items-start">
-        <div className="h-3.5 w-16 bg-muted rounded-md animate-pulse" />
-        <div className="rounded-3xl px-5 py-3.5 w-[70%] space-y-2.5 bg-card border border-border animate-pulse shadow-xs">
-          <div className="h-4 bg-muted rounded-md w-[95%] animate-pulse" />
-          <div className="h-4 bg-muted rounded-md w-[60%] animate-pulse" />
-        </div>
-      </div>
+      <Message align="start">
+        <MessageAvatar>
+          <Skeleton className="size-8 rounded-full" />
+        </MessageAvatar>
+        <MessageContent>
+          <MessageHeader>Debo</MessageHeader>
+          <Bubble variant="secondary" align="start">
+            <BubbleContent className="space-y-2.5 w-[320px] md:w-[450px]">
+              <Skeleton className="h-4 w-[90%]" />
+              <Skeleton className="h-4 w-[75%]" />
+              <Skeleton className="h-4 w-[40%]" />
+            </BubbleContent>
+          </Bubble>
+        </MessageContent>
+      </Message>
     </div>
   );
 }
@@ -267,8 +295,6 @@ export function ChatPage() {
   const [renaming, setRenaming] = useState(false);
   const [tempTitle, setTempTitle] = useState("");
   const [inputText, setInputText] = useState("");
-  
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const activeThread = useMemo(() => {
     return threads.find((t) => t.id === activeThreadId);
@@ -324,13 +350,6 @@ export function ChatPage() {
 
   const threadCacheRef = useRef<Record<string, any[]>>({});
 
-  // Auto Scroll
-  useEffect(() => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
-    }
-  }, [messages, status]);
-
   // Fetch and hydrate past messages for specific thread
   const loadThread = useCallback(async (threadId: string, updateUrl = true) => {
     stop();
@@ -371,6 +390,7 @@ export function ChatPage() {
           role: m.role as "user" | "assistant",
           content: m.content || "",
           parts: [{ type: "text" as const, text: m.content || "" }],
+          citations: m.citations || [],
         }));
 
         threadCacheRef.current[threadId] = mappedMessages;
@@ -691,150 +711,205 @@ export function ChatPage() {
 
         {/* Chat message viewport wrapper */}
         <div className="flex-1 min-h-0 flex flex-col relative overflow-hidden bg-background">
-          
-          <div 
-            ref={scrollContainerRef}
-            className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 scrollbar-none"
-          >
-            {isLoadingMessages ? (
-              <MessageListSkeleton />
-            ) : isEmpty ? (
-              /* Greeting / Landing State */
-              <div className="h-full flex flex-col items-center justify-center max-w-lg mx-auto text-center space-y-6 select-none my-auto">
-                <div className="size-16 rounded-3xl bg-primary/10 border border-primary/20 flex items-center justify-center shadow-sm">
-                  <Activity className="size-8 text-primary" />
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-lg font-bold text-foreground tracking-tight font-[var(--font-nunito)]">
-                    Ask your past memory OS
-                  </h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed max-w-sm">
-                    Search notes, health stats, location traces, tasks, and connected app telemetry. Debo answers using backing citations.
-                  </p>
-                </div>
+          <MessageScrollerProvider autoScroll>
+            <MessageScroller className="size-full">
+              <MessageScrollerViewport className="flex-1 p-4 md:p-6">
+                <MessageScrollerContent className="max-w-3xl mx-auto flex flex-col gap-6">
+                  {isLoadingMessages ? (
+                    <MessageListSkeleton />
+                  ) : isEmpty ? (
+                    /* Greeting / Landing State */
+                    <div className="flex flex-col items-center justify-center max-w-lg mx-auto text-center space-y-6 select-none my-auto py-12">
+                      <div className="size-16 rounded-3xl bg-primary/10 border border-primary/20 flex items-center justify-center shadow-sm">
+                        <Activity className="size-8 text-primary" />
+                      </div>
+                      <div className="space-y-2">
+                        <h3 className="text-lg font-bold text-foreground tracking-tight font-[var(--font-nunito)]">
+                          Ask your past memory OS
+                        </h3>
+                        <p className="text-xs text-muted-foreground leading-relaxed max-w-sm">
+                          Search notes, health stats, location traces, tasks, and connected app telemetry. Debo answers using backing citations.
+                        </p>
+                      </div>
 
-                <div className="w-full grid grid-cols-1 gap-2">
-                  {suggestions.map((s, idx) => {
-                    const Icon = s.icon;
-                    return (
-                      <button
-                        key={idx}
-                        onClick={() => handleSuggestionClick(s.label)}
-                        className="w-full text-left p-3.5 rounded-2xl border border-border hover:border-primary/20 bg-card hover:bg-primary/[0.015] hover:shadow-xs transition-all flex items-center gap-3 group text-xs text-muted-foreground hover:text-foreground font-semibold cursor-pointer"
-                      >
-                        <div className="size-7 rounded-xl bg-secondary flex items-center justify-center shrink-0">
-                          <Icon className="size-3.5 text-muted-foreground/80 group-hover:text-primary transition-colors" />
-                        </div>
-                        <span className="truncate">{s.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : (
-              /* Message List */
-              <div className="max-w-3xl mx-auto space-y-6">
-                {messages.map((message) => {
-                  const isUser = message.role === "user";
-                  const text = getMessageText(message);
-                  const toolCalls = getToolCalls(message);
+                      <div className="w-full grid grid-cols-1 gap-2">
+                        {suggestions.map((s, idx) => {
+                          const Icon = s.icon;
+                          return (
+                            <button
+                              key={idx}
+                              onClick={() => handleSuggestionClick(s.label)}
+                              className="w-full text-left p-3.5 rounded-2xl border border-border hover:border-primary/20 bg-card hover:bg-primary/[0.015] hover:shadow-xs transition-all flex items-center gap-3 group text-xs text-muted-foreground hover:text-foreground font-semibold cursor-pointer"
+                            >
+                              <div className="size-7 rounded-xl bg-secondary flex items-center justify-center shrink-0">
+                                <Icon className="size-3.5 text-muted-foreground/80 group-hover:text-primary transition-colors" />
+                              </div>
+                              <span className="truncate">{s.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : (
+                    /* Message List */
+                    <>
+                      {messages.map((message) => {
+                        const isUser = message.role === "user";
+                        const text = getMessageText(message);
+                        const toolCalls = getToolCalls(message);
 
-                  return (
-                    <div
-                      key={message.id}
-                      className={cn(
-                        "flex w-full flex-col gap-1.5",
-                        isUser ? "items-end" : "items-start"
+                        return (
+                          <MessageScrollerItem
+                            key={message.id}
+                            messageId={message.id}
+                            scrollAnchor={isUser}
+                          >
+                            <Message align={isUser ? "end" : "start"}>
+                              {!isUser && (
+                                <MessageAvatar>
+                                  <Avatar className="size-8">
+                                    <AvatarImage src="" alt="Debo" />
+                                    <AvatarFallback className="bg-primary/15 text-primary text-xs font-semibold">
+                                      DB
+                                    </AvatarFallback>
+                                  </Avatar>
+                                </MessageAvatar>
+                              )}
+                              <MessageContent>
+                                <MessageHeader>
+                                  {isUser ? "You" : "Debo"}
+                                </MessageHeader>
+                                <Bubble variant={isUser ? "default" : "secondary"} align={isUser ? "end" : "start"}>
+                                  <BubbleContent>
+                                    {isUser ? (
+                                      <p className="whitespace-pre-wrap font-medium">{text}</p>
+                                    ) : text.trim() ? (
+                                      <MarkdownRenderer content={text} />
+                                    ) : (
+              <div className="flex flex-col gap-2.5 py-1 min-w-[200px]">
+                                        <span className="shimmer text-muted-foreground">Thinking…</span>
+                                      </div>
+                                    )}
+                                  </BubbleContent>
+                                </Bubble>
+
+                                {/* Citations (Sources) */}
+                                {(() => {
+                                  const messageCitations = (message as any).citations || [];
+                                  if (messageCitations.length === 0) return null;
+                                  return (
+                                    <div className="flex flex-col gap-1.5 mt-2">
+                                      <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">
+                                        Sources
+                                      </span>
+                                      <AttachmentGroup>
+                                        {messageCitations.map((cit: any) => (
+                                          <Attachment key={cit.id} state="done" size="sm">
+                                            <AttachmentMedia variant="icon">
+                                              <Database className="size-3.5 text-primary" />
+                                            </AttachmentMedia>
+                                            <AttachmentContent>
+                                              <AttachmentTitle>{cit.sourceTitle || "Source"}</AttachmentTitle>
+                                              <AttachmentDescription>{cit.sourceType}</AttachmentDescription>
+                                            </AttachmentContent>
+                                          </Attachment>
+                                        ))}
+                                      </AttachmentGroup>
+                                    </div>
+                                  );
+                                })()}
+
+                                {/* Rendering Tool Logs inside assistant message */}
+                                {!isUser && toolCalls.length > 0 && (
+                                  <div className="flex flex-col gap-1.5 mt-2">
+                                    <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">
+                                      Actions
+                                    </span>
+                                    <div className="flex flex-wrap gap-2">
+                                      {toolCalls.map((tc: any, index: number) => {
+                                        const name = tc.name || tc.toolName || "";
+                                        const label = getToolNameReadable(name);
+                                        const isCompleted = tc.state === "result" || tc.result !== undefined;
+
+                                        return (
+                                          <Attachment
+                                            key={index}
+                                            state={isCompleted ? "done" : "processing"}
+                                            size="sm"
+                                          >
+                                            <AttachmentMedia variant="icon">
+                                              {isCompleted ? (
+                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                                              ) : (
+                                                <Loader2 className="w-3 h-3 animate-spin text-primary shrink-0" />
+                                              )}
+                                            </AttachmentMedia>
+                                            <AttachmentContent>
+                                              <AttachmentTitle>{label}</AttachmentTitle>
+                                              <AttachmentDescription>{name}</AttachmentDescription>
+                                            </AttachmentContent>
+                                          </Attachment>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                )}
+                              </MessageContent>
+                              {isUser && (
+                                <MessageAvatar>
+                                  <Avatar className="size-8">
+                                    <AvatarImage src="" alt="You" />
+                                    <AvatarFallback className="bg-muted text-muted-foreground">
+                                      U
+                                    </AvatarFallback>
+                                  </Avatar>
+                                </MessageAvatar>
+                              )}
+                            </Message>
+                          </MessageScrollerItem>
+                        );
+                      })}
+
+                      {showThinkingSkeleton && (
+                        <MessageScrollerItem messageId="thinking" scrollAnchor>
+                          <Message align="start">
+                            <MessageAvatar>
+                              <Avatar className="size-8">
+                                <AvatarImage src="" alt="Debo" />
+                                <AvatarFallback className="bg-primary/15 text-primary text-xs font-semibold">
+                                  DB
+                                </AvatarFallback>
+                              </Avatar>
+                            </MessageAvatar>
+                            <MessageContent>
+                              <MessageHeader>Debo</MessageHeader>
+                              <Bubble variant="secondary" align="start">
+                                <BubbleContent>
+                                  <div className="flex flex-col gap-2.5 py-1 min-w-[200px]">
+                                    <span className="shimmer text-muted-foreground">Thinking…</span>
+                                  </div>
+                                </BubbleContent>
+                              </Bubble>
+                            </MessageContent>
+                          </Message>
+                        </MessageScrollerItem>
                       )}
-                    >
-                      {/* Avatar/Name indicator */}
-                      <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider flex items-center gap-1">
-                        {isUser ? (
-                          <>
-                            You <User className="size-2.5" />
-                          </>
-                        ) : (
-                          <>
-                            Debo <Activity className="size-2.5 text-primary" />
-                          </>
-                        )}
-                      </span>
 
-                      {/* Bubble */}
-                      <div
-                        className={cn(
-                          "rounded-3xl px-5 py-3.5 text-sm leading-relaxed max-w-[85%] border shadow-xs transition-colors",
-                          isUser
-                            ? "bg-primary text-primary-foreground border-primary/10 shadow-[0_3px_0_#b53305]"
-                            : "bg-card text-foreground border-border"
-                        )}
-                      >
-                        {isUser ? (
-                          <p className="whitespace-pre-wrap font-medium">{text}</p>
-                        ) : text.trim() ? (
-                          <MarkdownRenderer content={text} />
-                        ) : (
-                          <div className="flex flex-col gap-2.5 py-1 min-w-[200px]">
-                            <div className="h-3.5 bg-muted rounded-md w-[85%] animate-pulse" />
-                            <div className="h-3.5 bg-muted rounded-md w-[60%] animate-pulse" />
-                          </div>
-                        )}
-
-                        {/* Rendering Tool Logs inside assistant bubble */}
-                        {!isUser && toolCalls.length > 0 && (
-                          <div className="flex flex-wrap gap-2 mt-3 pt-2.5 border-t border-border/40">
-                            {toolCalls.map((tc: any, index: number) => {
-                              const name = tc.name || tc.toolName || "";
-                              const label = getToolNameReadable(name);
-                              const isCompleted = tc.state === "result" || tc.result !== undefined;
-
-                              return (
-                                <Badge
-                                  key={index}
-                                  variant="outline"
-                                  className="text-[10px] font-semibold py-1 px-3 rounded-full flex items-center gap-1.5 bg-muted/40 border-border/40 text-muted-foreground/80 shadow-2xs"
-                                >
-                                  {isCompleted ? (
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                                  ) : (
-                                    <Loader2 className="w-2.5 h-2.5 animate-spin text-primary shrink-0" />
-                                  )}
-                                  {label}
-                                </Badge>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-
-                {showThinkingSkeleton && (
-                  <div className="flex w-full flex-col gap-1.5 items-start">
-                    <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider flex items-center gap-1">
-                      Debo <Activity className="size-2.5 text-primary animate-pulse" />
-                    </span>
-                    <div className="rounded-3xl px-5 py-3.5 bg-card text-foreground border border-border max-w-[85%] shadow-xs">
-                      <div className="flex flex-col gap-2.5 py-1 min-w-[200px]">
-                        <div className="h-3.5 bg-muted rounded-md w-[85%] animate-pulse" />
-                        <div className="h-3.5 bg-muted rounded-md w-[60%] animate-pulse" />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {error && (
-                  <div className="flex items-center gap-3 p-4 rounded-2xl border border-destructive/20 bg-destructive/5 text-destructive text-xs max-w-3xl mx-auto">
-                    <AlertTriangle className="size-4 shrink-0" />
-                    <span className="font-semibold leading-relaxed">
-                      Error: {error.message || "Failed to parse message from stream."}
-                    </span>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+                      {error && (
+                        <Marker variant="separator">
+                          <MarkerContent className="text-destructive font-semibold flex items-center gap-1.5">
+                            <AlertTriangle className="size-3.5" />
+                            Error: {error.message || "Failed to parse message from stream."}
+                          </MarkerContent>
+                        </Marker>
+                      )}
+                    </>
+                  )}
+                </MessageScrollerContent>
+              </MessageScrollerViewport>
+              <MessageScrollerButton />
+            </MessageScroller>
+          </MessageScrollerProvider>
 
           {/* Form Ingestion Area */}
           <div className="p-4 border-t border-border/40 bg-card/60 backdrop-blur-md shrink-0">
@@ -884,39 +959,26 @@ export function ChatPage() {
 
 export function ChatSkeleton() {
   return (
-    <div className="flex h-full bg-background relative overflow-hidden select-none animate-pulse">
+    <div className="flex h-full bg-background relative overflow-hidden select-none">
       {/* Main Chat Column */}
       <div className="flex-1 flex flex-col min-w-0 h-full bg-background relative z-10 min-h-0">
         {/* Chat Area Header */}
         <div className="h-14 border-b border-border/40 px-6 flex items-center justify-between bg-card/40 backdrop-blur-md shrink-0">
           <div className="flex items-center gap-3">
-            <div className="h-5 w-20 bg-muted rounded-md" />
-            <div className="h-4 w-16 bg-muted rounded-md" />
+            <Skeleton className="h-5 w-20" />
+            <Skeleton className="h-4 w-16" />
           </div>
-          <div className="h-8.5 w-20 bg-muted rounded-xl" />
+          <Skeleton className="h-8.5 w-20 rounded-xl" />
         </div>
 
         {/* Messages Viewport */}
         <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
-          <div className="max-w-3xl mx-auto space-y-6">
-            <div className="flex w-full flex-col gap-1.5 items-end">
-              <div className="h-3 w-12 bg-muted rounded animate-pulse" />
-              <div className="rounded-3xl w-64 h-12 bg-primary/5 border border-primary/5 animate-pulse" />
-            </div>
-            <div className="flex w-full flex-col gap-1.5 items-start">
-              <div className="h-3 w-12 bg-muted rounded animate-pulse" />
-              <div className="rounded-3xl w-[80%] h-24 bg-card border border-border p-4 space-y-2 animate-pulse">
-                <div className="h-3.5 bg-muted rounded w-[90%]" />
-                <div className="h-3.5 bg-muted rounded w-[75%]" />
-                <div className="h-3.5 bg-muted rounded w-[45%]" />
-              </div>
-            </div>
-          </div>
+          <MessageListSkeleton />
         </div>
 
         {/* Input Bar Outline */}
         <div className="p-4 border-t border-border/40 bg-card/10 shrink-0">
-          <div className="max-w-2xl mx-auto h-12 bg-muted/60 rounded-2xl border-2 border-border" />
+          <Skeleton className="max-w-3xl mx-auto h-12 rounded-3xl" />
         </div>
       </div>
     </div>
