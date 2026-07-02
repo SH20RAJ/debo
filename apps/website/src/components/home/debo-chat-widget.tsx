@@ -68,7 +68,7 @@ export function DeboChatWidget() {
   };
 
   const openThread = (id: string) => {
-    router.push(`/dashboard/chat?threadId=${encodeURIComponent(id)}`);
+    router.push(`/dashboard/chat/${encodeURIComponent(id)}`);
   };
 
   const hasThreads = !isLoading && threads.length > 0;

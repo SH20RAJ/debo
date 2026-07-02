@@ -266,7 +266,7 @@ function MessageListSkeleton() {
   );
 }
 
-export function ChatPage() {
+export function ChatPage({ threadId: initialThreadId }: { threadId?: string }) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -336,7 +336,7 @@ export function ChatPage() {
         const currentThreadId = activeThreadIdRef.current;
         if (headerThreadId && headerThreadId !== currentThreadId) {
           changeActiveThreadId(headerThreadId);
-          router.replace(`/dashboard/chat?threadId=${headerThreadId}`);
+          router.replace(`/dashboard/chat/${headerThreadId}`);
           mutateThreads();
         }
         return response;
@@ -358,7 +358,7 @@ export function ChatPage() {
     if (threadCacheRef.current[threadId]) {
       setMessages(threadCacheRef.current[threadId]);
       if (updateUrl) {
-        router.replace(`/dashboard/chat?threadId=${threadId}`);
+        router.replace(`/dashboard/chat/${threadId}`);
       }
       return;
     }
@@ -397,7 +397,7 @@ export function ChatPage() {
         setMessages(mappedMessages);
 
         if (updateUrl) {
-          router.replace(`/dashboard/chat?threadId=${threadId}`);
+          router.replace(`/dashboard/chat/${threadId}`);
         }
       }
     } catch (err) {
@@ -411,13 +411,11 @@ export function ChatPage() {
     }
   }, [router, setMessages, stop, changeActiveThreadId]);
 
-  // Sync thread when URL params change
+  // Sync thread when initialThreadId prop changes
   useEffect(() => {
-    const threadId = searchParams.get("threadId");
-
-    if (threadId) {
-      if (threadId !== activeThreadIdRef.current) {
-        loadThread(threadId, false);
+    if (initialThreadId) {
+      if (initialThreadId !== activeThreadIdRef.current) {
+        loadThread(initialThreadId, false);
       }
     } else {
       if (activeThreadIdRef.current !== null) {
@@ -425,7 +423,7 @@ export function ChatPage() {
         setMessages([]);
       }
     }
-  }, [searchParams, loadThread, setMessages, changeActiveThreadId]);
+  }, [initialThreadId, loadThread, setMessages, changeActiveThreadId]);
 
   // Handle direct query parameters (e.g. greeting or widget clicks)
   useEffect(() => {

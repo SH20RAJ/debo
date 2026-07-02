@@ -8,12 +8,17 @@ interface PageProps {
 
 export default async function AskDeboPage({ searchParams }: PageProps) {
   const params = await searchParams;
+  if (params.threadId) {
+    const urlParams = new URLSearchParams();
+    if (params.q) {
+      urlParams.set("q", params.q);
+    }
+    const queryStr = urlParams.toString();
+    redirect(`/dashboard/chat/${params.threadId}${queryStr ? `?${queryStr}` : ""}`);
+  }
   const urlParams = new URLSearchParams();
   if (params.q) {
     urlParams.set("q", params.q);
-  }
-  if (params.threadId) {
-    urlParams.set("threadId", params.threadId);
   }
   const queryStr = urlParams.toString();
   redirect(`/dashboard/chat${queryStr ? `?${queryStr}` : ""}`);
