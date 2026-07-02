@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Plus, Search, X, BookOpen, Clock, FileText, Sparkles } from "lucide-react";
+import { Plus, Search, X, BookOpen, Clock, FileText, Sparkles, Mic, Video } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ interface JournalEntryListProps {
   onSelect: (id: string) => void;
   onNewEntry: () => void;
   onClose?: () => void;
+  onRecordPress?: () => void;
 }
 
 interface JournalMetadata {
@@ -118,6 +119,7 @@ export function JournalEntryList({
   onSelect,
   onNewEntry,
   onClose,
+  onRecordPress,
 }: JournalEntryListProps) {
   const [search, setSearch] = useState("");
 
@@ -163,6 +165,17 @@ export function JournalEntryList({
           </h2>
         </div>
         <div className="flex items-center gap-1.5">
+          {onRecordPress && (
+            <Button
+              onClick={onRecordPress}
+              variant="outline"
+              size="sm"
+              className="h-8 w-8 p-0 rounded-xl border border-border bg-background text-muted-foreground hover:text-foreground shrink-0"
+              title="Record audio/video journal"
+            >
+              <Mic className="h-4 w-4 text-primary" />
+            </Button>
+          )}
           <Button
             onClick={onNewEntry}
             size="sm"
@@ -208,7 +221,7 @@ export function JournalEntryList({
       </div>
 
       {/* Entry Feed List */}
-      <ScrollArea className="flex-1 px-2.5 pb-4">
+      <ScrollArea className="flex-1 h-full min-h-0 px-2.5 pb-4">
         <div className="space-y-4 pr-1">
           {grouped.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -251,15 +264,24 @@ export function JournalEntryList({
                         )}
 
                         <div className="flex items-start justify-between gap-2">
-                          <p
-                            className={cn(
-                              "truncate text-xs font-bold font-[var(--font-nunito)] tracking-tight leading-snug",
-                              active ? "text-foreground" : "text-foreground/90 group-hover:text-foreground",
-                              !entry.title && "text-muted-foreground italic font-normal",
+                          <div className="flex items-center gap-2 min-w-0 flex-1">
+                            {entry.type === "audio" ? (
+                              <Mic className="h-3.5 w-3.5 text-primary shrink-0" />
+                            ) : entry.type === "video" ? (
+                              <Video className="h-3.5 w-3.5 text-rose-500 shrink-0" />
+                            ) : (
+                              <FileText className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
                             )}
-                          >
-                            {entry.title || (isTemp ? "Drafting..." : "Untitled Note")}
-                          </p>
+                            <p
+                              className={cn(
+                                "truncate text-xs font-bold font-[var(--font-nunito)] tracking-tight leading-snug flex-1",
+                                active ? "text-foreground" : "text-foreground/90 group-hover:text-foreground",
+                                !entry.title && "text-muted-foreground italic font-normal",
+                              )}
+                            >
+                              {entry.title || (isTemp ? "Drafting..." : "Untitled Note")}
+                            </p>
+                          </div>
                           
                           <span className="shrink-0 text-[10px] text-muted-foreground/70 group-hover:text-muted-foreground transition-colors font-medium">
                             {formatRelative(entry.updatedAt ?? entry.createdAt)}

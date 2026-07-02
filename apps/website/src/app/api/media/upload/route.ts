@@ -224,7 +224,7 @@ export async function POST(req: Request) {
         workspaceId,
         type: sourceType as any,
         title: file.name,
-        status: (sourceType === "audio" || sourceType === "voice") ? "processing" : "ready",
+        status: (sourceType === "audio" || sourceType === "voice" || sourceType === "video") ? "processing" : "ready",
         origin: "upload",
       })
       .returning();
@@ -245,7 +245,7 @@ export async function POST(req: Request) {
       })
       .returning();
 
-    if (sourceType === "audio" || sourceType === "voice") {
+    if (sourceType === "audio" || sourceType === "voice" || sourceType === "video") {
       const nowStr = new Date().toISOString();
       if (voiceSessionId) {
         await db.update(voiceSessions)

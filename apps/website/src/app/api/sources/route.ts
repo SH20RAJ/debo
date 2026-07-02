@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@debo/db";
 import { sources, auditLogs, connectorAccounts } from "@debo/db/schema";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import {
   apiError,
   newId,
@@ -46,9 +46,19 @@ export async function GET(req: Request) {
       eq(sources.workspaceId, workspaceId),
     ];
     if (type) {
-      const parsed = z.enum(SOURCE_TYPES).safeParse(type);
-      if (!parsed.success) return apiError("invalid_type", 400);
-      conditions.push(eq(sources.type, parsed.data));
+      const types = type.split(",");
+      const validTypes: typeof SOURCE_TYPES[number][] = [];
+      for (const t of types) {
+        const parsed = z.enum(SOURCE_TYPES).safeParse(t);
+        if (parsed.success) {
+          validTypes.push(parsed.data);
+        }
+      }
+      if (validTypes.length > 0) {
+        conditions.push(inArray(sources.type, validTypes as any));
+      } else {
+        return apiError("invalid_type", 400);
+      }
     }
 
     const rows = await db

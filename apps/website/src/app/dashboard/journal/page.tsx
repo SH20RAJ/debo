@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { stackServerApp } from "@/stack/server";
 import { db } from "@debo/db";
 import { sources } from "@debo/db/schema";
-import { and, desc, eq, ne } from "drizzle-orm";
+import { and, desc, eq, inArray, ne } from "drizzle-orm";
 import { JournalPage } from "@/components/journal/journal-page";
 
 export const dynamic = "force-dynamic";
@@ -36,7 +36,7 @@ export default async function JournalRoute() {
       and(
         eq(sources.userId, userId),
         eq(sources.workspaceId, userId),
-        eq(sources.type, "journal"),
+        inArray(sources.type, ["journal", "audio", "video"]),
         ne(sources.status, "deleted")
       )
     )
@@ -59,8 +59,10 @@ export default async function JournalRoute() {
       updatedAt: String(s.updatedAt),
       slug: s.slug ?? "",
       privacyLevel: s.privacyLevel ?? "normal",
+      type: s.type,
+      metadataJson: s.metadataJson ?? undefined,
     };
   });
 
-  return <JournalPage fallbackData={initialEntries} />;
+  return <JournalPage fallbackData={initialEntries as any} />;
 }

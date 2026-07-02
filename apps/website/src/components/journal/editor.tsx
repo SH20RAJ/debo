@@ -5,8 +5,9 @@ import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/mantine";
 import "@blocknote/mantine/style.css";
 import { useTheme } from "next-themes";
-import { Calendar, Tag, Plus, X } from "lucide-react";
+import { Calendar, Tag, Plus, X, Mic, Video, Loader2 } from "lucide-react";
 import type { JournalEntry } from "./journal-page";
+import { api } from "@/lib/api";
 
 interface JournalEditorProps {
   entry: JournalEntry;
@@ -67,6 +68,30 @@ export function JournalEditor({
   const [isAddingTag, setIsAddingTag] = useState(false);
   const tagInputRef = useRef<HTMLInputElement>(null);
   const lastEntryIdRef = useRef(entry.id);
+
+  const [mediaUrl, setMediaUrl] = useState<string | null>(null);
+  const [loadingMedia, setLoadingMedia] = useState(false);
+
+  useEffect(() => {
+    if (entry.type === "audio" || entry.type === "video") {
+      setLoadingMedia(true);
+      setMediaUrl(null);
+      api.sources.getFileUrl(entry.id)
+        .then((res: any) => {
+          if (res && res.url) {
+            setMediaUrl(res.url);
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to fetch media file URL:", err);
+        })
+        .finally(() => {
+          setLoadingMedia(false);
+        });
+    } else {
+      setMediaUrl(null);
+    }
+  }, [entry.id, entry.type]);
 
   const editor = useCreateBlockNote({
     initialContent: plainTextToBlocks(entry.content),
@@ -156,6 +181,35 @@ export function JournalEditor({
               <span>Emotion: {emotion.label}</span>
             </div>
           </div>
+
+          {/* Media Player for Audio/Video Journal */}
+          {(entry.type === "audio" || entry.type === "video") && (
+            <div className="mb-6 p-4 rounded-2xl border bg-accent/25 backdrop-blur-md">
+              <div className="flex items-center gap-2 mb-3">
+                {entry.type === "audio" ? (
+                  <Mic className="w-4 h-4 text-primary animate-pulse" />
+                ) : (
+                  <Video className="w-4 h-4 text-rose-500 animate-pulse" />
+                )}
+                <span className="text-xs font-bold text-foreground">
+                  {entry.type === "audio" ? "Audio Journal Recording" : "Video Journal Reflection"}
+                </span>
+                {loadingMedia && <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground ml-auto" />}
+              </div>
+
+              {loadingMedia ? (
+                <div className="h-12 bg-muted animate-pulse rounded-xl" />
+              ) : mediaUrl ? (
+                entry.type === "audio" ? (
+                  <audio src={mediaUrl} controls className="w-full focus:outline-none" />
+                ) : (
+                  <video src={mediaUrl} controls className="w-full rounded-xl bg-neutral-950 object-cover max-h-[300px] border border-border shadow" />
+                )
+              ) : (
+                <p className="text-xs text-muted-foreground italic">Media file could not be loaded.</p>
+              )}
+            </div>
+          )}
 
           {/* Title Input */}
           <input

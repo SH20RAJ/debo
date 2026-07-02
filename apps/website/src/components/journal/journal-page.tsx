@@ -27,6 +27,8 @@ import {
   Globe,
   Lock as LockIcon,
   Link2,
+  Mic,
+  Video,
 } from "lucide-react";
 import { JournalEntryList } from "@/components/journal/entry-list";
 import { Button } from "@/components/ui/button";
@@ -91,6 +93,7 @@ export interface JournalEntry {
   metadataJson?: string;
   slug?: string;
   privacyLevel?: string;
+  type?: string;
 }
 
 interface JournalMetadata {
@@ -119,6 +122,7 @@ function mapSourceToEntry(s: any): JournalEntry {
     metadataJson: s.metadataJson ?? null,
     slug: s.slug ?? "",
     privacyLevel: s.privacyLevel ?? "normal",
+    type: s.type ?? "journal",
   };
 }
 
@@ -258,6 +262,7 @@ export function JournalPage({ fallbackData = [] }: JournalPageProps) {
   const [creating, setCreating] = useState(false);
   const [listOpen, setListOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [recorderOpen, setRecorderOpen] = useState(false);
 
   // Sharing States
   const [shareOpen, setShareOpen] = useState(false);
@@ -649,7 +654,7 @@ export function JournalPage({ fallbackData = [] }: JournalPageProps) {
   const readingTime = Math.max(1, Math.ceil(wordCount / 200));
 
   return (
-    <div className="flex h-full overflow-hidden bg-background text-foreground">
+    <div className="flex h-full w-full flex-1 min-h-0 overflow-hidden bg-background text-foreground">
       
       {/* Sidebar - only shown in Split View Mode */}
       {viewMode === "split" && !focusMode && (
@@ -659,6 +664,7 @@ export function JournalPage({ fallbackData = [] }: JournalPageProps) {
             activeEntryId={activeEntryId}
             onSelect={setActiveEntryId}
             onNewEntry={handleNewEntry}
+            onRecordPress={() => setRecorderOpen(true)}
           />
         </aside>
       )}
@@ -680,6 +686,7 @@ export function JournalPage({ fallbackData = [] }: JournalPageProps) {
               }}
               onNewEntry={handleNewEntry}
               onClose={() => setListOpen(false)}
+              onRecordPress={() => setRecorderOpen(true)}
             />
           </div>
         </div>
@@ -804,14 +811,25 @@ export function JournalPage({ fallbackData = [] }: JournalPageProps) {
             )}
 
             {viewMode === "gallery" && (
-              <Button
-                onClick={handleNewEntry}
-                size="sm"
-                className="h-9 gap-1.5 px-4 text-xs font-semibold rounded-xl bg-primary text-primary-foreground hover:bg-primary/95"
-              >
-                <PenLine className="h-4 w-4" />
-                New Entry
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={() => setRecorderOpen(true)}
+                  variant="outline"
+                  size="sm"
+                  className="h-9 gap-1.5 px-3.5 text-xs font-semibold rounded-xl border-2 hover:bg-accent"
+                >
+                  <Mic className="h-4 w-4 text-primary" />
+                  <span>Record</span>
+                </Button>
+                <Button
+                  onClick={handleNewEntry}
+                  size="sm"
+                  className="h-9 gap-1.5 px-4 text-xs font-semibold rounded-xl bg-primary text-primary-foreground hover:bg-primary/95"
+                >
+                  <PenLine className="h-4 w-4" />
+                  New Entry
+                </Button>
+              </div>
             )}
           </div>
         </div>
@@ -937,7 +955,7 @@ export function JournalPage({ fallbackData = [] }: JournalPageProps) {
               </div>
 
               {/* Grid Scroll Area */}
-              <ScrollArea className="flex-1 bg-background">
+              <ScrollArea className="flex-1 h-full min-h-0 bg-background">
                 <div className="p-6">
                   {processedEntries.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-24 text-center">
@@ -971,9 +989,18 @@ export function JournalPage({ fallbackData = [] }: JournalPageProps) {
                             className="group flex flex-col h-52 p-5 rounded-2xl border-2 border-border bg-card hover:border-primary/30 hover:shadow-[0_2px_0_var(--border)] cursor-pointer transition-all duration-200 hover:scale-[1.01]"
                           >
                             <div className="flex items-start justify-between gap-3 mb-2.5">
-                              <h4 className="font-bold text-sm text-foreground truncate max-w-[155px] group-hover:text-primary transition-colors">
-                                {entry.title || "Untitled Entry"}
-                              </h4>
+                              <div className="flex items-center gap-2 min-w-0 flex-1">
+                                {entry.type === "audio" ? (
+                                  <Mic className="h-3.5 w-3.5 text-primary shrink-0" />
+                                ) : entry.type === "video" ? (
+                                  <Video className="h-3.5 w-3.5 text-rose-500 shrink-0" />
+                                ) : (
+                                  <FileText className="h-3.5 w-3.5 text-muted-foreground/80 shrink-0" />
+                                )}
+                                <h4 className="font-bold text-sm text-foreground truncate max-w-[155px] group-hover:text-primary transition-colors flex-1">
+                                  {entry.title || "Untitled Entry"}
+                                </h4>
+                              </div>
                               <span className="shrink-0 text-[10px] text-muted-foreground font-semibold">
                                 {formatRelative(entry.createdAt)}
                               </span>
@@ -1190,6 +1217,12 @@ export function JournalPage({ fallbackData = [] }: JournalPageProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <JournalRecorderDialog
+        open={recorderOpen}
+        onOpenChange={setRecorderOpen}
+        onSuccess={() => mutate()}
+      />
     </div>
   );
 }
@@ -1236,5 +1269,329 @@ function EmptyState({
         </Button>
       </div>
     </div>
+  );
+}
+
+function JournalRecorderDialog({
+  open,
+  onOpenChange,
+  onSuccess,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess: () => void;
+}) {
+  const [activeTab, setActiveTab] = useState<"audio" | "video">("audio");
+  const [recordingState, setRecordingState] = useState<"idle" | "recording" | "preview" | "saving">("idle");
+  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [recorder, setRecorder] = useState<MediaRecorder | null>(null);
+  const [chunks, setChunks] = useState<Blob[]>([]);
+  const [duration, setDuration] = useState(0);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState("");
+
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const timerRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (!open) {
+      cleanup();
+    }
+    return () => cleanup();
+  }, [open]);
+
+  const cleanup = () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    if (stream) {
+      stream.getTracks().forEach((track) => track.stop());
+    }
+    setStream(null);
+    setRecorder(null);
+    setChunks([]);
+    setDuration(0);
+    setRecordingState("idle");
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
+    setIsUploading(false);
+    setUploadProgress("");
+  };
+
+  const startRecording = async () => {
+    try {
+      cleanup();
+      const constraints: MediaStreamConstraints = activeTab === "video"
+        ? { audio: true, video: { facingMode: "user", width: 640, height: 480 } }
+        : { audio: true, video: false };
+
+      const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+      setStream(mediaStream);
+
+      if (activeTab === "video" && videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+        videoRef.current.muted = true;
+        videoRef.current.play().catch((e) => console.error("Video play failed:", e));
+      }
+
+      const options = { mimeType: activeTab === "video" ? "video/webm;codecs=vp9,opus" : "audio/webm;codecs=opus" };
+      let mediaRecorder: MediaRecorder;
+      try {
+        mediaRecorder = new MediaRecorder(mediaStream, options);
+      } catch (e) {
+        mediaRecorder = new MediaRecorder(mediaStream);
+      }
+
+      const localChunks: Blob[] = [];
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          localChunks.push(e.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        const mimeType = activeTab === "video" ? "video/webm" : "audio/webm";
+        const blob = new Blob(localChunks, { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        setPreviewUrl(url);
+        setChunks(localChunks);
+        setRecordingState("preview");
+
+        mediaStream.getTracks().forEach((track) => track.stop());
+      };
+
+      mediaRecorder.start(1000);
+      setRecorder(mediaRecorder);
+      setRecordingState("recording");
+
+      setDuration(0);
+      timerRef.current = setInterval(() => {
+        setDuration((prev) => prev + 1);
+      }, 1000);
+
+    } catch (err: any) {
+      console.error("Failed to start recording:", err);
+      toast.error(err.message || "Microphone/Camera permission denied.");
+      cleanup();
+    }
+  };
+
+  const stopRecording = () => {
+    if (recorder && recorder.state !== "inactive") {
+      recorder.stop();
+    }
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+  };
+
+  const saveRecording = async () => {
+    if (chunks.length === 0) return;
+    setIsUploading(true);
+    setUploadProgress("Compressing media file...");
+
+    try {
+      const extension = "webm";
+      const mimeType = activeTab === "video" ? "video/webm" : "audio/webm";
+      const blob = new Blob(chunks, { type: mimeType });
+      const filename = `${activeTab === "video" ? "Video" : "Audio"}_Journal_${new Date().toISOString().slice(0, 10)}.${extension}`;
+      const file = new File([blob], filename, { type: mimeType });
+
+      setUploadProgress("Uploading file to private storage...");
+      await api.media.upload(file, activeTab);
+      toast.success(`${activeTab === "video" ? "Video" : "Audio"} journal saved successfully! Transcription starting in the background.`);
+
+      onSuccess();
+      onOpenChange(false);
+    } catch (err: any) {
+      console.error("Upload failed:", err);
+      toast.error("Failed to upload recording: " + (err.message || "Unknown error"));
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const formatTime = (secs: number) => {
+    const mins = Math.floor(secs / 60);
+    const remaining = secs % 60;
+    return `${mins.toString().padStart(2, "0")}:${remaining.toString().padStart(2, "0")}`;
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="border border-border bg-card text-foreground rounded-2xl max-w-lg shadow-2xl overflow-hidden p-0">
+        <DialogHeader className="p-6 pb-2">
+          <DialogTitle className="text-base font-bold font-[var(--font-nunito)] flex items-center gap-2">
+            <SlidersHorizontal className="w-4 h-4 text-primary animate-pulse" />
+            <span>Record Memory Journal</span>
+          </DialogTitle>
+          <DialogDescription className="text-muted-foreground text-xs">
+            Capture a live voice recording or webcam video reflection. It will be stored in your private vault and transcribed by AI.
+          </DialogDescription>
+        </DialogHeader>
+
+        {recordingState === "idle" && (
+          <div className="flex px-6 mb-4 gap-2">
+            <button
+              onClick={() => setActiveTab("audio")}
+              className={cn(
+                "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border font-bold text-xs transition-all active:scale-[0.98]",
+                activeTab === "audio" ? "bg-primary/10 border-primary/30 text-primary" : "bg-background border-border text-muted-foreground hover:bg-secondary"
+              )}
+            >
+              <Mic className="w-4 h-4" />
+              Audio Journal
+            </button>
+            <button
+              onClick={() => setActiveTab("video")}
+              className={cn(
+                "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border font-bold text-xs transition-all active:scale-[0.98]",
+                activeTab === "video" ? "bg-primary/10 border-primary/30 text-primary" : "bg-background border-border text-muted-foreground hover:bg-secondary"
+              )}
+            >
+              <Video className="w-4 h-4" />
+              Video Journal
+            </button>
+          </div>
+        )}
+
+        <div className="px-6 py-4 flex flex-col items-center justify-center bg-muted/20 border-y border-border min-h-[260px] relative">
+          
+          {recordingState === "idle" && (
+            <div className="flex flex-col items-center justify-center text-center py-6">
+              <div className="w-16 h-16 rounded-full bg-accent border border-border flex items-center justify-center mb-4">
+                {activeTab === "audio" ? <Mic className="w-8 h-8 text-primary" /> : <Video className="w-8 h-8 text-rose-500" />}
+              </div>
+              <p className="text-xs font-bold text-foreground">Ready to Record</p>
+              <p className="text-[11px] text-muted-foreground mt-1 max-w-[250px] leading-relaxed">
+                Click start to begin capturing. Make sure your browser has permissions for the {activeTab === "audio" ? "microphone" : "camera & microphone"}.
+              </p>
+            </div>
+          )}
+
+          {recordingState === "recording" && (
+            <div className="w-full flex flex-col items-center justify-center">
+              {activeTab === "video" ? (
+                <div className="w-full aspect-video bg-neutral-950 rounded-xl overflow-hidden border border-border relative mb-4">
+                  <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
+                  <div className="absolute top-3 left-3 bg-rose-500/80 backdrop-blur text-white text-[10px] font-extrabold px-2.5 py-1 rounded-full flex items-center gap-1.5 animate-pulse uppercase tracking-wider">
+                    <span className="w-2 h-2 rounded-full bg-white" />
+                    Live Recording
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center py-8">
+                  <div className="flex items-end justify-center gap-1.5 h-16 mb-4">
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((bar) => {
+                      const delays = ["delay-100", "delay-200", "delay-300", "delay-500", "delay-700"];
+                      const delayClass = delays[bar % delays.length];
+                      return (
+                        <div
+                          key={bar}
+                          className={cn(
+                            "w-1.5 bg-primary/75 rounded-full animate-bounce shrink-0",
+                            delayClass
+                          )}
+                          style={{
+                            height: `${20 + Math.sin(bar) * 15}px`,
+                            animationDuration: `${0.4 + Math.sin(bar) * 0.4}s`
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+                  <p className="text-[11px] text-primary/80 uppercase tracking-widest font-extrabold animate-pulse">Recording Audio...</p>
+                </div>
+              )}
+
+              <div className="text-xl font-bold font-mono tracking-wider text-foreground mb-4">
+                {formatTime(duration)}
+              </div>
+            </div>
+          )}
+
+          {recordingState === "preview" && previewUrl && (
+            <div className="w-full flex flex-col items-center justify-center">
+              {activeTab === "video" ? (
+                <video src={previewUrl} controls className="w-full aspect-video rounded-xl border border-border object-cover mb-4" />
+              ) : (
+                <div className="w-full py-6 flex flex-col items-center justify-center">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3">
+                    <Mic className="w-5 h-5 text-primary" />
+                  </div>
+                  <audio src={previewUrl} controls className="w-full max-w-sm mb-4" />
+                </div>
+              )}
+              <p className="text-xs font-bold text-foreground">Review Recording</p>
+              <p className="text-[11px] text-muted-foreground mt-1 max-w-[250px] leading-relaxed text-center">
+                Listen or watch your recorded journal. If you are satisfied, save it to add it to your private memories.
+              </p>
+            </div>
+          )}
+
+          {isUploading && (
+            <div className="absolute inset-0 bg-card/90 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-center p-6">
+              <Loader2 className="w-8 h-8 text-primary animate-spin mb-4" />
+              <p className="text-sm font-bold text-foreground">Processing Journal Entry</p>
+              <p className="text-xs text-muted-foreground mt-1 max-w-xs leading-relaxed">
+                {uploadProgress}
+              </p>
+            </div>
+          )}
+
+        </div>
+
+        <div className="p-6 flex items-center justify-end gap-2 bg-background">
+          <Button
+            variant="ghost"
+            className="rounded-xl border border-border hover:bg-accent text-foreground text-xs h-9 px-4"
+            onClick={() => onOpenChange(false)}
+            disabled={isUploading}
+          >
+            Cancel
+          </Button>
+
+          {recordingState === "idle" && (
+            <Button
+              className="rounded-xl bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-bold h-9 px-4 shadow-[0_3px_0_#46A302] active:translate-y-[2px] active:shadow-none transition-all"
+              onClick={startRecording}
+            >
+              Start Recording
+            </Button>
+          )}
+
+          {recordingState === "recording" && (
+            <Button
+              variant="destructive"
+              className="rounded-xl bg-destructive hover:bg-destructive/95 text-destructive-foreground text-xs font-bold h-9 px-4 shadow-[0_3px_0_#A30202] active:translate-y-[2px] active:shadow-none transition-all"
+              onClick={stopRecording}
+            >
+              Stop Recording
+            </Button>
+          )}
+
+          {recordingState === "preview" && (
+            <>
+              <Button
+                variant="outline"
+                className="rounded-xl border-2 border-border text-foreground text-xs h-9 px-4 hover:bg-accent"
+                onClick={() => setRecordingState("idle")}
+                disabled={isUploading}
+              >
+                Re-record
+              </Button>
+              <Button
+                className="rounded-xl bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-bold h-9 px-4 shadow-[0_3px_0_#46A302] active:translate-y-[2px] active:shadow-none transition-all"
+                onClick={saveRecording}
+                disabled={isUploading}
+              >
+                Save as Journal
+              </Button>
+            </>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

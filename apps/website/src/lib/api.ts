@@ -59,7 +59,7 @@ export const api = {
       fetchApi(`/api/sources/${id}/transcribe`, { method: "POST" }),
   },
   journal: {
-    list: () => fetchApi("/api/sources?type=journal"),
+    list: () => fetchApi("/api/sources?type=journal,audio,video"),
     get: (id: string) => fetchApi(`/api/sources/${id}`),
     create: (data: { title?: string; content?: string }) =>
       fetchApi("/api/sources", {
