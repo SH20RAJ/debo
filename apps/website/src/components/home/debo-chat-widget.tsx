@@ -11,7 +11,7 @@ import {
 import useSWR from "swr";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
 
 interface Thread {
@@ -45,7 +45,6 @@ function formatRelative(iso?: string | null): string {
 export function DeboChatWidget() {
   const router = useRouter();
 
-  // Fetch threads with SWR
   const { data: rawThreads, isLoading } = useSWR(
     "/api/chat/threads",
     () => api.ask.listThreads()
@@ -55,7 +54,7 @@ export function DeboChatWidget() {
     ? rawThreads
     : (rawThreads as any)?.threads ?? (rawThreads as any)?.data ?? [];
 
-  const threads: Thread[] = threadsArr.slice(0, 3).map((t: any) => ({
+  const threads: Thread[] = (threadsArr as any[]).slice(0, 3).map((t: any) => ({
     id: String(t.id),
     title: t.title ?? null,
     preview: t.lastMessage ?? t.preview ?? null,
@@ -74,37 +73,26 @@ export function DeboChatWidget() {
   const hasThreads = !isLoading && threads.length > 0;
 
   return (
-    <Card
-      className={cn(
-        "rounded-[1.75rem] border border-border/80 bg-card p-0 shadow-[0_4px_24px_rgba(0,0,0,0.02)]",
-        "bg-gradient-to-br from-card to-primary/[0.02]"
-      )}
-    >
-      <CardContent className="p-5">
-        <div className="flex items-center justify-between mb-4">
+    <Card>
+      <CardContent className="space-y-4 p-5">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="size-8 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Brain className="size-4.5 text-primary" />
+            <div className="flex size-8 items-center justify-center rounded-md bg-muted">
+              <Brain className="size-4 text-foreground" />
             </div>
-            <h2 className="text-sm font-bold text-foreground uppercase tracking-wider font-[var(--font-nunito)]">
-              Ask Debo
-            </h2>
+            <h2 className="text-sm font-semibold uppercase tracking-wider">Ask Debo</h2>
           </div>
-          <Button
-            variant="ghost"
-            size="xs"
-            onClick={() => goAsk()}
-            className="rounded-xl text-muted-foreground hover:text-primary text-xs"
-          >
-            <MessageSquarePlus className="size-3.5 mr-1" />
+          <Button variant="ghost" size="sm" onClick={() => goAsk()}>
+            <MessageSquarePlus />
             New
           </Button>
         </div>
 
         {isLoading ? (
-          <div className="flex items-center gap-2 text-muted-foreground text-xs py-8 justify-center">
-            <Loader2 className="size-4 animate-spin text-primary" />
-            Loading threads...
+          <div className="space-y-2 py-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-10 w-full rounded-md" />
+            ))}
           </div>
         ) : hasThreads ? (
           <div className="space-y-1.5">
@@ -112,32 +100,29 @@ export function DeboChatWidget() {
               <button
                 key={t.id}
                 onClick={() => openThread(t.id)}
-                className={cn(
-                  "w-full flex items-center gap-3 rounded-2xl px-2.5 py-2.5 text-left",
-                  "hover:bg-primary/5 transition-all group duration-200"
-                )}
+                className="group flex w-full items-center gap-3 rounded-md px-2.5 py-2.5 text-left hover:bg-muted transition-colors"
               >
-                <Sparkles className="size-4 text-primary/60 shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-foreground truncate font-medium group-hover:text-primary transition-colors">
+                <Sparkles className="size-4 shrink-0 text-muted-foreground" />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium">
                     {t.title || "Untitled chat"}
                   </p>
                   {t.preview && (
-                    <p className="text-xs text-muted-foreground truncate mt-0.5">
+                    <p className="mt-0.5 truncate text-xs text-muted-foreground">
                       {t.preview}
                     </p>
                   )}
                 </div>
-                <span className="text-[10px] font-semibold text-muted-foreground shrink-0 bg-secondary px-2 py-0.5 rounded-full">
+                <span className="shrink-0 rounded-md bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
                   {formatRelative(t.updatedAt)}
                 </span>
-                <ArrowRight className="size-4 text-primary opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-[-4px] group-hover:translate-x-0 shrink-0" />
+                <ArrowRight className="size-4 shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
               </button>
             ))}
           </div>
         ) : (
           <div className="space-y-3 py-2">
-            <p className="text-xs font-semibold text-muted-foreground">
+            <p className="text-xs font-medium text-muted-foreground">
               Try asking your past:
             </p>
             <div className="flex flex-wrap gap-2">
@@ -145,15 +130,11 @@ export function DeboChatWidget() {
                 <Button
                   key={p}
                   variant="outline"
-                  size="xs"
+                  size="sm"
+                  className="rounded-full"
                   onClick={() => goAsk(p)}
-                  className={cn(
-                    "rounded-full text-xs font-semibold h-8 px-4",
-                    "border border-border/80 text-muted-foreground bg-card",
-                    "hover:text-primary hover:border-primary/30 hover:bg-primary/5 transition-all"
-                  )}
                 >
-                  <Sparkles className="size-3.5 text-primary mr-1.5" />
+                  <Sparkles className="text-muted-foreground" />
                   {p}
                 </Button>
               ))}

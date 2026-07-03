@@ -1,10 +1,14 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { LucideIcon } from "lucide-react";
 import { Mic, BookOpen, FileText } from "lucide-react";
 
@@ -50,53 +54,39 @@ export function MemoryCard({
   const sourceLabel = sourceLabels[sourceType];
 
   return (
-    <Card
-      className={cn(
-        "rounded-[1.75rem] border border-border/85 bg-card p-0",
-        "transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.02)]",
-        "hover:-translate-y-[1.5px] hover:shadow-[0_8px_24px_rgba(0,0,0,0.04)] hover:border-primary/25",
-        "flex flex-col"
-      )}
-    >
-      <CardContent className="flex flex-col gap-3 p-5">
-        {/* Header */}
+    <Card className="flex h-full flex-col transition-colors hover:bg-muted/30">
+      <CardContent className="flex flex-1 flex-col gap-3 p-5">
         <div className="flex items-start gap-3">
-          <div className="w-9 h-9 rounded-xl bg-accent flex items-center justify-center shrink-0">
-            <Icon className="w-4 h-4 text-muted-foreground" />
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted">
+            <Icon className="size-4 text-muted-foreground" />
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="text-sm font-semibold text-foreground truncate">
-              {title}
-            </h3>
+            <h3 className="truncate text-sm font-semibold">{title}</h3>
             <p className="text-xs text-muted-foreground">{sourceLabel}</p>
           </div>
         </div>
 
-        {/* Summary */}
-        <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+        <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
           {summary}
         </p>
 
-        {/* Footer */}
-        <div className="flex items-center gap-2 flex-wrap mt-auto pt-1">
+        <div className="mt-auto flex flex-wrap items-center gap-2 pt-1">
           <span className="text-xs text-muted-foreground">{date}</span>
           {people && people.length > 0 && (
             <>
-              <span className="text-muted-foreground/40 text-xs">·</span>
+              <span className="text-xs text-muted-foreground">·</span>
               <TooltipProvider>
                 <div className="flex items-center gap-1">
                   {people.map((person) => (
                     <Tooltip key={person}>
-                      <TooltipTrigger asChild>
-                        <Avatar size="sm" className="cursor-default">
-                          <AvatarFallback className="text-[10px] bg-primary/10 text-primary font-medium">
+                      <TooltipTrigger>
+                        <Avatar>
+                          <AvatarFallback className="text-[10px] font-medium">
                             {getInitials(person)}
                           </AvatarFallback>
                         </Avatar>
                       </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{person}</p>
-                      </TooltipContent>
+                      <TooltipContent>{person}</TooltipContent>
                     </Tooltip>
                   ))}
                 </div>
@@ -105,11 +95,8 @@ export function MemoryCard({
           )}
           {taskCount !== undefined && taskCount > 0 && (
             <>
-              <span className="text-muted-foreground/40 text-xs">·</span>
-              <Badge
-                variant="default"
-                className="text-[11px] px-2 py-0.5 rounded-full bg-primary/10 text-primary border-0 font-medium"
-              >
+              <span className="text-xs text-muted-foreground">·</span>
+              <Badge variant="secondary">
                 {taskCount} {taskCount === 1 ? "task" : "tasks"}
               </Badge>
             </>

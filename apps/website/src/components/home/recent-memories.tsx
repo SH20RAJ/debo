@@ -3,10 +3,11 @@
 import { useRouter } from "next/navigation";
 import { ArrowRight, Loader2 } from "lucide-react";
 import useSWR from "swr";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { MemoryCard } from "./memory-card";
 import type { MemoryCardProps } from "./memory-card";
-import { cn } from "@/lib/utils";
 import { api } from "@/lib/api";
 
 const VALID_KINDS: MemoryCardProps["sourceType"][] = ["voice", "journal", "file"];
@@ -41,8 +42,6 @@ function formatRelativeDate(iso?: string): string {
 
 export function RecentMemories() {
   const router = useRouter();
-
-  // Fetch sources with SWR
   const { data: rawSources, isLoading, error } = useSWR(
     "/api/sources",
     () => api.sources.list()
@@ -56,65 +55,48 @@ export function RecentMemories() {
 
   return (
     <section className="mt-2">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-bold text-foreground uppercase tracking-wider font-[var(--font-nunito)]">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-sm font-semibold uppercase tracking-wider">
           Recent memories
         </h2>
-        <Button
-          variant="ghost"
-          size="xs"
-          onClick={() => router.push("/dashboard/library")}
-          className="rounded-xl text-muted-foreground hover:text-primary text-xs"
-        >
+        <Button variant="ghost" size="sm" onClick={() => router.push("/dashboard/library")}>
           Library
-          <ArrowRight className="size-3.5 ml-1" />
+          <ArrowRight />
         </Button>
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[0, 1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className={cn(
-                "rounded-[1.75rem] border border-border bg-card h-36",
-                "animate-pulse"
-              )}
-            />
+            <Skeleton key={i} className="h-36 rounded-md" />
           ))}
         </div>
       ) : error ? (
-        <p className="text-sm text-muted-foreground py-6 text-center">
-          Could not load memories.
-        </p>
+        <Card className="border-dashed">
+          <CardContent className="p-6 text-center text-sm text-muted-foreground">
+            Could not load memories.
+          </CardContent>
+        </Card>
       ) : memories.length === 0 ? (
-        <div
-          className={cn(
-            "rounded-[1.75rem] border border-dashed border-border/80 bg-card/40",
-            "p-8 text-center"
-          )}
-        >
-          <p className="text-sm text-muted-foreground">
-            No memories yet. Capture a thought above to start your timeline.
-          </p>
-        </div>
+        <Card className="border-dashed">
+          <CardContent className="p-8 text-center">
+            <p className="text-sm text-muted-foreground">
+              No memories yet. Capture a thought above to start your timeline.
+            </p>
+          </CardContent>
+        </Card>
       ) : (
         <>
-          {/* Mobile: horizontal scroll */}
           <div className="-mx-4 px-4 sm:hidden">
-            <div className="flex gap-4 overflow-x-auto pb-4 snap-x scrollbar-hide">
+            <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4">
               {memories.map((m, i) => (
-                <div
-                  key={i}
-                  className="snap-start shrink-0 w-[80%] first:ml-0"
-                >
+                <div key={i} className="snap-start w-[80%] shrink-0">
                   <MemoryCard {...m} />
                 </div>
               ))}
             </div>
           </div>
-          {/* Tablet/desktop grid */}
-          <div className="hidden sm:grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="hidden grid-cols-2 gap-3 sm:grid lg:grid-cols-4">
             {memories.slice(0, 4).map((m, i) => (
               <MemoryCard key={i} {...m} />
             ))}

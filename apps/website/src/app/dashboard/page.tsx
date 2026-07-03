@@ -5,30 +5,21 @@ import { TodayRail } from "@/components/home/today-rail";
 import { OpenLoops } from "@/components/home/open-loops";
 import { DeboChatWidget } from "@/components/home/debo-chat-widget";
 import { RecentMemories } from "@/components/home/recent-memories";
-import { SmartHomeWidget } from "@/components/dashboard/smart-home-widget";
 
 export default function DashboardPage() {
   return (
-    <div className="px-4 md:px-6 lg:px-8 py-6 md:py-8 max-w-6xl mx-auto">
-      <div className="mb-6">
-        <Greeting />
-      </div>
-
+    <div className="mx-auto max-w-6xl px-4 py-6 md:px-6 md:py-8 lg:px-8">
+      <Greeting />
       <CaptureHero />
       <ActionTriad />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-6">
+      <div className="mb-6 grid grid-cols-1 gap-3 lg:grid-cols-2">
         <TodayRail />
         <OpenLoops />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
-        <div className="md:col-span-2">
-          <DeboChatWidget />
-        </div>
-        <div>
-          <SmartHomeWidget />
-        </div>
+      <div className="mb-6">
+        <DeboChatWidget />
       </div>
 
       <RecentMemories />
