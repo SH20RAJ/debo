@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useUser } from "@stackframe/stack";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -25,16 +27,25 @@ export function Greeting() {
     user?.primaryEmail?.split("@")[0] ||
     "there";
 
+  if (!user) {
+    return (
+      <Card className="mb-6 border-dashed">
+        <CardContent className="flex items-center gap-3 p-5">
+          <Skeleton className="h-5 w-32" />
+          <Skeleton className="h-4 w-20" />
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <div className="flex items-center justify-between py-2 border-b border-border/40 pb-4">
-      <div>
-        <h2 className="text-2xl font-black text-foreground tracking-tight">
-          Hi, {displayName}
-        </h2>
-        <p className="text-xs text-muted-foreground font-semibold mt-0.5">
-          {greeting}
-        </p>
-      </div>
+    <div className="mb-6 border-b pb-4">
+      <h2 className="text-2xl font-bold tracking-tight">
+        Hi, {displayName}
+      </h2>
+      <p className="mt-0.5 text-xs text-muted-foreground font-medium">
+        {greeting}
+      </p>
     </div>
   );
 }

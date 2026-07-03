@@ -78,11 +78,11 @@ export function SuggestedActions({ actions = DEFAULT_ACTIONS }: SuggestedActions
             size="sm"
             onClick={handleActionClick}
             className={cn(
-              "rounded-full gap-1.5 px-3 py-1.5 text-xs font-semibold border border-white/5",
-              "bg-[#131911]/30 hover:bg-[#131911]/60 hover:border-emerald-500/20 hover:text-emerald-400 transition-all cursor-pointer"
+              "rounded-full gap-1.5 px-3 py-1.5 text-xs font-semibold border border-border",
+              "bg-muted/30 hover:bg-muted/60 hover:border-primary/40 hover:text-primary transition-all cursor-pointer"
             )}
           >
-            <Icon className="w-3.5 h-3.5 text-emerald-500/80" />
+            <Icon className="w-3.5 h-3.5 text-primary/80" />
             <span>{action.label}</span>
           </Button>
         );

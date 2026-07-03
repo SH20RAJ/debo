@@ -199,13 +199,13 @@ export function SmartHomeWidget() {
   if (!isConnected) {
     return (
       <div className="rounded-3xl border border-border bg-card p-6 flex flex-col justify-between min-h-[220px] relative overflow-hidden group shadow-xs">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-[#41BDF5]/5 rounded-full blur-3xl -mr-8 -mt-8 group-hover:bg-[#41BDF5]/10 transition-colors" />
+        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-8 -mt-8 group-hover:bg-primary/10 transition-colors" />
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <div className="size-8 rounded-xl bg-[#41BDF5]/10 flex items-center justify-center text-lg">
+            <div className="size-8 rounded-xl bg-primary/10 flex items-center justify-center text-lg">
               🏠
             </div>
-            <h3 className="font-bold text-foreground font-[var(--font-nunito)]">
+            <h3 className="font-bold text-foreground ">
               Smart Home Control
             </h3>
           </div>
@@ -214,7 +214,7 @@ export function SmartHomeWidget() {
           </p>
         </div>
         <Link href="/dashboard/connectors" className="mt-4">
-          <Button className="w-full bg-[#41BDF5] hover:bg-[#41BDF5]/90 text-white rounded-full text-xs font-semibold py-2">
+          <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-full text-xs font-semibold py-2">
             Set up Smart Home
           </Button>
         </Link>
@@ -240,7 +240,7 @@ export function SmartHomeWidget() {
               🏠
             </div>
             <div>
-              <h3 className="font-bold text-foreground text-sm font-[var(--font-nunito)]">
+              <h3 className="font-bold text-foreground text-sm ">
                 Smart Home
               </h3>
               <span className="text-[10px] text-muted-foreground flex items-center gap-1">

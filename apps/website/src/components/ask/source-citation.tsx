@@ -49,8 +49,8 @@ const CONFIDENCE_CONFIG = {
     percent: 92,
     gradient: "from-emerald-500 to-teal-500",
     dotClass: "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]",
-    cardBorder: "hover:border-emerald-500/30 hover:shadow-[0_0_12px_rgba(16,185,129,0.08)]",
-    badgeClass: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+    cardBorder: "hover:border-primary/30 hover:shadow-[0_0_12px_rgba(16,185,129,0.08)]",
+    badgeClass: "bg-primary/10 text-primary border-emerald-500/20",
   },
   partial: {
     label: "Partial match",
@@ -92,12 +92,12 @@ export function SourceCitation({ source, compact = false }: SourceCitationProps)
         <Card
           onClick={handleOpenDrawer}
           className={cn(
-            "flex items-center gap-2.5 px-3 py-2.5 border border-white/5 bg-[#131911]/30 hover:bg-[#131911]/60 transition-all duration-200 cursor-pointer select-none rounded-xl",
+            "flex items-center gap-2.5 px-3 py-2.5 border border-border bg-muted/30 hover:bg-muted/60 transition-all duration-200 cursor-pointer select-none rounded-xl",
             confidence.cardBorder
           )}
         >
-          <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-500/5 border border-emerald-500/10 shrink-0">
-            <Icon className="w-3.5 h-3.5 text-emerald-500/80" />
+          <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-primary/5 border border-primary/10 shrink-0">
+            <Icon className="w-3.5 h-3.5 text-primary/80" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-semibold text-foreground/90 truncate leading-snug">
@@ -121,11 +121,11 @@ export function SourceCitation({ source, compact = false }: SourceCitationProps)
       <button
         onClick={handleOpenDrawer}
         className={cn(
-          "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-white/5 bg-[#172115]/30 hover:bg-[#172115]/70 text-left transition-all duration-150 cursor-pointer select-none text-xs font-medium mr-1.5 mb-1.5 group",
+          "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border bg-muted/30 hover:bg-muted/70 text-left transition-all duration-150 cursor-pointer select-none text-xs font-medium mr-1.5 mb-1.5 group",
           confidence.cardBorder
         )}
       >
-        <Icon className="w-3.5 h-3.5 text-emerald-500/70 group-hover:text-emerald-500 transition-colors" />
+        <Icon className="w-3.5 h-3.5 text-primary/70 group-hover:text-primary transition-colors" />
         <span className="text-foreground/85 group-hover:text-foreground truncate max-w-[120px] transition-colors">
           {source.label}
         </span>
@@ -157,9 +157,9 @@ function CitationDrawer({ isOpen, onClose, source, Icon }: CitationDrawerProps) 
       <div className="space-y-6 pb-6">
         {/* Source Type & Confidence Stats */}
         <div className="grid grid-cols-2 gap-3">
-          <div className="bg-white/5 border border-white/5 rounded-xl p-3 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 shrink-0">
-              <Icon className="w-4 h-4 text-emerald-500" />
+          <div className="bg-muted/10 border border-border rounded-xl p-3 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center border border-emerald-500/20 shrink-0">
+              <Icon className="w-4 h-4 text-primary" />
             </div>
             <div>
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Source Type</p>
@@ -167,7 +167,7 @@ function CitationDrawer({ isOpen, onClose, source, Icon }: CitationDrawerProps) 
             </div>
           </div>
 
-          <div className="bg-white/5 border border-white/5 rounded-xl p-3 flex flex-col justify-between">
+          <div className="bg-muted/10 border border-border rounded-xl p-3 flex flex-col justify-between">
             <div className="flex items-center justify-between">
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Match Score</p>
               <Badge variant="outline" className={cn("text-[9px] font-semibold px-1.5 py-0.5 rounded-full border", confidence.badgeClass)}>
@@ -175,7 +175,7 @@ function CitationDrawer({ isOpen, onClose, source, Icon }: CitationDrawerProps) 
               </Badge>
             </div>
             <div className="mt-2.5">
-              <div className="w-full h-1.5 rounded-full bg-white/5 overflow-hidden">
+              <div className="w-full h-1.5 rounded-full bg-muted/10 overflow-hidden">
                 <div
                   className={cn("h-full rounded-full bg-gradient-to-r", confidence.gradient)}
                   style={{ width: `${confidence.percent}%` }}
@@ -188,16 +188,16 @@ function CitationDrawer({ isOpen, onClose, source, Icon }: CitationDrawerProps) 
         {/* Excerpt Section */}
         <div className="space-y-2">
           <h4 className="text-xs font-bold text-foreground/80 tracking-wide flex items-center gap-1.5 select-none">
-            <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
+            <Sparkles className="w-3.5 h-3.5 text-primary" />
             Matching Excerpt
           </h4>
           {source.excerpt ? (
-            <div className="relative border border-emerald-500/10 bg-[#121810]/40 rounded-xl px-4 py-3 text-xs leading-relaxed text-foreground/90 italic">
-              <span className="absolute -top-3.5 left-2 text-3xl font-serif text-emerald-500/15 leading-none select-none">“</span>
+            <div className="relative border border-primary/10 bg-muted/10 rounded-xl px-4 py-3 text-xs leading-relaxed text-foreground/90 italic">
+              <span className="absolute -top-3.5 left-2 text-3xl font-serif text-primary/15 leading-none select-none">“</span>
               <p className="relative z-10">{source.excerpt}</p>
             </div>
           ) : (
-            <div className="border border-white/5 bg-[#121810]/20 rounded-xl px-4 py-3 text-xs leading-relaxed text-muted-foreground/80 italic text-center">
+            <div className="border border-border bg-muted/5 rounded-xl px-4 py-3 text-xs leading-relaxed text-muted-foreground/80 italic text-center">
               No direct quotation extracted. Matching determined via overall document vector context.
             </div>
           )}
@@ -206,14 +206,14 @@ function CitationDrawer({ isOpen, onClose, source, Icon }: CitationDrawerProps) 
         {/* Metadata Details */}
         <div className="space-y-3 pt-2">
           <h4 className="text-xs font-bold text-foreground/80 tracking-wide flex items-center gap-1.5 select-none">
-            <Layers className="w-3.5 h-3.5 text-emerald-500" />
+            <Layers className="w-3.5 h-3.5 text-primary" />
             Memory Details
           </h4>
-          <div className="border border-white/5 bg-white/5 rounded-xl divide-y divide-white/5">
+          <div className="border border-border bg-muted/10 rounded-xl divide-y divide-border">
             {source.timestamp && (
               <div className="flex items-center justify-between px-3.5 py-3 text-xs">
                 <span className="text-muted-foreground flex items-center gap-2">
-                  <Calendar className="w-3.5 h-3.5 text-emerald-500/60" />
+                  <Calendar className="w-3.5 h-3.5 text-primary/60" />
                   Captured At
                 </span>
                 <span className="font-medium text-foreground/95">{source.timestamp}</span>
@@ -223,12 +223,12 @@ function CitationDrawer({ isOpen, onClose, source, Icon }: CitationDrawerProps) 
             {source.people && source.people.length > 0 && (
               <div className="flex items-start justify-between px-3.5 py-3 text-xs gap-4">
                 <span className="text-muted-foreground flex items-center gap-2 shrink-0 mt-0.5">
-                  <Users className="w-3.5 h-3.5 text-emerald-500/60" />
+                  <Users className="w-3.5 h-3.5 text-primary/60" />
                   People Tagged
                 </span>
                 <span className="font-medium text-foreground/95 text-right flex flex-wrap gap-1 justify-end">
                   {source.people.map(person => (
-                    <Badge key={person} variant="secondary" className="text-[10px] px-2 py-0 bg-white/5 border border-white/5 text-foreground/90">
+                    <Badge key={person} variant="secondary" className="text-[10px] px-2 py-0 bg-muted/10 border border-border text-foreground/90">
                       {person}
                     </Badge>
                   ))}
@@ -238,7 +238,7 @@ function CitationDrawer({ isOpen, onClose, source, Icon }: CitationDrawerProps) 
 
             <div className="flex items-center justify-between px-3.5 py-3 text-xs">
               <span className="text-muted-foreground flex items-center gap-2">
-                <Clock className="w-3.5 h-3.5 text-emerald-500/60" />
+                <Clock className="w-3.5 h-3.5 text-primary/60" />
                 Capture ID
               </span>
               <span className="font-mono text-[10px] text-muted-foreground">{source.id}</span>
@@ -250,7 +250,7 @@ function CitationDrawer({ isOpen, onClose, source, Icon }: CitationDrawerProps) 
         {source.relatedTasks && source.relatedTasks.length > 0 && (
           <div className="space-y-2">
             <h4 className="text-xs font-bold text-foreground/80 tracking-wide flex items-center gap-1.5 select-none">
-              <CheckSquare className="w-3.5 h-3.5 text-emerald-500" />
+              <CheckSquare className="w-3.5 h-3.5 text-primary" />
               Related Tasks
             </h4>
             <div className="flex flex-wrap gap-1.5">
@@ -258,9 +258,9 @@ function CitationDrawer({ isOpen, onClose, source, Icon }: CitationDrawerProps) 
                 <Badge
                   key={task}
                   variant="outline"
-                  className="text-[11px] gap-1 px-2.5 py-1 font-normal bg-emerald-500/5 border border-emerald-500/10 text-foreground/90 rounded-lg"
+                  className="text-[11px] gap-1 px-2.5 py-1 font-normal bg-primary/5 border border-primary/10 text-foreground/90 rounded-lg"
                 >
-                  <CheckSquare className="w-3 h-3 text-emerald-500" />
+                  <CheckSquare className="w-3 h-3 text-primary" />
                   {task}
                 </Badge>
               ))}

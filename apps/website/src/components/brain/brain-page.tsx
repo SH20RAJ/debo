@@ -89,7 +89,7 @@ export function BrainPage() {
       case "gamma":
         return {
           label: "Gamma (30-100 Hz - High Focus)",
-          color: "#CE82FF",
+          color: "#a855f7",
           repel: 300,
           link: 0.08,
           gravity: 0.05,
@@ -100,7 +100,7 @@ export function BrainPage() {
       case "beta":
         return {
           label: "Beta (12-30 Hz - Active Processing)",
-          color: "#1CB0F6",
+          color: "#0ea5e9",
           repel: 350,
           link: 0.055,
           gravity: 0.035,
@@ -111,7 +111,7 @@ export function BrainPage() {
       case "alpha":
         return {
           label: "Alpha (8-12 Hz - Relaxed Focus)",
-          color: "#58CC02",
+          color: "#10b981",
           repel: 320,
           link: 0.045,
           gravity: 0.025,
@@ -122,7 +122,7 @@ export function BrainPage() {
       case "theta":
         return {
           label: "Theta (4-8 Hz - Memory/Intuition)",
-          color: "#FFC800",
+          color: "#eab308",
           repel: 280,
           link: 0.035,
           gravity: 0.015,
@@ -183,7 +183,7 @@ export function BrainPage() {
         type: "source",
         details: s.content || s.description || "",
         radius: 14,
-        color: "#58CC02", // Primary Emerald Green
+        color: "#10b981", // Primary Emerald Green
         originalData: s,
       });
     });
@@ -196,7 +196,7 @@ export function BrainPage() {
         type: "task",
         details: t.description || `Status: ${t.status}`,
         radius: 11,
-        color: "#FF9600", // Warm Orange
+        color: "#f97316", // Warm Orange
         originalData: t,
       });
 
@@ -226,7 +226,7 @@ export function BrainPage() {
         type: "decision",
         details: d.decisionText || d.reason || "",
         radius: 12,
-        color: "#FFC800", // Yellow Accent
+        color: "#eab308", // Yellow Accent
         originalData: d,
       });
 
@@ -254,7 +254,7 @@ export function BrainPage() {
         type: "person",
         details: `${p.role || ""} ${p.company || ""}. Notes: ${p.notes || ""}`,
         radius: 12,
-        color: "#1CB0F6", // Macaw Blue
+        color: "#0ea5e9", // Macaw Blue
         originalData: p,
       });
     });
@@ -267,7 +267,7 @@ export function BrainPage() {
         type: "project",
         details: pr.description || "",
         radius: 16,
-        color: "#CE82FF", // Purple Accent
+        color: "#a855f7", // Purple Accent
         originalData: pr,
       });
     });
@@ -959,8 +959,8 @@ export function BrainPage() {
             className={cn(
               "flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all cursor-pointer font-semibold uppercase tracking-wider text-[10px]",
               sidebarListType === "source"
-                ? "bg-[#58CC02]/20 border-[#58CC02] text-[#58CC02] shadow-sm"
-                : "border-border/30 bg-card/25 text-[#58CC02] hover:bg-[#58CC02]/10"
+                ? "bg-[#10b981]/20 border-[#10b981] text-[#10b981] shadow-sm"
+                : "border-border/30 bg-card/25 text-[#10b981] hover:bg-[#10b981]/10"
             )}
           >
             {nodeStats.sources} Notes
@@ -973,8 +973,8 @@ export function BrainPage() {
             className={cn(
               "flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all cursor-pointer font-semibold uppercase tracking-wider text-[10px]",
               sidebarListType === "task"
-                ? "bg-[#FF9600]/20 border-[#FF9600] text-[#FF9600] shadow-sm"
-                : "border-border/30 bg-card/25 text-[#FF9600] hover:bg-[#FF9600]/10"
+                ? "bg-[#f97316]/20 border-[#f97316] text-[#f97316] shadow-sm"
+                : "border-border/30 bg-card/25 text-[#f97316] hover:bg-[#f97316]/10"
             )}
           >
             {nodeStats.tasks} Tasks
@@ -987,8 +987,8 @@ export function BrainPage() {
             className={cn(
               "flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all cursor-pointer font-semibold uppercase tracking-wider text-[10px]",
               sidebarListType === "decision"
-                ? "bg-[#FFC800]/20 border-[#FFC800] text-[#FFC800] shadow-sm"
-                : "border-border/30 bg-card/25 text-[#FFC800] hover:bg-[#FFC800]/10"
+                ? "bg-[#eab308]/20 border-[#eab308] text-[#eab308] shadow-sm"
+                : "border-border/30 bg-card/25 text-[#eab308] hover:bg-[#eab308]/10"
             )}
           >
             {nodeStats.decisions} Decisions
@@ -1001,8 +1001,8 @@ export function BrainPage() {
             className={cn(
               "flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all cursor-pointer font-semibold uppercase tracking-wider text-[10px]",
               sidebarListType === "person"
-                ? "bg-[#1CB0F6]/20 border-[#1CB0F6] text-[#1CB0F6] shadow-sm"
-                : "border-border/30 bg-card/25 text-[#1CB0F6] hover:bg-[#1CB0F6]/10"
+                ? "bg-[#0ea5e9]/20 border-[#0ea5e9] text-[#0ea5e9] shadow-sm"
+                : "border-border/30 bg-card/25 text-[#0ea5e9] hover:bg-[#0ea5e9]/10"
             )}
           >
             {nodeStats.people} People
@@ -1015,8 +1015,8 @@ export function BrainPage() {
             className={cn(
               "flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all cursor-pointer font-semibold uppercase tracking-wider text-[10px]",
               sidebarListType === "project"
-                ? "bg-[#CE82FF]/20 border-[#CE82FF] text-[#CE82FF] shadow-sm"
-                : "border-border/30 bg-card/25 text-[#CE82FF] hover:bg-[#CE82FF]/10"
+                ? "bg-[#a855f7]/20 border-[#a855f7] text-[#a855f7] shadow-sm"
+                : "border-border/30 bg-card/25 text-[#a855f7] hover:bg-[#a855f7]/10"
             )}
           >
             {nodeStats.projects} Projects
@@ -1060,11 +1060,11 @@ export function BrainPage() {
             {/* Type Toggles */}
             <div className="flex flex-wrap gap-1 bg-zinc-950/60 backdrop-blur-md p-1.5 border border-border/20 rounded-2xl">
               {[
-                { type: "source", color: "bg-[#58CC02]", label: "Notes" },
-                { type: "task", color: "bg-[#FF9600]", label: "Tasks" },
-                { type: "decision", color: "bg-[#FFC800]", label: "Decisions" },
-                { type: "person", color: "bg-[#1CB0F6]", label: "People" },
-                { type: "project", color: "bg-[#CE82FF]", label: "Projects" },
+                { type: "source", color: "bg-[#10b981]", label: "Notes" },
+                { type: "task", color: "bg-[#f97316]", label: "Tasks" },
+                { type: "decision", color: "bg-[#eab308]", label: "Decisions" },
+                { type: "person", color: "bg-[#0ea5e9]", label: "People" },
+                { type: "project", color: "bg-[#a855f7]", label: "Projects" },
               ].map((filter) => {
                 const isActive = selectedTypes.includes(filter.type);
                 return (
@@ -1101,10 +1101,10 @@ export function BrainPage() {
               
               <div className="flex flex-col gap-1">
                 {[
-                  { id: "gamma", wave: "Gamma", hz: "30-100 Hz", desc: "Insight / Focus", color: "text-[#CE82FF]", border: "hover:border-[#CE82FF]/30" },
-                  { id: "beta", wave: "Beta", hz: "12-30 Hz", desc: "Thinking / Logic", color: "text-[#1CB0F6]", border: "hover:border-[#1CB0F6]/30" },
-                  { id: "alpha", wave: "Alpha", hz: "8-12 Hz", desc: "Relaxed Focus", color: "text-[#58CC02]", border: "hover:border-[#58CC02]/30" },
-                  { id: "theta", wave: "Theta", hz: "4-8 Hz", desc: "Intuition / Dream", color: "text-[#FFC800]", border: "hover:border-[#FFC800]/30" },
+                  { id: "gamma", wave: "Gamma", hz: "30-100 Hz", desc: "Insight / Focus", color: "text-[#a855f7]", border: "hover:border-[#a855f7]/30" },
+                  { id: "beta", wave: "Beta", hz: "12-30 Hz", desc: "Thinking / Logic", color: "text-[#0ea5e9]", border: "hover:border-[#0ea5e9]/30" },
+                  { id: "alpha", wave: "Alpha", hz: "8-12 Hz", desc: "Relaxed Focus", color: "text-[#10b981]", border: "hover:border-[#10b981]/30" },
+                  { id: "theta", wave: "Theta", hz: "4-8 Hz", desc: "Intuition / Dream", color: "text-[#eab308]", border: "hover:border-[#eab308]/30" },
                   { id: "delta", wave: "Delta", hz: "0.5-4 Hz", desc: "Rest / Healing", color: "text-[#FF5B5B]", border: "hover:border-[#FF5B5B]/30" },
                 ].map((w) => {
                   const isActive = activeBrainWave === w.id;
@@ -1335,7 +1335,7 @@ export function BrainPage() {
                       {referencingJournals.map((journal) => (
                         <div
                           key={journal.id}
-                          className="flex items-center justify-between p-2 rounded-xl border border-border/10 bg-[#58CC02]/5 hover:bg-[#58CC02]/10 transition text-left gap-2 animate-in fade-in slide-in-from-right-3 duration-250"
+                          className="flex items-center justify-between p-2 rounded-xl border border-border/10 bg-[#10b981]/5 hover:bg-[#10b981]/10 transition text-left gap-2 animate-in fade-in slide-in-from-right-3 duration-250"
                         >
                           <span className="font-medium text-[11px] truncate flex-1 text-muted-foreground">
                             {journal.title || "Journal Note"}
@@ -1344,7 +1344,7 @@ export function BrainPage() {
                             <button
                               type="button"
                               onClick={() => setPeekJournal(journal)}
-                              className="text-[9px] font-bold text-[#58CC02] hover:underline px-1.5 py-0.5 rounded bg-[#58CC02]/10 cursor-pointer"
+                              className="text-[9px] font-bold text-[#10b981] hover:underline px-1.5 py-0.5 rounded bg-[#10b981]/10 cursor-pointer"
                             >
                               Peek
                             </button>
@@ -1480,7 +1480,7 @@ export function BrainPage() {
             {/* Modal Header */}
             <div className="p-4.5 border-b border-border/20 flex items-center justify-between bg-zinc-950/40">
               <div className="min-w-0">
-                <span className="text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded bg-[#58CC02]/25 text-[#58CC02]">
+                <span className="text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded bg-[#10b981]/25 text-[#10b981]">
                   Journal Note
                 </span>
                 <h3 className="text-sm font-bold mt-1.5 truncate text-foreground font-[var(--font-nunito)]">

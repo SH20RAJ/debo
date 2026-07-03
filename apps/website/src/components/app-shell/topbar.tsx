@@ -3,18 +3,13 @@
 import { Suspense } from "react";
 import { usePathname } from "next/navigation";
 import { useUser } from "@stackframe/stack";
-import { Search, Moon, Sun, Menu } from "lucide-react";
+import { Search, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
-interface TopbarProps {
-  onCommandMenuOpen: () => void;
-  onMobileMenuToggle?: () => void;
-  onSidebarToggle?: () => void;
-  sidebarCollapsed?: boolean;
-}
+import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
 
 const TITLES: Record<string, string> = {
   "/dashboard": "Home",
@@ -40,7 +35,6 @@ const TITLES: Record<string, string> = {
 
 function deriveTitle(pathname: string): string {
   if (TITLES[pathname]) return TITLES[pathname];
-  // Match deepest known prefix
   const candidates = Object.keys(TITLES)
     .filter((k) => pathname.startsWith(k + "/") || pathname === k)
     .sort((a, b) => b.length - a.length);
@@ -49,78 +43,45 @@ function deriveTitle(pathname: string): string {
 
 export function Topbar({
   onCommandMenuOpen,
-  onMobileMenuToggle,
-  onSidebarToggle,
-  sidebarCollapsed,
-}: TopbarProps) {
+}: {
+  onCommandMenuOpen: () => void;
+}) {
   const pathname = usePathname();
-  const { theme, setTheme } = useTheme();
+  const { setTheme } = useTheme();
   const title = deriveTitle(pathname);
 
   return (
-    <header className="flex items-center h-14 px-4 border-b border-border bg-card/80 backdrop-blur-sm shrink-0 gap-3">
-      {onMobileMenuToggle && (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onMobileMenuToggle}
-          className="md:hidden text-muted-foreground hover:text-foreground rounded-xl shrink-0 hover:bg-accent/60"
-          aria-label="Toggle menu"
-        >
-          <Menu className="w-5 h-5" />
-        </Button>
-      )}
-
-      {onSidebarToggle && (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onSidebarToggle}
-          className="hidden md:flex text-muted-foreground hover:text-foreground rounded-xl shrink-0 hover:bg-accent/60 h-9 w-9"
-          aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          <Menu className="w-5 h-5" />
-        </Button>
-      )}
-
-      <h1 className="text-base font-semibold text-foreground font-[var(--font-nunito)] truncate">
-        {title}
-      </h1>
+    <header className="flex h-14 items-center gap-3 border-b border-border bg-background px-4 shrink-0">
+      <SidebarTrigger className="-ml-1" />
+      <h1 className="text-base font-semibold truncate">{title}</h1>
 
       <div className="flex-1" />
 
       <button
         onClick={onCommandMenuOpen}
-        className={cn(
-          "flex items-center gap-2 h-9 px-3 rounded-xl",
-          "bg-background border-2 border-border text-muted-foreground text-sm",
-          "hover:border-primary/40 hover:bg-accent/40 transition-colors cursor-text",
-          "max-w-[280px]"
-        )}
+        className="flex h-9 w-72 items-center gap-2 rounded-md border border-input bg-muted/40 px-3 text-muted-foreground text-sm hover:bg-muted transition-colors"
         aria-label="Open command menu"
       >
-        <Search className="w-4 h-4 shrink-0" />
-        <span className="hidden md:inline truncate">Search or ask Debo...</span>
-        <kbd
-          suppressHydrationWarning
-          className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded-md border border-border bg-muted text-[11px] font-mono font-semibold text-muted-foreground"
-        >
-          {typeof navigator !== "undefined" && navigator?.platform?.includes("Mac") ? "⌘" : "Ctrl+"}K
+        <Search className="size-4 shrink-0" />
+        <span className="truncate">Search or ask Debo...</span>
+        <kbd className="ml-auto hidden sm:inline-flex h-5 items-center rounded border border-border bg-background px-1.5 font-mono text-[10px]">
+          ⌘K
         </kbd>
       </button>
 
       <Button
         variant="ghost"
         size="icon"
-        onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-        className="text-muted-foreground hover:text-foreground rounded-xl hover:bg-accent/60"
+        onClick={() =>
+          setTheme(document.documentElement.classList.contains("dark") ? "light" : "dark")
+        }
         aria-label="Toggle theme"
       >
-        <Sun className="w-4 h-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-        <Moon className="absolute w-4 h-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+        <Sun className="size-4 dark:hidden" />
+        <Moon className="size-4 hidden dark:block" />
       </Button>
 
-      <Suspense fallback={<div className="size-8 rounded-full bg-muted animate-pulse" />}>
+      <Suspense fallback={<Skeleton className="size-8 rounded-full" />}>
         <TopbarUser />
       </Suspense>
     </header>
@@ -133,11 +94,9 @@ function TopbarUser() {
   const initials = displayName.slice(0, 2).toUpperCase();
 
   return (
-    <Avatar className="w-8 h-8">
+    <Avatar className="size-8">
       {user?.profileImageUrl && <AvatarImage src={user.profileImageUrl} />}
-      <AvatarFallback className="bg-primary/15 text-primary text-xs font-semibold">
-        {initials}
-      </AvatarFallback>
+      <AvatarFallback className="text-xs font-semibold">{initials}</AvatarFallback>
     </Avatar>
   );
 }

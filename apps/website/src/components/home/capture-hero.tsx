@@ -13,9 +13,9 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Card, CardContent } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/lib/api";
-import { useSWRConfig } from "swr";
 
 const QUESTION_PREFIXES = [
   "who", "what", "when", "where", "why", "how", "which",
@@ -41,7 +41,6 @@ function classifyInput(raw: string): "ask" | "link" | "journal" {
 
 export function CaptureHero() {
   const router = useRouter();
-  const { mutate } = useSWRConfig();
   const [value, setValue] = useState("");
   const [busy, setBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -76,11 +75,6 @@ export function CaptureHero() {
         toast.success("Captured to journal");
       }
       setValue("");
-      // Optimistically trigger SWR mutations for related lists
-      mutate("/api/sources");
-      mutate("/api/decisions");
-      mutate("/api/tasks?status=inbox");
-      mutate("/api/inbox");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not save");
     } finally {
@@ -124,65 +118,44 @@ export function CaptureHero() {
   const IntentIcon = intentMeta.icon;
 
   return (
-    <section className="mb-6">
-      <input
-        ref={fileRef}
-        type="file"
-        className="hidden"
-        onChange={handleFile}
-      />
-      <div
-        className={cn(
-          "rounded-3xl border border-border/80 bg-card p-5",
-          "transition-all duration-300",
-          "shadow-[0_4px_24px_rgba(0,0,0,0.02)]",
-          "focus-within:border-primary/40 focus-within:shadow-[0_8px_30px_rgba(0,0,0,0.04)]"
-        )}
-      >
-        <textarea
+    <Card className="mb-6">
+      <CardContent className="space-y-4">
+        <input
+          ref={fileRef}
+          type="file"
+          className="hidden"
+          onChange={handleFile}
+        />
+        <Textarea
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKey}
           placeholder="Capture a thought, paste a link, or ask a question..."
           rows={2}
-          className={cn(
-            "w-full resize-none bg-transparent text-base md:text-lg",
-            "text-foreground placeholder:text-muted-foreground/60",
-            "outline-none focus:outline-none border-0 p-0",
-            "leading-relaxed"
-          )}
+          className="resize-none border-0 bg-transparent text-base md:text-lg leading-relaxed shadow-none focus-visible:ring-0 p-0"
         />
-
-        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border/40">
+        <div className="flex items-center gap-2 border-t pt-3">
           <Button
             type="button"
             variant="ghost"
             size="sm"
-            className="rounded-xl gap-1.5 text-muted-foreground hover:text-foreground"
             onClick={() => router.push("/dashboard/voice")}
           >
-            <Mic className="size-4" />
+            <Mic />
             <span className="hidden sm:inline">Voice</span>
           </Button>
           <Button
             type="button"
             variant="ghost"
             size="sm"
-            className="rounded-xl gap-1.5 text-muted-foreground hover:text-foreground"
             onClick={() => fileRef.current?.click()}
           >
-            <Paperclip className="size-4" />
+            <Paperclip />
             <span className="hidden sm:inline">Attach</span>
           </Button>
-
           <div className="ml-auto flex items-center gap-2">
             {value.trim() && (
-              <span
-                className={cn(
-                  "hidden md:inline-flex items-center gap-1.5 text-xs font-semibold",
-                  "text-primary"
-                )}
-              >
+              <span className="hidden md:inline-flex items-center gap-1.5 text-xs font-semibold text-primary">
                 <IntentIcon className="size-3.5" />
                 {intentMeta.label}
               </span>
@@ -192,25 +165,17 @@ export function CaptureHero() {
               size="sm"
               onClick={submit}
               disabled={!value.trim() || busy}
-              className={cn(
-                "rounded-full gap-1.5 h-9 px-4 font-bold transition-all duration-200",
-                "bg-primary text-primary-foreground",
-                "shadow-[0_4px_12px_rgba(224,64,6,0.15)] hover:brightness-105 hover:shadow-[0_6px_16px_rgba(224,64,6,0.25)]",
-                "active:scale-[0.98] active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed"
-              )}
             >
-              {busy ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
+              {busy ? <Loader2 className="animate-spin" /> : (
                 <>
                   {intentMeta.label}
-                  <ArrowRight className="size-4" />
+                  <ArrowRight />
                 </>
               )}
             </Button>
           </div>
         </div>
-      </div>
-    </section>
+      </CardContent>
+    </Card>
   );
 }

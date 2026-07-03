@@ -119,8 +119,8 @@ export function ChatArea({ messages, isResponding, onPromptClick }: ChatAreaProp
                   transition={{ duration: 0.2 }}
                 >
                   <Card className={cn(
-                    "rounded-2xl rounded-tr-sm border border-emerald-500/15",
-                    "bg-[#131911]/85 text-foreground px-4.5 py-3 shadow-md select-text"
+                    "rounded-2xl rounded-tr-sm border border-primary/20",
+                    "bg-primary/10 text-foreground px-4.5 py-3 shadow-md select-text"
                   )}>
                     <p className="text-sm font-medium leading-relaxed">{msg.content}</p>
                   </Card>

@@ -248,15 +248,15 @@ export function TwinPage() {
   }, [sources]);
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-gradient-to-b from-[#090d08] via-[#0b100a] to-[#080b07] relative overflow-hidden select-none">
+    <div className="flex-1 flex flex-col h-full bg-background relative overflow-hidden select-none">
       {/* Visual background lights */}
-      <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#58CC02]/5 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-10 left-10 w-[300px] h-[300px] bg-[#58CC02]/[0.03] blur-[100px] pointer-events-none" />
+      <div className="absolute top-0 right-1/4 w-96 h-96 bg-primary/5 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-10 left-10 w-[300px] h-[300px] bg-primary/[0.03] blur-[100px] pointer-events-none" />
 
       {/* Main Header */}
-      <div className="px-6 py-4 flex items-center justify-between border-b border-border/20 z-10 shrink-0 bg-zinc-950/25 backdrop-blur-md">
+      <div className="px-6 py-4 flex items-center justify-between border-b border-border/20 z-10 shrink-0 bg-card/25 backdrop-blur-md">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2 font-[var(--font-nunito)]">
+          <h1 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2 ">
             <UserRound className="w-5 h-5 text-primary" />
             Digital Twin
           </h1>
@@ -383,13 +383,13 @@ export function TwinPage() {
         </div>
 
         {/* Right Panel: Chat Simulator */}
-        <div className="flex-1 flex flex-col min-w-0 bg-zinc-950/5 relative">
+        <div className="flex-1 flex flex-col min-w-0 bg-muted/10 relative">
           
           {/* Active Citations Sub-bar */}
           {activeSources.length > 0 && (
-            <div className="px-6 py-2 bg-[#58CC02]/5 border-b border-border/20 text-[10px] text-foreground flex items-center justify-between z-10 shrink-0">
+            <div className="px-6 py-2 bg-primary/5 border-b border-border/20 text-[10px] text-foreground flex items-center justify-between z-10 shrink-0">
               <span className="font-semibold flex items-center gap-1.5">
-                <Sparkles className="w-3 h-3 text-[#58CC02]" />
+                <Sparkles className="w-3 h-3 text-primary" />
                 Synapse citations loaded ({activeSources.length})
               </span>
               <div className="flex gap-1.5 overflow-x-auto max-w-[70%]">
@@ -411,8 +411,8 @@ export function TwinPage() {
                   className={cn(
                     "flex flex-col space-y-1.5 p-4 rounded-3xl max-w-[85%] text-xs leading-relaxed border select-text",
                     m.role === "user"
-                      ? "bg-zinc-800/40 border-border/10 text-foreground ml-auto rounded-tr-none"
-                      : "bg-[#121610]/40 border-[#1F261B] text-foreground mr-auto rounded-tl-none"
+                      ? "bg-muted/50 border-border text-foreground ml-auto rounded-tr-none"
+                      : "bg-card border-border text-card-foreground text-foreground mr-auto rounded-tl-none"
                   )}
                 >
                   <span className="text-[9px] uppercase font-bold text-muted-foreground/60 tracking-wider">
@@ -422,7 +422,7 @@ export function TwinPage() {
                 </div>
               ))}
               {isResponding && (
-                <div className="flex items-center gap-2 text-muted-foreground text-xs p-4 bg-zinc-900/10 border border-border/5 rounded-3xl max-w-[150px]">
+                <div className="flex items-center gap-2 text-muted-foreground text-xs p-4 bg-muted/30 border-border rounded-3xl max-w-[150px]">
                   <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
                   Twin thinking...
                 </div>
@@ -432,7 +432,7 @@ export function TwinPage() {
           </ScrollArea>
 
           {/* Chat Composer Input */}
-          <div className="p-4 border-t border-border/20 z-10 shrink-0 bg-zinc-950/20 backdrop-blur-md">
+          <div className="p-4 border-t border-border/20 z-10 shrink-0 bg-card/25 backdrop-blur-md">
             <form onSubmit={handleSend} className="max-w-2xl mx-auto flex items-center gap-2.5">
               <Input
                 value={inputVal}

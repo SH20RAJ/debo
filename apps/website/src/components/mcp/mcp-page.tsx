@@ -201,12 +201,12 @@ export function McpPage() {
   );
 
   return (
-    <div className="h-full flex flex-col bg-[#090d08] text-foreground p-6 overflow-y-auto scrollbar-none">
+    <div className="h-full flex flex-col bg-background text-foreground p-6 overflow-y-auto scrollbar-none">
       {/* Title Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between pb-6 border-b border-white/5 mb-8 select-none">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between pb-6 border-b border-border mb-8 select-none">
         <div>
-          <h1 className="text-2xl font-extrabold font-[var(--font-nunito)] tracking-tight flex items-center gap-2.5">
-            <Cpu className="w-6 h-6 text-emerald-500" />
+          <h1 className="text-2xl font-extrabold  tracking-tight flex items-center gap-2.5">
+            <Cpu className="w-6 h-6 text-primary" />
             Model Context Protocol (MCP)
           </h1>
           <p className="text-sm text-muted-foreground mt-1 font-medium">
@@ -214,7 +214,7 @@ export function McpPage() {
           </p>
         </div>
         <div className="mt-4 md:mt-0 flex gap-2">
-          <Badge variant="outline" className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 font-bold px-2.5 py-1">
+          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 font-bold px-2.5 py-1">
             Status: HTTP Active
           </Badge>
         </div>
@@ -223,21 +223,21 @@ export function McpPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl">
         {/* Left Side: Onboarding overview & token */}
         <div className="lg:col-span-1 space-y-6">
-          <Card className="p-5 bg-[#131911]/35 backdrop-blur-xl border-white/5 space-y-4">
+          <Card className="p-5 bg-card text-card-foreground border-border backdrop-blur-xl border-border space-y-4">
             <div className="flex items-center gap-2.5 select-none">
-              <Sparkles className="w-4 h-4 text-emerald-500" />
-              <h2 className="text-sm font-bold text-foreground/90 font-[var(--font-nunito)]">HTTP / Remote MCP</h2>
+              <Sparkles className="w-4 h-4 text-primary" />
+              <h2 className="text-sm font-bold text-foreground/90 ">HTTP / Remote MCP</h2>
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Your Debo memory graph is served remotely over HTTP. Rather than configuring databases and code repositories locally, clients use the <code className="text-emerald-400 font-mono bg-white/5 px-1 rounded">mcp-remote</code> wrapper to bridge the connection securely.
+              Your Debo memory graph is served remotely over HTTP. Rather than configuring databases and code repositories locally, clients use the <code className="text-primary font-mono bg-white/5 px-1 rounded">mcp-remote</code> wrapper to bridge the connection securely.
             </p>
           </Card>
 
           {/* Access Token Card */}
-          <Card className="p-5 bg-[#131911]/35 backdrop-blur-xl border-white/5 space-y-4">
+          <Card className="p-5 bg-card text-card-foreground border-border backdrop-blur-xl border-border space-y-4">
             <div className="flex items-center gap-2.5 select-none">
-              <Key className="w-4 h-4 text-emerald-500" />
-              <h2 className="text-sm font-bold text-foreground/90 font-[var(--font-nunito)]">API Credentials</h2>
+              <Key className="w-4 h-4 text-primary" />
+              <h2 className="text-sm font-bold text-foreground/90 ">API Credentials</h2>
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">
               Authenticate your client requests using your secure Stack Auth Access Token.
@@ -245,7 +245,7 @@ export function McpPage() {
 
             <div className="space-y-2.5">
               {token ? (
-                <div className="flex items-center gap-2 border border-white/5 bg-[#172115]/30 rounded-xl px-3 py-2">
+                <div className="flex items-center gap-2 border border-border bg-muted/30 rounded-xl px-3 py-2">
                   <input
                     type="password"
                     readOnly
@@ -257,7 +257,7 @@ export function McpPage() {
                     className="p-1 rounded hover:bg-white/5 text-muted-foreground hover:text-foreground transition-all cursor-pointer"
                   >
                     {copiedToken ? (
-                      <Check className="w-4 h-4 text-emerald-500" />
+                      <Check className="w-4 h-4 text-primary" />
                     ) : (
                       <Copy className="w-4 h-4" />
                     )}
@@ -286,19 +286,19 @@ export function McpPage() {
         {/* Right Side: Setup Guides Tabs */}
         <div className="lg:col-span-2 space-y-6">
           {/* Endpoint display */}
-          <Card className="p-5 bg-[#131911]/35 backdrop-blur-xl border-white/5 space-y-3">
+          <Card className="p-5 bg-card text-card-foreground border-border backdrop-blur-xl border-border space-y-3">
             <div className="flex items-center gap-2.5 select-none">
-              <Globe className="w-4 h-4 text-emerald-500" />
-              <h2 className="text-sm font-bold text-foreground/90 font-[var(--font-nunito)]">Remote Endpoint URL</h2>
+              <Globe className="w-4 h-4 text-primary" />
+              <h2 className="text-sm font-bold text-foreground/90 ">Remote Endpoint URL</h2>
             </div>
-            <div className="flex items-center justify-between border border-white/5 bg-[#0a0f08] rounded-xl px-4 py-3">
-              <code className="font-mono text-xs text-emerald-400 select-all truncate">{mcpUrl}</code>
+            <div className="flex items-center justify-between border border-border bg-muted/50 rounded-xl px-4 py-3">
+              <code className="font-mono text-xs text-primary select-all truncate">{mcpUrl}</code>
               <button
                 onClick={() => handleCopy(mcpUrl, setCopiedHttpUrl)}
                 className="p-1 rounded hover:bg-white/5 text-muted-foreground hover:text-foreground transition-all cursor-pointer shrink-0 ml-4"
               >
                 {copiedHttpUrl ? (
-                  <Check className="w-4 h-4 text-emerald-500" />
+                  <Check className="w-4 h-4 text-primary" />
                 ) : (
                   <Copy className="w-4 h-4" />
                 )}
@@ -307,9 +307,9 @@ export function McpPage() {
           </Card>
 
           {/* Client Setup Guide */}
-          <Card className="bg-[#131911]/35 backdrop-blur-xl border-white/5 overflow-hidden">
+          <Card className="bg-card text-card-foreground border-border backdrop-blur-xl border-border overflow-hidden">
             <Tabs defaultValue="claude" className="w-full">
-              <TabsList className="w-full flex border-b border-white/5 bg-[#172115]/30 p-0 rounded-none h-12">
+              <TabsList className="w-full flex border-b border-border bg-muted/30 p-0 rounded-none h-12">
                 <TabsTrigger
                   value="claude"
                   className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-emerald-500 data-[state=active]:bg-transparent data-[state=active]:text-foreground text-xs font-bold text-muted-foreground/80 h-full cursor-pointer transition-all select-none"
@@ -333,22 +333,22 @@ export function McpPage() {
               <div className="p-6">
                 {/* 1. CLAUDE DESKTOP GUIDE */}
                 <TabsContent value="claude" className="space-y-4 focus-visible:outline-none focus-visible:ring-0 m-0">
-                  <h3 className="text-sm font-bold text-foreground/90 font-[var(--font-nunito)]">Claude Desktop Configuration</h3>
+                  <h3 className="text-sm font-bold text-foreground/90 ">Claude Desktop Configuration</h3>
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     Append the following block to your local Claude Desktop config file to establish the bridge connection:
                   </p>
 
-                  <div className="relative border border-white/5 bg-[#0a0f08] rounded-xl overflow-hidden group">
-                    <div className="flex items-center justify-between px-4 py-2 border-b border-white/5 bg-[#090d08] text-[10px] text-muted-foreground select-none">
-                      <span className="font-mono text-[9px] uppercase tracking-wider text-emerald-500/60 font-semibold">claude_desktop_config.json</span>
+                  <div className="relative border border-border bg-muted/50 rounded-xl overflow-hidden group">
+                    <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-background text-[10px] text-muted-foreground select-none">
+                      <span className="font-mono text-[9px] uppercase tracking-wider text-primary/60 font-semibold">claude_desktop_config.json</span>
                       <button
                         onClick={() => handleCopy(claudeConfig, setCopiedClaude)}
                         className="p-1 rounded hover:bg-white/5 text-muted-foreground hover:text-foreground transition-all flex items-center gap-1 cursor-pointer"
                       >
                         {copiedClaude ? (
                           <>
-                            <Check className="w-3.5 h-3.5 text-emerald-500" />
-                            <span className="text-emerald-500">Copied!</span>
+                            <Check className="w-3.5 h-3.5 text-primary" />
+                            <span className="text-primary">Copied!</span>
                           </>
                         ) : (
                           <>
@@ -363,11 +363,11 @@ export function McpPage() {
                     </pre>
                   </div>
 
-                  <div className="flex items-start gap-2 text-xs text-muted-foreground bg-[#172115]/10 border border-white/5 rounded-xl p-3.5 select-none">
-                    <Terminal className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                  <div className="flex items-start gap-2 text-xs text-muted-foreground bg-muted/10 border border-border rounded-xl p-3.5 select-none">
+                    <Terminal className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                     <div>
                       <p className="font-semibold text-foreground/95">Location of configuration file:</p>
-                      <code className="block mt-1 font-mono text-[10px] text-emerald-400 select-all">
+                      <code className="block mt-1 font-mono text-[10px] text-primary select-all">
                         ~/Library/Application Support/Claude/claude_desktop_config.json
                       </code>
                     </div>
@@ -376,15 +376,15 @@ export function McpPage() {
 
                 {/* 2. CURSOR EDITOR GUIDE */}
                 <TabsContent value="cursor" className="space-y-4 focus-visible:outline-none focus-visible:ring-0 m-0">
-                  <h3 className="text-sm font-bold text-foreground/90 font-[var(--font-nunito)]">Cursor Model Context Protocol Integration</h3>
+                  <h3 className="text-sm font-bold text-foreground/90 ">Cursor Model Context Protocol Integration</h3>
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     Add the remote bridge command directly to Cursor settings to enable memory search in Cursor Composer:
                   </p>
 
-                  <div className="border border-white/5 bg-[#172115]/10 rounded-xl p-4 space-y-4 text-xs text-muted-foreground">
+                  <div className="border border-border bg-muted/10 rounded-xl p-4 space-y-4 text-xs text-muted-foreground">
                     <div className="space-y-1">
                       <p className="font-semibold text-foreground/95 flex items-center gap-2">
-                        <span className="w-4 h-4 rounded-full bg-emerald-500/10 text-emerald-400 font-bold flex items-center justify-center shrink-0 text-[10px]">1</span>
+                        <span className="w-4 h-4 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center shrink-0 text-[10px]">1</span>
                         Navigate to Cursor Settings
                       </p>
                       <p className="pl-6 text-[11px] leading-relaxed">Open settings via Cursor Settings &rarr; Models &rarr; MCP.</p>
@@ -392,22 +392,22 @@ export function McpPage() {
 
                     <div className="space-y-1">
                       <p className="font-semibold text-foreground/95 flex items-center gap-2">
-                        <span className="w-4 h-4 rounded-full bg-emerald-500/10 text-emerald-400 font-bold flex items-center justify-center shrink-0 text-[10px]">2</span>
+                        <span className="w-4 h-4 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center shrink-0 text-[10px]">2</span>
                         Add New MCP Server
                       </p>
                       <div className="pl-6 space-y-2 mt-1">
                         <p className="text-[11px] leading-relaxed">Click **+ Add New MCP Server** and set:</p>
-                        <div className="border border-white/5 bg-[#0a0f08] rounded-lg p-3.5 font-mono text-[10px] space-y-2 select-all">
-                          <p><span className="text-emerald-500/70">Name:</span> debo</p>
-                          <p><span className="text-emerald-500/70">Type:</span> command</p>
-                          <div className="flex items-start justify-between bg-black/30 p-2 rounded border border-white/5">
-                            <span className="text-emerald-400 break-all select-all">{cursorCommand}</span>
+                        <div className="border border-border bg-muted/50 rounded-lg p-3.5 font-mono text-[10px] space-y-2 select-all">
+                          <p><span className="text-primary/70">Name:</span> debo</p>
+                          <p><span className="text-primary/70">Type:</span> command</p>
+                          <div className="flex items-start justify-between bg-black/30 p-2 rounded border border-border">
+                            <span className="text-primary break-all select-all">{cursorCommand}</span>
                             <button
                               onClick={() => handleCopy(cursorCommand, setCopiedCursor)}
                               className="p-1 rounded hover:bg-white/5 text-muted-foreground hover:text-foreground transition-all cursor-pointer shrink-0 ml-3"
                             >
                               {copiedCursor ? (
-                                <Check className="w-3.5 h-3.5 text-emerald-500" />
+                                <Check className="w-3.5 h-3.5 text-primary" />
                               ) : (
                                 <Copy className="w-3.5 h-3.5" />
                               )}
@@ -421,22 +421,22 @@ export function McpPage() {
 
                 {/* 3. CLINE EXTENSION GUIDE */}
                 <TabsContent value="cline" className="space-y-4 focus-visible:outline-none focus-visible:ring-0 m-0">
-                  <h3 className="text-sm font-bold text-foreground/90 font-[var(--font-nunito)]">Cline VS Code Extension</h3>
+                  <h3 className="text-sm font-bold text-foreground/90 ">Cline VS Code Extension</h3>
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     Insert the following configuration into your Cline extension settings file:
                   </p>
 
-                  <div className="relative border border-white/5 bg-[#0a0f08] rounded-xl overflow-hidden group">
-                    <div className="flex items-center justify-between px-4 py-2 border-b border-white/5 bg-[#090d08] text-[10px] text-muted-foreground select-none">
-                      <span className="font-mono text-[9px] uppercase tracking-wider text-emerald-500/60 font-semibold">cline_mcp_settings.json</span>
+                  <div className="relative border border-border bg-muted/50 rounded-xl overflow-hidden group">
+                    <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-background text-[10px] text-muted-foreground select-none">
+                      <span className="font-mono text-[9px] uppercase tracking-wider text-primary/60 font-semibold">cline_mcp_settings.json</span>
                       <button
                         onClick={() => handleCopy(clineConfig, setCopiedCline)}
                         className="p-1 rounded hover:bg-white/5 text-muted-foreground hover:text-foreground transition-all flex items-center gap-1 cursor-pointer"
                       >
                         {copiedCline ? (
                           <>
-                            <Check className="w-3.5 h-3.5 text-emerald-500" />
-                            <span className="text-emerald-500">Copied!</span>
+                            <Check className="w-3.5 h-3.5 text-primary" />
+                            <span className="text-primary">Copied!</span>
                           </>
                         ) : (
                           <>
@@ -458,10 +458,10 @@ export function McpPage() {
       </div>
 
       {/* 2. Custom Remote MCP Servers Section */}
-      <div className="border-t border-white/5 pt-10 mt-10 max-w-6xl">
+      <div className="border-t border-border pt-10 mt-10 max-w-6xl">
         <div className="mb-6 select-none">
           <h2 className="text-xl font-bold font-[var(--font-heading)] tracking-tight flex items-center gap-2.5">
-            <Server className="w-5 h-5 text-emerald-500" />
+            <Server className="w-5 h-5 text-primary" />
             Connect Custom MCP Servers
           </h2>
           <p className="text-xs text-muted-foreground mt-1 font-medium">
@@ -472,7 +472,7 @@ export function McpPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Add Server Form */}
           <div className="lg:col-span-1">
-            <Card className="p-5 bg-[#131911]/35 backdrop-blur-xl border-white/5 space-y-4">
+            <Card className="p-5 bg-card text-card-foreground border-border backdrop-blur-xl border-border space-y-4">
               <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground/60 select-none">
                 Register New Server
               </h3>
@@ -485,7 +485,7 @@ export function McpPage() {
                     placeholder="e.g. My Custom Tools"
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
-                    className="h-9.5 text-xs rounded-xl border-white/5 bg-background placeholder:text-muted-foreground/45 focus-visible:ring-emerald-500/30"
+                    className="h-9.5 text-xs rounded-xl border-border bg-background placeholder:text-muted-foreground/45 focus-visible:ring-emerald-500/30"
                   />
                 </div>
                 <div className="space-y-1">
@@ -496,7 +496,7 @@ export function McpPage() {
                     placeholder="https://api.mycustommcp.com/mcp"
                     value={newUrl}
                     onChange={(e) => setNewUrl(e.target.value)}
-                    className="h-9.5 text-xs rounded-xl border-white/5 bg-background placeholder:text-muted-foreground/45 focus-visible:ring-emerald-500/30"
+                    className="h-9.5 text-xs rounded-xl border-border bg-background placeholder:text-muted-foreground/45 focus-visible:ring-emerald-500/30"
                   />
                 </div>
                 <div className="space-y-1">
@@ -507,7 +507,7 @@ export function McpPage() {
                     placeholder='{"Authorization": "Bearer my-secret-token"}'
                     value={newHeaders}
                     onChange={(e) => setNewHeaders(e.target.value)}
-                    className="min-h-[80px] text-xs rounded-xl border-white/5 bg-background placeholder:text-muted-foreground/45 font-mono resize-none p-3 focus-visible:ring-emerald-500/30"
+                    className="min-h-[80px] text-xs rounded-xl border-border bg-background placeholder:text-muted-foreground/45 font-mono resize-none p-3 focus-visible:ring-emerald-500/30"
                   />
                 </div>
                 <Button
@@ -524,7 +524,7 @@ export function McpPage() {
 
           {/* Connected Servers List */}
           <div className="lg:col-span-2">
-            <Card className="p-5 bg-[#131911]/35 backdrop-blur-xl border-white/5 h-full flex flex-col justify-between min-h-[300px]">
+            <Card className="p-5 bg-card text-card-foreground border-border backdrop-blur-xl border-border h-full flex flex-col justify-between min-h-[300px]">
               <div className="space-y-4">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground/60 select-none">
                   Active Connections
@@ -532,11 +532,11 @@ export function McpPage() {
 
                 {loadingCustom ? (
                   <div className="flex items-center justify-center py-12 text-xs text-muted-foreground/75 font-medium select-none">
-                    <Loader2 className="w-4 h-4 animate-spin mr-1.5 text-emerald-500" />
+                    <Loader2 className="w-4 h-4 animate-spin mr-1.5 text-primary" />
                     Loading custom servers...
                   </div>
                 ) : customServers.length === 0 ? (
-                  <div className="text-center py-12 border border-dashed border-white/5 rounded-2xl select-none">
+                  <div className="text-center py-12 border border-dashed border-border rounded-2xl select-none">
                     <Server className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2.5" />
                     <p className="text-xs font-bold text-muted-foreground/80">No Custom Servers Connected</p>
                     <p className="text-[10px] text-muted-foreground/50 mt-1 max-w-[280px] mx-auto leading-normal">
@@ -548,11 +548,11 @@ export function McpPage() {
                     {customServers.map((server) => (
                       <div
                         key={server.id}
-                        className="flex items-start justify-between border border-white/5 bg-[#0a0f08] p-4 rounded-xl group hover:border-emerald-500/20 transition-all"
+                        className="flex items-start justify-between border border-border bg-muted/50 p-4 rounded-xl group hover:border-primary/40 transition-all"
                       >
                         <div className="flex items-start gap-3 min-w-0">
-                          <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0 mt-0.5">
-                            <Link2 className="w-4 h-4 text-emerald-500" />
+                          <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 mt-0.5">
+                            <Link2 className="w-4 h-4 text-primary" />
                           </div>
                           <div className="min-w-0">
                             <h4 className="text-xs font-bold text-foreground/90 truncate">
@@ -562,8 +562,8 @@ export function McpPage() {
                               {server.url}
                             </code>
                             {server.headersJson && (
-                              <Badge variant="outline" className="mt-1.5 text-[9px] px-1.5 py-0 bg-white/5 border-white/5 text-muted-foreground select-none font-semibold">
-                                <ShieldCheck className="w-2.5 h-2.5 mr-1 text-emerald-500/80" />
+                              <Badge variant="outline" className="mt-1.5 text-[9px] px-1.5 py-0 bg-white/5 border-border text-muted-foreground select-none font-semibold">
+                                <ShieldCheck className="w-2.5 h-2.5 mr-1 text-primary/80" />
                                 Custom Headers Active
                               </Badge>
                             )}
@@ -571,7 +571,7 @@ export function McpPage() {
                         </div>
 
                         <div className="flex items-center gap-2 shrink-0">
-                          <Badge className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 text-[9px] font-bold select-none px-2 py-0.5">
+                          <Badge className="bg-emerald-500/15 text-primary border border-primary/20 text-[9px] font-bold select-none px-2 py-0.5">
                             <Activity className="w-2.5 h-2.5 mr-1 animate-pulse" />
                             Connected
                           </Badge>

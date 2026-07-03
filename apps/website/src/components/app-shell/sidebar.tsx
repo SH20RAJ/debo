@@ -1,55 +1,66 @@
 "use client";
 
-import { Suspense, useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useUser } from "@stackframe/stack";
 import {
   LayoutDashboard,
   MessageSquare,
-  BookOpen,
-  Library,
-  CheckSquare,
-  Users,
-  FolderKanban,
-  Plug,
-  Inbox,
-  Mic,
-  Video,
-  Shield,
-  Settings,
-  ChevronsLeft,
-  ChevronsRight,
-  LogOut,
-  ChevronDown,
-  ChevronRight,
-  HelpCircle,
-  Clock,
-  FileText,
-  Compass,
-  Radio,
-  Cpu,
-  Phone,
-  LayoutGrid,
   Brain,
   UserRound,
+  BookOpen,
+  Mic,
+  Phone,
+  Video,
+  Inbox,
+  Plug,
+  Shield,
+  FileText,
+  Clock,
+  Library,
+  CheckSquare,
+  FolderKanban,
+  Compass,
+  Users,
+  Radio,
+  Cpu,
+  LayoutGrid,
+  Settings,
+  LogOut,
+  ChevronsLeft,
+  ChevronsRight,
+  Sparkles,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { useSidebarPrefs, ALL_NAV_ITEMS } from "@/lib/sidebar-prefs";
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarGroupContent,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarMenuBadge,
+  SidebarSeparator,
+  SidebarTrigger,
+  useSidebar,
+} from "@/components/ui/sidebar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useSidebarPrefs, ALL_NAV_ITEMS, type SidebarItemDef } from "@/lib/sidebar-prefs";
+import type { LucideIcon } from "lucide-react";
 
-// ── Icon Mapping ────────────────────────────────────────────────────────────
-
-const ITEM_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+const ITEM_ICONS: Record<string, LucideIcon> = {
   home: LayoutDashboard,
   ask: MessageSquare,
   "second-brain": Brain,
@@ -75,308 +86,154 @@ const ITEM_ICONS: Record<string, React.ComponentType<{ className?: string }>> = 
   apps: LayoutGrid,
 };
 
-// ── Nav item component ──────────────────────────────────────────────────────
-
-function SidebarItem({
-  item,
-  active,
-  collapsed,
-}: {
-  item: { label: string; href: string; icon: React.ComponentType<{ className?: string }>; badge?: string };
-  active: boolean;
-  collapsed: boolean;
-}) {
-  const Icon = item.icon;
-
-  const content = (
-    <Link
-      href={item.href}
-      className={cn(
-        "flex items-center gap-3 px-3 py-1.5 rounded-xl text-sm font-medium transition-colors group",
-        collapsed && "justify-center px-2",
-        active
-          ? "bg-primary/10 text-primary font-semibold"
-          : "text-muted-foreground hover:text-foreground hover:bg-accent/60"
-      )}
-    >
-      <Icon className={cn("w-[18px] h-[18px] shrink-0", active && "text-primary")} />
-      {!collapsed && (
-        <div className="flex-1 flex items-center justify-between min-w-0">
-          <span className="truncate font-[var(--font-nunito)]">{item.label}</span>
-          {item.badge && (
-            <span className="ml-2 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-primary/10 text-primary rounded-md">
-              {item.badge}
-            </span>
-          )}
-        </div>
-      )}
-    </Link>
-  );
-
-  const isBeta = item.badge === "Beta";
-  const tooltipContent = isBeta ? (
-    <div className="space-y-1">
-      <div className="font-bold">{item.label}</div>
-      <div className="text-[10px] text-muted-foreground">Beta access will be provided soon</div>
-    </div>
-  ) : item.label;
-
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>{content}</TooltipTrigger>
-      <TooltipContent side="right" sideOffset={8}>
-        {tooltipContent}
-      </TooltipContent>
-    </Tooltip>
-  );
+interface NavItem extends SidebarItemDef {
+  icon: LucideIcon;
 }
 
-// ── Sidebar ────────────────────────────────────────────────────────────────
-
-interface SidebarProps {
-  collapsed: boolean;
-  onToggle: () => void;
+function resolveItems(itemIds: string[]): NavItem[] {
+  return itemIds
+    .map((id) => {
+      const def = ALL_NAV_ITEMS.find((i) => i.id === id);
+      if (!def) return null;
+      return { ...def, icon: ITEM_ICONS[id] ?? Sparkles };
+    })
+    .filter((i): i is NavItem => i !== null);
 }
 
-export function Sidebar({ collapsed, onToggle }: SidebarProps) {
+export function AppSidebar() {
   const pathname = usePathname();
   const { prefs, toggleSection } = useSidebarPrefs();
 
-  const isActive = (href: string) => {
-    if (href === "/dashboard") return pathname === "/dashboard";
-    return pathname.startsWith(href);
-  };
+  const isActive = (href: string) =>
+    href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(href);
 
   return (
-    <TooltipProvider>
-      <aside
-        className={cn(
-          "flex flex-col h-full bg-card border-r border-border transition-all duration-200 ease-in-out overflow-hidden",
-          collapsed ? "w-[68px]" : "w-[220px]"
-        )}
-      >
-        {/* Logo */}
-        <div className="flex items-center justify-between h-14 px-4 border-b border-border shrink-0">
-          {collapsed ? (
-            <Link href="/dashboard" className="text-lg font-bold text-primary mx-auto">
-              d
-            </Link>
-          ) : (
-            <Link href="/dashboard" className="text-lg font-bold text-primary tracking-tight">
-              debo
-            </Link>
-          )}
-        </div>
+    <Sidebar>
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              size="lg"
+              className="data-[active=true]:bg-transparent"
+            >
+              <Link href="/dashboard">
+                <span className="text-base font-bold tracking-tight">debo</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarHeader>
 
-        {/* Navigation */}
-        <ScrollArea className="flex-1 min-h-0">
-          <nav className="py-3 px-2 space-y-4">
-            {prefs.sections.map((section, idx) => {
-              const sectionItems = section.itemIds
-                .map((id) => {
-                  const def = ALL_NAV_ITEMS.find((item) => item.id === id);
-                  if (!def) return null;
-                  const icon = ITEM_ICONS[id] || HelpCircle;
-                  return { ...def, icon };
-                })
-                .filter((item): item is NonNullable<typeof item> => item !== null);
+      <SidebarContent>
+        {prefs.sections.map((section) => {
+          const items = resolveItems(section.itemIds);
+          if (items.length === 0) return null;
 
-              if (sectionItems.length === 0) return null;
-
-              return (
-                <div key={section.id} className="space-y-1">
-                  {!collapsed ? (
-                    <button
-                      onClick={() => toggleSection(section.id)}
-                      className="flex items-center justify-between w-full px-3 py-1 text-[9px] uppercase font-bold tracking-wider text-muted-foreground/60 hover:text-foreground transition-colors"
-                    >
-                      <span>{section.label}</span>
-                      {section.collapsed ? (
-                        <ChevronRight className="w-3 h-3 text-muted-foreground/40" />
-                      ) : (
-                        <ChevronDown className="w-3 h-3 text-muted-foreground/40" />
-                      )}
-                    </button>
-                  ) : idx > 0 ? (
-                    <Separator className="my-2 bg-border/40" />
-                  ) : null}
-
-                  {(!section.collapsed || collapsed) && (
-                    <div className="space-y-0.5 animate-in fade-in slide-in-from-top-1 duration-150">
-                      {sectionItems.map((item) => (
-                        <SidebarItem
-                          key={item.id}
-                          item={item}
-                          active={isActive(item.href)}
-                          collapsed={collapsed}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </nav>
-        </ScrollArea>
-
-        {/* Bottom: Settings + User + Logout */}
-        <div className="border-t border-border py-2 px-2 space-y-1 shrink-0 bg-card">
-          <SidebarItem
-            item={{ label: "Settings", href: "/dashboard/settings", icon: Settings }}
-            active={isActive("/dashboard/settings")}
-            collapsed={collapsed}
-          />
-
-          <Separator className="my-2" />
-
-          <Suspense fallback={<SidebarUserFallback collapsed={collapsed} />}>
-            <SidebarUser collapsed={collapsed} />
-          </Suspense>
-
-          {/* Collapse toggle */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size={collapsed ? "icon" : "default"}
-                onClick={onToggle}
-                className={cn(
-                  "w-full text-muted-foreground hover:text-foreground",
-                  !collapsed && "justify-start gap-3 px-3"
-                )}
-                aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          return (
+            <SidebarGroup key={section.id}>
+              <SidebarGroupLabel
+                onClick={() => toggleSection(section.id)}
+                className="cursor-pointer"
               >
-                {collapsed ? (
-                  <ChevronsRight className="w-4 h-4" />
-                ) : (
-                  <>
-                    <ChevronsLeft className="w-4 h-4" />
-                    <span className="text-xs">Collapse</span>
-                  </>
-                )}
-              </Button>
-            </TooltipTrigger>
-            {collapsed && (
-              <TooltipContent side="right" sideOffset={8}>
-                Expand sidebar
-              </TooltipContent>
-            )}
-          </Tooltip>
-        </div>
-      </aside>
-    </TooltipProvider>
+                {section.label}
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {items.map((item) => (
+                    <SidebarMenuItem key={item.id}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={isActive(item.href)}
+                        tooltip={item.label}
+                      >
+                        <Link href={item.href}>
+                          <item.icon />
+                          <span>{item.label}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                      {item.badge && (
+                        <SidebarMenuBadge>{item.badge}</SidebarMenuBadge>
+                      )}
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          );
+        })}
+      </SidebarContent>
+
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              isActive={pathname.startsWith("/dashboard/settings")}
+              tooltip="Settings"
+            >
+              <Link href="/dashboard/settings">
+                <Settings />
+                <span>Settings</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+        <SidebarSeparator />
+        <SidebarUser />
+      </SidebarFooter>
+    </Sidebar>
   );
 }
 
-function SidebarUser({ collapsed }: { collapsed: boolean }) {
-  const router = useRouter();
+function SidebarUser() {
+  const router = usePathname();
+  const sidebar = useSidebar();
   const user = useUser();
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted || !user) {
-    return <SidebarUserFallback collapsed={collapsed} />;
+  if (!user) {
+    return (
+      <div className="flex items-center gap-3 px-2 py-1.5">
+        <Skeleton className="size-7 rounded-full" />
+        <Skeleton className="h-3 w-20" />
+      </div>
+    );
   }
 
-  const handleLogout = async () => {
-    try {
-      await user.signOut();
-      router.push("/");
-    } catch {
-      // Force redirect even if signOut fails
-      router.push("/handler/signout");
-    }
-  };
-
-  // User display info
   const displayName = user.displayName || user.primaryEmail?.split("@")[0] || "User";
   const initials = displayName.slice(0, 2).toUpperCase();
 
   return (
-    <>
-      {/* User info */}
-      <div
-        className={cn(
-          "flex items-center gap-3 px-3 py-2 rounded-lg",
-          collapsed && "justify-center px-0"
-        )}
-      >
-        <Avatar className="w-7 h-7">
-          {user?.profileImageUrl && <AvatarImage src={user.profileImageUrl} />}
-          <AvatarFallback className="bg-primary/15 text-primary text-xs font-semibold">
-            {initials}
-          </AvatarFallback>
-        </Avatar>
-        {!collapsed && (
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-foreground truncate">{displayName}</p>
-            <p className="text-[11px] text-muted-foreground truncate">
-              {user?.primaryEmail || ""}
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* Logout button */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size={collapsed ? "icon" : "default"}
-            onClick={handleLogout}
-            className={cn(
-              "w-full text-muted-foreground hover:text-destructive hover:bg-destructive/10",
-              !collapsed && "justify-start gap-3 px-3"
-            )}
-          >
-            <LogOut className="w-4 h-4" />
-            {!collapsed && <span className="text-xs">Sign out</span>}
-          </Button>
-        </TooltipTrigger>
-        {collapsed && (
-          <TooltipContent side="right" sideOffset={8}>
-            Sign out
-          </TooltipContent>
-        )}
-      </Tooltip>
-    </>
-  );
-}
-
-function SidebarUserFallback({ collapsed }: { collapsed: boolean }) {
-  return (
-    <>
-      <div
-        className={cn(
-          "flex items-center gap-3 px-3 py-2 rounded-lg",
-          collapsed && "justify-center px-0"
-        )}
-        aria-hidden="true"
-      >
-        <div className="w-7 h-7 rounded-full bg-muted animate-pulse" />
-        {!collapsed && (
-          <div className="flex-1 min-w-0 space-y-1.5">
-            <div className="h-3 w-20 rounded bg-muted animate-pulse" />
-            <div className="h-2.5 w-28 rounded bg-muted animate-pulse" />
-          </div>
-        )}
-      </div>
-
-      <Button
-        variant="ghost"
-        size={collapsed ? "icon" : "default"}
-        disabled
-        className={cn(
-          "w-full text-muted-foreground",
-          !collapsed && "justify-start gap-3 px-3"
-        )}
-      >
-        <LogOut className="w-4 h-4" />
-        {!collapsed && <span className="text-xs">Sign out</span>}
-      </Button>
-    </>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className="flex items-center gap-3 px-2 py-1.5 rounded-md hover:bg-sidebar-accent group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
+          <Avatar className="size-7">
+            {user.profileImageUrl && <AvatarImage src={user.profileImageUrl} />}
+            <AvatarFallback className="text-xs font-semibold">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <span className="text-sm font-medium truncate group-data-[collapsible=icon]:hidden">
+            {displayName}
+          </span>
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent side="right" align="end" className="w-56">
+        <DropdownMenuLabel>{displayName}</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={async () => {
+            try {
+              await user.signOut();
+            } catch {
+              window.location.href = "/handler/signout";
+            }
+          }}
+        >
+          <LogOut />
+          Sign out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

@@ -7,7 +7,7 @@ import useSWR from "swr";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/lib/api";
 
 interface OpenLoop {
@@ -17,9 +17,7 @@ interface OpenLoop {
 
 export function OpenLoops() {
   const router = useRouter();
-
-  // Fetch inbox tasks with SWR
-  const { data: rawTasks, isLoading, error, mutate } = useSWR(
+  const { data: rawTasks, isLoading, mutate } = useSWR(
     "/api/tasks?status=inbox",
     () => api.tasks.list({ status: "inbox" })
   );
@@ -31,17 +29,15 @@ export function OpenLoops() {
   }));
 
   const handleDone = async (id: string) => {
-    // Optimistic cache update
-    const nextRawTasks = tasksArr.filter((t: any) => String(t.id) !== id);
-    mutate(nextRawTasks, false);
-
+    const next = tasksArr.filter((t: any) => String(t.id) !== id);
+    mutate(next, false);
     try {
       await api.tasks.approve(id);
       toast.success("Marked as done");
-      mutate(); // Trigger validation from server
+      mutate();
     } catch {
       toast.error("Could not update task");
-      mutate(); // Rollback
+      mutate();
     }
   };
 
@@ -50,45 +46,28 @@ export function OpenLoops() {
   };
 
   return (
-    <Card className="rounded-[1.75rem] border border-border/80 bg-card p-0 h-full shadow-[0_4px_24px_rgba(0,0,0,0.02)]">
-      <CardContent className="p-5">
-        <div className="flex items-center justify-between mb-4">
+    <Card className="h-full">
+      <CardContent className="space-y-4 p-5">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h2 className="text-sm font-bold text-foreground uppercase tracking-wider font-[var(--font-nunito)]">
-              Open loops
-            </h2>
-            {!isLoading && loops.length > 0 && (
-              <Badge
-                variant="outline"
-                className="rounded-full text-[10px] px-2 py-0 border-primary/30 text-primary font-bold bg-primary/5 h-5 flex items-center justify-center"
-              >
-                {loops.length}
-              </Badge>
-            )}
+            <h2 className="text-sm font-semibold uppercase tracking-wider">Open loops</h2>
+            {!isLoading && loops.length > 0 && <Badge variant="secondary">{loops.length}</Badge>}
           </div>
-          <Button
-            variant="ghost"
-            size="xs"
-            onClick={() => router.push("/dashboard/inbox")}
-            className="text-muted-foreground hover:text-primary rounded-lg text-xs"
-          >
+          <Button variant="ghost" size="sm" onClick={() => router.push("/dashboard/inbox")}>
             View all
           </Button>
         </div>
 
         {isLoading ? (
-          <div className="flex items-center gap-2 text-muted-foreground text-xs py-8 justify-center">
-            <Loader2 className="size-4 animate-spin text-primary" />
-            Loading loops...
+          <div className="space-y-2 py-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-8 w-full rounded-md" />
+            ))}
           </div>
-        ) : error ? (
-          <p className="text-xs text-muted-foreground py-8 text-center">
-            Couldn&apos;t load tasks.
-          </p>
         ) : loops.length === 0 ? (
-          <div className="flex flex-col items-center text-center py-8 gap-3">
-            <div className="size-10 rounded-2xl bg-primary/10 flex items-center justify-center">
-              <Sparkles className="size-4 text-primary" />
+          <div className="flex flex-col items-center gap-3 py-8 text-center">
+            <div className="flex size-10 items-center justify-center rounded-md bg-muted">
+              <Sparkles className="size-4 text-muted-foreground" />
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">
               All caught up. Nothing to triage.
@@ -99,30 +78,23 @@ export function OpenLoops() {
             {loops.map((loop) => (
               <li
                 key={loop.id}
-                className={cn(
-                  "group flex items-start gap-3 rounded-2xl px-2.5 py-2",
-                  "hover:bg-primary/5 transition-all duration-200"
-                )}
+                className="group flex items-start gap-3 rounded-md px-2.5 py-2 hover:bg-muted transition-colors"
               >
                 <button
                   onClick={() => handleDone(loop.id)}
-                  className={cn(
-                    "shrink-0 mt-0.5 size-4.5 rounded-full border border-border bg-background",
-                    "hover:border-primary hover:bg-primary/5 transition-colors",
-                    "flex items-center justify-center cursor-pointer"
-                  )}
+                  className="mt-0.5 flex size-4 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border bg-background hover:bg-muted transition-colors"
                   aria-label="Mark done"
                 >
-                  <CheckCircle2 className="size-3.5 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <CheckCircle2 className="size-3.5 text-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                 </button>
-                <p className="flex-1 text-sm text-foreground leading-snug min-w-0 font-medium group-hover:text-primary/95 transition-colors">
+                <p className="flex-1 text-sm leading-snug min-w-0 font-medium">
                   {loop.text}
                 </p>
                 <Button
                   variant="ghost"
-                  size="xs"
+                  size="icon"
+                  className="size-6 opacity-0 group-hover:opacity-100 transition-opacity"
                   onClick={() => handleAsk(loop.text)}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity rounded-xl text-muted-foreground hover:text-primary hover:bg-transparent"
                   aria-label="Ask about this"
                 >
                   <HelpCircle className="size-4" />
