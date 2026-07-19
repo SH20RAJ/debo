@@ -191,44 +191,34 @@ export async function POST(req: Request) {
   // Convert UIMessage[] to ModelMessage[] for the LLM
   const modelMessages = await convertToModelMessages(sanitizedMessages);
 
-  const result = streamText({
-    model,
-    system: systemPrompt,
-    messages: modelMessages,
-    stopWhen: stepCountIs(5),
-    providerOptions: {
-      openai: {
-        parallelToolCalls: false,
-      },
-    },
-    tools: intent === "chitchat" ? {} : {
-      queryTasks: {
-        description: "Search and query tasks assigned to you or in your inbox.",
-        parameters: z.object({ query: z.string().optional() }),
-        execute: async ({ query }: { query?: string }) => {
-          const conditions = [
-            eq(tasks.userId, user.id),
-            eq(tasks.workspaceId, workspaceId),
-            ne(tasks.status, "dismissed"),
-          ];
-          if (query) {
-            conditions.push(or(ilike(tasks.title, `%${query}%`), ilike(tasks.description, `%${query}%`)) as any);
-          }
-          const results = await db
-            .select({
-              id: tasks.id,
-              title: tasks.title,
-              description: tasks.description,
-              status: tasks.status,
-              dueAt: tasks.dueAt,
-            })
-            .from(tasks)
-            .where(and(...conditions))
-            .limit(10);
-          return JSON.stringify(results);
-        },
-      },
-      queryJournals: {
+  // Dynamic tool selection based on intent and question keywords
+  const activeTools: Record<string, any> = {};
+
+  if (intent !== "chitchat" && intent !== "general") {
+    const lowerQuestion = question.toLowerCase();
+    
+    // Check if we should expose journal/voice tools
+    const needsRecall = 
+      intent === "recall" || 
+      lowerQuestion.includes("journal") || 
+      lowerQuestion.includes("note") || 
+      lowerQuestion.includes("memory") || 
+      lowerQuestion.includes("thought") || 
+      lowerQuestion.includes("voice");
+      
+    // Check if we should expose task/mail tools
+    const needsConnector = 
+      intent === "connector" || 
+      lowerQuestion.includes("mail") || 
+      lowerQuestion.includes("email") || 
+      lowerQuestion.includes("gmail") || 
+      lowerQuestion.includes("task") || 
+      lowerQuestion.includes("todo") || 
+      lowerQuestion.includes("to-do") ||
+      lowerQuestion.includes("deadline");
+
+    if (needsRecall) {
+      activeTools.queryJournals = {
         description: "Search and query your private and public journal logs.",
         parameters: z.object({ query: z.string().optional() }),
         execute: async ({ query }: { query?: string }) => {
@@ -261,8 +251,9 @@ export async function POST(req: Request) {
             }))
           );
         },
-      },
-      queryVoiceNotes: {
+      };
+
+      activeTools.queryVoiceNotes = {
         description: "Search and retrieve transcribed voice notes or recorded phone conversations with Debo.",
         parameters: z.object({ query: z.string().optional() }),
         execute: async ({ query }: { query?: string }) => {
@@ -295,8 +286,38 @@ export async function POST(req: Request) {
             }))
           );
         },
-      },
-      queryMail: {
+      };
+    }
+
+    if (needsConnector) {
+      activeTools.queryTasks = {
+        description: "Search and query tasks assigned to you or in your inbox.",
+        parameters: z.object({ query: z.string().optional() }),
+        execute: async ({ query }: { query?: string }) => {
+          const conditions = [
+            eq(tasks.userId, user.id),
+            eq(tasks.workspaceId, workspaceId),
+            ne(tasks.status, "dismissed"),
+          ];
+          if (query) {
+            conditions.push(or(ilike(tasks.title, `%${query}%`), ilike(tasks.description, `%${query}%`)) as any);
+          }
+          const results = await db
+            .select({
+              id: tasks.id,
+              title: tasks.title,
+              description: tasks.description,
+              status: tasks.status,
+              dueAt: tasks.dueAt,
+            })
+            .from(tasks)
+            .where(and(...conditions))
+            .limit(10);
+          return JSON.stringify(results);
+        },
+      };
+
+      activeTools.queryMail = {
         description: "Search and retrieve your transactional emails from Debo Mail.",
         parameters: z.object({ query: z.string().optional() }),
         execute: async ({ query }: { query?: string }) => {
@@ -327,8 +348,21 @@ export async function POST(req: Request) {
             }))
           );
         },
+      };
+    }
+  }
+
+  const result = streamText({
+    model,
+    system: systemPrompt,
+    messages: modelMessages,
+    stopWhen: stepCountIs(5),
+    providerOptions: {
+      openai: {
+        parallelToolCalls: false,
       },
     },
+    tools: activeTools,
     async onFinish({ text }: { text: string }) {
       try {
         // Persist assistant response to DB

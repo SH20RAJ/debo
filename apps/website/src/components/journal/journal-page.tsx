@@ -642,6 +642,57 @@ export function JournalPage({ fallbackData = [] }: JournalPageProps) {
  return result;
  }, [entries, searchResults, selectedEmotion, selectedTag, sortBy]);
 
+  const moodCounts = useMemo(() => {
+    const counts = {
+      reflective: 0,
+      excited: 0,
+      calm: 0,
+      anxious: 0,
+      homesick: 0,
+      motivated: 0,
+    };
+    entries.forEach((e) => {
+      const mood = getEntryEmotion(e).label.toLowerCase();
+      if (mood in counts) {
+        counts[mood as keyof typeof counts]++;
+      }
+    });
+    return counts;
+  }, [entries]);
+
+  const emotionConfig: Record<string, { label: string; color: string; bgClass: string }> = {
+    reflective: {
+      label: "Reflective",
+      color: "text-purple-500 bg-purple-500/10 border-purple-500/20 hover:border-purple-500/40",
+      bgClass: "bg-purple-500",
+    },
+    excited: {
+      label: "Excited",
+      color: "text-amber-500 bg-amber-500/10 border-amber-500/20 hover:border-amber-500/40",
+      bgClass: "bg-amber-500",
+    },
+    calm: {
+      label: "Calm",
+      color: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20 hover:border-emerald-500/40",
+      bgClass: "bg-emerald-500",
+    },
+    anxious: {
+      label: "Anxious",
+      color: "text-rose-500 bg-rose-500/10 border-rose-500/20 hover:border-rose-500/40",
+      bgClass: "bg-rose-500",
+    },
+    homesick: {
+      label: "Homesick",
+      color: "text-indigo-500 bg-indigo-500/10 border-indigo-500/20 hover:border-indigo-500/40",
+      bgClass: "bg-indigo-500",
+    },
+    motivated: {
+      label: "Motivated",
+      color: "text-cyan-500 bg-cyan-500/10 border-cyan-500/20 hover:border-cyan-500/40",
+      bgClass: "bg-cyan-500",
+    },
+  };
+
  const activeEntryTags = useMemo(() => {
  return activeEntry ? getEntryTags(activeEntry) : [];
  }, [activeEntry]);
@@ -856,6 +907,83 @@ export function JournalPage({ fallbackData = [] }: JournalPageProps) {
  /* Gallery Explore View Panel */
  <div className="flex-1 flex flex-col overflow-hidden bg-background min-h-0">
  
+    {/* Mood & Tag Analytics Section */}
+    <div className="px-6 py-4 border-b border-border bg-card/15 flex flex-col gap-4 select-none shrink-0">
+      <div className="space-y-2.5">
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Mood Distribution</span>
+          <span className="text-[10px] text-muted-foreground/60">{entries.length} reflections</span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+          {Object.entries(emotionConfig).map(([mood, cfg]) => {
+            const count = moodCounts[mood as keyof typeof moodCounts] ?? 0;
+            const pct = entries.length ? Math.round((count / entries.length) * 100) : 0;
+            const isSelected = selectedEmotion === mood;
+            return (
+              <button
+                key={mood}
+                onClick={() => setSelectedEmotion(isSelected ? "all" : mood)}
+                className={cn(
+                  "flex flex-col p-2.5 rounded-xl border-2 text-left transition-all active:scale-[0.98]",
+                  isSelected
+                    ? "bg-primary/5 border-primary text-foreground"
+                    : "bg-background border-border text-muted-foreground hover:border-border/60 hover:bg-card/40"
+                )}
+              >
+                <div className="flex items-center justify-between w-full">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wide">{cfg.label}</span>
+                  <span className="text-[10px] text-muted-foreground/60 font-semibold">{count}</span>
+                </div>
+                <div className="mt-2 w-full h-1.5 rounded-full bg-muted overflow-hidden">
+                  <div
+                    className={cn("h-full rounded-full transition-all duration-500", cfg.bgClass)}
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+                <span className="text-[9px] mt-1.5 font-bold text-muted-foreground/80">{pct}%</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {allUniqueTags.length > 0 && (
+        <div className="space-y-2 pt-1">
+          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Filter by Tags</span>
+          <div className="flex flex-wrap gap-1.5">
+            <button
+              onClick={() => setSelectedTag("all")}
+              className={cn(
+                "px-2.5 py-0.5 rounded-full text-[10px] font-bold transition-all border-2",
+                selectedTag === "all"
+                  ? "bg-primary/10 border-primary text-primary"
+                  : "bg-background border-border text-muted-foreground hover:border-border/60"
+              )}
+            >
+              All Tags
+            </button>
+            {allUniqueTags.map((tag) => {
+              const isSelected = selectedTag === tag;
+              return (
+                <button
+                  key={tag}
+                  onClick={() => setSelectedTag(isSelected ? "all" : tag)}
+                  className={cn(
+                    "px-2.5 py-0.5 rounded-full text-[10px] font-bold transition-all border-2",
+                    isSelected
+                      ? "bg-primary/10 border-primary text-primary"
+                      : "bg-background border-border text-muted-foreground hover:border-border/60"
+                  )}
+                >
+                  #{tag}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+
  {/* Search, Filter and Sort Options bar */}
  <div className="px-6 py-3.5 border-b border-border bg-background flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
  <form onSubmit={handleSearchSubmit} className="flex-1 max-w-lg flex items-center gap-2">
@@ -954,6 +1082,18 @@ export function JournalPage({ fallbackData = [] }: JournalPageProps) {
 
  </div>
 
+  {/* Search/Filter active banner */}
+  {searchResults !== null && (
+    <div className="px-6 py-2.5 bg-accent/25 border-b border-border text-xs flex items-center justify-between shrink-0 select-none">
+      <span className="text-muted-foreground">
+        Filtered by search query. Found <strong>{processedEntries.length}</strong> matching entries.
+      </span>
+      <Button variant="ghost" size="sm" onClick={clearSearch} className="h-7 px-2.5 text-xs text-primary font-bold">
+        Clear search
+      </Button>
+    </div>
+  )}
+
  {/* Grid Scroll Area */}
  <ScrollArea className="flex-1 h-full min-h-0 bg-background">
  <div className="p-6">
@@ -1022,11 +1162,25 @@ export function JournalPage({ fallbackData = [] }: JournalPageProps) {
  </span>
  ))}
 
- <span className="ml-auto text-muted-foreground/60 flex items-center gap-1">
- <Clock className="w-2.5 h-2.5" />
- {Math.max(1, Math.ceil(wordCount / 200))} min
- </span>
- </div>
+  <div className="ml-auto flex items-center gap-2">
+  <span className="text-muted-foreground/60 flex items-center gap-1">
+  <Clock className="w-2.5 h-2.5" />
+  {Math.max(1, Math.ceil(wordCount / 200))} min
+  </span>
+  <button
+  type="button"
+  onClick={(e) => {
+  e.stopPropagation();
+  setActiveEntryId(entry.id);
+  setConfirmDelete(true);
+  }}
+  className="text-muted-foreground/60 hover:text-destructive p-0.5 rounded hover:bg-destructive/10 transition-colors"
+  title="Delete journal entry"
+  >
+  <Trash2 className="w-3 h-3" />
+  </button>
+  </div>
+  </div>
  </div>
  );
  })}

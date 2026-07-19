@@ -12,7 +12,7 @@
 
 import { db } from "@debo/db";
 import { sources, memoryChunks } from "@debo/db/schema";
-import { and, desc, eq, inArray, ne } from "drizzle-orm";
+import { and, desc, eq, inArray, ne, or, ilike } from "drizzle-orm";
 import type { SourceFound } from "../schemas/answer.schema";
 import { isQdrantConfigured, searchSimilar } from "@/server/vector/qdrant";
 import { embedQuery } from "@/server/llm/embeddings";
@@ -71,30 +71,46 @@ export async function retrieveMemory(
     }
   }
 
-  // Path 2: recency fallback
-  if (sourcesFound.length === 0) {
-    const rows = await db
-      .select({
-        id: sources.id,
-        type: sources.type,
-        title: sources.title,
-        plainText: sources.plainText,
-        createdAt: sources.createdAt,
-      })
-      .from(sources)
-      .where(and(eq(sources.userId, userId), ne(sources.status, "deleted")))
-      .orderBy(desc(sources.createdAt))
-      .limit(limit);
+  // Path 2: keyword search fallback
+  if (sourcesFound.length === 0 && question.trim().length > 0) {
+    const stopWords = new Set(["what", "when", "where", "with", "that", "this", "they", "them", "their", "there", "about", "would", "could", "should", "your", "mine", "memory", "recall", "search", "find", "show", "list"]);
+    const keywords = question
+      .toLowerCase()
+      .split(/[^a-zA-Z0-9]+/)
+      .filter((w) => w.length > 3 && !stopWords.has(w));
 
-    sourcesFound = rows
-      .filter((r) => r.plainText && r.plainText.trim().length > 0)
-      .map((r) => ({
-        id: r.id,
-        type: r.type,
-        title: r.title ?? "Untitled",
-        snippet: (r.plainText ?? "").slice(0, 400),
-        createdAt: r.createdAt,
-      }));
+    if (keywords.length > 0) {
+      const conditions = keywords.map((kw) => ilike(sources.plainText, `%${kw}%`));
+      
+      const rows = await db
+        .select({
+          id: sources.id,
+          type: sources.type,
+          title: sources.title,
+          plainText: sources.plainText,
+          createdAt: sources.createdAt,
+        })
+        .from(sources)
+        .where(
+          and(
+            eq(sources.userId, userId),
+            ne(sources.status, "deleted"),
+            or(...conditions)
+          )
+        )
+        .orderBy(desc(sources.createdAt))
+        .limit(limit);
+
+      sourcesFound = rows
+        .filter((r) => r.plainText && r.plainText.trim().length > 0)
+        .map((r) => ({
+          id: r.id,
+          type: r.type,
+          title: r.title ?? "Untitled",
+          snippet: (r.plainText ?? "").slice(0, 400),
+          createdAt: r.createdAt,
+        }));
+    }
   }
 
   const contextText = sourcesFound
