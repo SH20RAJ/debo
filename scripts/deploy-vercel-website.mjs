@@ -64,7 +64,7 @@ const runDeploy = async (useToken) => {
   );
 
   const proc = Bun.spawn(cmd, {
-    cwd: fileURLToPath(new URL("../", import.meta.url)),
+    cwd: websiteDir,
     env,
     stdout: "inherit",
     stderr: "inherit",
