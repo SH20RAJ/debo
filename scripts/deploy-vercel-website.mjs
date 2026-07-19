@@ -53,7 +53,7 @@ const runDeploy = async (useToken) => {
     delete env.VERCEL_TOKEN;
   }
 
-  const cmd = ["vercel", "deploy", "--prod", "--yes", ...args];
+  const cmd = ["vercel", "deploy", "--prod", "--yes", "--project", "debo", ...args];
   if (useToken && token) {
     cmd.push("--token", token);
   }
