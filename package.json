@@ -29,7 +29,7 @@
     "deploy:app": "bun run deploy:website",
     "deploy:all": "bun scripts/deploy-all.mjs",
     "db:push": "bun run --filter '@debo/db' db:push",
-    "typecheck": "bun run --filter './packages/*' typecheck && bun run --filter '@debo/landing-page' typecheck && bun run --filter '@debo/website' typecheck && bun run --filter '@debo/mcp' typecheck && bun run --filter '@debo/voice-agent' typecheck",
+    "typecheck": "bun run --filter './packages/*' typecheck && bun run --filter '@debo/landing-page' typecheck && bun run --filter '@debo/website' typecheck && bun run --filter '@debo/mcp' typecheck && bun run --filter '@debo/voice-agent' typecheck && bun run --filter '@debo.life/cli' typecheck",
     "cf-typegen": "bun run --filter '@debo/landing-page' cf-typegen"
   },
   "devDependencies": {
