@@ -42,7 +42,7 @@ if (!existsSync(websiteDir)) {
   process.exit(1);
 }
 
-const runDeploy = async (useToken: boolean) => {
+const runDeploy = async (useToken) => {
   const env = {
     ...process.env,
     ...(useToken && token ? { VERCEL_TOKEN: token } : {}),
