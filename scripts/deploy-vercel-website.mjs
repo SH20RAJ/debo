@@ -45,9 +45,13 @@ if (!existsSync(websiteDir)) {
 const runDeploy = async (useToken) => {
   const env = {
     ...process.env,
-    ...(useToken && token ? { VERCEL_TOKEN: token } : {}),
     PATH: `${binDir}:${process.env.PATH ?? ""}`,
   };
+  if (useToken && token) {
+    env.VERCEL_TOKEN = token;
+  } else {
+    delete env.VERCEL_TOKEN;
+  }
 
   const cmd = ["vercel", "deploy", "--prod", "--yes", ...args];
   if (useToken && token) {
