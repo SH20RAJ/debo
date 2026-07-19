@@ -37,38 +37,50 @@ args = tokenFlag.args;
 
 const token = tokenFlag.value || process.env.VERCEL_TOKEN;
 
-if (!token) {
-  console.error("FATAL: Vercel deploy is not configured.");
-  console.error("Set VERCEL_TOKEN (create one at https://vercel.com/account/settings/tokens),");
-  console.error("or pass --token <token>.");
-  console.error("Optional: VERCEL_ORG_ID and VERCEL_PROJECT_ID for explicit project linking.\n");
-  process.exit(1);
-}
-
 if (!existsSync(websiteDir)) {
   console.error(`FATAL: Website app directory not found: ${websiteDir}`);
   process.exit(1);
 }
 
-const env = {
-  ...process.env,
-  VERCEL_TOKEN: token,
-  PATH: `${binDir}:${process.env.PATH ?? ""}`,
-};
+const runDeploy = async (useToken: boolean) => {
+  const env = {
+    ...process.env,
+    ...(useToken && token ? { VERCEL_TOKEN: token } : {}),
+    PATH: `${binDir}:${process.env.PATH ?? ""}`,
+  };
 
-console.log("Deploying apps/website to Vercel (production)...");
+  const cmd = ["vercel", "deploy", "--prod", "--yes", ...args];
+  if (useToken && token) {
+    cmd.push("--token", token);
+  }
 
-const proc = Bun.spawn(
-  ["vercel", "deploy", "--prod", "--yes", "--token", token, ...args],
-  {
+  console.log(useToken && token 
+    ? "Deploying apps/website to Vercel using VERCEL_TOKEN..." 
+    : "Deploying apps/website to Vercel using local session credentials..."
+  );
+
+  const proc = Bun.spawn(cmd, {
     cwd: fileURLToPath(new URL("../", import.meta.url)),
     env,
     stdout: "inherit",
     stderr: "inherit",
-  },
-);
+  });
 
-const exitCode = await proc.exited;
+  return await proc.exited;
+};
+
+let exitCode = 1;
+if (token) {
+  exitCode = await runDeploy(true);
+  if (exitCode !== 0) {
+    console.warn("\nWARN: Deployment with VERCEL_TOKEN failed. Attempting fallback using local CLI credentials...");
+    exitCode = await runDeploy(false);
+  }
+} else {
+  console.log("WARN: VERCEL_TOKEN not configured.");
+  exitCode = await runDeploy(false);
+}
+
 if (exitCode !== 0) {
   process.exit(exitCode);
 }

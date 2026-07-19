@@ -12,10 +12,7 @@ const REQUIRED = [
 console.log(`[${timestamp()}] === Debo Monorepo Deploy ===\n`);
 
 if (!process.env.VERCEL_TOKEN) {
-  console.error(`[${timestamp()}] FATAL: Vercel deploy is not configured.`);
-  console.error("Set VERCEL_TOKEN before running bun run deploy.");
-  console.error("Create one at https://vercel.com/account/settings/tokens.\n");
-  process.exit(1);
+  console.log(`[${timestamp()}] WARNING: VERCEL_TOKEN not set. Downstream deploy-vercel-website will fall back to local credentials.`);
 }
 
 // Step 1: Build packages

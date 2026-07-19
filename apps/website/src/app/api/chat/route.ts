@@ -11,6 +11,9 @@ import {
   sources,
   deboMailMessages,
   connectorAccounts,
+  connectorSyncRuns,
+  customMcpServers,
+  memoryChunks,
 } from "@debo/db/schema";
 import { eq, and, or, ilike, ne } from "drizzle-orm";
 import { retrieveMemory } from "@/server/langgraph/nodes/retrieve-memory.node";
@@ -19,6 +22,45 @@ import { resolveProvider } from "@/server/llm/provider";
 import { z } from "zod";
 
 export const runtime = "nodejs";
+
+const TARGET_CHUNK_CHARS = 1100;
+const MIN_CHUNK_CHARS = 200;
+
+function chunkText(text: string): string[] {
+  const paragraphs = text
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+
+  const chunks: string[] = [];
+  let buf = "";
+  for (const p of paragraphs) {
+    if (buf.length === 0) {
+      buf = p;
+      continue;
+    }
+    if ((buf.length + p.length + 2) <= TARGET_CHUNK_CHARS) {
+      buf = `${buf}\n\n${p}`;
+    } else {
+      chunks.push(buf);
+      buf = p;
+    }
+  }
+  if (buf) chunks.push(buf);
+
+  const final: string[] = [];
+  for (const chunk of chunks) {
+    if (chunk.length <= TARGET_CHUNK_CHARS) {
+      final.push(chunk);
+      continue;
+    }
+    for (let i = 0; i < chunk.length; i += TARGET_CHUNK_CHARS) {
+      final.push(chunk.slice(i, i + TARGET_CHUNK_CHARS));
+    }
+  }
+
+  return final.filter((c) => c.length >= MIN_CHUNK_CHARS || final.length === 1);
+}
 
 export async function POST(req: Request) {
   const session = await requireSession(req);
@@ -287,6 +329,140 @@ export async function POST(req: Request) {
           );
         },
       };
+
+      activeTools.createJournal = {
+        description: "Write and save a new personal journal log entry.",
+        parameters: z.object({
+          title: z.string().describe("Title of the journal"),
+          content: z.string().describe("Body content of the journal"),
+        }),
+        execute: async ({ title, content }: { title: string; content: string }) => {
+          const sourceId = newId("src");
+          const [created] = await db
+            .insert(sources)
+            .values({
+              id: sourceId,
+              userId: user.id,
+              workspaceId,
+              type: "journal",
+              title: title.trim(),
+              plainText: content.trim(),
+              status: "ready",
+              origin: "manual",
+            })
+            .returning();
+
+          const chunks = chunkText(content);
+          if (chunks.length > 0) {
+            const chunkRows = chunks.map((chunk, index) => ({
+              id: newId("chk"),
+              userId: user.id,
+              workspaceId,
+              sourceId,
+              chunkIndex: index,
+              text: chunk,
+              tokenCount: Math.ceil(chunk.length / 4),
+            }));
+            await db.insert(memoryChunks).values(chunkRows);
+          }
+          return `Success! Journal entry created with ID: ${created.id}`;
+        },
+      };
+
+      activeTools.updateJournal = {
+        description: "Update the title or body content of an existing journal entry.",
+        parameters: z.object({
+          journalId: z.string().describe("ID of the journal entry"),
+          title: z.string().optional().describe("New title"),
+          content: z.string().optional().describe("New body content"),
+        }),
+        execute: async ({ journalId, title, content }: { journalId: string; title?: string; content?: string }) => {
+          const [entry] = await db
+            .select()
+            .from(sources)
+            .where(and(eq(sources.id, journalId), eq(sources.userId, user.id), eq(sources.type, "journal")))
+            .limit(1);
+
+          if (!entry) return `Journal not found for ID: ${journalId}`;
+
+          const updatedTitle = title?.trim() || entry.title;
+          const updatedContent = content?.trim() || entry.plainText || "";
+
+          await db
+            .update(sources)
+            .set({ title: updatedTitle, plainText: updatedContent, updatedAt: new Date().toISOString() })
+            .where(eq(sources.id, journalId));
+
+          if (content) {
+            await db.delete(memoryChunks).where(eq(memoryChunks.sourceId, journalId));
+            const chunks = chunkText(updatedContent);
+            if (chunks.length > 0) {
+              const chunkRows = chunks.map((chunk, index) => ({
+                id: newId("chk"),
+                userId: user.id,
+                workspaceId,
+                sourceId: journalId,
+                chunkIndex: index,
+                text: chunk,
+                tokenCount: Math.ceil(chunk.length / 4),
+              }));
+              await db.insert(memoryChunks).values(chunkRows);
+            }
+          }
+          return `Success! Journal updated successfully.`;
+        },
+      };
+
+      activeTools.deleteJournal = {
+        description: "Delete an existing journal entry.",
+        parameters: z.object({
+          journalId: z.string().describe("ID of the journal entry"),
+        }),
+        execute: async ({ journalId }: { journalId: string }) => {
+          await db.delete(memoryChunks).where(eq(memoryChunks.sourceId, journalId));
+          await db.delete(sources).where(and(eq(sources.id, journalId), eq(sources.userId, user.id), eq(sources.type, "journal")));
+          return `Success! Journal entry deleted.`;
+        },
+      };
+
+      activeTools.captureThought = {
+        description: "Capture a simple thought, note, or reference link into the memory graph.",
+        parameters: z.object({
+          content: z.string().describe("The note or thought text"),
+          title: z.string().optional().describe("Optional note title"),
+        }),
+        execute: async ({ content, title }: { content: string; title?: string }) => {
+          const sourceId = newId("src");
+          const [created] = await db
+            .insert(sources)
+            .values({
+              id: sourceId,
+              userId: user.id,
+              workspaceId,
+              type: "manual",
+              title: title?.trim() || `Thought at ${new Date().toLocaleDateString()}`,
+              plainText: content.trim(),
+              status: "ready",
+              origin: "manual",
+            })
+            .returning();
+
+          const chunks = chunkText(content);
+          if (chunks.length > 0) {
+            const chunkRows = chunks.map((chunk, index) => ({
+              id: newId("chk"),
+              userId: user.id,
+              workspaceId,
+              sourceId,
+              chunkIndex: index,
+              text: chunk,
+              tokenCount: Math.ceil(chunk.length / 4),
+            }));
+            await db.insert(memoryChunks).values(chunkRows);
+          }
+          return `Success! Thought captured under ID: ${created.id}`;
+        },
+      };
     }
 
     if (needsConnector) {
@@ -349,6 +525,169 @@ export async function POST(req: Request) {
           );
         },
       };
+
+      activeTools.createTask = {
+        description: "Create a new task, todo item, or action item.",
+        parameters: z.object({
+          title: z.string().describe("Task summary"),
+          description: z.string().optional().describe("Additional details"),
+          dueAt: z.string().optional().describe("ISO timestamp or date string when the task is due"),
+        }),
+        execute: async ({ title, description, dueAt }: { title: string; description?: string; dueAt?: string }) => {
+          const taskId = newId("tsk");
+          const [task] = await db
+            .insert(tasks)
+            .values({
+              id: taskId,
+              userId: user.id,
+              workspaceId,
+              title: title.trim(),
+              description: description || null,
+              status: "todo",
+              dueAt: dueAt || null,
+              extractionStatus: "manual",
+            })
+            .returning();
+
+          return `Success! Task created under ID: ${task.id}`;
+        },
+      };
+
+      activeTools.listConnectors = {
+        description: "List the status of connected integrations (Slack, Gmail, Notion, GitHub).",
+        parameters: z.object({}),
+        execute: async () => {
+          const rows = await db
+            .select()
+            .from(connectorAccounts)
+            .where(eq(connectorAccounts.userId, user.id));
+
+          if (rows.length === 0) return "No connectors configured.";
+          return rows.map((r) => `- **${r.provider.toUpperCase()}**: Status: ${r.status.toUpperCase()} (Last Synced: ${r.lastSyncedAt || "Never"})`).join("\n");
+        },
+      };
+
+      activeTools.triggerConnectorSync = {
+        description: "Trigger synchronization for a specific connector account provider (e.g. gmail, slack).",
+        parameters: z.object({
+          provider: z.string().describe("The name of the connector provider (gmail, slack, notion, github)"),
+        }),
+        execute: async ({ provider }: { provider: string }) => {
+          const [connector] = await db
+            .select()
+            .from(connectorAccounts)
+            .where(
+              and(
+                eq(connectorAccounts.provider, provider.trim().toLowerCase()),
+                eq(connectorAccounts.userId, user.id)
+              )
+            )
+            .limit(1);
+
+          if (!connector) return `Connector account not found for provider: ${provider}`;
+
+          const syncRunId = newId("sync");
+          await db
+            .insert(connectorSyncRuns)
+            .values({
+              id: syncRunId,
+              userId: user.id,
+              workspaceId,
+              connectorAccountId: connector.id,
+              status: "queued",
+            });
+          return `Success! Synchronization queued for ${provider}. Sync Run ID: ${syncRunId}`;
+        },
+      };
+    }
+
+    // Fetch custom MCP servers and register their tools
+    try {
+      const servers = await db
+        .select()
+        .from(customMcpServers)
+        .where(
+          and(
+            eq(customMcpServers.userId, user.id),
+            eq(customMcpServers.workspaceId, workspaceId)
+          )
+        );
+
+      for (const server of servers) {
+        let headers: Record<string, string> = {};
+        if (server.headersJson) {
+          try {
+            headers = JSON.parse(server.headersJson);
+          } catch {}
+        }
+
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 2000); // 2s timeout
+        const response = await fetch(server.url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...headers },
+          body: JSON.stringify({
+            jsonrpc: "2.0",
+            method: "tools/list",
+            params: {},
+            id: 1,
+          }),
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
+
+        if (response.ok) {
+          const data = await response.json();
+          const mcpTools = data.result?.tools || [];
+          for (const mcpTool of mcpTools) {
+            const prefix = server.name.toLowerCase().replace(/[^a-z0-9]/g, "_");
+            const toolName = `${prefix}_${mcpTool.name}`;
+
+            const lowerQuestion = question.toLowerCase();
+            const shouldInclude = 
+              lowerQuestion.includes(mcpTool.name.toLowerCase()) || 
+              lowerQuestion.includes(server.name.toLowerCase()) || 
+              intent === "recall" || 
+              intent === "connector";
+
+            if (shouldInclude) {
+              activeTools[toolName] = {
+                description: `[MCP: ${server.name}] ${mcpTool.description}`,
+                parameters: z.object({
+                  arguments: z.record(z.string(), z.any()).optional().describe("Arguments to pass to the MCP tool"),
+                }),
+                execute: async ({ arguments: args }: { arguments?: any }) => {
+                  const callController = new AbortController();
+                  const callTimeout = setTimeout(() => callController.abort(), 5000);
+                  const callRes = await fetch(server.url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", ...headers },
+                    body: JSON.stringify({
+                      jsonrpc: "2.0",
+                      method: "tools/call",
+                      params: {
+                        name: mcpTool.name,
+                        arguments: args || {},
+                      },
+                      id: 1,
+                    }),
+                    signal: callController.signal,
+                  });
+                  clearTimeout(callTimeout);
+
+                  if (!callRes.ok) return `Error calling remote MCP tool: ${callRes.statusText}`;
+                  const callData = await callRes.json();
+                  if (callData.error) return `MCP Error: ${callData.error.message}`;
+                  const content = callData.result?.content || [];
+                  return content.map((c: any) => c.text || "").join("\n") || JSON.stringify(callData.result);
+                },
+              };
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.error("[api/chat] Failed loading custom MCP servers:", err);
     }
   }
 
