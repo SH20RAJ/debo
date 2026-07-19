@@ -73,31 +73,34 @@ const runDeploy = async (useToken) => {
   return await proc.exited;
 };
 
+const cleanVercelDirs = () => {
+  const dirs = [
+    fileURLToPath(new URL("../.vercel", import.meta.url)),
+    fileURLToPath(new URL("../apps/website/.vercel", import.meta.url)),
+  ];
+  for (const vercelMetaDir of dirs) {
+    if (existsSync(vercelMetaDir)) {
+      console.log(`Removing ${vercelMetaDir} to allow linking to your Vercel account...`);
+      try {
+        rmSync(vercelMetaDir, { recursive: true, force: true });
+      } catch (e) {
+        console.warn(`Failed to remove ${vercelMetaDir}:`, e);
+      }
+    }
+  }
+};
+
 let exitCode = 1;
 if (token) {
   exitCode = await runDeploy(true);
   if (exitCode !== 0) {
     console.warn("\nWARN: Deployment with VERCEL_TOKEN failed. Attempting fallback using local CLI credentials...");
-    const vercelMetaDir = fileURLToPath(new URL("../apps/website/.vercel", import.meta.url));
-    if (existsSync(vercelMetaDir)) {
-      console.log("Removing apps/website/.vercel to allow re-linking to your account...");
-      try {
-        rmSync(vercelMetaDir, { recursive: true, force: true });
-      } catch (e) {
-        console.warn("Failed to remove .vercel directory:", e);
-      }
-    }
+    cleanVercelDirs();
     exitCode = await runDeploy(false);
   }
 } else {
   console.log("WARN: VERCEL_TOKEN not configured.");
-  const vercelMetaDir = fileURLToPath(new URL("../apps/website/.vercel", import.meta.url));
-  if (existsSync(vercelMetaDir)) {
-    console.log("Removing apps/website/.vercel to allow linking...");
-    try {
-      rmSync(vercelMetaDir, { recursive: true, force: true });
-    } catch (e) {}
-  }
+  cleanVercelDirs();
   exitCode = await runDeploy(false);
 }
 

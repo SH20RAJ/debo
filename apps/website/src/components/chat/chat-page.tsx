@@ -73,6 +73,19 @@ interface ChatThread {
  updatedAt: string;
 }
 
+function getDateGroup(dateStr: string): string {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfYesterday = new Date(startOfToday.getTime() - 86400000);
+  const startOfWeek = new Date(startOfToday.getTime() - 7 * 86400000);
+
+  if (date >= startOfToday) return "Today";
+  if (date >= startOfYesterday) return "Yesterday";
+  if (date >= startOfWeek) return "This week";
+  return "Older";
+}
+
 function getMessageText(message: any): string {
  if (typeof message.content === "string" && message.content.trim() !== "") {
  return message.content;
@@ -539,6 +552,20 @@ export function ChatPage({ threadId: initialThreadId }: { threadId?: string }) {
  return threads.filter((t) => (t.title || "Conversation").toLowerCase().includes(q));
  }, [threads, threadSearch]);
 
+ const groupedThreads = useMemo(() => {
+    const map = new Map<string, any[]>();
+    for (const thread of filteredThreads) {
+      const key = getDateGroup(thread.updatedAt || thread.createdAt);
+      const list = map.get(key) ?? [];
+      list.push(thread);
+      map.set(key, list);
+    }
+    const order = ["Today", "Yesterday", "This week", "Older"];
+    return order
+      .filter((k) => map.has(k))
+      .map((k) => ({ label: k, entries: map.get(k)! }));
+  }, [filteredThreads]);
+
  const isEmpty = messages.length === 0 && !isLoadingMessages && !error;
 
  const lastMessage = messages[messages.length - 1];
@@ -601,7 +628,7 @@ export function ChatPage({ threadId: initialThreadId }: { threadId?: string }) {
  </div>
 
  {/* Thread List Scroll Area */}
- <div className="flex-1 overflow-y-auto min-h-0 py-2 scrollbar-none space-y-1 pr-1">
+ <div className="flex-1 overflow-y-auto min-h-0 py-2 scrollbar-none space-y-4 pr-1">
  {loadingThreads ? (
  <div className="flex items-center justify-center py-12 text-xs text-muted-foreground/75 font-medium">
  <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5 text-primary" />
@@ -615,35 +642,44 @@ export function ChatPage({ threadId: initialThreadId }: { threadId?: string }) {
  </p>
  </div>
  ) : (
- <div className="space-y-1">
- {filteredThreads.map((thread) => {
- const isActive = activeThreadId === thread.id;
- return (
- <div
- key={thread.id}
- onClick={() => loadThread(thread.id)}
- className={cn(
- "flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold cursor-pointer transition-all border border-transparent group",
- isActive
- ? "bg-primary/10 text-primary border-primary/20"
- : "text-muted-foreground hover:text-foreground hover:bg-accent/60"
- )}
- >
- <div className="flex items-center gap-2 min-w-0">
- <MessageSquare className={cn("w-3.5 h-3.5 shrink-0", isActive ? "text-primary" : "text-muted-foreground/45")} />
- <span className="truncate pr-2">{thread.title || "Conversation"}</span>
- </div>
- <button
- onClick={(e) => handleDeleteThread(thread.id, e)}
- className="opacity-0 group-hover:opacity-100 hover:text-destructive p-0.5 rounded transition-all cursor-pointer shrink-0"
- >
- <Trash2 className="w-3.5 h-3.5" />
- </button>
- </div>
- );
- })}
- </div>
- )}
+  <div className="space-y-4">
+    {groupedThreads.map((group) => (
+      <div key={group.label} className="space-y-1.5">
+        <h4 className="text-[9px] font-extrabold text-muted-foreground/55 uppercase tracking-widest px-3 mb-1">
+          {group.label}
+        </h4>
+        <div className="space-y-0.5">
+          {group.entries.map((thread) => {
+            const isActive = activeThreadId === thread.id;
+            return (
+              <div
+                key={thread.id}
+                onClick={() => loadThread(thread.id)}
+                className={cn(
+                  "flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold cursor-pointer transition-all border border-transparent group",
+                  isActive
+                    ? "bg-primary/10 text-primary border-primary/20"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/60"
+                )}
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <MessageSquare className={cn("w-3.5 h-3.5 shrink-0", isActive ? "text-primary" : "text-muted-foreground/45")} />
+                  <span className="truncate pr-2">{thread.title || "Conversation"}</span>
+                </div>
+                <button
+                  onClick={(e) => handleDeleteThread(thread.id, e)}
+                  className="opacity-0 group-hover:opacity-100 hover:text-destructive p-0.5 rounded transition-all cursor-pointer shrink-0"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    ))}
+  </div>
+  )}
  </div>
  </div>
  </div>
