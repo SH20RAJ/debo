@@ -180,8 +180,16 @@ export async function POST(req: Request) {
       : "\nNo relevant memory found for this question.",
   ].join("\n");
 
+  // Sanitize rawMessages to ensure every message has parts populated (as expected by AI SDK v4/v7 convertToModelMessages)
+  const sanitizedMessages = rawMessages.map((msg: any) => ({
+    id: msg.id || newId("msg"),
+    role: msg.role,
+    content: msg.content || "",
+    parts: msg.parts || [{ type: "text", text: msg.content || "" }],
+  }));
+
   // Convert UIMessage[] to ModelMessage[] for the LLM
-  const modelMessages = await convertToModelMessages(rawMessages);
+  const modelMessages = await convertToModelMessages(sanitizedMessages);
 
   const result = streamText({
     model,
