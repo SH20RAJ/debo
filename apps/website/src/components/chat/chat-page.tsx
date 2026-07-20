@@ -6,23 +6,27 @@ import useSWR from "swr";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import {
- MessageSquare,
- Plus,
- Trash2,
- Loader2,
- Clock,
- ChevronLeft,
- ChevronRight,
- Search,
- X,
- Send,
- StopCircle,
- Activity,
- User,
- Sparkles,
- Database,
- Calendar,
- AlertTriangle,
+  MessageSquare,
+  Plus,
+  Trash2,
+  Loader2,
+  Clock,
+  ChevronLeft,
+  ChevronRight,
+  Search,
+  X,
+  Send,
+  StopCircle,
+  Activity,
+  User,
+  Sparkles,
+  Database,
+  Calendar,
+  AlertTriangle,
+  Mic,
+  BookOpen,
+  PenLine,
+  Link as LinkIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -312,6 +316,68 @@ export function ChatPage({ threadId: initialThreadId }: { threadId?: string }) {
  const [selectedSource, setSelectedSource] = useState<any>(null);
  const [selectedToolCall, setSelectedToolCall] = useState<any>(null);
  const [loadingSourceId, setLoadingSourceId] = useState<string | null>(null);
+
+  const renderPromptForm = (isCentered = false) => {
+    return (
+      <div className={cn("w-full mx-auto relative", isCentered ? "max-w-xl mt-4" : "max-w-3xl")}>
+        <form onSubmit={handleSend} className="relative flex items-center w-full">
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            className="absolute left-2.5 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full text-muted-foreground/60 hover:text-foreground cursor-pointer hover:bg-accent/40 z-10"
+            onClick={() => {
+              toast.info("Media attachment can be uploaded via Quick-Capture or Journeys");
+            }}
+          >
+            <Plus className="w-4 h-4" />
+          </Button>
+
+          <Input
+            type="text"
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+            placeholder="Ask anything..."
+            disabled={status === "streaming"}
+            className="w-full pr-22 pl-12 py-6 rounded-full border border-border/40 bg-zinc-900/40 backdrop-blur-md focus-visible:bg-zinc-900/60 focus-visible:ring-primary/20 text-sm shadow-sm transition-all"
+          />
+
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            onClick={() => router.push("/dashboard/voice")}
+            className="absolute right-12 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full text-muted-foreground/60 hover:text-foreground cursor-pointer hover:bg-accent/40 z-10"
+          >
+            <Mic className="w-4 h-4" />
+          </Button>
+
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 z-10">
+            {status === "streaming" ? (
+              <Button
+                type="button"
+                onClick={stop}
+                size="icon"
+                variant="ghost"
+                className="size-8 rounded-full text-destructive hover:bg-destructive/10 cursor-pointer"
+              >
+                <StopCircle className="size-4.5" />
+              </Button>
+            ) : (
+              <Button
+                type="submit"
+                disabled={!inputText.trim()}
+                size="icon"
+                className="size-8 rounded-full bg-primary text-primary-foreground shadow-sm hover:brightness-105 active:scale-95 transition-all disabled:opacity-50 cursor-pointer flex items-center justify-center"
+              >
+                <Send className="size-3.5" />
+              </Button>
+            )}
+          </div>
+        </form>
+      </div>
+    );
+  };
 
  const handleSourceClick = async (sourceId: string) => {
  if (!sourceId) return;
@@ -770,39 +836,51 @@ export function ChatPage({ threadId: initialThreadId }: { threadId?: string }) {
  <MessageScrollerContent className="max-w-3xl mx-auto flex flex-col gap-6">
  {isLoadingMessages ? (
  <MessageListSkeleton />
- ) : isEmpty ? (
- /* Greeting / Landing State */
- <div className="flex flex-col items-center justify-center max-w-lg mx-auto text-center space-y-6 select-none my-auto py-12">
- <div className="size-16 rounded-3xl bg-primary/10 border border-primary/20 flex items-center justify-center shadow-sm">
- <Activity className="size-8 text-primary" />
- </div>
- <div className="space-y-2">
- <h3 className="text-lg font-bold text-foreground tracking-tight">
- Ask your past memory OS
- </h3>
- <p className="text-xs text-muted-foreground leading-relaxed max-w-sm">
- Search notes, health stats, location traces, tasks, and connected app telemetry. Debo answers using backing citations.
- </p>
- </div>
+  ) : isEmpty ? (
+  /* Greeting / Landing State (ChatGPT style replicated) */
+  <div className="flex flex-col items-center justify-center max-w-xl mx-auto text-center space-y-6 select-none my-auto py-16 w-full">
+    <h3 className="text-3xl font-extrabold text-foreground tracking-tight max-w-md mx-auto leading-tight">
+      What's on the agenda today?
+    </h3>
+    
+    {/* Centered Floating Pill Input Bar */}
+    <div className="w-full max-w-lg">
+      {renderPromptForm(true)}
+    </div>
 
- <div className="w-full grid grid-cols-1 gap-2">
- {suggestions.map((s, idx) => {
- const Icon = s.icon;
- return (
- <button
- key={idx}
- onClick={() => handleSuggestionClick(s.label)}
- className="w-full text-left p-3.5 rounded-2xl border border-border hover:border-primary/20 bg-card hover:bg-primary/[0.015] hover:shadow-xs transition-all flex items-center gap-3 group text-xs text-muted-foreground hover:text-foreground font-semibold cursor-pointer"
- >
- <div className="size-7 rounded-xl bg-secondary flex items-center justify-center shrink-0">
- <Icon className="size-3.5 text-muted-foreground/80 group-hover:text-primary transition-colors" />
- </div>
- <span className="truncate">{s.label}</span>
- </button>
- );
- })}
- </div>
- </div>
+    {/* Centered Actions List */}
+    <div className="w-full max-w-md mx-auto pt-6 flex flex-col gap-2">
+      <button
+        onClick={() => handleSuggestionClick("Recall my recent journals")}
+        className="w-full text-left p-3 rounded-2xl border border-border/40 hover:border-primary/20 bg-card/45 hover:bg-primary/[0.015] hover:shadow-xs transition-all flex items-center gap-3 group text-xs text-muted-foreground hover:text-foreground font-semibold cursor-pointer"
+      >
+        <div className="size-7 rounded-xl bg-secondary flex items-center justify-center shrink-0">
+          <BookOpen className="size-3.5 text-muted-foreground/80 group-hover:text-primary transition-colors" />
+        </div>
+        <span className="truncate">Recall your recent memories</span>
+      </button>
+
+      <button
+        onClick={() => router.push("/dashboard/journal")}
+        className="w-full text-left p-3 rounded-2xl border border-border/40 hover:border-primary/20 bg-card/45 hover:bg-primary/[0.015] hover:shadow-xs transition-all flex items-center gap-3 group text-xs text-muted-foreground hover:text-foreground font-semibold cursor-pointer"
+      >
+        <div className="size-7 rounded-xl bg-secondary flex items-center justify-center shrink-0">
+          <PenLine className="size-3.5 text-muted-foreground/80 group-hover:text-primary transition-colors" />
+        </div>
+        <span className="truncate">Write a new journal entry</span>
+      </button>
+
+      <button
+        onClick={() => router.push("/dashboard/connectors")}
+        className="w-full text-left p-3 rounded-2xl border border-border/40 hover:border-primary/20 bg-card/45 hover:bg-primary/[0.015] hover:shadow-xs transition-all flex items-center gap-3 group text-xs text-muted-foreground hover:text-foreground font-semibold cursor-pointer"
+      >
+        <div className="size-7 rounded-xl bg-secondary flex items-center justify-center shrink-0">
+          <LinkIcon className="size-3.5 text-muted-foreground/80 group-hover:text-primary transition-colors" />
+        </div>
+        <span className="truncate">Check connected third-party accounts</span>
+      </button>
+    </div>
+  </div>
  ) : (
  /* Message List */
  <>
@@ -822,50 +900,45 @@ export function ChatPage({ threadId: initialThreadId }: { threadId?: string }) {
 
  if (!showMessage) return null;
 
- return (
- <MessageScrollerItem
- key={message.id}
- messageId={message.id}
- scrollAnchor={isUser}
- >
- <Message align={isUser ? "end" : "start"}>
- <MessageAvatar>
- <Avatar className="size-8">
- <AvatarImage src="" alt={isUser ? "You" : "Debo"} />
- <AvatarFallback className={isUser ? "bg-muted text-muted-foreground" : "bg-primary/15 text-primary text-xs font-semibold"}>
- {isUser ? "U" : "DB"}
- </AvatarFallback>
- </Avatar>
- </MessageAvatar>
- <MessageContent>
- <MessageHeader>
- {isUser ? "You" : "Debo"}
- </MessageHeader>
- {isUser ? (
- <Bubble variant="default" align="end">
- <BubbleContent>
- <p className="whitespace-pre-wrap font-medium text-white">{text}</p>
- </BubbleContent>
- </Bubble>
- ) : (
- (text.trim() || (isLastMessage && isStreaming)) && (
- <Bubble variant="secondary" align="start">
- <BubbleContent>
- {text.trim() ? (
- <MarkdownRenderer content={text} />
- ) : (
- <div className="flex flex-col gap-2.5 py-1 min-w-[200px]">
- <span className="shimmer text-muted-foreground">Thinking…</span>
- </div>
- )}
- </BubbleContent>
- </Bubble>
- )
- )}
+  return (
+    <MessageScrollerItem
+      key={message.id}
+      messageId={message.id}
+      scrollAnchor={isUser}
+    >
+      <Message align={isUser ? "end" : "start"} className="px-0 gap-0">
+        <MessageContent>
+          {isUser ? (
+            <Bubble 
+              variant="secondary" 
+              align="end" 
+              className="*:data-[slot=bubble-content]:bg-zinc-800/80 *:data-[slot=bubble-content]:border-border/10 *:data-[slot=bubble-content]:text-white *:data-[slot=bubble-content]:rounded-2xl *:data-[slot=bubble-content]:px-4 *:data-[slot=bubble-content]:py-2.5 max-w-[70%]"
+            >
+              <BubbleContent>
+                <p className="whitespace-pre-wrap font-medium leading-relaxed">{text}</p>
+              </BubbleContent>
+            </Bubble>
+          ) : (
+            (text.trim() || (isLastMessage && isStreaming)) && (
+              <Bubble variant="ghost" align="start" className="w-full max-w-full">
+                <BubbleContent className="px-0 py-0">
+                  {text.trim() ? (
+                    <div className="prose prose-stone dark:prose-invert max-w-none text-foreground leading-relaxed selection:bg-primary/25">
+                      <MarkdownRenderer content={text} />
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-2.5 py-1 min-w-[200px]">
+                      <span className="shimmer text-muted-foreground text-xs font-semibold">Thinking…</span>
+                    </div>
+                  )}
+                </BubbleContent>
+              </Bubble>
+            )
+          )}
 
- {/* Citations (Sources) */}
- {(() => {
- const messageCitations = (message as any).citations || [];
+          {/* Citations (Sources) */}
+          {(() => {
+            const messageCitations = (message as any).citations || [];
  if (messageCitations.length === 0) return null;
  return (
  <div className="flex flex-col gap-1.5 mt-2">
@@ -957,29 +1030,20 @@ export function ChatPage({ threadId: initialThreadId }: { threadId?: string }) {
  })}
 
  {showThinkingSkeleton && (
- <MessageScrollerItem messageId="thinking" scrollAnchor>
- <Message align="start">
- <MessageAvatar>
- <Avatar className="size-8">
- <AvatarImage src="" alt="Debo" />
- <AvatarFallback className="bg-primary/15 text-primary text-xs font-semibold">
- DB
- </AvatarFallback>
- </Avatar>
- </MessageAvatar>
- <MessageContent>
- <MessageHeader>Debo</MessageHeader>
- <Bubble variant="secondary" align="start">
- <BubbleContent>
- <div className="flex flex-col gap-2.5 py-1 min-w-[200px]">
- <span className="shimmer text-muted-foreground">Thinking…</span>
- </div>
- </BubbleContent>
- </Bubble>
- </MessageContent>
- </Message>
- </MessageScrollerItem>
- )}
+    <MessageScrollerItem messageId="thinking" scrollAnchor>
+      <Message align="start" className="px-0 gap-0">
+        <MessageContent>
+          <Bubble variant="ghost" align="start" className="w-full max-w-full">
+            <BubbleContent className="px-0 py-0">
+              <div className="flex items-center gap-2 py-1">
+                <span className="shimmer text-muted-foreground text-xs font-semibold">Thinking…</span>
+              </div>
+            </BubbleContent>
+          </Bubble>
+        </MessageContent>
+      </Message>
+    </MessageScrollerItem>
+  )}
 
  {error && (
  <Marker variant="separator">
@@ -997,44 +1061,11 @@ export function ChatPage({ threadId: initialThreadId }: { threadId?: string }) {
  </MessageScroller>
  </MessageScrollerProvider>
 
- {/* Form Ingestion Area */}
- <div className="p-4 border-t border-border/40 bg-card/60 backdrop-blur-md shrink-0">
- <div className="max-w-3xl mx-auto">
- <form onSubmit={handleSend} className="relative flex items-center">
- <Input
- type="text"
- value={inputText}
- onChange={(e) => setInputText(e.target.value)}
- placeholder="Ask your past OS..."
- disabled={status === "streaming"}
- className="w-full pr-12 pl-4 py-6 rounded-3xl border-border bg-muted/30 focus-visible:bg-card focus-visible:ring-primary text-sm shadow-xs transition-all"
- />
- 
- <div className="absolute right-2 top-1/2 -translate-y-1/2">
- {status === "streaming" ? (
- <Button
- type="button"
- onClick={stop}
- size="icon"
- variant="ghost"
- className="size-8.5 rounded-full text-destructive hover:bg-destructive/10 cursor-pointer"
- >
- <StopCircle className="size-4.5" />
- </Button>
- ) : (
- <Button
- type="submit"
- disabled={!inputText.trim()}
- size="icon"
- className="size-8.5 rounded-full bg-primary text-primary-foreground shadow-[0_2px_0_#b53305] hover:brightness-105 active:translate-y-[1px] active:shadow-none transition-all disabled:opacity-50 disabled:shadow-none disabled:active:translate-y-0 cursor-pointer"
- >
- <Send className="size-4" />
- </Button>
- )}
- </div>
- </form>
- </div>
- </div>
+ {!isEmpty && (
+    <div className="pb-6 pt-2 px-4 bg-transparent shrink-0">
+      {renderPromptForm(false)}
+    </div>
+  )}
 
  </div>
  </div>
