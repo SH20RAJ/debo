@@ -51,6 +51,8 @@ const runDeploy = async (useToken) => {
     env.VERCEL_TOKEN = token;
   } else {
     delete env.VERCEL_TOKEN;
+    delete env.VERCEL_ORG_ID;
+    delete env.VERCEL_PROJECT_ID;
   }
 
   const rootDir = fileURLToPath(new URL("../", import.meta.url));
