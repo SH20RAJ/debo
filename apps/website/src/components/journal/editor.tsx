@@ -20,14 +20,20 @@ interface JournalEditorProps {
 }
 
 function plainTextToBlocks(text: string) {
- const trimmed = text?.trim() ?? "";
- if (!trimmed) return [{ type: "paragraph" as const, content: "" }];
- return trimmed
- .split(/\n{2,}/)
- .map((paragraph) => ({
- type: "paragraph" as const,
- content: paragraph.trim(),
- }));
+  const trimmed = text?.trim() ?? "";
+  if (!trimmed) return [{ type: "paragraph" as const, content: [] }];
+  return trimmed
+    .split(/\n{2,}/)
+    .map((paragraph) => ({
+      type: "paragraph" as const,
+      content: [
+        {
+          type: "text" as const,
+          text: paragraph.trim(),
+          styles: {},
+        },
+      ],
+    }));
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -162,13 +168,25 @@ export function JournalEditor({
 
  return (
  <div className="flex h-full flex-col overflow-hidden bg-transparent">
- <div className="flex-1 overflow-y-auto">
+ <div 
+   className="flex-1 overflow-y-auto cursor-text"
+   onClick={(e) => {
+     if (e.target === e.currentTarget) {
+       editor.focus();
+     }
+   }}
+ >
  <div
- className={
- focusMode
- ? "mx-auto max-w-2xl px-6 py-16 sm:px-10 transition-all duration-500 ease-in-out"
- : "mx-auto max-w-2xl px-6 py-10 sm:px-10 transition-all duration-500 ease-in-out"
- }
+   className={
+     focusMode
+       ? "mx-auto max-w-2xl px-6 py-16 sm:px-10 min-h-full pb-32 flex flex-col transition-all duration-500 ease-in-out"
+       : "mx-auto max-w-2xl px-6 py-10 sm:px-10 min-h-full pb-32 flex flex-col transition-all duration-500 ease-in-out"
+   }
+   onClick={(e) => {
+     if (e.target === e.currentTarget) {
+       editor.focus();
+     }
+   }}
  >
  {/* Metadata Row: Date & Emotion */}
  <div className="flex flex-wrap items-center gap-3 mb-6 select-none">
@@ -273,11 +291,11 @@ export function JournalEditor({
  </div>
 
  {/* BlockNote Editor */}
- <div className="journal-blocknote prose prose-stone dark:prose-invert max-w-none text-foreground">
+ <div className="journal-blocknote prose prose-stone dark:prose-invert max-w-none text-foreground flex-1 min-h-[400px]">
  <BlockNoteView
  editor={editor}
  theme={resolvedTheme === "dark" ? "dark" : "light"}
- className="min-h-[50vh] -mx-[46px]"
+ className="h-full -mx-[46px]"
  />
  </div>
  </div>

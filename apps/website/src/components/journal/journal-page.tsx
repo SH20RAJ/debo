@@ -709,7 +709,7 @@ export function JournalPage({ fallbackData = [] }: JournalPageProps) {
  
  {/* Sidebar - only shown in Split View Mode */}
  {viewMode === "split" && !focusMode && (
- <aside className="hidden w-[280px] shrink-0 border-r border-border bg-card md:flex md:flex-col transition-all duration-300">
+ <aside className="hidden w-[280px] h-full shrink-0 border-r border-border bg-card md:flex md:flex-col transition-all duration-300 min-h-0">
  <JournalEntryList
  entries={entries}
  activeEntryId={activeEntryId}
