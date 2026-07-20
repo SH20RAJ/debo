@@ -53,9 +53,24 @@ const runDeploy = async (useToken) => {
     delete env.VERCEL_TOKEN;
   }
 
-  const cmd = ["vercel", "deploy", "--prod", "--yes", "--project", "debo", ...args];
+  const rootDir = fileURLToPath(new URL("../", import.meta.url));
+
+  // Run vercel link first to ensure the project is mapped correctly
+  const linkCmd = ["vercel", "link", "--yes", "--project", "debo"];
   if (useToken && token) {
-    cmd.push("--token", token);
+    linkCmd.push("--token", token);
+  }
+  const linkProc = Bun.spawn(linkCmd, {
+    cwd: rootDir,
+    env,
+    stdout: "inherit",
+    stderr: "inherit",
+  });
+  await linkProc.exited;
+
+  const deployCmd = ["vercel", "deploy", "--prod", "--yes", ...args];
+  if (useToken && token) {
+    deployCmd.push("--token", token);
   }
 
   console.log(useToken && token 
@@ -63,8 +78,8 @@ const runDeploy = async (useToken) => {
     : "Deploying apps/website to Vercel using local session credentials..."
   );
 
-  const proc = Bun.spawn(cmd, {
-    cwd: fileURLToPath(new URL("../", import.meta.url)),
+  const proc = Bun.spawn(deployCmd, {
+    cwd: rootDir,
     env,
     stdout: "inherit",
     stderr: "inherit",
