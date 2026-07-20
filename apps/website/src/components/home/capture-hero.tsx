@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowRight,
-  BookOpen,
+  MessageSquare,
   Link as LinkIcon,
   Loader2,
   Mic,
@@ -50,8 +50,8 @@ export function CaptureHero() {
     if (!text || busy) return;
     const intent = classifyInput(text);
 
-    if (intent === "ask") {
-      router.push(`/dashboard/ask?q=${encodeURIComponent(text)}`);
+    if (intent === "ask" || intent === "journal") {
+      router.push(`/dashboard/chat?q=${encodeURIComponent(text)}`);
       return;
     }
 
@@ -65,14 +65,6 @@ export function CaptureHero() {
           origin: "manual",
         });
         toast.success("Link saved to memory");
-      } else {
-        await api.sources.create({
-          type: "journal",
-          title: text.split("\n")[0].slice(0, 80),
-          content: text,
-          origin: "manual",
-        });
-        toast.success("Captured to journal");
       }
       setValue("");
     } catch (err) {
@@ -114,7 +106,7 @@ export function CaptureHero() {
       ? { label: "Ask Debo", icon: Sparkles }
       : intent === "link"
       ? { label: "Save link", icon: LinkIcon }
-      : { label: "Journal", icon: BookOpen };
+      : { label: "Chat", icon: MessageSquare };
   const IntentIcon = intentMeta.icon;
 
   return (

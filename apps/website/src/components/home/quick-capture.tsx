@@ -78,15 +78,15 @@ export function ActionTriad() {
                 <TriadInner
                   icon={Plus}
                   label="Capture"
-                  hint="Journal, voice, file, link"
+                  hint="Chat, voice, file, link"
                 />
               </CardContent>
             </Card>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-56">
-            <DropdownMenuItem onClick={() => router.push("/dashboard/journal")}>
-              <BookOpen />
-              Write journal
+            <DropdownMenuItem onClick={() => router.push("/dashboard/chat")}>
+              <MessageSquare />
+              Chat
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.push("/dashboard/voice")}>
               <Mic />
