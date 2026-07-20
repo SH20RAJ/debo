@@ -47,7 +47,10 @@ type AskStreamArgs = { question: string; mode?: string; threadId?: string };
 
 export const api = {
   sources: {
-    list: (type?: string) => fetchApi(`/api/sources${type ? `?type=${type}` : ""}`),
+    list: (params?: { type?: string; lite?: boolean }) => {
+      const query = params ? "?" + new URLSearchParams(params as any).toString() : "";
+      return fetchApi(`/api/sources${query}`);
+    },
     get: (id: string) => fetchApi(`/api/sources/${id}`),
     create: (data: { type?: string; title?: string; content?: string; description?: string; status?: string; origin?: string }) =>
       fetchApi("/api/sources", { method: "POST", body: JSON.stringify(data) }),

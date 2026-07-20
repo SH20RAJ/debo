@@ -76,50 +76,8 @@ export function classifyIntent(question: string): Intent {
  * Prevents scanning journals for general conversation, general code generation, etc.
  */
 export async function classifyRetrievalIntent(question: string): Promise<boolean> {
-  // 1. Fast path: greetings/chitchat never retrieve memories
-  if (isChitchat(question)) {
-    return false;
-  }
-
-  // 2. Resolve LLM configuration
-  const cfg = resolveProvider();
-  if (!cfg) {
-    const intent = classifyIntent(question);
-    return intent !== "chitchat";
-  }
-
-  try {
-    const llm = new ChatOpenAI({
-      model: cfg.chatModel,
-      temperature: 0.0,
-      maxTokens: 10,
-      apiKey: cfg.apiKey,
-      configuration: {
-        baseURL: cfg.baseURL,
-        apiKey: cfg.apiKey,
-      },
-    });
-
-    const systemPrompt = `You are an intent classifier for a personal memory assistant called Debo.
-Analyze if the user's message is asking to recall, retrieve, or search their private personal history, past journals, notes, meetings, files, or tasks (e.g. "what did I do yesterday", "search my meeting with john", "tell me about my project", "remember my journal", "what was my idea for Apify?").
-
-Respond with exactly "YES" if the message requires searching/retrieving the user's private notes/memories.
-Respond with exactly "NO" if the message is a general knowledge question, code generation request, general math, creative writing, template, or general greeting/conversation (e.g. "write a react component", "how does react router work", "who is the president", "explain gravity", "hello", "thank you").
-
-Do not include any other text, punctuation, or formatting. Output only YES or NO.`;
-
-    const response = await llm.invoke([
-      new SystemMessage(systemPrompt),
-      new HumanMessage(question),
-    ]);
-
-    const ans = (response.content as string).trim().toUpperCase();
-    return ans.includes("YES");
-  } catch (err) {
-    console.error("[classifyRetrievalIntent] LLM classification failed, falling back to keywords", err);
-    const intent = classifyIntent(question);
-    return intent !== "chitchat";
-  }
+  const intent = classifyIntent(question);
+  return intent !== "chitchat";
 }
 
 export type IntentCategory = "chitchat" | "general" | "recall" | "connector";
@@ -150,53 +108,5 @@ export function fallbackKeywordClassifier(question: string): IntentCategory {
 }
 
 export async function classifyOrchestrationIntent(question: string): Promise<IntentCategory> {
-  // 1. Fast path: greetings/chitchat never retrieve memories or call connectors
-  if (isChitchat(question)) {
-    return "chitchat";
-  }
-
-  // 2. Resolve LLM configuration
-  const cfg = resolveProvider();
-  if (!cfg) {
-    return fallbackKeywordClassifier(question);
-  }
-
-  try {
-    const llm = new ChatOpenAI({
-      model: cfg.chatModel,
-      temperature: 0.0,
-      maxTokens: 20,
-      apiKey: cfg.apiKey,
-      configuration: {
-        baseURL: cfg.baseURL,
-        apiKey: cfg.apiKey,
-      },
-    });
-
-    const systemPrompt = `You are the intent classifier for a personal memory assistant called Debo.
-Debo is connected to the user's private memory graph (journals, voice notes, files) and external apps/connectors (e.g. Gmail, Notion, Slack, GitHub, Google Calendar).
-
-Your job is to classify the user's message into exactly one of these categories:
-1. "RECALL": The user is asking to search, recall, or retrieve information from their private personal history, past journals, thoughts, meetings, files, or notes (e.g., "what did I do yesterday", "search my meeting with john", "tell me about my project", "remember my journal").
-2. "CONNECTOR": The user is asking to query, fetch, or perform an action on external apps/integrations (Gmail, Google Calendar, Notion, Slack, GitHub, Drive, Trello, Salesforce, etc.) (e.g., "check my latest emails", "can you see my emails", "create a notion page", "post a slack message to general", "check my schedule", "show github issues").
-3. "GENERAL": The user is asking a general knowledge question, code generation, creative writing, template, or general explanation that does NOT require private history or external apps (e.g., "write a react component", "how does react router work", "who is the president", "explain gravity").
-4. "CHITCHAT": General greeting, small talk, thanks, or simple conversational text (e.g., "hello", "thank you", "nice", "ok").
-
-Respond with exactly one of the words: "RECALL", "CONNECTOR", "GENERAL", or "CHITCHAT".
-Do not include any other text, explanation, or punctuation. Output only one word.`;
-
-    const response = await llm.invoke([
-      new SystemMessage(systemPrompt),
-      new HumanMessage(question),
-    ]);
-
-    const ans = (response.content as string).trim().toUpperCase();
-    if (ans.includes("RECALL")) return "recall";
-    if (ans.includes("CONNECTOR")) return "connector";
-    if (ans.includes("GENERAL")) return "general";
-    return "chitchat";
-  } catch (err) {
-    console.error("[classifyOrchestrationIntent] LLM classification failed, falling back to keywords", err);
-    return fallbackKeywordClassifier(question);
-  }
+  return fallbackKeywordClassifier(question);
 }

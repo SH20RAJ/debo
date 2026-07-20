@@ -336,7 +336,7 @@ export function JournalEntryList({
  ))
  )}
  </div>
- </ScrollArea>
+ </div>
  </div>
  );
 }

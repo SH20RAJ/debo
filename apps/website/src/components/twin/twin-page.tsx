@@ -115,7 +115,7 @@ export function TwinPage() {
 
     async function loadSources() {
       try {
-        const data = await api.sources.list();
+        const data = await api.sources.list({ type: "journal,voice", lite: true });
         setSources(data || []);
       } catch (err) {
         console.error("Failed to load sources for digital twin:", err);

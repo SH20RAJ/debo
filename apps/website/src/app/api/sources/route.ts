@@ -61,9 +61,22 @@ export async function GET(req: Request) {
       }
     }
 
-    const rows = await db
-      .select()
-      .from(sources)
+    const lite = url.searchParams.get("lite") === "true";
+
+    const query = lite
+      ? db.select({
+          id: sources.id,
+          userId: sources.userId,
+          workspaceId: sources.workspaceId,
+          type: sources.type,
+          title: sources.title,
+          status: sources.status,
+          createdAt: sources.createdAt,
+          updatedAt: sources.updatedAt,
+        }).from(sources)
+      : db.select().from(sources);
+
+    const rows = await query
       .where(and(...conditions))
       .orderBy(desc(sources.createdAt));
 

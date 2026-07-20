@@ -19,6 +19,7 @@ export async function GET(req: Request) {
   if (session instanceof NextResponse) return session;
   const { user, workspaceId } = session;
 
+  return withErrorHandling(async () => {
     const { searchParams } = new URL(req.url);
     const limit = Math.min(100, parseInt(searchParams.get("limit") || "50", 10));
     const offset = Math.max(0, parseInt(searchParams.get("offset") || "0", 10));
