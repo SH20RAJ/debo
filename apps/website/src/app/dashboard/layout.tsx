@@ -53,7 +53,7 @@ function DashboardLayoutContent({
         {!isFocused && (
           <Topbar onCommandMenuOpen={() => setCommandMenuOpen(true)} />
         )}
-        <main className="flex-1 min-h-0">{children}</main>
+        <div className="flex-1 min-h-0 flex flex-col h-full overflow-hidden">{children}</div>
       </SidebarInset>
 
       <CommandMenu

@@ -546,11 +546,18 @@ export function ChatPage({ threadId: initialThreadId }: { threadId?: string }) {
  ], []);
 
  // Filter threads by search query
- const filteredThreads = useMemo(() => {
- const q = threadSearch.trim().toLowerCase();
- if (!q) return threads;
- return threads.filter((t) => (t.title || "Conversation").toLowerCase().includes(q));
- }, [threads, threadSearch]);
+  const filteredThreads = useMemo(() => {
+    const q = threadSearch.trim().toLowerCase();
+    const uniqueMap = new Map<string, typeof threads[number]>();
+    for (const t of threads) {
+      if (t && t.id) {
+        uniqueMap.set(t.id, t);
+      }
+    }
+    const unique = Array.from(uniqueMap.values());
+    if (!q) return unique;
+    return unique.filter((t) => (t.title || "Conversation").toLowerCase().includes(q));
+  }, [threads, threadSearch]);
 
  const groupedThreads = useMemo(() => {
     const map = new Map<string, any[]>();
