@@ -41,6 +41,7 @@
     "wrangler": "^4.87.0"
   },
   "dependencies": {
+    "next": "16.2.4",
     "zod": "^4.4.3"
   }
 }
