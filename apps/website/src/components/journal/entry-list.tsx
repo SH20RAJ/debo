@@ -1,11 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Plus, Search, X, BookOpen, Clock, FileText, Sparkles, Mic, Video } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import type { JournalEntry } from "./journal-page";
 
 interface JournalEntryListProps {
@@ -122,6 +121,11 @@ export function JournalEntryList({
  onRecordPress,
 }: JournalEntryListProps) {
  const [search, setSearch] = useState("");
+ const [displayLimit, setDisplayLimit] = useState(50);
+
+ useEffect(() => {
+   setDisplayLimit(50);
+ }, [search]);
 
  const grouped = useMemo(() => {
  const q = search.trim().toLowerCase();
@@ -139,8 +143,10 @@ export function JournalEntryList({
  new Date(a.updatedAt ?? a.createdAt).getTime(),
  );
 
+ const limited = sorted.slice(0, displayLimit);
+
  const map = new Map<string, JournalEntry[]>();
- for (const entry of sorted) {
+ for (const entry of limited) {
  const key = getDateGroup(entry.updatedAt ?? entry.createdAt);
  const list = map.get(key) ?? [];
  list.push(entry);
@@ -150,7 +156,14 @@ export function JournalEntryList({
  return order
  .filter((k) => map.has(k))
  .map((k) => ({ label: k, entries: map.get(k)! }));
- }, [entries, search]);
+ }, [entries, search, displayLimit]);
+
+ const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+   const target = e.currentTarget;
+   if (target.scrollHeight - target.scrollTop <= target.clientHeight + 100) {
+     setDisplayLimit((prev) => prev + 50);
+   }
+ };
 
  return (
  <div className="flex h-full flex-col bg-card select-none border-r border-border">
@@ -221,7 +234,10 @@ export function JournalEntryList({
  </div>
 
  {/* Entry Feed List */}
- <ScrollArea className="flex-1 h-full min-h-0 px-2.5 pb-4">
+ <div 
+   className="flex-1 overflow-y-auto min-h-0 px-2.5 pb-4 scrollbar-thin scrollbar-thumb-muted-foreground/20 hover:scrollbar-thumb-muted-foreground/30"
+   onScroll={handleScroll}
+ >
  <div className="space-y-4 pr-1">
  {grouped.length === 0 ? (
  <div className="flex flex-col items-center justify-center py-16 text-center">

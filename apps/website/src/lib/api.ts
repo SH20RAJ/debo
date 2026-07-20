@@ -238,7 +238,10 @@ export const api = {
       fetchApi(`/api/mail/messages/${messageId}/save-to-memory`, { method: "POST" }),
   },
   voice: {
-    list: () => fetchApi("/api/voice/sessions"),
+    list: (params?: { limit?: number; offset?: number }) => {
+      const query = params ? "?" + new URLSearchParams(params as any).toString() : "";
+      return fetchApi(`/api/voice/sessions${query}`);
+    },
     create: () => fetchApi("/api/voice/sessions", { method: "POST", body: JSON.stringify({}) }),
     getToken: (sessionId: string) =>
       fetchApi(`/api/voice/sessions/${sessionId}/token`, { method: "POST" }),

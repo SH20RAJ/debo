@@ -220,6 +220,9 @@ export function VoiceNotesPage() {
 
  const [sessions, setSessions] = useState<VoiceSession[]>([]);
  const [loadingSessions, setLoadingSessions] = useState(true);
+ const [offset, setOffset] = useState(0);
+ const [hasMore, setHasMore] = useState(true);
+ const [fetchingMore, setFetchingMore] = useState(false);
 
  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
  const chunksRef = useRef<Blob[]>([]);
@@ -229,12 +232,33 @@ export function VoiceNotesPage() {
 
  const refreshSessions = useCallback(async () => {
  try {
- const data = (await api.voice.list()) as VoiceSession[] | null;
+ const data = (await api.voice.list({ limit: 30, offset: 0 })) as VoiceSession[] | null;
  setSessions(data ?? []);
+ setOffset(data ? data.length : 0);
+ setHasMore(data ? data.length === 30 : false);
  } catch {
  // Keep last known sessions
  }
  }, []);
+
+ const loadMoreSessions = useCallback(async () => {
+ if (fetchingMore || !hasMore) return;
+ setFetchingMore(true);
+ try {
+ const data = (await api.voice.list({ limit: 30, offset })) as VoiceSession[] | null;
+ if (data && data.length > 0) {
+ setSessions((prev) => [...prev, ...data]);
+ setOffset((o) => o + data.length);
+ setHasMore(data.length === 30);
+ } else {
+ setHasMore(false);
+ }
+ } catch {
+ // ignore
+ } finally {
+ setFetchingMore(false);
+ }
+ }, [offset, hasMore, fetchingMore]);
 
  useEffect(() => {
  refreshSessions().finally(() => setLoadingSessions(false));
@@ -387,8 +411,18 @@ export function VoiceNotesPage() {
  const aiCalls = sessions.filter((s) => s.roomName?.startsWith("debo-voice-"));
  const recordingLabel = `${Math.floor(recordSeconds / 60)}:${String(recordSeconds % 60).padStart(2, "0")}`;
 
+ const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+ const target = e.currentTarget;
+ if (target.scrollHeight - target.scrollTop <= target.clientHeight + 120) {
+ void loadMoreSessions();
+ }
+ };
+
  return (
- <div className="p-6 md:p-8 max-w-2xl mx-auto space-y-8 h-full overflow-y-auto scrollbar-none">
+ <div 
+   className="p-6 md:p-8 max-w-2xl mx-auto space-y-8 h-full overflow-y-auto scrollbar-none"
+   onScroll={handleScroll}
+ >
  <div>
  <h1 className="text-2xl font-bold tracking-tight text-foreground">Voice Notes</h1>
  <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
@@ -464,6 +498,7 @@ export function VoiceNotesPage() {
  </div>
  ) : voiceNotes.length > 0 ? (
  <div className="space-y-2.5">
+ <div className="space-y-2.5">
  {voiceNotes.map((session) => (
  <SessionRow
  key={session.id}
@@ -471,6 +506,13 @@ export function VoiceNotesPage() {
  icon={<Headphones className="w-5 h-5 text-primary" />}
  />
  ))}
+ </div>
+ {fetchingMore && (
+ <div className="flex items-center justify-center py-4 text-muted-foreground text-xs font-medium">
+ <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" />
+ Loading more...
+ </div>
+ )}
  </div>
  ) : (
  <div className="text-center py-16 border border-dashed border-border/50 rounded-2xl">
@@ -490,6 +532,7 @@ export function VoiceNotesPage() {
  </div>
  ) : aiCalls.length > 0 ? (
  <div className="space-y-2.5">
+ <div className="space-y-2.5">
  {aiCalls.map((session) => (
  <SessionRow
  key={session.id}
@@ -497,6 +540,13 @@ export function VoiceNotesPage() {
  icon={<Headphones className="w-5 h-5 text-primary" />}
  />
  ))}
+ </div>
+ {fetchingMore && (
+ <div className="flex items-center justify-center py-4 text-muted-foreground text-xs font-medium">
+ <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" />
+ Loading more...
+ </div>
+ )}
  </div>
  ) : (
  <div className="text-center py-16 border border-dashed border-border/50 rounded-2xl">
